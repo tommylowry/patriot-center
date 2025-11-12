@@ -1,4 +1,4 @@
-# backend/constants.py
+# patriot_center_backend/constants.py
 
 # Map year to the league ids
 LEAGUE_IDS = {
@@ -12,7 +12,7 @@ LEAGUE_IDS = {
 }
 
 # Map usernames to real name for display
-MANAGER_MAP = {
+USERNAME_TO_REAL_NAME = {
     "aalvaa":          "Anthony",
     "bbennick":        "Benz",
     "BilliamBlowland": "Billiam",
@@ -33,5 +33,8 @@ MANAGER_MAP = {
     "bispity":         "Ty"
 }
 
-# List of all completed seasons
-SEASONS = [2019, 2020, 2021, 2022, 2023, 2024, 2025]
+# Invert the MANAGER_USERNAME_TO_REAL_NAME mapping
+NAME_TO_MANAGER_USERNAME = {v: k for k, v in USERNAME_TO_REAL_NAME.items()}
+
+# Sleeper API base URL
+SLEEPER_API_URL = "https://api.sleeper.app/v1"

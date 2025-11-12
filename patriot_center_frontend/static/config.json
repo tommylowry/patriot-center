@@ -28,5 +28,5 @@
       "tommylowry": "Tommy",
       "bispity": "Ty"
     },
-    "SEASONS": [2019, 2020, 2021, 2022, 2023, 2024, 2025]
+    "SLEEPER_API_URL": "https://api.sleeper.app/v1"
   }

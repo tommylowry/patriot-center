@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 import utils
-import utils.managers
+import patriot_center_backend.services.managers
 
 app = Flask(__name__)
 
@@ -18,7 +18,7 @@ def get_starters(year, manager):
         return jsonify({"error": "Manager not found"}), 404
     
     # Fetch starters data
-    data = utils.managers.get_starters(year, manager)
+    data = patriot_center_backend.services.managers.get_starters(year, manager)
 
     return jsonify(data)
 

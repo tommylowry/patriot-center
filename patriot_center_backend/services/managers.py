@@ -3,6 +3,7 @@ from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 import json
 from decimal import Decimal
+import os
 
 PLAYER_IDS = load_player_ids()
 
@@ -90,58 +91,64 @@ def get_yearly_starters(year, roster_id, league_id):
 
     return data, 200
                     
-
-
-
-def get_starters(year=None, manager=None):
-
+def fetch_starters(year=None, manager=None):
     # If year is None, fetch for all years
     if year is None:
-        data = {}
-        for yr in consts.LEAGUE_IDS.keys():
-            per_year_result = get_starters(yr, manager)
-            if per_year_result[1] != 200:
-                return per_year_result
-            data[yr] = per_year_result[0]
-        return data
-    
-
+        return fetch_starters_by_manager(manager)
 
     # If manager is None, fetch for all managers for that year
-
-    # Fetch league ID for the specified year
-    league_id = consts.LEAGUE_IDS[year]
     if manager is None:
-        
-        # Fetch managers for the year specified
-        sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
-        if sleeper_response_users[1] != 200:
-            return sleeper_response_users
-        
-        data = {}
-        managers = sleeper_response_users[0]
-        for manager in managers:
-            real_name = consts.USERNAME_TO_REAL_NAME[manager['display_name']]
-            per_manager_result = get_starters(year, real_name)
-            if per_manager_result[1] != 200:
-                return per_manager_result
-            data[real_name] = per_manager_result[0]
-        return data
-    
+        return fetch_starters_by_year(year)
+
+    # If both year and manager are specified, fetch starters for that manager and year
+    return fetch_starters_by_year_and_manager(year, manager)
 
 
-    # If manager and year are specified, fetch starters for that manager and year
+def fetch_starters_by_manager(manager):
+    data = {}
+    for yr in consts.LEAGUE_IDS.keys():
+        per_year_result = fetch_starters(yr, manager)
+        # if Manager not found, skip that year as that manager didnt play that year
+        if per_year_result[0].get("error") == "Manager not found":
+            continue
+        if per_year_result[1] != 200:
+            return per_year_result
+        data[yr] = per_year_result[0]
+    return data, 200
+
+
+def fetch_starters_by_year(year):
+    league_id = consts.LEAGUE_IDS[year]
+    sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
+    if sleeper_response_users[1] != 200:
+        return sleeper_response_users
+
+    data = {}
+    managers = sleeper_response_users[0]
+    for manager in managers:
+        real_name = consts.USERNAME_TO_REAL_NAME[manager['display_name']]
+        per_manager_result = fetch_starters(year, real_name)
+        if per_manager_result[1] != 200:
+            return per_manager_result
+        data[real_name] = per_manager_result[0]
+    return data, 200
+
+
+def fetch_starters_by_year_and_manager(year, manager):
+
+
+    # Convert manager real name to username if necessary
+    if manager in consts.NAME_TO_MANAGER_USERNAME.values():
+        manager = consts.USERNAME_TO_REAL_NAME[manager]
 
     # Get user ID from manager name
     user_id, status_code = get_user_id_from_manager(year, manager)
     if status_code != 200:
         return {"error": "Manager not found"}, status_code
-    
+
     # Get roster ID for the user in the specified year
     roster_id, status_code = get_roster_id_from_user(year, user_id)
     if status_code != 200:
         return {"error": "Roster not found"}, status_code
-    
-    return get_yearly_starters(year, roster_id, league_id), 200
 
-print(json.dumps(get_starters(2025, "Tommy"), indent = 4))
+    return get_yearly_starters(year, roster_id, consts.LEAGUE_IDS[year])

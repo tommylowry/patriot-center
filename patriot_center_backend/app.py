@@ -1,6 +1,5 @@
 from flask import Flask, jsonify
 from constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
-import utils
 import patriot_center_backend.services.managers
 
 app = Flask(__name__)

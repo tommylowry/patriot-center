@@ -1,25 +1,82 @@
 from flask import Flask, jsonify
 from constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
-import patriot_center_backend.services.managers
+from patriot_center_backend.services.managers import fetch_starters
 
 app = Flask(__name__)
 
-@app.route('/api/managers/get_starters', defaults={'year': None, 'manager': None}, methods=['GET'])
-@app.route('/api/managers/get_starters/<int:year>', defaults={'manager': None}, methods=['GET'])
-@app.route('/api/managers/get_starters/<int:year>/<string:manager>', methods=['GET'])
-def get_starters(year, manager):
-    
-    # Validate year and manager
-    if year not in LEAGUE_IDS and year is not None:
-        return jsonify({"error": "Year not found"}), 404
-    
-    if manager not in NAME_TO_MANAGER_USERNAME.keys() and manager is not None:
-        return jsonify({"error": "Manager not found"}), 404
-    
-    # Fetch starters data
-    data = patriot_center_backend.services.managers.get_starters(year, manager)
+@app.route('/api/arg2s/get_starters', defaults={'arg1': None, 'arg2': None, 'arg3': None}, methods=['GET'])
+@app.route('/api/arg2s/get_starters/<string:arg1>', defaults={'arg2': None, 'arg3': None}, methods=['GET'])
+@app.route('/api/arg2s/get_starters/<string:arg1>/<string:arg2>', defaults={'arg3': None}, methods=['GET'])
+@app.route('/api/arg2s/get_starters/<string:arg1>/<string:arg2>/<string:arg3>', methods=['GET'])
+def get_starters(arg1, arg2, arg3):
+    """
+    API endpoint to fetch starters based on year, manager, and/or week.
 
-    return jsonify(data)
+    Args:
+        arg1, arg2, arg3: Optional arguments that can represent year, manager, or week.
+
+    Returns:
+        JSON response with the requested data or an error message.
+    """
+    try:
+        # Parse and validate the arguments
+        year, manager, week = parse_arguments(arg1, arg2, arg3)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    # Fetch the starters data
+    data = fetch_starters(year=year, manager=manager, week=week)
+    return jsonify(data), 200
+
+
+def parse_arguments(arg1, arg2, arg3):
+    """
+    Parse and validate the input arguments.
+
+    Args:
+        arg1, arg2, arg3: Optional arguments that can represent year, manager, or week.
+
+    Returns:
+        tuple: (year, manager, week)
+
+    Raises:
+        ValueError: If the arguments are invalid or conflicting.
+    """
+    year = None
+    manager = None
+    week = None
+
+    args = [arg1, arg2, arg3]
+    for arg in args:
+        if arg is None:
+            continue
+
+        # Check if the argument is an integer
+        try:
+            arg_int = int(arg)
+            if arg_int in LEAGUE_IDS:
+                if year is not None:
+                    raise ValueError("Multiple year arguments provided.")
+                year = arg_int
+            elif 1 <= arg_int <= 17:
+                if week is not None:
+                    raise ValueError("Multiple week arguments provided.")
+                week = arg_int
+            else:
+                raise ValueError("Invalid integer argument provided.")
+        except ValueError:
+            # Argument is not an integer, check if it's a manager name
+            if arg in NAME_TO_MANAGER_USERNAME:
+                if manager is not None:
+                    raise ValueError("Multiple manager arguments provided.")
+                manager = arg
+            else:
+                raise ValueError(f"Invalid argument provided: {arg}")
+            
+    if week is not None and year is None:
+        raise ValueError("Week provided without a corresponding year.")
+
+    return year, manager, week
 
 if __name__ == '__main__':
     app.run(debug=True)

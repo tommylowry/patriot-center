@@ -26,7 +26,7 @@ def load_or_update_starters_cache():
 
     # Dynamically determine the current season and league ID
     current_year = datetime.now().year
-    league_id = consts.LEAGUE_IDS.get(str(current_year))  # Get the league ID for the current year
+    league_id = consts.LEAGUE_IDS.get(current_year)  # Get the league ID for the current year
     if not league_id:
         current_year = list(consts.LEAGUE_IDS.keys())[-1]  # Fallback to the latest year available
         league_id = consts.LEAGUE_IDS[current_year]
@@ -56,11 +56,22 @@ def load_or_update_starters_cache():
         else:
             # Cap at 14 weeks for other seasons
             return 14
-
-    # Process all years in consts.LEAGUE_IDS
+        
+    
     for year in consts.LEAGUE_IDS.keys():
+        
         year = int(year)  # Ensure year is an integer
-        max_weeks = get_max_weeks(year, current_season, current_week)
+        if year > cache.get("Last_Updated_Season", 0):
+            # If the year is completely new, fetch all weeks
+            max_weeks = get_max_weeks(year, current_season, current_week)
+            weeks_to_update = range(1, max_weeks + 1)
+        elif year < cache.get("Last_Updated_Season", 0):
+            # If the year is in the past, skip updating
+            continue
+        else:
+            # For the current year, determine the max weeks based on current season and week
+            max_weeks = get_max_weeks(year, current_season, current_week)
+
 
         # Determine the range of weeks to update
         if year == current_season:
@@ -190,5 +201,3 @@ def fetch_starters_for_week(season, week):
             week_data[real_name] = starters_data
 
     return week_data
-
-load_or_update_starters_cache()

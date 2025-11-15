@@ -34,6 +34,9 @@ def load_or_update_starters_cache():
         if last_updated_season is not None:
             if year < last_updated_season:
                 continue
+        
+        if last_updated_season == int(current_season) and last_updated_week == current_week:
+            break
 
         year = int(year)  # Ensure year is an integer
         max_weeks = _get_max_weeks(year, current_season, current_week)
@@ -110,6 +113,9 @@ def _get_current_season_and_week():
     league_id = LEAGUE_IDS.get(int(current_year))  # Get the league ID for the current year
     if not league_id:
         raise Exception(f"No league ID found for the current year: {current_year}")
+    
+    # OFFLINE DEBUGGING, uncomment when online
+    # return "2025", 10
 
     sleeper_response_league = fetch_sleeper_data(f"league/{league_id}")
     if sleeper_response_league[1] != 200:
@@ -164,6 +170,11 @@ def fetch_starters_for_week(season, week):
     week_data = {}
     for manager in managers:
         real_name = USERNAME_TO_REAL_NAME.get(manager['display_name'], "Unknown Manager")
+        
+        # Tommy started the 2019 season for 3 weeks before Cody took over
+        if int(season) == 2019 and week < 4 and real_name == "Cody":
+            real_name = "Tommy"
+        
         roster_id = get_roster_id(season, manager['user_id'])
         if not roster_id:
             continue

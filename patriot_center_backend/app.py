@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.services.managers import fetch_starters
+from patriot_center_backend.services.aggregated_data import fetch_aggregated_players
 
 app = Flask(__name__)
 
@@ -25,9 +26,55 @@ def get_starters(arg1, arg2, arg3):
         return jsonify({"error": str(e)}), 400
 
     # Fetch the starters data
-    data = fetch_starters(year=year, manager=manager, week=week)
+    data = fetch_starters(season=year, manager=manager, week=week)
     return jsonify(data), 200
 
+@app.route('/api/arg2s/get_starters', defaults={'arg1': None, 'arg2': None, 'arg3': None}, methods=['GET'])
+@app.route('/api/arg2s/get_starters/<string:arg1>', defaults={'arg2': None, 'arg3': None}, methods=['GET'])
+@app.route('/api/arg2s/get_starters/<string:arg1>/<string:arg2>', defaults={'arg3': None}, methods=['GET'])
+@app.route('/api/arg2s/get_starters/<string:arg1>/<string:arg2>/<string:arg3>', methods=['GET'])
+def get_aggregated_players(arg1, arg2, arg3):
+    """
+    API endpoint to fetch starters in an aggregated json based on year, manager, and/or week.
+
+    Args:
+        arg1, arg2, arg3: Optional arguments that can represent year, manager, or week.
+
+    Returns:
+        JSON response with the requested data or an error message.
+    """
+    try:
+        # Parse and validate the arguments
+        year, manager, week = parse_arguments(arg1, arg2, arg3)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    # Fetch the starters data
+    data = fetch_aggregated_players(season=year, manager=manager, week=week)
+    return jsonify(data), 200
+
+@app.route('/api/arg2s/get_starters/<string:player>', defaults={'arg2': None, 'arg3': None}, methods=['GET'])
+@app.route('/api/arg2s/get_starters/<string:player>/<string:arg2>', defaults={'arg3': None}, methods=['GET'])
+@app.route('/api/arg2s/get_starters/<string:player>/<string:arg2>/<string:arg3>', methods=['GET'])
+def get_aggregated_managers(player, arg2, arg3):
+    """
+    API endpoint to fetch starters in an aggregated json based on year, manager, and/or week.
+
+    Args:
+        arg1, arg2, arg3: Optional arguments that can represent year, manager, or week.
+
+    Returns:
+        JSON response with the requested data or an error message.
+    """
+    try:
+        # Parse and validate the arguments
+        year, manager, week = parse_arguments(arg1, arg2, arg3)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    # Fetch the starters data
+    data = fetch_aggregated_players(season=year, manager=manager, week=week)
+    return jsonify(data), 200
 
 def parse_arguments(arg1, arg2, arg3):
     """

@@ -1,9 +1,7 @@
-from patriot_center_backend.utils.ffWAR.replacement_score_loader import replacement_score_loader
-from patriot_center_backend.utils.ffWAR.reaplacement_average_loader import replacement_average_loader
+from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
 from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 
-REPLACEMENT_SCORES   = replacement_score_loader()
-REPLACEMENT_AVERAGES = replacement_average_loader()
+REPLACEMENT_SCORES   = load_or_update_replacement_score_cache()
 PLAYER_DATA          = load_or_update_starters_cache()
 
 def ffWAR(manager=None, season=None, week=None):
@@ -50,22 +48,9 @@ def calculate_ffWAR(scores, season, week):
     return ffWAR_results
 
 def calculate_ffWAR_position(scores, season, week, position):
-    bye_weeks = REPLACEMENT_SCORES[str(season)][str(week)]['byes']
-
-    replacement_average = 0.0
-    if bye_weeks == 0:
-        replacement_average = REPLACEMENT_AVERAGES[season][week][position][0]
-    elif bye_weeks == 2:
-        replacement_average = REPLACEMENT_AVERAGES[season][week][position][1]
-    elif bye_weeks == 4:
-        replacement_average = REPLACEMENT_AVERAGES[season][week][position][2]
-    elif bye_weeks == 6:
-        replacement_average = REPLACEMENT_AVERAGES[season][week][position][3]
-    else:
-        return "bad"
     
-    if replacement_average == 0.0:
-        return "bad"
+    key = f"{position}_3yr_avg"
+    replacement_average = REPLACEMENT_SCORES[str(season)][str(week)][key]
     
     
     # get score minus the average
@@ -134,5 +119,5 @@ def calculate_ffWAR_position(scores, season, week, position):
     return ffWAR_position
 
 
-di = ffWAR(season="2019", week="1")
+di = ffWAR(season="2025", week="10")
 print("")

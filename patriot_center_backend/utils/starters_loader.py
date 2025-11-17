@@ -1,10 +1,9 @@
-import json
-import os
-from datetime import datetime
 from decimal import Decimal
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from  patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
+from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
+from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
+
 
 # Constants
 STARTERS_CACHE_FILE = "patriot_center_backend/data/starters_cache.json"
@@ -20,17 +19,21 @@ def load_or_update_starters_cache():
         dict: The updated starters cache.
     """
     # Load existing cache or initialize a new one
-    cache = _load_cache()
+    cache = load_cache(STARTERS_CACHE_FILE)
 
     # Dynamically determine the current season and week
-    current_season, current_week = _get_current_season_and_week()
+    current_season, current_week = get_current_season_and_week()
+    if current_week > 14:
+        current_week = 14
 
-    # Get the last updated season and week from the cache
-    last_updated_season = int(cache.get("Last_Updated_Season", 0))
-    last_updated_week   = cache.get("Last_Updated_Week", 0)
-
+    
     # Process all years in LEAGUE_IDS
     for year in LEAGUE_IDS.keys():
+
+        # Get the last updated season and week from the cache
+        last_updated_season = int(cache.get("Last_Updated_Season", 0))
+        last_updated_week   = cache.get("Last_Updated_Week", 0)
+
         if last_updated_season != 0:
             if year < last_updated_season:
                 continue
@@ -53,7 +56,7 @@ def load_or_update_starters_cache():
         if list(weeks_to_update) == []:
             continue
         
-        print(f"Updating cache for season {year}, weeks: {list(weeks_to_update)}")
+        print(f"Updating starters cache for season {year}, weeks: {list(weeks_to_update)}")
 
         # Fetch and update only the missing weeks for the year
         for week in weeks_to_update:
@@ -64,77 +67,16 @@ def load_or_update_starters_cache():
             cache['Last_Updated_Season'] = str(year)
             cache['Last_Updated_Week'] = week
 
-            print("  Cache updated for season {}, week {}".format(year, week))
-
-    # # Update the last updated season and week
-    # cache["Last_Updated_Season"] = current_season
-    # cache["Last_Updated_Week"] = current_week
+            print("  Starters cache updated internally for season {}, week {}".format(year, week))
 
     # Save the updated cache to the file
-    _save_cache(cache)
+    save_cache(STARTERS_CACHE_FILE, cache)
 
     # Remove metadata before returning
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
 
     return cache
-
-
-def _load_cache():
-    """
-    Load the starters cache from the file, or initialize a new one if the file doesn't exist.
-
-    Returns:
-        dict: The loaded or initialized cache.
-    """
-    if os.path.exists(STARTERS_CACHE_FILE):
-        with open(STARTERS_CACHE_FILE, "r") as file:
-            return json.load(file)
-    else:
-        # Initialize the cache with all years
-        cache = {"Last_Updated_Season": "0", "Last_Updated_Week": 0}
-        for year in LEAGUE_IDS.keys():
-            cache[str(year)] = {}
-        return cache
-
-
-def _save_cache(cache):
-    """
-    Save the starters cache to the file.
-
-    Args:
-        cache (dict): The cache data to save.
-    """
-    with open(STARTERS_CACHE_FILE, "w") as file:
-        json.dump(cache, file, indent=4)
-
-
-def _get_current_season_and_week():
-    """
-    Fetch the current season and week from the Sleeper API.
-
-    Returns:
-        tuple: The current season (int) and the current week (int).
-    """
-    current_year = datetime.now().year
-    league_id = LEAGUE_IDS.get(int(current_year))  # Get the league ID for the current year
-    if not league_id:
-        raise Exception(f"No league ID found for the current year: {current_year}")
-    
-    # OFFLINE DEBUGGING, comment out when online
-    # return "2025", 10
-
-    sleeper_response_league = fetch_sleeper_data(f"league/{league_id}")
-    if sleeper_response_league[1] != 200:
-        raise Exception("Failed to fetch league data from Sleeper API")
-
-    league_info = sleeper_response_league[0]
-    current_season = int(league_info.get("season"))  # Ensure current_season is an integer
-    current_week = league_info.get("settings", {}).get("last_scored_leg", 0)
-    if current_week > 14:
-        current_week = 14  # Cap at 14 weeks
-
-    return current_season, current_week
 
 
 def _get_max_weeks(season, current_season, current_week):

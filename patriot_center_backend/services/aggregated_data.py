@@ -1,3 +1,14 @@
+"""
+Aggregation utilities over starters data.
+
+Exposes helpers to:
+- Aggregate totals across weeks/seasons for a manager by player.
+- Aggregate totals across weeks/seasons for a player by manager.
+
+Notes:
+- Results are simple dicts suitable for JSON responses.
+- Totals are rounded to two decimals via Decimal normalization.
+"""
 from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
 
@@ -6,6 +17,11 @@ def fetch_aggregated_players(manager, season=None, week=None):
     """
     Fetch aggregated player data for a specific manager.
 
+    Behavior:
+    - Retrieves the slice of starters for the manager (optionally constrained).
+    - Aggregates points and games started per player.
+    - Preserves player position from the raw entries.
+
     Args:
         manager (str): The manager to fetch data for.
         season (int, optional): The season to filter by. Defaults to None.
@@ -13,13 +29,16 @@ def fetch_aggregated_players(manager, season=None, week=None):
 
     Returns:
         dict: Aggregated player data with total points, games started, and position.
+              Returns {} if no data is found for the filters.
     """
     raw_dict = fetch_starters(manager, season=season, week=week)
     players_dict_to_return = {}
 
+    # No matching data -> return empty aggregation
     if not raw_dict:
         return players_dict_to_return
 
+    # Traverse season->week->manager->players to accumulate totals
     for year, weeks in raw_dict.items():
         for week, manager_data in weeks.items():
             for player, player_data in manager_data[manager].items():
@@ -38,6 +57,10 @@ def fetch_aggregated_managers(player, season=None, week=None):
     """
     Fetch aggregated manager data for a specific player.
 
+    Behavior:
+    - Retrieves all starters (optionally constrained by season/week).
+    - Aggregates points and games started per manager for the given player.
+
     Args:
         player (str): The player to fetch data for.
         season (int, optional): The season to filter by. Defaults to None.
@@ -45,6 +68,7 @@ def fetch_aggregated_managers(player, season=None, week=None):
 
     Returns:
         dict: Aggregated manager data with total points, games started, and position.
+              Returns {} if the player does not appear in the selection.
     """
     raw_dict = fetch_starters(season=season, week=week)
     managers_dict_to_return = {}
@@ -76,7 +100,7 @@ def _update_player_data(players_dict, player, player_data):
     player_dict_item['total_points'] += player_data['points']
     player_dict_item['num_games_started'] += 1
 
-    # Round the total points to two decimal places
+    # Round the total points to two decimal places for consistent presentation
     player_dict_item["total_points"] = float(
         Decimal(player_dict_item["total_points"]).quantize(Decimal('0.01')).normalize()
     )
@@ -93,6 +117,7 @@ def _initialize_player_data(players_dict, player, player_data):
         player (str): The player to initialize.
         player_data (dict): The raw data for the player.
     """
+    # Capture initial totals and the stable position field
     players_dict[player] = {
         "total_points": player_data['points'],
         "num_games_started": 1,
@@ -113,7 +138,7 @@ def _update_manager_data(managers_dict, manager, raw_item):
     manager_dict_item['total_points'] += raw_item['points']
     manager_dict_item['num_games_started'] += 1
 
-    # Round the total points to two decimal places
+    # Round the total points to two decimal places for consistent presentation
     manager_dict_item["total_points"] = float(
         Decimal(manager_dict_item["total_points"]).quantize(Decimal('0.01')).normalize()
     )
@@ -130,6 +155,7 @@ def _initialize_manager_data(managers_dict, manager, raw_item):
         manager (str): The manager to initialize.
         raw_item (dict): The raw data for the manager.
     """
+    # Capture initial totals and the player's position for that manager
     managers_dict[manager] = {
         "total_points": raw_item['points'],
         "num_games_started": 1,

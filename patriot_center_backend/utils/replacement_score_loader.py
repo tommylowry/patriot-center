@@ -4,7 +4,7 @@ from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
 
 # Constants
-REPLACEMENT_SCORE_FILE = "patriot_center_backend/data/replacement_score.json"
+REPLACEMENT_SCORE_FILE = "patriot_center_backend/data/replacement_score_cache.json"
 PLAYER_IDS = load_player_ids()
 
 def load_or_update_replacement_score_cache():
@@ -199,6 +199,3 @@ def _get_three_yr_avg(season, week, cache):
 
 
     return current_week_scores
-
-
-load_or_update_replacement_score_cache()

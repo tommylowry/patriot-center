@@ -5,15 +5,17 @@ REPLACEMENT_SCORES   = load_or_update_replacement_score_cache()
 PLAYER_DATA          = load_or_update_starters_cache()
 
 def ffWAR(manager=None, season=None, week=None):
+
     weekly_data = PLAYER_DATA[str(season)][str(week)]
 
-    players      = {"QB":  {},
-                    "RB":  {},
-                    "WR":  {},
-                    "TE":  {},
-                    "K":   {},
-                    "DEF": {}
-                    }
+    players = {
+        "QB":  {},
+        "RB":  {},
+        "WR":  {},
+        "TE":  {},
+        "K":   {},
+        "DEF": {}
+    }
     
     for manager in weekly_data:
         for position in players:
@@ -33,7 +35,6 @@ def ffWAR(manager=None, season=None, week=None):
 
 
     return ffWAR
-
 
 
 
@@ -119,5 +120,5 @@ def calculate_ffWAR_position(scores, season, week, position):
     return ffWAR_position
 
 
-di = ffWAR(season="2025", week="10")
+di = ffWAR(season="2022", week="7")
 print("")

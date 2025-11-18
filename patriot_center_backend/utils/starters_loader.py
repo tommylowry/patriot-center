@@ -1,3 +1,14 @@
+"""Starters cache builder/updater for Patriot Center.
+
+Responsibilities:
+- Maintain per-week starters and points per manager from Sleeper.
+- Incrementally update a JSON cache, resuming from Last_Updated_* markers.
+- Normalize totals to 2 decimals and resolve manager display names.
+
+Notes:
+- Weeks are capped at 14 to exclude fantasy playoffs.
+- Import-time execution at bottom warms the cache for downstream consumers.
+"""
 from decimal import Decimal
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
@@ -6,6 +17,7 @@ from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get
 
 
 # Constants
+# Path to starters cache; PLAYER_IDS is used to map names/positions for lineup entries.
 STARTERS_CACHE_FILE = "patriot_center_backend/data/starters_cache.json"
 PLAYER_IDS = load_player_ids()
 
@@ -15,8 +27,18 @@ def load_or_update_starters_cache():
     Load starters data from the cache file. If the cache is outdated or doesn't exist,
     fetch only the missing data from the Sleeper API and update the cache.
 
+    Behavior:
+    - Loads the existing cache or initializes it if missing.
+    - Detects the current season/week (capped at 14) and computes only missing weeks.
+    - Uses Last_Updated_Season/Week to resume incrementally across runs.
+    - Writes updates back to disk and strips metadata before returning.
+
+    Side effects:
+    - Reads/writes the starters cache JSON.
+    - Calls the Sleeper API (users, rosters, matchups) as needed.
+
     Returns:
-        dict: The updated starters cache.
+        dict: The updated starters cache (without Last_Updated_* metadata).
     """
     # Load existing cache or initialize a new one
     cache = load_cache(STARTERS_CACHE_FILE)
@@ -24,6 +46,7 @@ def load_or_update_starters_cache():
     # Dynamically determine the current season and week
     current_season, current_week = get_current_season_and_week()
     if current_week > 14:
+        # Cap to regular season only for comparability across years
         current_week = 14
 
     
@@ -34,12 +57,14 @@ def load_or_update_starters_cache():
         last_updated_season = int(cache.get("Last_Updated_Season", 0))
         last_updated_week   = cache.get("Last_Updated_Week", 0)
 
+        # Skip past-fully-computed seasons; reset week counter when moving to a new year
         if last_updated_season != 0:
             if year < last_updated_season:
                 continue
             if last_updated_season < year:
                 cache['Last_Updated_Week'] = 0
         
+        # Short-circuit if fully up to date for live season/week
         if last_updated_season == int(current_season) and last_updated_week == current_week:
             break
 
@@ -48,9 +73,11 @@ def load_or_update_starters_cache():
 
         # Determine the range of weeks to update
         if year == current_season or year == last_updated_season:
+            # Continue from last updated week within the same/live season
             last_updated_week = cache.get("Last_Updated_Week", 0)
             weeks_to_update = range(last_updated_week + 1, max_weeks + 1)
         else:
+            # Backfill full season when outside the last-updated season
             weeks_to_update = range(1, max_weeks + 1)
 
         if list(weeks_to_update) == []:
@@ -62,8 +89,10 @@ def load_or_update_starters_cache():
         for week in weeks_to_update:
             if str(year) not in cache:
                 cache[str(year)] = {}
+            # Pull week detail from Sleeper and store per-manager lineup/points
             cache[str(year)][str(week)] = fetch_starters_for_week(year, week)
 
+            # Advance progress markers to support resumable updates
             cache['Last_Updated_Season'] = str(year)
             cache['Last_Updated_Week'] = week
 
@@ -90,6 +119,11 @@ def _get_max_weeks(season, current_season, current_week):
 
     Returns:
         int: The maximum number of weeks for the season.
+
+    Notes:
+    - Seasons 2019 and 2020 are capped at 13 (league rule set then).
+    - All other seasons capped at 14 (regular season only).
+    - For the current season, cap to the current in-progress week.
     """
     if season == current_season:
         return current_week  # Use the current week for the current season
@@ -103,12 +137,18 @@ def fetch_starters_for_week(season, week):
     """
     Fetch starters data for a specific season and week.
 
+    Behavior:
+    - Resolves league users and maps display names to real names.
+    - Handles special-case name/roster overrides for known seasons.
+    - Retrieves starters and their half-PPR points for the week.
+
     Args:
         season (int): The season to fetch data for.
         week (int): The week to fetch data for.
 
     Returns:
-        dict: The starters data for the given season and week.
+        dict: The starters data for the given season and week, keyed by manager real name.
+              Empty dict if users fetch fails.
     """
     league_id = LEAGUE_IDS[int(season)]
     sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
@@ -145,12 +185,15 @@ def get_roster_id(year, user_id):
     """
     Fetch the roster ID for a specific user in a given year.
 
+    Behavior:
+    - Queries Sleeper rosters for the league and finds the one owned by user_id.
+
     Args:
         year (int): The year to fetch the roster ID for.
         user_id (str): The user ID to fetch the roster ID for.
 
     Returns:
-        str: The roster ID, or None if not found.
+        str: The roster ID, or None if not found or API error occurs.
     """
     league_id = LEAGUE_IDS[int(year)]
     sleeper_response_rosters = fetch_sleeper_data(f"league/{league_id}/rosters")
@@ -168,13 +211,19 @@ def get_starters_data(league_id, roster_id, week):
     """
     Fetch starters data for a specific roster and week.
 
+    Behavior:
+    - Retrieves matchups, locates the record for roster_id, and builds:
+      { player_name: {points, position}, "Total_Points": float }.
+    - Filters out unknown players/positions to keep cache clean.
+    - Rounds total points to two decimals via Decimal normalization.
+
     Args:
         league_id (str): The league ID.
         roster_id (str): The roster ID.
         week (int): The week to fetch data for.
 
     Returns:
-        dict: The starters data for the given roster and week.
+        dict: The starters data for the given roster and week, or None on API error/absence.
     """
     sleeper_response_matchups = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
     if sleeper_response_matchups[1] != 200:
@@ -202,10 +251,12 @@ def get_starters_data(league_id, roster_id, week):
                 # Update total points
                 manager_data["Total_Points"] += player_score
 
+            # Normalize to 2 decimals; consistent presentation across weeks/managers
             manager_data["Total_Points"] = float(Decimal(manager_data["Total_Points"]).quantize(Decimal('0.01')).normalize())
 
             return manager_data
 
     return None
 
+# Warm the cache on import so downstream consumers can read a ready dataset.
 load_or_update_starters_cache()

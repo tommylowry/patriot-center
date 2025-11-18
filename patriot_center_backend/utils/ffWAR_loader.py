@@ -1,57 +1,82 @@
+"""Utilities to build and maintain the ffWAR cache for Patriot Center.
+
+This module:
+- Loads supporting caches at import time (replacement scores and starters).
+- Determines the current fantasy season/week.
+- Loads an ffWAR cache JSON file and incrementally updates it by year/week.
+- Persists the updated cache back to disk.
+
+Notes:
+- Import-time cache loading is intentional for shared reuse and performance,
+  but it has side effects (I/O and potential network calls).
+- Weeks are capped at 14 to exclude playoff/post-season data from ffWAR.
+"""
+
 from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
 from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
 from patriot_center_backend.constants import LEAGUE_IDS
 
 # Constants
+# Load and memoize supporting datasets at import time so subsequent calls can reuse them.
+# Be aware: these may perform network and disk I/O during import.
 REPLACEMENT_SCORES   = load_or_update_replacement_score_cache()
 PLAYER_DATA          = load_or_update_starters_cache()
+# File path for persisted ffWAR cache across runs.
 FFWAR_CACHE_FILE     = "patriot_center_backend/data/ffWAR_cache.json"
 
 
 def load_or_update_ffWAR_cache():
     """
-    Load or update the ffWAR cache.
+    Load or update the ffWAR cache incrementally and persist it to disk.
 
-    This function loads the existing ffWAR cache from a JSON file.
-    If the cache is outdated or missing data, it fetches the missing data from
-    the Sleeper API and updates the cache. The cache is saved back to the file
-    after updates.
+    Behavior:
+    - Loads the existing ffWAR cache JSON (or initializes an empty cache).
+    - Determines the current season and week; caps week at 14 to avoid playoffs.
+    - Iterates through all configured league years and updates missing data
+      based on the cache's Last_Updated_Season/Week markers.
+    - Saves the cache back to FFWAR_CACHE_FILE after updates.
+
+    Side effects:
+    - Reads from and writes to FFWAR_CACHE_FILE.
+    - May perform network calls to the Sleeper API via upstream utilities.
 
     Returns:
-        dict: The updated ffWAR cache.
+        dict: The in-memory ffWAR cache after applying any updates.
     """
-    # Load existing cache or initialize a new one
+    # Load existing cache or initialize a new one if the file does not exist/cannot be parsed.
     cache = load_cache(FFWAR_CACHE_FILE)
 
-    # Dynamically determine the current season and week
+    # Dynamically determine the current season and week according to Sleeper API/util logic.
     current_season, current_week = get_current_season_and_week()
     if current_week > 14:
+        # Cap at the end of the fantasy regular season to keep ffWAR comparable across years.
         current_week = 14  # Cap the current week at 14
 
-    # Process all years in LEAGUE_IDS
+    # Process all years configured for leagues; this drives which seasons we consider for updates.
     years = list(LEAGUE_IDS.keys())
 
     for year in years:
-        # Get the last updated season and week from the cache
+        # Read progress markers from the cache to support incremental updates and resumability.
+        # Cast Last_Updated_Season to int to allow numeric comparison with `year`.
         last_updated_season = int(cache.get("Last_Updated_Season", 0))
         last_updated_week = cache.get("Last_Updated_Week", 0)
 
-        # Skip years that are already fully processed
+        # Skip years that are already fully processed based on the last recorded season.
         if last_updated_season != 0:
             if year < last_updated_season:
                 continue
             if last_updated_season < year:
                 cache["Last_Updated_Week"] = 0  # Reset the week if moving to a new year
 
-        # If the cache is already up-to-date for the current season and week, stop processing
+        # If the cache is already up-to-date for the current season and week, stop processing.
         if last_updated_season == int(current_season) and last_updated_week == current_week:
             break
 
         year = int(year)  # Ensure year is an integer
         max_weeks = _get_max_weeks(year, current_season, current_week)
 
-        # Determine the range of weeks to update
+        # Determine the range of weeks to update.
         if year == current_season or year == last_updated_season:
             last_updated_week = cache.get("Last_Updated_Week", 0)
             weeks_to_update = range(last_updated_week + 1, max_weeks + 1)
@@ -63,26 +88,25 @@ def load_or_update_ffWAR_cache():
 
         print(f"Updating replacement score cache for season {year}, weeks: {list(weeks_to_update)}")
 
-        # Fetch and update only the missing weeks for the year
+        # Fetch and update only the missing weeks for the year.
         for week in weeks_to_update:
             if str(year) not in cache:
                 cache[str(year)] = {}
 
-            # Fetch ffWAR for the week
+            # Fetch ffWAR for the week.
             cache[str(year)][str(week)] = _fetch_ffWAR(year, week)
 
-
-            # Update the metadata for the last updated season and week
+            # Update the metadata for the last updated season and week.
             cache["Last_Updated_Season"] = str(year)
             cache["Last_Updated_Week"] = week
 
             print("  ffWAR cache updated internally for season {}, week {}".format(year, week))
 
-    # Save the updated cache to the file
+    # Save the updated cache to the file.
     save_cache(FFWAR_CACHE_FILE, cache)
 
-    # Remove metadata before returning
-    # These fields are used internally for tracking updates but are not part of the final cache returned
+    # Remove metadata before returning.
+    # These fields are used internally for tracking updates but are not part of the final cache returned.
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
 

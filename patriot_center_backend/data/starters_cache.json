@@ -1,6 +1,6 @@
 {
     "Last_Updated_Season": "2025",
-    "Last_Updated_Week": 10,
+    "Last_Updated_Week": 11,
     "2019": {
         "1": {
             "Anthony": {
@@ -43682,6 +43682,524 @@
                 },
                 "Pittsburgh Steelers": {
                     "points": 8.0,
+                    "position": "DEF"
+                }
+            }
+        },
+        "11": {
+            "Anthony": {
+                "Total_Points": 87.46,
+                "Sam Darnold": {
+                    "points": 4.26,
+                    "position": "QB"
+                },
+                "Zonovan Knight": {
+                    "points": 12.5,
+                    "position": "RB"
+                },
+                "Saquon Barkley": {
+                    "points": 9.5,
+                    "position": "RB"
+                },
+                "Zay Flowers": {
+                    "points": 9.8,
+                    "position": "WR"
+                },
+                "Parker Washington": {
+                    "points": 3.0,
+                    "position": "WR"
+                },
+                "Oronde Gadsden": {
+                    "points": 5.1,
+                    "position": "TE"
+                },
+                "Luther Burden": {
+                    "points": 4.2,
+                    "position": "WR"
+                },
+                "Christian Watson": {
+                    "points": 18.6,
+                    "position": "WR"
+                },
+                "Eddy Pineiro": {
+                    "points": 8.0,
+                    "position": "K"
+                },
+                "Denver Broncos": {
+                    "points": 12.5,
+                    "position": "DEF"
+                }
+            },
+            "Tommy": {
+                "Total_Points": 96.55,
+                "Jalen Hurts": {
+                    "points": 13.0,
+                    "position": "QB"
+                },
+                "Josh Jacobs": {
+                    "points": 4.0,
+                    "position": "RB"
+                },
+                "Rico Dowdle": {
+                    "points": 12.5,
+                    "position": "RB"
+                },
+                "DK Metcalf": {
+                    "points": 7.4,
+                    "position": "WR"
+                },
+                "Rome Odunze": {
+                    "points": 5.1,
+                    "position": "WR"
+                },
+                "Trey McBride": {
+                    "points": 22.5,
+                    "position": "TE"
+                },
+                "RJ Harvey": {
+                    "points": 6.5,
+                    "position": "RB"
+                },
+                "DeVonta Smith": {
+                    "points": 1.3,
+                    "position": "WR"
+                },
+                "Cairo Santos": {
+                    "points": 11.0,
+                    "position": "K"
+                },
+                "Houston Texans": {
+                    "points": 13.25,
+                    "position": "DEF"
+                }
+            },
+            "Owen": {
+                "Total_Points": 106.13,
+                "Josh Allen": {
+                    "points": 42.68,
+                    "position": "QB"
+                },
+                "Tyjae Spears": {
+                    "points": 5.9,
+                    "position": "RB"
+                },
+                "Woody Marks": {
+                    "points": 5.6,
+                    "position": "RB"
+                },
+                "Darnell Mooney": {
+                    "points": 3.4,
+                    "position": "WR"
+                },
+                "Courtland Sutton": {
+                    "points": 7.9,
+                    "position": "WR"
+                },
+                "Dallas Goedert": {
+                    "points": 3.4,
+                    "position": "TE"
+                },
+                "Chris Rodriguez": {
+                    "points": 9.0,
+                    "position": "RB"
+                },
+                "Colston Loveland": {
+                    "points": 5.5,
+                    "position": "TE"
+                },
+                "Jake Elliott": {
+                    "points": 7.0,
+                    "position": "K"
+                },
+                "Dallas Cowboys": {
+                    "points": 15.75,
+                    "position": "DEF"
+                }
+            },
+            "Jay": {
+                "Total_Points": 92.34,
+                "Justin Herbert": {
+                    "points": 3.34,
+                    "position": "QB"
+                },
+                "David Montgomery": {
+                    "points": 4.2,
+                    "position": "RB"
+                },
+                "Derrick Henry": {
+                    "points": 19.2,
+                    "position": "RB"
+                },
+                "Troy Franklin": {
+                    "points": 10.4,
+                    "position": "WR"
+                },
+                "Ladd McConkey": {
+                    "points": 2.8,
+                    "position": "WR"
+                },
+                "George Kittle": {
+                    "points": 21.7,
+                    "position": "TE"
+                },
+                "Jayden Higgins": {
+                    "points": 7.5,
+                    "position": "WR"
+                },
+                "Tre Tucker": {
+                    "points": 12.7,
+                    "position": "WR"
+                },
+                "Tyler Loop": {
+                    "points": 7.0,
+                    "position": "K"
+                },
+                "Los Angeles Chargers": {
+                    "points": 3.5,
+                    "position": "DEF"
+                }
+            },
+            "Mitch": {
+                "Total_Points": 95.74,
+                "Drake Maye": {
+                    "points": 15.44,
+                    "position": "QB"
+                },
+                "Christian McCaffrey": {
+                    "points": 32.6,
+                    "position": "RB"
+                },
+                "Kimani Vidal": {
+                    "points": 2.2,
+                    "position": "RB"
+                },
+                "Drake London": {
+                    "points": 15.4,
+                    "position": "WR"
+                },
+                "Romeo Doubs": {
+                    "points": 7.3,
+                    "position": "WR"
+                },
+                "Jonnu Smith": {
+                    "points": 0.0,
+                    "position": "TE"
+                },
+                "Rashee Rice": {
+                    "points": 6.8,
+                    "position": "WR"
+                },
+                "Calvin Austin": {
+                    "points": 1.0,
+                    "position": "WR"
+                },
+                "Jake Bates": {
+                    "points": 3.5,
+                    "position": "K"
+                },
+                "Green Bay Packers": {
+                    "points": 11.5,
+                    "position": "DEF"
+                }
+            },
+            "Ty": {
+                "Total_Points": 95.92,
+                "Lamar Jackson": {
+                    "points": 4.72,
+                    "position": "QB"
+                },
+                "Travis Etienne": {
+                    "points": 19.3,
+                    "position": "RB"
+                },
+                "Quinshon Judkins": {
+                    "points": 5.9,
+                    "position": "RB"
+                },
+                "Ja'Marr Chase": {
+                    "points": 4.5,
+                    "position": "WR"
+                },
+                "Nico Collins": {
+                    "points": 19.7,
+                    "position": "WR"
+                },
+                "Cade Otton": {
+                    "points": 3.8,
+                    "position": "TE"
+                },
+                "Ashton Jeanty": {
+                    "points": 6.4,
+                    "position": "RB"
+                },
+                "CeeDee Lamb": {
+                    "points": 15.1,
+                    "position": "WR"
+                },
+                "Brandon Aubrey": {
+                    "points": 6.5,
+                    "position": "K"
+                },
+                "Philadelphia Eagles": {
+                    "points": 10.0,
+                    "position": "DEF"
+                }
+            },
+            "Christian": {
+                "Total_Points": 81.79,
+                "Patrick Mahomes": {
+                    "points": 13.34,
+                    "position": "QB"
+                },
+                "Breece Hall": {
+                    "points": 7.4,
+                    "position": "RB"
+                },
+                "Jaylen Warren": {
+                    "points": 7.7,
+                    "position": "RB"
+                },
+                "Puka Nacua": {
+                    "points": 11.3,
+                    "position": "WR"
+                },
+                "Amon-Ra St. Brown": {
+                    "points": 5.2,
+                    "position": "WR"
+                },
+                "Kyle Pitts": {
+                    "points": 2.4,
+                    "position": "TE"
+                },
+                "Aaron Jones": {
+                    "points": 8.1,
+                    "position": "RB"
+                },
+                "Wan'Dale Robinson": {
+                    "points": 5.6,
+                    "position": "WR"
+                },
+                "Jason Myers": {
+                    "points": 10.0,
+                    "position": "K"
+                },
+                "New England Patriots": {
+                    "points": 10.75,
+                    "position": "DEF"
+                }
+            },
+            "Cody": {
+                "Total_Points": 122.92,
+                "Caleb Williams": {
+                    "points": 8.82,
+                    "position": "QB"
+                },
+                "De'Von Achane": {
+                    "points": 19.0,
+                    "position": "RB"
+                },
+                "Kyren Williams": {
+                    "points": 16.1,
+                    "position": "RB"
+                },
+                "Jaxon Smith-Njigba": {
+                    "points": 16.1,
+                    "position": "WR"
+                },
+                "Jordan Addison": {
+                    "points": 9.0,
+                    "position": "WR"
+                },
+                "Jake Ferguson": {
+                    "points": 9.6,
+                    "position": "TE"
+                },
+                "Keenan Allen": {
+                    "points": 7.3,
+                    "position": "WR"
+                },
+                "Michael Wilson": {
+                    "points": 26.0,
+                    "position": "WR"
+                },
+                "Cameron Dicker": {
+                    "points": 6.0,
+                    "position": "K"
+                },
+                "Kansas City Chiefs": {
+                    "points": 5.0,
+                    "position": "DEF"
+                }
+            },
+            "Dheeraj": {
+                "Total_Points": 113.76,
+                "Joe Flacco": {
+                    "points": 9.86,
+                    "position": "QB"
+                },
+                "TreVeyon Henderson": {
+                    "points": 29.8,
+                    "position": "RB"
+                },
+                "Kenneth Walker": {
+                    "points": 18.6,
+                    "position": "RB"
+                },
+                "Emeka Egbuka": {
+                    "points": 6.5,
+                    "position": "WR"
+                },
+                "Justin Jefferson": {
+                    "points": 8.6,
+                    "position": "WR"
+                },
+                "Hunter Henry": {
+                    "points": 6.5,
+                    "position": "TE"
+                },
+                "Zach Charbonnet": {
+                    "points": 5.7,
+                    "position": "RB"
+                },
+                "Jameson Williams": {
+                    "points": 17.7,
+                    "position": "WR"
+                },
+                "Will Reichard": {
+                    "points": 3.0,
+                    "position": "K"
+                },
+                "Minnesota Vikings": {
+                    "points": 7.5,
+                    "position": "DEF"
+                }
+            },
+            "Sach": {
+                "Total_Points": 144.22,
+                "Dak Prescott": {
+                    "points": 24.82,
+                    "position": "QB"
+                },
+                "Jahmyr Gibbs": {
+                    "points": 17.1,
+                    "position": "RB"
+                },
+                "James Cook": {
+                    "points": 18.9,
+                    "position": "RB"
+                },
+                "A.J. Brown": {
+                    "points": 8.4,
+                    "position": "WR"
+                },
+                "Stefon Diggs": {
+                    "points": 15.0,
+                    "position": "WR"
+                },
+                "Travis Kelce": {
+                    "points": 19.6,
+                    "position": "TE"
+                },
+                "Kareem Hunt": {
+                    "points": 12.7,
+                    "position": "RB"
+                },
+                "Malik Washington": {
+                    "points": 5.7,
+                    "position": "WR"
+                },
+                "Chris Boswell": {
+                    "points": 5.5,
+                    "position": "K"
+                },
+                "Baltimore Ravens": {
+                    "points": 16.5,
+                    "position": "DEF"
+                }
+            },
+            "Benz": {
+                "Total_Points": 109.89,
+                "Matthew Stafford": {
+                    "points": 13.2,
+                    "position": "QB"
+                },
+                "Bijan Robinson": {
+                    "points": 28.3,
+                    "position": "RB"
+                },
+                "Javonte Williams": {
+                    "points": 9.8,
+                    "position": "RB"
+                },
+                "Jaylen Waddle": {
+                    "points": 6.7,
+                    "position": "WR"
+                },
+                "Tee Higgins": {
+                    "points": 13.8,
+                    "position": "WR"
+                },
+                "Brock Bowers": {
+                    "points": 10.7,
+                    "position": "TE"
+                },
+                "Tyrone Tracy": {
+                    "points": 15.9,
+                    "position": "RB"
+                },
+                "Davante Adams": {
+                    "points": 6.6,
+                    "position": "WR"
+                },
+                "Cam Little": {
+                    "points": 2.5,
+                    "position": "K"
+                },
+                "Atlanta Falcons": {
+                    "points": 2.39,
+                    "position": "DEF"
+                }
+            },
+            "Sam": {
+                "Total_Points": 137.65,
+                "Bo Nix": {
+                    "points": 12.6,
+                    "position": "QB"
+                },
+                "D'Andre Swift": {
+                    "points": 9.0,
+                    "position": "RB"
+                },
+                "Chase Brown": {
+                    "points": 15.7,
+                    "position": "RB"
+                },
+                "Tetairoa McMillan": {
+                    "points": 29.0,
+                    "position": "WR"
+                },
+                "George Pickens": {
+                    "points": 24.9,
+                    "position": "WR"
+                },
+                "Dalton Schultz": {
+                    "points": 8.1,
+                    "position": "TE"
+                },
+                "Jakobi Meyers": {
+                    "points": 8.9,
+                    "position": "WR"
+                },
+                "Khalil Shakir": {
+                    "points": 0.2,
+                    "position": "WR"
+                },
+                "Chase McLaughlin": {
+                    "points": 4.0,
+                    "position": "K"
+                },
+                "Pittsburgh Steelers": {
+                    "points": 25.25,
                     "position": "DEF"
                 }
             }

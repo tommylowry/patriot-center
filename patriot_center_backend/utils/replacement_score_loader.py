@@ -1,3 +1,18 @@
+"""
+Replacement-score cache builder for Patriot Center.
+
+Responsibilities:
+- Maintain a JSON cache of per-week replacement-level scores by position.
+- Backfill historical seasons and compute 3-year rolling averages keyed by bye counts.
+- Persist an incrementally updated cache to disk and expose it to callers.
+
+Notes:
+- Uses Sleeper API data (network I/O) via fetch_sleeper_data.
+- Seed player metadata via load_player_ids to filter and position players.
+- Current season/week is resolved at runtime and weeks are capped by era rules.
+- Importing this module triggers a cache warm-up by calling load_or_update_replacement_score_cache().
+"""
+
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
@@ -10,15 +25,23 @@ PLAYER_IDS = load_player_ids()
 
 def load_or_update_replacement_score_cache():
     """
-    Load or update the replacement score cache.
+    Load or update the replacement score cache in an incremental, resumable fashion.
 
-    This function loads the existing replacement score cache from a JSON file.
-    If the cache is outdated or missing data, it fetches the missing data from
-    the Sleeper API and updates the cache. The cache is saved back to the file
-    after updates.
+    Behavior:
+    - Loads existing JSON cache (or initializes structure if file missing).
+    - Determines current season/week; caps the week at 18 (post-2021 schedule).
+    - Iterates seasons: all configured LEAGUE_IDS plus three prior seasons
+      (to enable 3-year averages keyed by bye counts).
+    - For each season, computes missing weeks only, honoring Last_Updated_* markers.
+    - Computes and stores a 3-year average block when data from year-3 is present.
+    - Persists the cache and removes internal metadata before returning.
+
+    Side effects:
+    - Reads/writes REPLACEMENT_SCORE_FILE.
+    - Performs network I/O via Sleeper API (stats endpoint).
 
     Returns:
-        dict: The updated replacement score cache.
+        dict: The updated replacement score cache with per-season/week entries.
     """
     # Load existing cache or initialize a new one
     cache = load_cache(REPLACEMENT_SCORE_FILE)
@@ -106,6 +129,11 @@ def _get_max_weeks(season, current_season, current_week):
 
     Returns:
         int: The maximum number of weeks for the season.
+
+    Notes:
+    - For the current live season, limit to current_week.
+    - For 2020 and earlier, the NFL regular season had 17 weeks.
+    - For 2021 and later, the regular season has 18 weeks.
     """
     if season == current_season:
         return current_week  # Use the current week for the current season
@@ -122,12 +150,21 @@ def _fetch_replacement_score_for_week(season, week):
     This function retrieves player data for a given season and week from the Sleeper API.
     It calculates replacement scores for each position (QB, RB, WR, TE) and the number of byes.
 
+    Algorithm:
+    - Pull weekly stats (half-PPR) for all players from Sleeper.
+    - Collect positional point lists for QB/RB/WR/TE, ignoring non-rostered players.
+    - Determine replacement thresholds: QB13, RB31, WR31, TE13 (descending rank).
+    - Count byes using TEAM_ records present in the payload.
+
     Args:
         season (int): The season to fetch data for.
         week (int): The week to fetch data for.
 
     Returns:
-        dict: The replacement scores for the given season and week.
+        dict: The replacement scores for the given season and week, plus 'byes'.
+
+    Raises:
+        Exception: If the Sleeper API request fails.
     """
     # Fetch data from the Sleeper API for the given season and week
     sleeper_response_week_data = fetch_sleeper_data(f"stats/nfl/regular/{season}/{week}")
@@ -185,6 +222,14 @@ def _get_three_yr_avg(season, week, cache):
     This function calculates the three-year average replacement scores for each position
     (QB, RB, WR, TE) based on historical data. It ensures monotonicity, where more byes
     should not lead to lower replacement scores.
+
+    Detailed behavior:
+    - Aggregate historical replacement scores across [season, season-1, season-2, season-3].
+    - Group scores by bye count to produce bye-aware averages.
+    - For the current season, consider weeks up to the current week.
+    - For season-3, consider weeks from the current week to the season end.
+    - Enforce monotonicity across bye counts by backfilling non-decreasing values.
+    - Write each position's "<POS>_3yr_avg" into the current week's record.
 
     Args:
         season (int): The current season.
@@ -274,4 +319,5 @@ def _get_three_yr_avg(season, week, cache):
     # Return the updated current week's scores with three-year averages added
     return current_week_scores
 
+# Warm the cache on import so downstream consumers can immediately read from disk/in-memory.
 load_or_update_replacement_score_cache()

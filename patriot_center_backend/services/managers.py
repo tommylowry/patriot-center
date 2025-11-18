@@ -1,3 +1,14 @@
+"""
+Service helpers for querying starters cache.
+
+Provides filtered views over the starters cache by:
+- season and/or week
+- manager (optionally constrained by season/week)
+
+Notes:
+- STARTERS_CACHE is loaded at import time to serve requests quickly.
+- Returns empty dicts on missing seasons/weeks/managers instead of raising.
+"""
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 
@@ -9,13 +20,18 @@ def fetch_starters(manager=None, season=None, week=None):
     """
     Fetch starters data based on the provided parameters.
 
+    Behavior:
+    - Without parameters, returns the entire starters cache.
+    - With season/week only, returns that slice.
+    - With manager, narrows to that manager (optionally by season/week).
+
     Args:
         manager (str, optional): The manager to filter by.
         season (int, optional): The season to filter by.
         week (int, optional): The week to filter by.
 
     Returns:
-        dict: The filtered starters data.
+        dict: The filtered starters data (may be empty if no matches).
     """
     # If no parameters are provided, return the entire cache
     if season is None and week is None and manager is None:
@@ -40,21 +56,26 @@ def _filter_by_season_and_week(season, week):
     Returns:
         dict: The filtered starters data.
     """
+    # Coerce keys to strings to match cache shape
     season_str = str(season)
     if season_str not in STARTERS_CACHE:
+        # Unknown season -> empty result
         return {}
 
     if week is not None:
         week_str = str(week)
         if week_str not in STARTERS_CACHE[season_str]:
+            # Known season but unknown week -> empty result
             return {}
 
+        # Return exact season/week slice
         return {
             season_str: {
                 week_str: STARTERS_CACHE[season_str][week_str]
             }
         }
 
+    # Return the whole season slice
     return {season_str: STARTERS_CACHE[season_str]}
 
 

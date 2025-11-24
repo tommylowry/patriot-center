@@ -15,104 +15,85 @@ from patriot_center_backend.utils.starters_loader import load_or_update_starters
 PLAYER_IDS = load_player_ids()
 STARTERS_CACHE = load_or_update_starters_cache()
 
-
 def fetch_starters(manager=None, season=None, week=None):
     """
-    Fetch starters data based on the provided parameters.
+    Public entry point for retrieving starters slices.
 
-    Behavior:
-    - Without parameters, returns the entire starters cache.
-    - With season/week only, returns that slice.
-    - With manager, narrows to that manager (optionally by season/week).
+    Dispatches to either season/week filtering or manager-centric filtering.
 
     Args:
-        manager (str, optional): The manager to filter by.
-        season (int, optional): The season to filter by.
-        week (int, optional): The week to filter by.
+        manager (str | None): Manager username (raw key in cache).
+        season (int | None): Season identifier.
+        week (int | None): Week number (1–17).
 
     Returns:
-        dict: The filtered starters data (may be empty if no matches).
+        dict: Nested dict shaped like STARTERS_CACHE subset.
     """
-    # If no parameters are provided, return the entire cache
     if season is None and week is None and manager is None:
+        # Full cache passthrough for unfiltered requests
         return STARTERS_CACHE
 
-    # Filter by season and/or week
     if manager is None:
         return _filter_by_season_and_week(season, week)
 
-    # Filter by manager
     return _filter_by_manager(manager, season, week)
-
 
 def _filter_by_season_and_week(season, week):
     """
-    Filter the starters cache by season and/or week.
+    Slice cache down to season and optionally week.
 
     Args:
-        season (int): The season to filter by.
-        week (int, optional): The week to filter by.
+        season (int): Season identifier (must exist in cache).
+        week (int | None): Week number to narrow further.
 
     Returns:
-        dict: The filtered starters data.
+        dict: {season: {...}} or {season: {week: {...}}} or {} if not found.
     """
-    # Coerce keys to strings to match cache shape
     season_str = str(season)
     if season_str not in STARTERS_CACHE:
-        # Unknown season -> empty result
         return {}
 
     if week is not None:
         week_str = str(week)
         if week_str not in STARTERS_CACHE[season_str]:
-            # Known season but unknown week -> empty result
             return {}
-
-        # Return exact season/week slice
         return {
             season_str: {
                 week_str: STARTERS_CACHE[season_str][week_str]
             }
         }
 
-    # Return the whole season slice
     return {season_str: STARTERS_CACHE[season_str]}
-
 
 def _filter_by_manager(manager, season, week):
     """
-    Filter the starters cache by manager, and optionally by season and/or week.
+    Extract only data for one manager, optionally restricted by season/week.
+
+    Iterates through cache (skipping metadata keys) and collects matches.
 
     Args:
-        manager (str): The manager to filter by.
-        season (int, optional): The season to filter by.
-        week (int, optional): The week to filter by.
+        manager (str): Manager username.
+        season (int | None): Season constraint.
+        week (int | None): Week constraint.
 
     Returns:
-        dict: The filtered starters data.
+        dict: Nested dict {season: {week: {manager: players}}}
     """
     filtered_data = {}
 
     for season_key, weeks in STARTERS_CACHE.items():
-        # Skip metadata fields
+        # Skip metadata sentinel fields
         if season_key in ["Last_Updated_Season", "Last_Updated_Week"]:
             continue
-
-        # If a specific season is provided, skip other seasons
         if season is not None and str(season) != season_key:
             continue
 
         for week_key, starters in weeks.items():
-            # If a specific week is provided, skip other weeks
             if week is not None and str(week) != week_key:
                 continue
-
-            # If the manager exists in the starters, add it to the filtered data
             if manager in starters:
-                if season_key not in filtered_data:
-                    filtered_data[season_key] = {}
-                if week_key not in filtered_data[season_key]:
-                    filtered_data[season_key][week_key] = {}
+                # Initialize nested containers only when needed
+                filtered_data.setdefault(season_key, {}).setdefault(week_key, {})
                 filtered_data[season_key][week_key][manager] = starters[manager]
 
     return filtered_data

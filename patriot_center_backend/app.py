@@ -6,22 +6,52 @@ from patriot_center_backend.services.aggregated_data import fetch_aggregated_pla
 app = Flask(__name__)
 
 def _flatten_dict(d, parent_key="", sep="."):
+    """
+    Recursively flatten a nested dict into a single-level dict.
+
+    Keys are concatenated with the provided separator. Non-dict values are
+    copied directly. Non-dict inputs yield an empty dict.
+
+    Args:
+        d (dict | any): Potentially nested dictionary to flatten.
+        parent_key (str): Prefix carried through recursive calls.
+        sep (str): Separator for concatenated keys.
+
+    Returns:
+        dict: Flattened dictionary.
+    """
     out = {}
     for k, v in (d or {}).items() if isinstance(d, dict) else []:
         nk = f"{parent_key}{sep}{k}" if parent_key else k
         if isinstance(v, dict):
+            # Recurse into nested dicts
             out.update(_flatten_dict(v, nk, sep))
         else:
             out[nk] = v
     return out
 
 def _to_records(data, key_name="key"):
+    """
+    Normalize mixed dict/list structures into a list of record dicts.
+
+    - Lists of dicts -> flattened dict per item.
+    - Dicts -> each key becomes a record; nested dict/list values are expanded.
+    - Scalars -> wrapped into a single record.
+
+    Args:
+        data (dict | list | any): Input structure.
+        key_name (str): Field name to assign original dict keys.
+
+    Returns:
+        list[dict]: List of normalized record dictionaries.
+    """
     if isinstance(data, list):
         return [(_flatten_dict(x) if isinstance(x, dict) else {"value": x}) for x in data]
     if isinstance(data, dict):
         rows = []
         for k, v in data.items():
             if isinstance(v, list):
+                # Expand list items under the same key
                 for item in v:
                     row = {key_name: k}
                     row.update(_flatten_dict(item) if isinstance(item, dict) else {"value": item})
@@ -33,29 +63,33 @@ def _to_records(data, key_name="key"):
             else:
                 rows.append({key_name: k, "value": v})
         return rows
+    # Fallback for scalar values
     return [{"value": data}]
 
+# Multiple route variants allow optional path parameters (year, manager, week)
 @app.route('/get_starters', defaults={'arg1': None, 'arg2': None, 'arg3': None}, methods=['GET'])
 @app.route('/get_starters/<string:arg1>', defaults={'arg2': None, 'arg3': None}, methods=['GET'])
 @app.route('/get_starters/<string:arg1>/<string:arg2>', defaults={'arg3': None}, methods=['GET'])
 @app.route('/get_starters/<string:arg1>/<string:arg2>/<string:arg3>', methods=['GET'])
 def get_starters(arg1, arg2, arg3):
     """
-    API endpoint to fetch starters based on year, manager, and/or week.
+    Fetch starters filtered by optional season (year), manager, and week.
 
-    Args:
-        arg1, arg2, arg3: Optional arguments that can represent year, manager, or week.
+    Path arguments are positional and inferred by type/value:
+    - League IDs -> season
+    - Week numbers 1-14 -> week
+    - Known manager names -> manager
+
+    Query param: format=json returns raw shape; otherwise flattened records.
 
     Returns:
-        JSON response with the requested data or an error message.
+        Flask Response: JSON payload (filtered starters or error).
     """
     try:
-        # Parse and validate the arguments
         year, week, manager = parse_arguments(arg1, arg2, arg3)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    # Fetch the starters data
     data = fetch_starters(season=year, manager=manager, week=week)
     if request.args.get("format") == "json":
         return jsonify(data), 200
@@ -67,21 +101,19 @@ def get_starters(arg1, arg2, arg3):
 @app.route('/get_aggregated_players/<string:arg1>/<string:arg2>/<string:arg3>', methods=['GET'])
 def get_aggregated_players(arg1, arg2, arg3):
     """
-    API endpoint to fetch starters in an aggregated json based on year, manager, and/or week.
+    Aggregate player totals (points, games started, ffWAR) for a manager.
 
-    Args:
-        arg1, arg2, arg3: Optional arguments that can represent year, manager, or week.
+    Uses same positional inference rules as get_starters. Returns either raw
+    aggregation or flattened record list.
 
     Returns:
-        JSON response with the requested data or an error message.
+        Flask Response: JSON payload (aggregated player stats or error).
     """
     try:
-        # Parse and validate the arguments
         year, week, manager = parse_arguments(arg1, arg2, arg3)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    # Fetch the starters data
     data = fetch_aggregated_players(season=year, manager=manager, week=week)
     if request.args.get("format") == "json":
         return jsonify(data), 200
@@ -92,23 +124,22 @@ def get_aggregated_players(arg1, arg2, arg3):
 @app.route('/get_aggregated_managers/<string:player>/<string:arg2>/<string:arg3>', methods=['GET'])
 def get_aggregated_managers(player, arg2, arg3):
     """
-    API endpoint to fetch starters in an aggregated json based on year, player, and/or week.
+    Aggregate manager totals (points, games started, ffWAR) for a given player.
 
-    Args:
-        arg1, arg2, arg3: Optional arguments that can represent year, player, or week.
+    Player name comes first as a required path component. Remaining args are
+    interpreted as season and/or week. Underscores are converted to spaces to
+    allow URL-friendly player names.
 
     Returns:
-        JSON response with the requested data or an error message.
+        Flask Response: JSON payload (aggregated manager stats or error).
     """
     try:
-        # Parse and validate the arguments
         year, week, _ = parse_arguments(arg2, arg3, None)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
-    
+
     player = player.replace("_", " ")
 
-    # Fetch the starters data
     data = fetch_aggregated_managers(player=player, season=year, week=week)
     if request.args.get("format") == "json":
         return jsonify(data), 200
@@ -116,27 +147,30 @@ def get_aggregated_managers(player, arg2, arg3):
 
 def parse_arguments(arg1, arg2, arg3):
     """
-    Parse and validate the input arguments.
+    Infer season (year), week, and manager from up to three positional args.
+
+    Resolution order:
+    - Integers matching LEAGUE_IDS -> season
+    - Integers 1-14 -> week
+    - Strings matching NAME_TO_MANAGER_USERNAME -> manager
+    - Rejects duplicates or ambiguous assignments.
 
     Args:
-        arg1, arg2, arg3: Optional arguments that can represent year, manager, or week.
+        arg1, arg2, arg3 (str | None): Raw path segments.
 
     Returns:
-        tuple: (year, manager, week)
+        tuple: (season:int|None, week:int|None, manager:str|None)
 
     Raises:
-        ValueError: If the arguments are invalid or conflicting.
+        ValueError: On invalid values, duplicates, or week without season.
     """
     year = None
     manager = None
     week = None
 
-    args = [arg1, arg2, arg3]
-    for arg in args:
+    for arg in (arg1, arg2, arg3):
         if arg is None:
             continue
-
-        # Check if the argument is an integer
         try:
             arg_int = int(arg)
             if arg_int in LEAGUE_IDS:
@@ -150,15 +184,16 @@ def parse_arguments(arg1, arg2, arg3):
             else:
                 raise ValueError("Invalid integer argument provided.")
         except ValueError:
-            # Argument is not an integer, check if it's a manager name
+            # Non-integer -> attempt manager match
             if arg in NAME_TO_MANAGER_USERNAME:
                 if manager is not None:
                     raise ValueError("Multiple manager arguments provided.")
                 manager = arg
             else:
                 raise ValueError(f"Invalid argument provided: {arg}")
-            
+
     if week is not None and year is None:
+        # Week without season is not meaningful
         raise ValueError("Week provided without a corresponding year.")
 
     return year, week, manager
@@ -166,4 +201,5 @@ def parse_arguments(arg1, arg2, arg3):
 if __name__ == '__main__':
     import os
     port = int(os.getenv("PORT", 5050))
+    # Bind to localhost for development; configurable port via env
     app.run(debug=True, host="127.0.0.1", port=port)

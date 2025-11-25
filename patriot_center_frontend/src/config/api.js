@@ -16,5 +16,6 @@ export async function apiGet(path) {
 }
 
 export function sanitizeManager(m) {
-  return String(m || '').trim().toLowerCase();
+  if (m == null) return '';
+  return encodeURIComponent(String(m).trim()); // remove toLowerCase
 }

@@ -19,7 +19,7 @@ from utils.player_ids_loader import load_player_ids
 from utils.cache_utils import load_cache, save_cache, get_current_season_and_week
 
 # Constants
-REPLACEMENT_SCORE_FILE = "patriot_center_backend/data/replacement_score_cache.json"
+REPLACEMENT_SCORE_FILE = "data/replacement_score_cache.json"
 PLAYER_IDS = load_player_ids()
 
 

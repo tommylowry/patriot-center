@@ -13,8 +13,8 @@ function App() {
   // dropdown draft handled inside component; we just update committed via onChange
   const { players, loading, error } = useAggregatedPlayers(year, week, manager);
 
-  const [sortKey, setSortKey] = useState('key');
-  const [sortDir, setSortDir] = useState('asc');
+  const [sortKey, setSortKey] = useState('ffWAR');
+  const [sortDir, setSortDir] = useState('desc');
   const [positionFilter, setPositionFilter] = useState('ALL');
 
   const toggleSort = (key) => {

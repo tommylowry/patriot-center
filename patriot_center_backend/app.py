@@ -219,7 +219,5 @@ def parse_arguments(arg1, arg2, arg3):
     return year, week, manager
 
 if __name__ == '__main__':
-    import os
-    port = int(os.getenv("PORT", 5050))
-    # Bind to localhost for development; configurable port via env
-    app.run(debug=True, host="127.0.0.1", port=port)
+    from os import getenv
+    app.run(host="0.0.0.0", port=int(getenv("PORT", "8080")))

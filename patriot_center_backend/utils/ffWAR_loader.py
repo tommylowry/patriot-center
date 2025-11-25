@@ -27,7 +27,7 @@ from constants import LEAGUE_IDS
 REPLACEMENT_SCORES   = load_or_update_replacement_score_cache()
 PLAYER_DATA          = load_or_update_starters_cache()
 # File path for persisted ffWAR cache across runs.
-FFWAR_CACHE_FILE     = "patriot_center_backend/data/ffWAR_cache.json"
+FFWAR_CACHE_FILE     = "data/ffWAR_cache.json"
 
 
 def load_or_update_ffWAR_cache():

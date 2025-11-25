@@ -21,7 +21,7 @@ from utils.player_ids_loader import load_player_ids
 from utils.cache_utils import load_cache, save_cache, get_current_season_and_week
 
 # Path to starters cache; PLAYER_IDS maps IDs -> names/positions.
-STARTERS_CACHE_FILE = "patriot_center_backend/data/starters_cache.json"
+STARTERS_CACHE_FILE = "data/starters_cache.json"
 PLAYER_IDS = load_player_ids()
 
 def load_or_update_starters_cache():

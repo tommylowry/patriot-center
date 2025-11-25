@@ -1,4 +1,4 @@
-const BASE = (process.env.REACT_APP_API_BASE || 'http://localhost:8080').replace(/\/+$/, '');
+const BASE = (process.env.REACT_APP_API_BASE || 'https://academic-lauren-tommys-code-for-fun-d5473d9d.koyeb.app').replace(/\/+$/, '');
 
 export async function apiGet(path) {
   const url = path.startsWith('http') ? path : `${BASE}${path.startsWith('/') ? '' : '/'}${path}`;

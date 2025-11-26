@@ -179,11 +179,11 @@ def _fetch_replacement_score_for_week(season, week):
         if player_id.isnumeric() and player_info["position"] == "DEF":
             continue
 
-        if player_info["position"] in week_scores and "pts_half_ppr" in week_data[player_id]:
+        if player_info["position"] in week_scores:
             player_data = week_data[player_id]
             player_score = calculate_player_score(player_data)
-            # Add the player's half-PPR points to the appropriate position list
-            week_scores[player_info["position"]].append(week_data[player_id]["pts_half_ppr"])
+            # Add the player's points to the appropriate position list
+            week_scores[player_info["position"]].append(player_score)
 
     # Sort scores for each position in descending order
     for position in week_scores:
@@ -191,10 +191,12 @@ def _fetch_replacement_score_for_week(season, week):
 
     # Determine the replacement scores for each position
     # QB13 (13th best QB), RB31 (31st best RB), WR31 (31st best WR), TE13 (13th best TE)
-    week_scores["QB"] = week_scores["QB"][12]  # 13th QB
-    week_scores["RB"] = week_scores["RB"][30]  # 31st RB
-    week_scores["WR"] = week_scores["WR"][30]  # 31st WR
-    week_scores["TE"] = week_scores["TE"][12]  # 13th TE
+    week_scores["QB"]  = week_scores["QB"][12]  # 13th QB
+    week_scores["RB"]  = week_scores["RB"][30]  # 31st RB
+    week_scores["WR"]  = week_scores["WR"][30]  # 31st WR
+    week_scores["TE"]  = week_scores["TE"][12]  # 13th TE
+    week_scores["K"]   = week_scores["K"][12]   # 13th K
+    week_scores["DEF"] = week_scores["DEF"][12] # 13th DEF
 
     # Add the final number of byes to the scores
     week_scores["byes"] = byes

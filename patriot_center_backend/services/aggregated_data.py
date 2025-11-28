@@ -139,11 +139,18 @@ def _initialize_player_data(players_dict, player, player_data):
     """
     Create initial aggregation record for a player.
     """
+
+    if player_data['player_id'].isnumeric():
+        player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_data['player_id']}.jpg"
+    else:
+        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_data['player_id'].lower()}.jpg"
+
     players_dict[player] = {
         "total_points": player_data['points'],
         "num_games_started": 1,
         'ffWAR': player_data['ffWAR'],
-        "position": player_data['position']
+        "position": player_data['position'],
+        "player_image_endpoint": player_image_endpoint
     }
 
 def _update_manager_data(managers_dict, manager, raw_item):
@@ -171,9 +178,16 @@ def _initialize_manager_data(managers_dict, manager, raw_item):
     """
     Create initial aggregation record for a manager with a single player appearance.
     """
+    
+    if raw_item['player_id'].isnumeric():
+        player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{raw_item['player_id']}.jpg"
+    else:
+        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{raw_item['player_id'].lower()}.png"
+
     managers_dict[manager] = {
         "total_points": raw_item['points'],
         "num_games_started": 1,
         'ffWAR': raw_item['ffWAR'],
-        "position": raw_item['position']
+        "position": raw_item['position'],
+        "player_image_endpoint": player_image_endpoint
     }

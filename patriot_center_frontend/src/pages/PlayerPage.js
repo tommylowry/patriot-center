@@ -13,19 +13,21 @@ export default function PlayerPage() {
 
     const [year, setYear] = useState(null);    // default: ALL years
     const [week, setWeek] = useState(null);      // default: ALL weeks
-
-    // Remove auto-select of first year to keep ALL by default
-    // React.useEffect(() => {
-    //   if (years.length && !year) {
-    //     setYear(String(years[0]));
-    //   }
-    // }, [years, year]);
+    const [imageError, setImageError] = useState(false);
 
     React.useEffect(() => {
         setWeek(null);
     }, [year]);
 
     const { managers, loading, error } = usePlayerManagers(slug, { year, week });
+
+    // Extract player image URL from first manager object
+    const playerImageUrl = managers?.[0]?.player_image_endpoint;
+
+    // Reset image error when player changes
+    React.useEffect(() => {
+        setImageError(false);
+    }, [playerImageUrl]);
 
     // Sorting state + helpers
     const [sortKey, setSortKey] = useState('ffWAR');
@@ -66,13 +68,53 @@ export default function PlayerPage() {
 
     return (
         <div className="App" style={{ paddingTop: '1rem' }}>
-            <h1>{displayName}</h1>
-            <p>
+
+            {/* Player Hero Section */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1.5rem',
+                marginBottom: '2rem',
+                padding: '1.5rem',
+                background: 'var(--bg-alt)',
+                borderRadius: '12px',
+                border: '1px solid var(--border)'
+            }}>
+                {playerImageUrl && !imageError && (
+                    <img
+                        src={playerImageUrl}
+                        alt={displayName}
+                        onError={() => setImageError(true)}
+                        style={{
+                            width: '120px',
+                            height: '120px',
+                            objectFit: 'cover',
+                            borderRadius: '12px',
+                            border: '2px solid var(--border)',
+                            backgroundColor: 'var(--bg)',
+                            flexShrink: 0
+                        }}
+                    />
+                )}
+                <div>
+                    <h1 style={{ margin: 0, marginBottom: '0.25rem' }}>{displayName}</h1>
+                    {managers?.[0]?.position && (
+                        <p style={{
+                            margin: 0,
+                            color: 'var(--muted)',
+                            fontSize: '1.1rem',
+                            fontWeight: 500
+                        }}>
+                            {managers[0].position}
+                        </p>
+                    )}
+                </div>
+            </div>
+            <p style={{ marginBottom: '1rem' }}>
                 <Link to="/" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
                     ← Back
                 </Link>
             </p>
-
             <div style={{ display: 'inline-flex', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.75rem', justifyContent: 'center' }}>
                 <label>
                     Year:{' '}

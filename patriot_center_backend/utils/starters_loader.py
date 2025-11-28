@@ -203,7 +203,8 @@ def get_starters_data(sleeper_response_matchups, roster_id):
 
                 manager_data[player_name] = {
                     "points": player_score,
-                    "position": player_position
+                    "position": player_position,
+                    "player_id": player_id
                 }
                 manager_data["Total_Points"] += player_score
 

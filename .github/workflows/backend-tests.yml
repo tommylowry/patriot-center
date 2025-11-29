@@ -37,9 +37,9 @@ jobs:
 
     - name: Run tests with pytest
       run: |
-        pytest tests/ \
+        pytest patriot_center_backend/tests/ \
           --verbose \
-          --cov=. \
+          --cov=patriot_center_backend \
           --cov-report=term-missing \
           --cov-report=xml \
           --cov-config=pytest.ini
@@ -48,7 +48,7 @@ jobs:
       uses: codecov/codecov-action@v4
       if: always()
       with:
-        file: ./patriot_center_backend/coverage.xml
+        file: ./coverage.xml
         flags: backend
         name: backend-coverage
       continue-on-error: true

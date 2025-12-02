@@ -391,6 +391,105 @@ class TestGetThreeYrAvg:
         assert result["QB_3yr_avg"] == pytest.approx(qb_expected_avg)
         assert result["RB_3yr_avg"] == pytest.approx(rb_expected_avg)
 
+    @patch('patriot_center_backend.utils.replacement_score_loader.LEAGUE_IDS', {2024: "id1"})
+    def test_week_1_uses_current_year_scoring_settings_for_3yr_avg(self):
+        """Test that week 1 calculates 3yr average using current year's scoring settings.
+
+        This is critical because in week 1, there's no prior data from the current season,
+        so the system must look back at historical data and recalculate it using the
+        current year's scoring settings to get an accurate replacement baseline.
+        """
+        from patriot_center_backend.utils.replacement_score_loader import _get_three_yr_avg
+
+        # Create cache with historical data that has 2024 scoring settings applied
+        # This simulates what happens in _fetch_replacement_score_for_week where
+        # it fetches scoring settings for the current year and applies them to historical stats
+        cache = {
+            # 3 years ago (2021) - only includes weeks from week 1 onward for the mirror
+            "2021": {
+                "1": {"byes": 0, "2024_scoring": {"QB": 14.5, "RB": 8.2, "WR": 9.5, "TE": 6.8}},
+                "2": {"byes": 2, "2024_scoring": {"QB": 15.8, "RB": 9.1, "WR": 10.2, "TE": 7.5}},
+                "3": {"byes": 0, "2024_scoring": {"QB": 16.2, "RB": 8.8, "WR": 9.8, "TE": 7.1}}
+            },
+            # 2 years ago (2022)
+            "2022": {
+                "1": {"byes": 0, "2024_scoring": {"QB": 15.2, "RB": 9.0, "WR": 10.1, "TE": 7.2}},
+                "2": {"byes": 2, "2024_scoring": {"QB": 16.5, "RB": 9.5, "WR": 10.5, "TE": 7.8}},
+                "3": {"byes": 0, "2024_scoring": {"QB": 14.8, "RB": 8.5, "WR": 9.7, "TE": 6.9}}
+            },
+            # 1 year ago (2023)
+            "2023": {
+                "1": {"byes": 0, "2024_scoring": {"QB": 16.1, "RB": 9.3, "WR": 10.3, "TE": 7.4}},
+                "2": {"byes": 2, "2024_scoring": {"QB": 17.2, "RB": 10.0, "WR": 11.0, "TE": 8.0}},
+                "3": {"byes": 0, "2024_scoring": {"QB": 15.5, "RB": 8.9, "WR": 10.0, "TE": 7.3}}
+            },
+            # Current year (2024) - only week 1 data exists
+            "2024": {
+                "1": {"byes": 0, "2024_scoring": {"QB": 17.0, "RB": 9.8, "WR": 10.8, "TE": 7.6}}
+            }
+        }
+
+        result = _get_three_yr_avg(2024, 1, cache)
+
+        # Verify that 3yr average fields are added
+        assert "QB_3yr_avg" in result
+        assert "RB_3yr_avg" in result
+        assert "WR_3yr_avg" in result
+        assert "TE_3yr_avg" in result
+
+        # Verify the calculation uses 2024_scoring from historical weeks
+        # For week 1 with bye count 0 (raw calculation before monotonicity):
+        # - From 2021: weeks 2-18 (week 1 is skipped), only week 3 has byes=0: 16.2
+        # - From 2022: weeks 1-18, weeks with byes=0: weeks 1, 3: 15.2, 14.8
+        # - From 2023: weeks 1-18, weeks with byes=0: weeks 1, 3: 16.1, 15.5
+        # - From 2024: week 1 with byes=0: 17.0
+
+        # Raw QB calculation for bye count 0:
+        # 2021: week 3 = 16.2
+        # 2022: weeks 1, 3 = 15.2, 14.8
+        # 2023: weeks 1, 3 = 16.1, 15.5
+        # 2024: week 1 = 17.0
+        # Raw average = (16.2 + 15.2 + 14.8 + 16.1 + 15.5 + 17.0) / 6 = 15.8
+
+        # But for bye count 2:
+        # 2021: week 2 = 15.8
+        # 2022: week 2 = 16.5
+        # 2023: week 2 = 17.2
+        # Average = (15.8 + 16.5 + 17.2) / 3 = 16.5
+
+        # After monotonicity correction (ensures lower bye counts don't have lower scores):
+        # Since bye=2 average (16.5) > bye=0 average (15.8), bye=0 gets raised to 16.5
+        qb_expected = 16.5
+
+        # Similarly for RB:
+        # bye=0 raw: (8.8 + 9.0 + 8.5 + 9.3 + 8.9 + 9.8) / 6 = 9.05
+        # bye=2 raw: (9.1 + 9.5 + 10.0) / 3 = 9.533
+        # After monotonicity: 9.533
+        rb_expected = (9.1 + 9.5 + 10.0) / 3
+
+        # For WR:
+        # bye=0 raw: (9.8 + 10.1 + 9.7 + 10.3 + 10.0 + 10.8) / 6 = 10.117
+        # bye=2 raw: (10.2 + 10.5 + 11.0) / 3 = 10.567
+        # After monotonicity: 10.567
+        wr_expected = (10.2 + 10.5 + 11.0) / 3
+
+        # For TE:
+        # bye=0 raw: (7.1 + 7.2 + 6.9 + 7.4 + 7.3 + 7.6) / 6 = 7.25
+        # bye=2 raw: (7.5 + 7.8 + 8.0) / 3 = 7.767
+        # After monotonicity: 7.767
+        te_expected = (7.5 + 7.8 + 8.0) / 3
+
+        # Assert the averages match expected values
+        assert result["QB_3yr_avg"] == pytest.approx(qb_expected, abs=0.01)
+        assert result["RB_3yr_avg"] == pytest.approx(rb_expected, abs=0.01)
+        assert result["WR_3yr_avg"] == pytest.approx(wr_expected, abs=0.01)
+        assert result["TE_3yr_avg"] == pytest.approx(te_expected, abs=0.01)
+
+        # Verify original week 1 data is preserved
+        assert result["byes"] == 0
+        assert result["2024_scoring"]["QB"] == 17.0
+        assert result["2024_scoring"]["RB"] == 9.8
+
 
 class TestLoadOrUpdateReplacementScoreCache:
     """Test load_or_update_replacement_score_cache main orchestration."""

@@ -480,10 +480,10 @@ class TestGetThreeYrAvg:
         te_expected = (7.5 + 7.8 + 8.0) / 3
 
         # Assert the averages match expected values
-        assert result["QB_3yr_avg"] == pytest.approx(qb_expected, abs=0.01)
-        assert result["RB_3yr_avg"] == pytest.approx(rb_expected, abs=0.01)
-        assert result["WR_3yr_avg"] == pytest.approx(wr_expected, abs=0.01)
-        assert result["TE_3yr_avg"] == pytest.approx(te_expected, abs=0.01)
+        assert result["QB_3yr_avg"] == pytest.approx(qb_expected)
+        assert result["RB_3yr_avg"] == pytest.approx(rb_expected)
+        assert result["WR_3yr_avg"] == pytest.approx(wr_expected)
+        assert result["TE_3yr_avg"] == pytest.approx(te_expected)
 
         # Verify original week 1 data is preserved
         assert result["byes"] == 0

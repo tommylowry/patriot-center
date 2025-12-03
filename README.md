@@ -54,9 +54,12 @@ Patriot Center tracks 16 managers in a multi-year fantasy football league and pr
 │   ├── tests/                 # Unit tests
 │   └── constants.py           # Configuration constants
 │
+├── deployment/                # Deployment scripts and guides
+│   ├── oracle_deploy.sh       # Oracle Cloud setup script
+│   ├── upload_to_oracle.sh    # File upload helper
+│   ├── ORACLE_DEPLOYMENT_GUIDE.md  # Deployment docs
+│   └── GITHUB_SECRETS_SETUP.md     # GitHub Actions setup
 ├── Dockerfile                 # Docker configuration
-├── oracle_deploy.sh           # Oracle Cloud deployment script
-├── ORACLE_DEPLOYMENT_GUIDE.md # Deployment documentation
 └── requirements.txt           # Backend dependencies
 ```
 
@@ -111,7 +114,7 @@ Deployment is triggered automatically on push to `main` branch via Netlify's Git
 The backend API is deployed on Oracle Cloud Infrastructure's Always Free Tier.
 
 **Initial Setup:**
-See [ORACLE_DEPLOYMENT_GUIDE.md](ORACLE_DEPLOYMENT_GUIDE.md) for complete deployment instructions.
+See [deployment/ORACLE_DEPLOYMENT_GUIDE.md](deployment/ORACLE_DEPLOYMENT_GUIDE.md) for complete deployment instructions.
 
 **Auto-Deployment:**
 Pushes to `main` branch automatically deploy the backend via GitHub Actions, which:

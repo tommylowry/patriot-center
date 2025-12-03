@@ -73,8 +73,8 @@ scp -i ~/path/to/your-private-key.pem -r . ubuntu@YOUR_PUBLIC_IP:/home/ubuntu/pa
 
 2. **Copy and run the deployment script:**
 ```bash
-# From your local machine
-scp -i ~/path/to/your-private-key.pem oracle_deploy.sh ubuntu@YOUR_PUBLIC_IP:/home/ubuntu/
+# From your local machine, in the project directory
+scp -i ~/path/to/your-private-key.pem deployment/oracle_deploy.sh ubuntu@YOUR_PUBLIC_IP:/home/ubuntu/
 
 # SSH into the instance
 ssh -i ~/path/to/your-private-key.pem ubuntu@YOUR_PUBLIC_IP

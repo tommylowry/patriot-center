@@ -1,4 +1,4 @@
-const DEFAULT_BASE = 'https://patriot-center-api.fly.dev';
+const DEFAULT_BASE = 'https://patriot-center.duckdns.org';
 const rawBase = process.env.REACT_APP_API_BASE;
 const DEV_FALLBACK = 'http://localhost:8080';
 

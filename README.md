@@ -111,7 +111,7 @@ The frontend is automatically deployed to Netlify at [patriotcenter.netlify.app]
 Deployment is triggered automatically on push to `main` branch via Netlify's GitHub integration.
 
 ### Backend (Oracle Cloud)
-The backend API is deployed on Oracle Cloud Infrastructure's Always Free Tier.
+The backend API is deployed on Oracle Cloud Infrastructure's Always Free Tier at `https://patriot-center.duckdns.org`
 
 **Initial Setup:**
 See [deployment/ORACLE_DEPLOYMENT_GUIDE.md](deployment/ORACLE_DEPLOYMENT_GUIDE.md) for complete deployment instructions.

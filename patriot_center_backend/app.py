@@ -184,7 +184,7 @@ def meta_options():
     """
     return jsonify({
         "seasons": list(LEAGUE_IDS),
-        "weeks": list(range(1, 15)),
+        "weeks": list(range(1, 18)),
         "managers": list(NAME_TO_MANAGER_USERNAME.keys())
     }), 200
 

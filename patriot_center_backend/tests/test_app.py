@@ -384,3 +384,180 @@ class TestErrorHandling:
         """Test accessing an invalid route returns 404."""
         response = flask_client.get('/invalid_route_12345')
         assert response.status_code == 404
+
+
+class TestListPlayersEndpoint:
+    """Test /players/list endpoint functionality."""
+
+    def test_list_players_returns_success(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that /players/list returns 200 status code."""
+        mock_fetch_players.return_value = sample_players_list
+        response = flask_client.get('/players/list')
+        assert response.status_code == 200
+
+    def test_list_players_default_format_returns_list(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that default format returns a list of records."""
+        mock_fetch_players.return_value = sample_players_list
+        response = flask_client.get('/players/list')
+        data = json.loads(response.data)
+
+        assert isinstance(data, list)
+        assert len(data) > 0
+        # Verify records format with 'name' key
+        if len(data) > 0:
+            assert 'name' in data[0]
+
+    def test_list_players_json_format(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that format=json returns raw dictionary."""
+        mock_fetch_players.return_value = sample_players_list
+        response = flask_client.get('/players/list?format=json')
+        data = json.loads(response.data)
+
+        assert isinstance(data, dict)
+        # Should return the raw player dict with IDs as keys
+        assert '7547' in data or len(data) == 0
+
+    def test_list_players_empty_cache(self, flask_client, mock_fetch_players, empty_players_list):
+        """Test that empty player cache returns empty list."""
+        mock_fetch_players.return_value = empty_players_list
+        response = flask_client.get('/players/list')
+        data = json.loads(response.data)
+
+        assert response.status_code == 200
+        assert isinstance(data, list)
+        assert len(data) == 0
+
+    def test_list_players_calls_fetch_players_service(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that endpoint calls the fetch_players service."""
+        mock_fetch_players.return_value = sample_players_list
+        flask_client.get('/players/list')
+
+        # Verify the service was called
+        mock_fetch_players.assert_called_once()
+
+    def test_list_players_uses_to_records_with_name_key(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that _to_records is called with key_name='name'."""
+        mock_fetch_players.return_value = sample_players_list
+        response = flask_client.get('/players/list')
+        data = json.loads(response.data)
+
+        # Verify each record has 'name' field (from key_name parameter)
+        if len(data) > 0:
+            first_record = data[0]
+            assert 'name' in first_record
+            # Name should be the player ID (key from dict)
+            assert first_record['name'] in sample_players_list.keys()
+
+    def test_list_players_cors_headers(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that CORS headers are set for /players/list."""
+        mock_fetch_players.return_value = sample_players_list
+        response = flask_client.get('/players/list')
+
+        assert 'Access-Control-Allow-Origin' in response.headers
+
+    def test_list_players_content_type_json(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that response content type is JSON."""
+        mock_fetch_players.return_value = sample_players_list
+        response = flask_client.get('/players/list')
+
+        assert 'application/json' in response.content_type
+
+
+class TestPlayersService:
+    """Test services/players.py fetch_players function."""
+
+    @patch('patriot_center_backend.services.players.load_cache')
+    def test_fetch_players_calls_load_cache(self, mock_load_cache, sample_players_list):
+        """Test that fetch_players calls load_cache with correct parameters."""
+        from patriot_center_backend.services.players import fetch_players
+        from patriot_center_backend.constants import PLAYERS_CACHE_FILE
+
+        mock_load_cache.return_value = sample_players_list
+        result = fetch_players()
+
+        # Verify load_cache was called with correct file and players_cache flag
+        mock_load_cache.assert_called_once_with(PLAYERS_CACHE_FILE, players_cache=True)
+
+    @patch('patriot_center_backend.services.players.load_cache')
+    def test_fetch_players_returns_dict(self, mock_load_cache, sample_players_list):
+        """Test that fetch_players returns a dictionary."""
+        from patriot_center_backend.services.players import fetch_players
+
+        mock_load_cache.return_value = sample_players_list
+        result = fetch_players()
+
+        assert isinstance(result, dict)
+        assert result == sample_players_list
+
+    @patch('patriot_center_backend.services.players.load_cache')
+    def test_fetch_players_returns_empty_dict_on_missing_cache(self, mock_load_cache):
+        """Test that fetch_players returns empty dict when cache is missing."""
+        from patriot_center_backend.services.players import fetch_players
+
+        mock_load_cache.return_value = {}
+        result = fetch_players()
+
+        assert isinstance(result, dict)
+        assert len(result) == 0
+
+    @patch('patriot_center_backend.services.players.load_cache')
+    def test_fetch_players_uses_players_cache_file(self, mock_load_cache, sample_players_list):
+        """Test that fetch_players uses the PLAYERS_CACHE_FILE constant."""
+        from patriot_center_backend.services.players import fetch_players
+        from patriot_center_backend.constants import PLAYERS_CACHE_FILE
+
+        mock_load_cache.return_value = sample_players_list
+        fetch_players()
+
+        call_args = mock_load_cache.call_args
+        assert call_args[0][0] == PLAYERS_CACHE_FILE
+
+
+class TestPlayersIntegration:
+    """Test integration between endpoint and service layer."""
+
+    def test_endpoint_to_service_integration(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that endpoint properly integrates with service layer."""
+        mock_fetch_players.return_value = sample_players_list
+
+        response = flask_client.get('/players/list')
+        data = json.loads(response.data)
+
+        # Verify service was called
+        mock_fetch_players.assert_called_once()
+
+        # Verify data was transformed and returned
+        assert response.status_code == 200
+        assert isinstance(data, list)
+
+    def test_service_data_transforms_correctly(self, flask_client, mock_fetch_players):
+        """Test that service output is correctly transformed for response."""
+        # Create test data with nested structure
+        test_data = {
+            "123": {
+                "full_name": "Test Player",
+                "slug": "Test_Player",
+                "position": "WR"
+            }
+        }
+        mock_fetch_players.return_value = test_data
+
+        response = flask_client.get('/players/list')
+        data = json.loads(response.data)
+
+        # Verify transformation happened
+        assert isinstance(data, list)
+        assert len(data) == 1
+        assert data[0]['name'] == '123'
+        assert data[0]['full_name'] == 'Test Player'
+
+    def test_json_format_bypasses_transformation(self, flask_client, mock_fetch_players, sample_players_list):
+        """Test that format=json returns raw data without transformation."""
+        mock_fetch_players.return_value = sample_players_list
+
+        response = flask_client.get('/players/list?format=json')
+        data = json.loads(response.data)
+
+        # Should return raw dict, not transformed to list
+        assert isinstance(data, dict)
+        assert data == sample_players_list

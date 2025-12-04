@@ -17,16 +17,12 @@ Notes:
 import os
 from decimal import Decimal
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
+from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
 
-# Path to starters cache; PLAYER_IDS maps IDs -> names/positions.
-# Construct absolute path based on repository root
-_UTILS_DIR = os.path.dirname(os.path.abspath(__file__))
-_BACKEND_DIR = os.path.dirname(_UTILS_DIR)
-_REPO_ROOT = os.path.dirname(_BACKEND_DIR)
-STARTERS_CACHE_FILE = os.path.join(_REPO_ROOT, "patriot_center_backend", "data", "starters_cache.json")
+
+
 PLAYER_IDS = load_player_ids()
 
 def load_or_update_starters_cache():
@@ -90,6 +86,29 @@ def load_or_update_starters_cache():
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
     return cache
+
+def _update_players_cache(player_meta, players_cache):
+    """
+    Update player cache with new player if missing.
+
+    Args:
+        player (str): Player identifier.
+    """
+
+    if player_meta.get("full_name") not in players_cache:
+        slug = player_meta.get("full_name", "").replace(" ", "_")
+        slug = slug.replace("'", "%27")
+        players_cache[player_meta["full_name"]] = {
+            "full_name": player_meta.get("full_name", ""),
+            "first_name": player_meta.get("first_name", ""),
+            "last_name": player_meta.get("last_name", ""),
+            "position": player_meta.get("position", ""),
+            "team": player_meta.get("team", ""),
+            "slug": slug
+        }
+        save_cache(PLAYERS_CACHE_FILE, players_cache)
+
+    return players_cache
 
 def _get_max_weeks(season, current_season, current_week):
     """
@@ -247,18 +266,25 @@ def get_starters_data(sleeper_response_matchups, roster_id, playoff_roster_ids):
     Returns:
         dict | None: {player_name: {points, position}, Total_Points} or None if not found.
     """
+
+    players_cache = load_cache(PLAYERS_CACHE_FILE, players_cache=True)
+
     matchups = sleeper_response_matchups[0]
     for matchup in matchups:
         if matchup['roster_id'] == roster_id:
             manager_data = {"Total_Points": 0.0}
             for player_id in matchup['starters']:
+                
                 player_meta = PLAYER_IDS.get(player_id, {})
+
                 player_name = player_meta.get('full_name')
                 if not player_name:
                     continue  # Skip unknown player
                 player_position = player_meta.get('position')
                 if not player_position:
                     continue  # Skip if no position resolved
+
+                _update_players_cache(player_meta, players_cache)
 
                 player_score = matchup['players_points'].get(player_id, 0)
 

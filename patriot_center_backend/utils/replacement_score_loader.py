@@ -15,16 +15,10 @@ Notes:
 
 import os
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.constants import LEAGUE_IDS, REPLACEMENT_SCORE_CACHE_FILE
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
 
-# Constants
-# Construct absolute path to cache file based on repository root
-_UTILS_DIR = os.path.dirname(os.path.abspath(__file__))
-_BACKEND_DIR = os.path.dirname(_UTILS_DIR)
-_REPO_ROOT = os.path.dirname(_BACKEND_DIR)
-REPLACEMENT_SCORE_FILE = os.path.join(_REPO_ROOT, "patriot_center_backend", "data", "replacement_score_cache.json")
 PLAYER_IDS = load_player_ids()
 
 
@@ -38,7 +32,7 @@ def load_or_update_replacement_score_cache():
     - Injects <POS>_3yr_avg once prior year - 3 data exists.
     """
     # Load existing cache or initialize a new one
-    cache = load_cache(REPLACEMENT_SCORE_FILE)
+    cache = load_cache(REPLACEMENT_SCORE_CACHE_FILE)
 
     # Dynamically determine the current season and week
     current_season, current_week = get_current_season_and_week()
@@ -104,7 +98,7 @@ def load_or_update_replacement_score_cache():
             print("  Replacement score cache updated internally for season {}, week {}".format(year, week))
 
     # Save the updated cache to the file
-    save_cache(REPLACEMENT_SCORE_FILE, cache)
+    save_cache(REPLACEMENT_SCORE_CACHE_FILE, cache)
 
     # Remove metadata before returning
     # These fields are used internally for tracking updates but are not part of the final cache returned

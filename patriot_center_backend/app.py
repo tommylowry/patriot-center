@@ -9,7 +9,8 @@ CORS(app, resources={
     r"/get_aggregated_players*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/meta/options": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/get_aggregated_managers*": {"origins": ["https://patriotcenter.netlify.app"]}
+    r"/get_aggregated_managers*": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/players/list": {"origins": ["https://patriotcenter.netlify.app"]}
 })
 CORS(app)  # Enable CORS for all routes during development
 
@@ -70,7 +71,12 @@ def _to_records(data, key_name="key"):
                 rows.append(row)
             else:
                 rows.append({key_name: k, "value": v})
+
+        # sort the records by key_name if possible
+        rows.sort(key=lambda x: x.get(key_name, ""), reverse=False)
+
         return rows
+
     # Fallback for scalar values
     return [{"value": data}]
 
@@ -175,6 +181,17 @@ def get_aggregated_managers(player, arg2, arg3):
     if request.args.get("format") == "json":
         return jsonify(data), 200
     return jsonify(_to_records(data, key_name="player")), 200
+
+@app.route('/players/list', methods=['GET'])
+def list_players():
+    """
+    Endpoint to list all players in the system.
+    """
+    from patriot_center_backend.services.players import fetch_players
+    players_data = fetch_players()
+    if request.args.get("format") == "json":
+        return jsonify(players_data), 200
+    return jsonify(_to_records(players_data, key_name="name")), 200
 
 @app.route('/meta/options', methods=['GET'])
 def meta_options():

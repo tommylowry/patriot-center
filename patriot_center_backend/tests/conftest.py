@@ -277,38 +277,96 @@ def sample_aggregated_player_data():
         }
     }
 
-@ pytest.fixture
+@pytest.fixture
 def sample_defenses_in_sleeper_data():
     """Sample Sleeper data including all team defenses."""
-    return {
+    from patriot_center_backend.constants import TEAM_DEFENSE_NAMES
+
+    # Start with some regular players
+    data = {
         "7547": {
             "full_name": "Amon-Ra St. Brown",
+            "first_name": "Amon-Ra",
+            "last_name": "St. Brown",
             "team": "DET",
             "position": "WR"
         },
         "4866": {
             "full_name": "Travis Kelce",
+            "first_name": "Travis",
+            "last_name": "Kelce",
             "team": "KC",
             "position": "TE"
         },
-        "ARI": {
-            "full_name": "Arizona Cardinals",
-            "team": "ARI",
-            "position": "DEF"
-        },
-        "ATL": {
-            "full_name": "Atlanta Falcons",
-            "team": "ATL",
-            "position": "DEF"
-        },
-        "BAL": {
-            "full_name": "Baltimore Ravens",
-            "team": "BAL",
-            "position": "DEF"
-        },
         "1667": {
             "full_name": "Some Other Player",
+            "first_name": "Some",
+            "last_name": "Player",
             "team": "XYZ",
             "position": "RB"
         }
     }
+
+    # Add all team defenses dynamically from TEAM_DEFENSE_NAMES
+    for team_code, team_info in TEAM_DEFENSE_NAMES.items():
+        data[team_code] = {
+            "full_name": team_info["full_name"],
+            "first_name": team_info["first_name"],
+            "last_name": team_info["last_name"],
+            "team": team_code,
+            "position": "DEF"
+        }
+
+    return data
+
+
+@pytest.fixture
+def sample_players_list():
+    """Sample player list data for testing /players/list endpoint."""
+    return {
+        "7547": {
+            "full_name": "Amon-Ra St. Brown",
+            "first_name": "Amon-Ra",
+            "last_name": "St. Brown",
+            "slug": "Amon-Ra_St._Brown",
+            "position": "WR",
+            "team": "DET"
+        },
+        "4866": {
+            "full_name": "Travis Kelce",
+            "first_name": "Travis",
+            "last_name": "Kelce",
+            "slug": "Travis_Kelce",
+            "position": "TE",
+            "team": "KC"
+        },
+        "KC": {
+            "full_name": "Kansas City Chiefs",
+            "first_name": "Kansas City",
+            "last_name": "Chiefs",
+            "slug": "Kansas_City_Chiefs",
+            "position": "DEF",
+            "team": "KC"
+        },
+        "WAS": {
+            "full_name": "Washington Commanders",
+            "first_name": "Washington",
+            "last_name": "Commanders",
+            "slug": "Washington_Commanders",
+            "position": "DEF",
+            "team": "WAS"
+        }
+    }
+
+
+@pytest.fixture
+def empty_players_list():
+    """Empty players list for testing edge cases."""
+    return {}
+
+
+@pytest.fixture
+def mock_fetch_players():
+    """Mock the fetch_players service function."""
+    with patch('patriot_center_backend.services.players.fetch_players') as mock:
+        yield mock

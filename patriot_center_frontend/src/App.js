@@ -5,6 +5,7 @@ import { PlayerRow } from './components/PlayerRow';
 import { FilterDropdown } from './components/FilterDropdown';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PlayerPage from './pages/PlayerPage';
+import Layout from './components/Layout';
 
 function HomePage() {
   const [year, setYear] = useState('2025');
@@ -54,7 +55,7 @@ function HomePage() {
 
   return (
     <div className="App">
-      <h1>Aggregated Players</h1>
+      <h1>Patriot Center Database</h1>
       <FilterDropdown
         value={{ year, week, manager }}
         onChange={onApplyFilters}
@@ -108,10 +109,12 @@ function HomePage() {
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/player/:playerSlug" element={<PlayerPage />} />
-      </Routes>
+      <Layout>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/player/:playerSlug" element={<PlayerPage />} />
+        </Routes>
+      </Layout>
     </Router>
   );
 }

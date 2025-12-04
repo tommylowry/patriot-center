@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 class TestLoadPlayerIds:
     """Test load_player_ids function."""
 
-    @patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_FILE')
+    @patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE')
     @patch('patriot_center_backend.utils.player_ids_loader.datetime')
     def test_returns_fresh_cache_when_less_than_7_days_old(self, mock_datetime, mock_file_path):
         """Test returns cached data when cache is less than 7 days old."""
@@ -25,8 +25,8 @@ class TestLoadPlayerIds:
         # Create temp file with fresh cache (updated 3 days ago)
         cache_data = {
             "Last_Updated": "2024-11-17",  # 3 days ago
-            "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"},
-            "KC": {"full_name": "Kansas City Chiefs", "position": "DEF"}
+            "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown", "position": "WR"},
+            "KC": {"full_name": "Kansas City Chiefs", "first_name": "Kansas City", "last_name": "Chiefs", "position": "DEF"}
         }
 
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
@@ -34,7 +34,7 @@ class TestLoadPlayerIds:
             temp_path = f.name
 
         try:
-            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_FILE', temp_path):
+            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
                 result = load_player_ids()
 
             # Should return cached data without calling API
@@ -43,7 +43,7 @@ class TestLoadPlayerIds:
         finally:
             os.remove(temp_path)
 
-    @patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_FILE')
+    @patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE')
     @patch('patriot_center_backend.utils.player_ids_loader.datetime')
     def test_ensures_defenses_present_in_cached_data(self, mock_datetime, mock_file_path):
         """Test adds missing defense entries to cached data."""
@@ -55,7 +55,7 @@ class TestLoadPlayerIds:
         # Cache is fresh but missing some defenses
         cache_data = {
             "Last_Updated": "2024-11-19",  # 1 day ago
-            "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
+            "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown", "position": "WR"}
             # Missing defenses
         }
 
@@ -64,7 +64,7 @@ class TestLoadPlayerIds:
             temp_path = f.name
 
         try:
-            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_FILE', temp_path):
+            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
                 result = load_player_ids()
 
             # All defenses should be present
@@ -89,7 +89,7 @@ class TestLoadPlayerIds:
         # Create temp file with stale cache (updated 10 days ago)
         cache_data = {
             "Last_Updated": "2024-11-10",  # 10 days ago - stale!
-            "old_player": {"full_name": "Old Player"}
+            "old_player": {"full_name": "Old Player", "first_name": "Old", "last_name": "Player"}
         }
 
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
@@ -99,10 +99,10 @@ class TestLoadPlayerIds:
         try:
             # Mock fetched data
             mock_fetch.return_value = {
-                "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
+                "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown", "position": "WR"}
             }
 
-            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_FILE', temp_path):
+            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
                 result = load_player_ids()
 
             # Should have called fetch to refresh
@@ -124,11 +124,11 @@ class TestLoadPlayerIds:
         non_existent_path = "/tmp/nonexistent_player_ids_12345.json"
 
         mock_fetch.return_value = {
-            "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
+            "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown", "position": "WR"}
         }
 
         try:
-            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_FILE', non_existent_path):
+            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', non_existent_path):
                 result = load_player_ids()
 
             # Should have called fetch
@@ -150,7 +150,7 @@ class TestLoadPlayerIds:
         # Cache with malformed timestamp
         cache_data = {
             "Last_Updated": "invalid-date",
-            "7547": {"full_name": "Amon-Ra St. Brown"}
+            "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown"}
         }
 
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
@@ -158,7 +158,7 @@ class TestLoadPlayerIds:
             temp_path = f.name
 
         try:
-            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_FILE', temp_path):
+            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
                 # Should handle gracefully by falling back to epoch (will trigger refresh)
                 with patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids') as mock_fetch:
                     mock_fetch.return_value = {"new": "data"}
@@ -182,10 +182,10 @@ class TestLoadPlayerIds:
 
         try:
             mock_fetch.return_value = {
-                "7547": {"full_name": "Amon-Ra St. Brown"}
+                "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown"}
             }
 
-            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_FILE', temp_path):
+            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
                 result = load_player_ids()
 
             # Should have saved to disk
@@ -210,6 +210,8 @@ class TestFetchUpdatedPlayerIds:
             {
                 "7547": {
                     "full_name": "Amon-Ra St. Brown",
+                    "first_name": "Amon-Ra",
+                    "last_name": "St. Brown",
                     "age": 24,
                     "position": "WR",
                     "team": "DET",
@@ -243,6 +245,8 @@ class TestFetchUpdatedPlayerIds:
             {
                 "7547": {
                     "full_name": "Amon-Ra St. Brown",
+                    "first_name": "Amon-Ra",
+                    "last_name": "St. Brown",
                     "age": 24,
                     "position": "WR",
                     "team": "DET",
@@ -274,10 +278,14 @@ class TestFetchUpdatedPlayerIds:
             {
                 "KC": {
                     "full_name": "Some Other Value",  # Should be overridden
+                    "first_name": "Some",
+                    "last_name": "Value",
                     "position": "WRONG"
                 },
                 "7547": {
                     "full_name": "Amon-Ra St. Brown",
+                    "first_name": "Amon-Ra",
+                    "last_name": "St. Brown",
                     "position": "WR"
                 }
             },
@@ -303,6 +311,8 @@ class TestFetchUpdatedPlayerIds:
             {
                 "7547": {
                     "full_name": "Amon-Ra St. Brown",
+                    "first_name": "Amon-Ra",
+                    "last_name": "St. Brown",
                     "position": "WR"
                     # Missing: age, years_exp, college, team, etc.
                 }
@@ -321,20 +331,15 @@ class TestFetchUpdatedPlayerIds:
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_sleeper_data')
     def test_includes_all_team_defenses(self,  mock_fetch, sample_defenses_in_sleeper_data):
         """Test ensures all NFL team defenses are included."""
-        from patriot_center_backend.utils.player_ids_loader import fetch_updated_player_ids
+        from patriot_center_backend.utils.player_ids_loader import fetch_updated_player_ids, TEAM_DEFENSE_NAMES
 
         mock_fetch.return_value = sample_defenses_in_sleeper_data, 200
 
-        mock_defensive_names = {
-            "ARI": "Arizona Cardinals",
-            "ATL": "Atlanta Falcons",
-            "BAL": "Baltimore Ravens"
-        }
-
         result = fetch_updated_player_ids()
 
-        # All team codes should be present as DEF
-        for team_code in mock_defensive_names.keys():
+        # All team codes from TEAM_DEFENSE_NAMES should be present as DEF
+        for team_code in TEAM_DEFENSE_NAMES.keys():
             assert team_code in result
             assert result[team_code]["position"] == "DEF"
             assert result[team_code]["team"] == team_code
+            assert result[team_code]["full_name"] == TEAM_DEFENSE_NAMES[team_code]["full_name"]

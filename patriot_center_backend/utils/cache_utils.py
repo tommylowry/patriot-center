@@ -21,7 +21,7 @@ from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS
 
 
-def load_cache(file_path):
+def load_cache(file_path, players_cache=False):
     """
     Load JSON cache or initialize baseline structure.
 
@@ -47,7 +47,7 @@ def load_cache(file_path):
         # Load and return existing cache content
         with open(file_path, "r") as file:
             return json.load(file)
-    else:
+    elif not players_cache:
         # Initialize the cache with all years (plus historical years for replacement score caches)
         cache = {"Last_Updated_Season": "0", "Last_Updated_Week": 0}
         
@@ -65,7 +65,8 @@ def load_cache(file_path):
         for year in years:
             cache[str(year)] = {}
         return cache
-    # Fallback (should be unreachable because function returns above)
+    
+    # For player caches, simply return an empty dict if file absent
     return {}
 
 

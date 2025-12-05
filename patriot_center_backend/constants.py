@@ -47,6 +47,7 @@ PLAYER_IDS_CACHE_FILE        = os.path.join(_BACKEND_DIR, "data", "player_ids.js
 PLAYERS_CACHE_FILE           = os.path.join(_BACKEND_DIR, "data", "players_cache.json")
 REPLACEMENT_SCORE_CACHE_FILE = os.path.join(_BACKEND_DIR, "data", "replacement_score_cache.json")
 STARTERS_CACHE_FILE          = os.path.join(_BACKEND_DIR, "data", "starters_cache.json")
+VALID_OPTIONS_CACHE_FILE    = os.path.join(_BACKEND_DIR, "data", "valid_options_cache.json")
 
 # Mapping of team IDs to their full names
 TEAM_DEFENSE_NAMES = {

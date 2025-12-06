@@ -8,20 +8,6 @@ VALID_OPTIONS_CACHE = fetch_valid_options_cache()
 
 def fetch_valid_options(arg1, arg2, arg3, arg4=None):
 
-    # If a fourth argument is provided, return the last saved selection
-    if arg4 != None:
-        current_filter = load_cache(CURRENT_OPTIONS_SELECTION_FILE, initialize_with_last_updated_info=False)
-        if current_filter == {}:
-            raise ValueError("No saved filter selection found.")
-        return current_filter
-
-    default_response = {
-        "years": list(LEAGUE_IDS.keys()),
-        "weeks": list(range(1, 18)),
-        "positions": list(["QB", "RB", "WR", "TE", "K", "DEF"]),
-        "managers": list(NAME_TO_MANAGER_USERNAME.keys())
-    }
-    
     year, week, manager, player = _parse_args(arg1, arg2, arg3)
 
     # If all arguments are None, return all options
@@ -30,6 +16,27 @@ def fetch_valid_options(arg1, arg2, arg3, arg4=None):
     
     if year == None and week != None:
         raise ValueError("Week specified without a year.")
+    
+    default_response = {
+        "years": list(LEAGUE_IDS.keys()),
+        "weeks": list(range(1, 18)),
+        "positions": list(["QB", "RB", "WR", "TE", "K", "DEF"]),
+        "managers": list(NAME_TO_MANAGER_USERNAME.keys())
+    }
+
+    if arg4 != None:
+        # Load the last saved filter selection if week is not specified
+        if week == None:
+            current_filter = load_cache(CURRENT_OPTIONS_SELECTION_FILE, initialize_with_last_updated_info=False)
+            if current_filter == {}:
+                raise ValueError("No saved filter selection found.")
+            return current_filter
+        # If week is specified, start from default response
+        else:
+            filtered_dict = _filter_player(player, year, manager, week, default_response)
+            filtered_dict["managers"].sort()
+            return filtered_dict
+    
 
     filtered_dict = _filter_year(year, default_response)
     filtered_dict = _filter_week(week, year, filtered_dict) # week needs year

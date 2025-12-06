@@ -561,3 +561,200 @@ class TestPlayersIntegration:
         # Should return raw dict, not transformed to list
         assert isinstance(data, dict)
         assert data == sample_players_list
+
+
+class TestValidOptionsEndpoint:
+    """Test /meta/valid_options endpoint functionality."""
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_no_params(self, mock_fetch, flask_client):
+        """Test /meta/valid_options with no parameters returns all options."""
+        mock_fetch.return_value = {
+            "years": [2021, 2022, 2023, 2024],
+            "weeks": [1, 2, 3, 4, 5],
+            "positions": ["QB", "RB", "WR"],
+            "managers": ["Tommy", "Mike", "Cody"]
+        }
+
+        response = flask_client.get('/meta/valid_options')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        # Verify all keys present
+        assert "years" in data
+        assert "weeks" in data
+        assert "positions" in data
+        assert "managers" in data
+
+        # Verify lists are sorted
+        assert data["years"] == [2021, 2022, 2023, 2024]
+        assert data["weeks"] == [1, 2, 3, 4, 5]
+        assert data["managers"] == ["Cody", "Mike", "Tommy"]  # Alphabetically sorted
+        assert data["positions"] == ["QB", "RB", "WR"]  # Alphabetically sorted
+
+        # Verify service was called with no filters
+        mock_fetch.assert_called_once_with(None, None, None)
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_with_year(self, mock_fetch, flask_client):
+        """Test /meta/valid_options filtered by year."""
+        mock_fetch.return_value = {
+            "years": [2024],
+            "weeks": [1, 2, 3],
+            "positions": ["QB", "RB"],
+            "managers": ["Tommy"]
+        }
+
+        response = flask_client.get('/meta/valid_options/2024')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["years"] == [2024]
+        assert data["weeks"] == [1, 2, 3]
+
+        # Verify service was called with year
+        mock_fetch.assert_called_once_with("2024", None, None)
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_with_year_and_week(self, mock_fetch, flask_client):
+        """Test /meta/valid_options filtered by year and week."""
+        mock_fetch.return_value = {
+            "years": [2024],
+            "weeks": [5],
+            "positions": ["QB", "WR"],
+            "managers": ["Tommy", "Mike"]
+        }
+
+        response = flask_client.get('/meta/valid_options/2024/5')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["years"] == [2024]
+        assert data["weeks"] == [5]
+        assert data["managers"] == ["Mike", "Tommy"]  # Sorted
+
+        # Verify service was called with year and week
+        mock_fetch.assert_called_once_with("2024", "5", None)
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_with_all_three_args(self, mock_fetch, flask_client):
+        """Test /meta/valid_options with year, week, and manager."""
+        mock_fetch.return_value = {
+            "years": [2024],
+            "weeks": [5],
+            "positions": ["QB"],
+            "managers": ["Tommy"]
+        }
+
+        response = flask_client.get('/meta/valid_options/2024/Tommy/5')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["positions"] == ["QB"]
+
+        # Verify service was called with all args
+        mock_fetch.assert_called_once_with("2024", "Tommy", "5")
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_with_manager_only(self, mock_fetch, flask_client):
+        """Test /meta/valid_options filtered by manager only."""
+        mock_fetch.return_value = {
+            "years": [2023, 2024],
+            "weeks": [1, 2, 3, 4, 5],
+            "positions": ["QB", "RB", "WR"],
+            "managers": ["Tommy"]
+        }
+
+        response = flask_client.get('/meta/valid_options/Tommy')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["managers"] == ["Tommy"]
+        assert data["years"] == [2023, 2024]
+
+        mock_fetch.assert_called_once_with("Tommy", None, None)
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_sorts_all_lists(self, mock_fetch, flask_client):
+        """Test that all returned lists are sorted."""
+        # Return unsorted data
+        mock_fetch.return_value = {
+            "years": [2024, 2021, 2023, 2022],
+            "weeks": [5, 1, 3, 2, 4],
+            "positions": ["WR", "QB", "TE", "RB"],
+            "managers": ["Zach", "Alice", "Mike", "Bob"]
+        }
+
+        response = flask_client.get('/meta/valid_options')
+        data = json.loads(response.data)
+
+        # All lists should be sorted
+        assert data["years"] == [2021, 2022, 2023, 2024]
+        assert data["weeks"] == [1, 2, 3, 4, 5]
+        assert data["positions"] == ["QB", "RB", "TE", "WR"]
+        assert data["managers"] == ["Alice", "Bob", "Mike", "Zach"]
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_with_player_name(self, mock_fetch, flask_client):
+        """Test /meta/valid_options with player name (URL encoded)."""
+        mock_fetch.return_value = {
+            "years": [2024],
+            "weeks": [1, 2],
+            "positions": ["QB"],
+            "managers": ["Tommy"]
+        }
+
+        # Player name with spaces encoded as underscores
+        response = flask_client.get('/meta/valid_options/Josh_Allen')
+        assert response.status_code == 200
+
+        mock_fetch.assert_called_once_with("Josh_Allen", None, None)
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_returns_empty_lists_when_no_matches(self, mock_fetch, flask_client):
+        """Test /meta/valid_options returns empty lists when no data matches."""
+        mock_fetch.return_value = {
+            "years": [],
+            "weeks": [],
+            "positions": [],
+            "managers": []
+        }
+
+        response = flask_client.get('/meta/valid_options/2019/99')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["years"] == []
+        assert data["weeks"] == []
+        assert data["positions"] == []
+        assert data["managers"] == []
+
+    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
+    def test_valid_options_preserves_non_list_values(self, mock_fetch, flask_client):
+        """Test that non-list values in response are preserved."""
+        mock_fetch.return_value = {
+            "years": [2024],
+            "weeks": [1],
+            "positions": ["QB"],
+            "managers": ["Tommy"],
+            "metadata": {"count": 5}  # Non-list value
+        }
+
+        response = flask_client.get('/meta/valid_options')
+        data = json.loads(response.data)
+
+        # Lists should be sorted
+        assert data["years"] == [2024]
+
+        # Non-list values should be preserved
+        assert data["metadata"] == {"count": 5}
+
+    def test_valid_options_cors_headers(self, flask_client):
+        """Test that CORS headers are set for /meta/valid_options."""
+        response = flask_client.get('/meta/valid_options')
+        assert 'Access-Control-Allow-Origin' in response.headers
+
+    def test_valid_options_content_type(self, flask_client):
+        """Test that response content type is JSON."""
+        response = flask_client.get('/meta/valid_options')
+        assert 'application/json' in response.content_type

@@ -8,14 +8,7 @@ VALID_OPTIONS_CACHE = fetch_valid_options_cache()
 
 def fetch_valid_options(arg1, arg2, arg3, arg4=None):
 
-    year, week, manager, player = _parse_args(arg1, arg2, arg3)
-
-    # If all arguments are None, return all options
-    if year == None and week == None and manager == None and player == None:
-        return default_response
-    
-    if year == None and week != None:
-        raise ValueError("Week specified without a year.")
+    year, week, manager, player = _parse_args(arg1, arg2, arg3, arg4)
     
     default_response = {
         "years": list(LEAGUE_IDS.keys()),
@@ -24,6 +17,13 @@ def fetch_valid_options(arg1, arg2, arg3, arg4=None):
         "managers": list(NAME_TO_MANAGER_USERNAME.keys())
     }
 
+    # If all arguments are None, return all options
+    if year == None and week == None and manager == None and player == None:
+        return default_response
+    
+    if year == None and week != None:
+        raise ValueError("Week specified without a year.")
+    
     if arg4 != None:
         # Load the last saved filter selection if week is not specified
         if week == None:
@@ -220,7 +220,7 @@ def _trim_list(original_list, keep_list):
             original_list.remove(item)
     return original_list
 
-def _parse_args(arg1, arg2, arg3):
+def _parse_args(arg1, arg2, arg3, arg4=None):
     """
     Parse and validate input arguments for fetching valid options.
 
@@ -237,7 +237,7 @@ def _parse_args(arg1, arg2, arg3):
 
     players = fetch_players()
 
-    args = [arg1, arg2, arg3]
+    args = [arg1, arg2, arg3, arg4]
     for arg in args:
         if arg == None:
             continue

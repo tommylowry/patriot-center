@@ -138,18 +138,18 @@ function HomePage() {
                 background: year === null ? 'var(--accent)' : 'var(--bg-alt)',
                 padding: '6px 12px',
                 borderRadius: 4,
-                cursor: (optionsLoading || optionsError || (year !== null && week !== null)) ? 'not-allowed' : 'pointer',
+                cursor: (optionsLoading || optionsError) ? 'not-allowed' : 'pointer',
                 fontSize: 14,
-                opacity: (optionsLoading || optionsError || (year !== null && week !== null)) ? 0.5 : 1
+                opacity: (optionsLoading || optionsError) ? 0.5 : 1
               }}
             >
               <input
                 type="radio"
                 name="year"
                 checked={year === null}
-                onChange={() => setYear(null)}
-                disabled={optionsLoading || optionsError || (year !== null && week !== null)}
-                style={{ cursor: (optionsLoading || optionsError || (year !== null && week !== null)) ? 'not-allowed' : 'pointer' }}
+                onChange={() => { setYear(null); setWeek(null); }}
+                disabled={optionsLoading || optionsError}
+                style={{ cursor: (optionsLoading || optionsError) ? 'not-allowed' : 'pointer' }}
               />
               ALL
             </label>

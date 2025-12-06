@@ -147,6 +147,49 @@ class TestParseArgs:
 
         assert player == "D'Andre Swift"
 
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user"})
+    def test_parses_all_four_arguments_year_week_player_manager(self, mock_fetch_players):
+        """Test parsing all 4 arguments: year, week, player, and manager."""
+        mock_fetch_players.return_value = {"Christian McCaffrey": {"position": "RB"}}
+
+        year, week, manager, player = _parse_args(2021, 1, "Christian_McCaffrey", "Tommy")
+
+        assert year == 2021
+        assert week == 1
+        assert player == "Christian McCaffrey"
+        assert manager == "Tommy"
+
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Alice": "alice_user"})
+    def test_parses_four_args_different_order(self, mock_fetch_players):
+        """Test that 4 args can be in different positions."""
+        mock_fetch_players.return_value = {"Patrick Mahomes": {"position": "QB"}}
+
+        # Order: manager, year, player, week
+        year, week, manager, player = _parse_args("Alice", 2021, "Patrick_Mahomes", 5)
+
+        assert year == 2021
+        assert week == 5
+        assert manager == "Alice"
+        assert player == "Patrick Mahomes"
+
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user"})
+    def test_four_args_with_none(self, mock_fetch_players):
+        """Test parsing 4 args where some are None."""
+        mock_fetch_players.return_value = {"Christian McCaffrey": {"position": "RB"}}
+
+        year, week, manager, player = _parse_args(2021, None, "Christian_McCaffrey", "Tommy")
+
+        assert year == 2021
+        assert week is None
+        assert player == "Christian McCaffrey"
+        assert manager == "Tommy"
+
 
 class TestTrimList:
     """Test _trim_list helper function."""
@@ -635,38 +678,125 @@ class TestFetchValidOptions:
         fetch_valid_options(2021, 1, None)
         assert mock_save_cache.call_count == 0
 
-    @patch('patriot_center_backend.services.valid_options.load_cache')
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user", "Alice": "alice_user"})
+    @patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE', {
+        "2021": {
+            "managers": ["Tommy", "Alice"],
+            "weeks": [1, 2],
+            "positions": ["QB", "RB"],
+            "players": ["Christian McCaffrey"],
+            "1": {
+                "managers": ["Tommy"],
+                "positions": ["RB"],
+                "players": ["Christian McCaffrey"],
+                "Tommy": {
+                    "positions": ["RB"],
+                    "players": ["Christian McCaffrey"]
+                }
+            },
+            "2": {
+                "managers": ["Alice"],
+                "positions": ["RB"],
+                "players": ["Christian McCaffrey"],
+                "Alice": {
+                    "positions": ["RB"],
+                    "players": ["Christian McCaffrey"]
+                }
+            }
+        }
+    })
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    def test_parses_all_four_arguments(self, mock_fetch_players):
+        """Test that all 4 arguments (year, week, manager, player) can be parsed together."""
+        mock_fetch_players.return_value = {
+            "Christian McCaffrey": {"position": "RB"}
+        }
+
+        # Pass all 4 arguments: year, week, player, manager
+        result = fetch_valid_options(2021, 1, "Christian_McCaffrey", "Tommy")
+
+        # Should filter correctly for this specific combination
+        assert result["years"] == [2021]
+        assert result["weeks"] == [1]
+        assert result["managers"] == ["Tommy"]
+        assert result["positions"] == ["RB"]
+
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user", "Alice": "alice_user"})
+    @patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE', {
+        "2021": {
+            "managers": ["Tommy", "Alice"],
+            "weeks": [1, 2],
+            "positions": ["RB"],
+            "players": ["Christian McCaffrey"],
+            "1": {
+                "managers": ["Tommy"],
+                "positions": ["RB"],
+                "players": ["Christian McCaffrey"],
+                "Tommy": {
+                    "positions": ["RB"],
+                    "players": ["Christian McCaffrey"]
+                }
+            },
+            "2": {
+                "managers": ["Alice"],
+                "positions": ["RB"],
+                "players": ["Christian McCaffrey"],
+                "Alice": {
+                    "positions": ["RB"],
+                    "players": ["Christian McCaffrey"]
+                }
+            }
+        }
+    })
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    def test_edge_case_year_week_player_then_manager(self, mock_fetch_players):
+        """Test edge case: year+week+player+manager all specified doesn't reset."""
+        mock_fetch_players.return_value = {
+            "Christian McCaffrey": {"position": "RB"}
+        }
+
+        # This is the edge case that was fixed: all 4 args should work together
+        # without resetting the filters
+        result = fetch_valid_options(2021, 1, "Christian_McCaffrey", "Tommy")
+
+        # Should return filtered results for Tommy in 2021 week 1 with Christian McCaffrey
+        assert result["years"] == [2021]
+        assert result["weeks"] == [1]
+        assert result["managers"] == ["Tommy"]
+        assert result["positions"] == ["RB"]
+
     @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
     @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user"})
-    @patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE', {})
-    @patch('patriot_center_backend.services.valid_options.fetch_players')
-    def test_returns_saved_selection_when_fourth_arg_provided(self, mock_fetch_players, mock_load_cache):
-        """Test that saved selection is returned when fourth argument is provided."""
-        mock_fetch_players.return_value = {}
-
-        saved_selection = {
-            "years": [2021],
-            "weeks": [1, 2],
+    @patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE', {
+        "2021": {
             "managers": ["Tommy"],
-            "positions": ["QB", "RB"]
+            "weeks": [1],
+            "positions": ["RB"],
+            "players": ["Christian McCaffrey"],
+            "1": {
+                "managers": ["Tommy"],
+                "positions": ["RB"],
+                "players": ["Christian McCaffrey"],
+                "Tommy": {
+                    "positions": ["RB"],
+                    "players": ["Christian McCaffrey"]
+                }
+            }
         }
-        mock_load_cache.return_value = saved_selection
-
-        result = fetch_valid_options(2021, 1, "Tommy", "anything")
-
-        # Should return the saved selection
-        assert result == saved_selection
-
-        # Verify load_cache was called with correct file
-        from patriot_center_backend.constants import CURRENT_OPTIONS_SELECTION_FILE
-        mock_load_cache.assert_called_once_with(CURRENT_OPTIONS_SELECTION_FILE, initialize_with_last_updated_info=False)
-
-    @patch('patriot_center_backend.services.valid_options.load_cache')
+    })
     @patch('patriot_center_backend.services.valid_options.fetch_players')
-    def test_raises_error_when_fourth_arg_but_no_saved_selection(self, mock_fetch_players, mock_load_cache):
-        """Test that error is raised when fourth arg provided but no saved selection exists."""
-        mock_fetch_players.return_value = {}
-        mock_load_cache.return_value = {}
+    def test_four_args_with_year_week_player_manager(self, mock_fetch_players):
+        """Test that year+week+player+manager combination filters correctly."""
+        mock_fetch_players.return_value = {
+            "Christian McCaffrey": {"position": "RB"}
+        }
 
-        with pytest.raises(ValueError, match="No saved filter selection found"):
-            fetch_valid_options("arg1", "arg2", "arg3", "arg4")
+        # All 4 filters applied
+        result = fetch_valid_options(2021, 1, "Christian_McCaffrey", "Tommy")
+
+        assert result["years"] == [2021]
+        assert result["weeks"] == [1]
+        assert result["managers"] == ["Tommy"]
+        assert result["positions"] == ["RB"]

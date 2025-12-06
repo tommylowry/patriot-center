@@ -12,6 +12,10 @@ Notes:
 from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
 from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
+from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
+from patriot_center_backend.services.players import fetch_players
+
+PLAYERS_CACHE = fetch_players()
 
 ffWAR_cache = load_or_update_ffWAR_cache()
 
@@ -156,7 +160,8 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         "num_games_started": 1,
         'ffWAR': player_data['ffWAR'],
         "position": player_data['position'],
-        "player_image_endpoint": player_image_endpoint
+        "player_image_endpoint": player_image_endpoint,
+        "team": PLAYERS_CACHE.get("team", None)
     }
 
     # Handle playoff placement if present
@@ -207,7 +212,8 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
         "num_games_started": 1,
         'ffWAR': raw_item['ffWAR'],
         "position": raw_item['position'],
-        "player_image_endpoint": player_image_endpoint
+        "player_image_endpoint": player_image_endpoint,
+        "team": PLAYERS_CACHE.get("team", None)
     }
 
     # Handle playoff placement if present

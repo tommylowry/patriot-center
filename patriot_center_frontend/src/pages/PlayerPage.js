@@ -1,24 +1,30 @@
 import React, { useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { displayFromSlug } from '../components/player/PlayerNameFormatter';
 import { usePlayerManagers } from '../hooks/usePlayerManagers';
-import { useMetaOptions } from '../hooks/useMetaOptions';
+import { useValidOptions } from '../hooks/useValidOptions';
 
 export default function PlayerPage() {
     const { playerSlug } = useParams();
+    const navigate = useNavigate();
     const slug = playerSlug || 'Amon-Ra_St._Brown'; // default capitalized
     const displayName = displayFromSlug(slug);
 
-    const { years, weeksByYear, loading: optionsLoading, error: optionsError } = useMetaOptions();
-
     const [year, setYear] = useState(null);    // default: ALL years
     const [week, setWeek] = useState(null);      // default: ALL weeks
+    const [manager, setManager] = useState(null);  // default: ALL managers
     const [imageError, setImageError] = useState(false);
+
+    const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager, slug);
 
     React.useEffect(() => {
         setWeek(null);
     }, [year]);
 
+    // Fetch all-time data for medals (unfiltered)
+    const { managers: allTimeManagers } = usePlayerManagers(slug, {});
+
+    // Fetch filtered data for the table
     const { managers, loading, error } = usePlayerManagers(slug, { year, week });
 
     // Extract player image URL from first manager object
@@ -29,12 +35,12 @@ export default function PlayerPage() {
         setImageError(false);
     }, [playerImageUrl]);
 
-    // Count playoff placements and track details for hover
+    // Count playoff placements and track details for hover (using all-time data)
     const { playoffCounts, playoffDetails } = React.useMemo(() => {
         const counts = { 1: 0, 2: 0, 3: 0 };
         const details = { 1: [], 2: [], 3: [] };
 
-        managers.forEach(manager => {
+        allTimeManagers.forEach(manager => {
             const managerName = manager.manager || manager.player || manager.key || '';
             // API returns flattened keys like "playoff_placement.PlayerName.2021": 1
             Object.keys(manager).forEach(key => {
@@ -57,13 +63,13 @@ export default function PlayerPage() {
         });
 
         return { playoffCounts: counts, playoffDetails: details };
-    }, [managers]);
+    }, [allTimeManagers]);
 
     // Sorting state + helpers
     const [sortKey, setSortKey] = useState('ffWAR');
     const [sortDir, setSortDir] = useState('desc');
     const toggleSort = (key) => {
-        setSortKey(prev => key);
+        setSortKey(key);
         setSortDir(prev => (key === sortKey ? (prev === 'asc' ? 'desc' : 'asc') : 'asc'));
     };
 
@@ -102,46 +108,12 @@ export default function PlayerPage() {
         return 0;
     });
 
-    // Fallback: handle year as string/number just in case
-    const wk = (year != null)
-        ? (weeksByYear[year] ?? [])
-        : [];
-    const availableWeeks = Array.isArray(wk) ? wk : [];
-
     if (process.env.NODE_ENV === 'development') {
-        console.debug('years:', years, 'weeksByYear:', weeksByYear, 'year:', year, 'availableWeeks:', availableWeeks);
+        console.debug('options:', options, 'year:', year, 'week:', week);
     }
 
     return (
         <div className="App" style={{ paddingTop: '1rem' }}>
-            <style>{`
-                .ribbon-tooltip {
-                    position: relative;
-                }
-                .ribbon-tooltip::after {
-                    content: attr(data-tooltip);
-                    position: absolute;
-                    bottom: 100%;
-                    left: 50%;
-                    transform: translateX(-50%);
-                    background: rgba(0, 0, 0, 0.9);
-                    color: white;
-                    padding: 0.5rem 0.75rem;
-                    border-radius: 6px;
-                    font-size: 0.85rem;
-                    white-space: pre-line;
-                    opacity: 0;
-                    pointer-events: none;
-                    transition: opacity 0.15s ease;
-                    margin-bottom: 0.5rem;
-                    z-index: 1000;
-                    min-width: 150px;
-                    text-align: center;
-                }
-                .ribbon-tooltip:hover::after {
-                    opacity: 1;
-                }
-            `}</style>
 
             {/* Player Hero Section */}
             <div style={{
@@ -188,7 +160,7 @@ export default function PlayerPage() {
                     <div style={{
                         display: 'flex',
                         gap: '1rem',
-                        alignItems: 'center',
+                        alignItems: 'flex-start',
                         flexShrink: 0
                     }}>
                         {playoffCounts[1] > 0 && (
@@ -196,28 +168,42 @@ export default function PlayerPage() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '0.25rem',
-                                position: 'relative'
+                                gap: '0.25rem'
                             }}>
-                                <div
-                                    className="ribbon-tooltip"
-                                    data-tooltip={playoffDetails[1].map(d => `${d.year}: ${d.manager}`).join('\n')}
-                                    style={{
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    minHeight: '80px',
+                                    justifyContent: 'center'
+                                }}>
+                                    <div style={{
                                         fontSize: '2.5rem',
                                         lineHeight: 1,
-                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    🥇
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                                    }}>
+                                        🥇
+                                    </div>
+                                    <span style={{
+                                        fontSize: '1rem',
+                                        fontWeight: 700,
+                                        color: 'var(--text)'
+                                    }}>
+                                        ×{playoffCounts[1]}
+                                    </span>
                                 </div>
-                                <span style={{
-                                    fontSize: '0.9rem',
-                                    fontWeight: 600,
-                                    color: 'var(--muted)'
+                                <div style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--muted)',
+                                    textAlign: 'center',
+                                    lineHeight: 1.3,
+                                    maxWidth: '100px'
                                 }}>
-                                    ×{playoffCounts[1]}
-                                </span>
+                                    {playoffDetails[1].map((d, i) => (
+                                        <div key={i}>{d.year}: {d.manager}</div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                         {playoffCounts[2] > 0 && (
@@ -225,28 +211,42 @@ export default function PlayerPage() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '0.25rem',
-                                position: 'relative'
+                                gap: '0.25rem'
                             }}>
-                                <div
-                                    className="ribbon-tooltip"
-                                    data-tooltip={playoffDetails[2].map(d => `${d.year}: ${d.manager}`).join('\n')}
-                                    style={{
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    minHeight: '80px',
+                                    justifyContent: 'center'
+                                }}>
+                                    <div style={{
                                         fontSize: '2.5rem',
                                         lineHeight: 1,
-                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    🥈
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                                    }}>
+                                        🥈
+                                    </div>
+                                    <span style={{
+                                        fontSize: '1rem',
+                                        fontWeight: 700,
+                                        color: 'var(--text)'
+                                    }}>
+                                        ×{playoffCounts[2]}
+                                    </span>
                                 </div>
-                                <span style={{
-                                    fontSize: '0.9rem',
-                                    fontWeight: 600,
-                                    color: 'var(--muted)'
+                                <div style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--muted)',
+                                    textAlign: 'center',
+                                    lineHeight: 1.3,
+                                    maxWidth: '100px'
                                 }}>
-                                    ×{playoffCounts[2]}
-                                </span>
+                                    {playoffDetails[2].map((d, i) => (
+                                        <div key={i}>{d.year}: {d.manager}</div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                         {playoffCounts[3] > 0 && (
@@ -254,43 +254,76 @@ export default function PlayerPage() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '0.25rem',
-                                position: 'relative'
+                                gap: '0.25rem'
                             }}>
-                                <div
-                                    className="ribbon-tooltip"
-                                    data-tooltip={playoffDetails[3].map(d => `${d.year}: ${d.manager}`).join('\n')}
-                                    style={{
+                                <div style={{
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    alignItems: 'center',
+                                    gap: '0.25rem',
+                                    minHeight: '80px',
+                                    justifyContent: 'center'
+                                }}>
+                                    <div style={{
                                         fontSize: '2.5rem',
                                         lineHeight: 1,
-                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
-                                        cursor: 'pointer'
-                                    }}
-                                >
-                                    🥉
+                                        filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+                                    }}>
+                                        🥉
+                                    </div>
+                                    <span style={{
+                                        fontSize: '1rem',
+                                        fontWeight: 700,
+                                        color: 'var(--text)'
+                                    }}>
+                                        ×{playoffCounts[3]}
+                                    </span>
                                 </div>
-                                <span style={{
-                                    fontSize: '0.9rem',
-                                    fontWeight: 600,
-                                    color: 'var(--muted)'
+                                <div style={{
+                                    fontSize: '0.7rem',
+                                    color: 'var(--muted)',
+                                    textAlign: 'center',
+                                    lineHeight: 1.3,
+                                    maxWidth: '100px'
                                 }}>
-                                    ×{playoffCounts[3]}
-                                </span>
+                                    {playoffDetails[3].map((d, i) => (
+                                        <div key={i}>{d.year}: {d.manager}</div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>
                 )}
             </div>
             <p style={{ marginBottom: '1rem' }}>
-                <Link to="/" style={{ color: 'var(--accent)', textDecoration: 'none' }}>
+                <button
+                    onClick={() => navigate(-1)}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        color: 'var(--accent)',
+                        textDecoration: 'none',
+                        cursor: 'pointer',
+                        fontSize: 'inherit',
+                        fontFamily: 'inherit',
+                        padding: 0
+                    }}
+                >
                     ← Back
-                </Link>
+                </button>
             </p>
 
             {/* Radio button filters */}
-            <div style={{ marginBottom: '1.5rem', maxWidth: '800px', margin: '0 auto 1.5rem' }}>
+            <div style={{
+                marginBottom: '1.5rem',
+                maxWidth: '800px',
+                margin: '0 auto 1.5rem',
+                border: '1px solid var(--border)',
+                borderRadius: '8px',
+                overflow: 'hidden'
+            }}>
                 {/* Season Filter */}
-                <section style={{ marginBottom: '1rem' }}>
+                <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
                     <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Season</strong>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
                         <label
@@ -316,7 +349,7 @@ export default function PlayerPage() {
                             />
                             ALL
                         </label>
-                        {years.map(y => (
+                        {options.years.map(y => (
                             <label
                                 key={y}
                                 style={{
@@ -346,7 +379,7 @@ export default function PlayerPage() {
                 </section>
 
                 {/* Week Filter */}
-                <section>
+                <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
                     <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Week</strong>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
                         <label
@@ -372,7 +405,7 @@ export default function PlayerPage() {
                             />
                             ALL
                         </label>
-                        {(year && Array.isArray(weeksByYear[year]) ? weeksByYear[year] : []).map(w => (
+                        {(year ? options.weeks : []).map(w => (
                             <label
                                 key={w}
                                 style={{
@@ -400,7 +433,98 @@ export default function PlayerPage() {
                         ))}
                     </div>
                 </section>
+
+                {/* Manager Filter */}
+                <section style={{ padding: '1rem' }}>
+                    <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Manager</strong>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+                        <label
+                            style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 4,
+                                background: manager === null ? 'var(--accent)' : 'var(--bg-alt)',
+                                padding: '6px 12px',
+                                borderRadius: 4,
+                                cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
+                                fontSize: 14,
+                                opacity: optionsLoading || optionsError ? 0.5 : 1
+                            }}
+                        >
+                            <input
+                                type="radio"
+                                name="manager"
+                                checked={manager === null}
+                                onChange={() => setManager(null)}
+                                disabled={optionsLoading || optionsError}
+                                style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
+                            />
+                            ALL
+                        </label>
+                        {options.managers.map(m => (
+                            <label
+                                key={m}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 4,
+                                    background: manager === m ? 'var(--accent)' : 'var(--bg-alt)',
+                                    padding: '6px 12px',
+                                    borderRadius: 4,
+                                    cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
+                                    fontSize: 14,
+                                    opacity: optionsLoading || optionsError ? 0.5 : 1
+                                }}
+                            >
+                                <input
+                                    type="radio"
+                                    name="manager"
+                                    checked={manager === m}
+                                    onChange={() => setManager(m)}
+                                    disabled={optionsLoading || optionsError}
+                                    style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
+                                />
+                                {m}
+                            </label>
+                        ))}
+                    </div>
+                </section>
             </div>
+
+            {/* Clear Filters Button - only show if filters are not at default */}
+            {(year !== null || week !== null || manager !== null) && (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+                    <button
+                        onClick={() => {
+                            setYear(null);
+                            setWeek(null);
+                            setManager(null);
+                        }}
+                        style={{
+                            padding: '10px 20px',
+                            background: 'var(--accent)',
+                            border: 'none',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            fontSize: 15,
+                            fontWeight: 600,
+                            color: 'white',
+                            transition: 'all 0.2s ease',
+                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                        }}
+                        onMouseOver={(e) => {
+                            e.target.style.transform = 'translateY(-1px)';
+                            e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+                        }}
+                        onMouseOut={(e) => {
+                            e.target.style.transform = 'translateY(0)';
+                            e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+                        }}
+                    >
+                        Clear All Filters
+                    </button>
+                </div>
+            )}
 
             {loading && <p>Loading manager breakdown...</p>}
             {error && !loading && <p style={{ color: 'var(--danger)' }}>{error}</p>}

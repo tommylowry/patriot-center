@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { useAggregatedPlayers } from './hooks/useAggregatedPlayers';
 import { PlayerRow } from './components/PlayerRow';
-import { fetchOptions } from './services/options';
+import { useValidOptions } from './hooks/useValidOptions';
 import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import PlayerPage from './pages/PlayerPage';
 import Layout from './components/Layout';
@@ -16,37 +16,47 @@ function HomePage() {
   const [manager, setManager] = useState(null);
   const [positionFilter, setPositionFilter] = useState('ALL');
 
+  // Track last params we set to avoid infinite loop
+  const lastParamsRef = useRef('');
+
   // Sync state with URL params on mount and URL changes
   useEffect(() => {
-    setYear(searchParams.get('year') || '2025');
+    const yearParam = searchParams.get('year');
+    if (yearParam === 'ALL') {
+      setYear(null);
+    } else {
+      setYear(yearParam || '2025');
+    }
     setWeek(searchParams.get('week') ? parseInt(searchParams.get('week')) : null);
     setManager(searchParams.get('manager') || null);
     setPositionFilter(searchParams.get('position') || 'ALL');
   }, [searchParams]);
 
-  // Fetch filter options
-  const [options, setOptions] = useState({ seasons: [], weeks: [], managers: [] });
-  const [optionsLoading, setOptionsLoading] = useState(false);
-  const [optionsError, setOptionsError] = useState(null);
-
-  useEffect(() => {
-    setOptionsLoading(true);
-    fetchOptions()
-      .then(data => setOptions(data))
-      .catch(e => setOptionsError(e.message))
-      .finally(() => setOptionsLoading(false));
-  }, []);
+  // Fetch dynamic filter options based on current selections
+  const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager);
 
   const { players, loading, error } = useAggregatedPlayers(year, week, manager);
 
   // Update URL when filters change
   useEffect(() => {
-    const params = {};
-    if (year) params.year = year;
-    if (week) params.week = week;
-    if (manager) params.manager = manager;
-    if (positionFilter && positionFilter !== 'ALL') params.position = positionFilter;
-    setSearchParams(params, { replace: true });
+    const params = new URLSearchParams();
+
+    if (year === null) {
+      params.set('year', 'ALL');
+    } else if (year) {
+      params.set('year', year);
+    }
+    if (week) params.set('week', String(week));
+    if (manager) params.set('manager', manager);
+    if (positionFilter && positionFilter !== 'ALL') params.set('position', positionFilter);
+
+    const newParamsString = params.toString();
+
+    // Only update URL if different from what we last set
+    if (newParamsString !== lastParamsRef.current) {
+      lastParamsRef.current = newParamsString;
+      setSearchParams(params, { replace: true });
+    }
   }, [year, week, manager, positionFilter, setSearchParams]);
 
   const [sortKey, setSortKey] = useState('ffWAR');
@@ -101,16 +111,23 @@ function HomePage() {
   };
 
   return (
-    <div className="App">
+    <div className="App" style={{ paddingTop: '1.5rem' }}>
       {/* Title centered */}
-      <h2 style={{ margin: '1rem 0', fontWeight: 600 }}>
+      <h1 style={{ margin: '0 0 1.5rem 0', fontWeight: 700, fontSize: '2rem' }}>
         {getHeaderText()}
-      </h2>
+      </h1>
 
       {/* Inline filters centered */}
-      <div style={{ marginBottom: '1.5rem', maxWidth: '900px', margin: '0 auto 1.5rem' }}>
+      <div style={{
+        marginBottom: '1.5rem',
+        maxWidth: '900px',
+        margin: '0 auto 1.5rem',
+        border: '1px solid var(--border)',
+        borderRadius: '8px',
+        overflow: 'hidden'
+      }}>
         {/* Season Filter */}
-        <section style={{ marginBottom: '1rem' }}>
+        <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
           <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Season</strong>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
             <label
@@ -136,7 +153,7 @@ function HomePage() {
               />
               ALL
             </label>
-            {options.seasons.map(y => {
+            {options.years.map(y => {
               const yearStr = String(y);
               return (
                 <label
@@ -169,7 +186,7 @@ function HomePage() {
         </section>
 
         {/* Week Filter */}
-        <section style={{ marginBottom: '1rem' }}>
+        <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
           <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Week</strong>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
             <label
@@ -180,9 +197,9 @@ function HomePage() {
                 background: week === null ? 'var(--accent)' : 'var(--bg-alt)',
                 padding: '6px 12px',
                 borderRadius: 4,
-                cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
+                cursor: (!year || optionsLoading || optionsError) ? 'not-allowed' : 'pointer',
                 fontSize: 14,
-                opacity: optionsLoading || optionsError ? 0.5 : 1
+                opacity: (!year || optionsLoading || optionsError) ? 0.5 : 1
               }}
             >
               <input
@@ -190,12 +207,12 @@ function HomePage() {
                 name="week"
                 checked={week === null}
                 onChange={() => setWeek(null)}
-                disabled={optionsLoading || optionsError}
-                style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
+                disabled={!year || optionsLoading || optionsError}
+                style={{ cursor: (!year || optionsLoading || optionsError) ? 'not-allowed' : 'pointer' }}
               />
               ALL
             </label>
-            {options.weeks.map(w => (
+            {(year ? options.weeks : []).map(w => (
               <label
                 key={w}
                 style={{
@@ -225,7 +242,7 @@ function HomePage() {
         </section>
 
         {/* Manager Filter */}
-        <section style={{ marginBottom: '1rem' }}>
+        <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
           <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Manager</strong>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
             <label
@@ -281,10 +298,33 @@ function HomePage() {
         </section>
 
         {/* Position Filter */}
-        <section>
+        <section style={{ padding: '1rem' }}>
           <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Position</strong>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
-            {['ALL', 'QB', 'RB', 'WR', 'TE', 'DEF', 'K'].map(pos => (
+            <label
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 4,
+                background: positionFilter === 'ALL' ? 'var(--accent)' : 'var(--bg-alt)',
+                padding: '6px 12px',
+                borderRadius: 4,
+                cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
+                fontSize: 14,
+                opacity: optionsLoading || optionsError ? 0.5 : 1
+              }}
+            >
+              <input
+                type="radio"
+                name="position"
+                checked={positionFilter === 'ALL'}
+                onChange={() => setPositionFilter('ALL')}
+                disabled={optionsLoading || optionsError}
+                style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
+              />
+              ALL
+            </label>
+            {options.positions.map(pos => (
               <label
                 key={pos}
                 style={{
@@ -294,8 +334,9 @@ function HomePage() {
                   background: positionFilter === pos ? 'var(--accent)' : 'var(--bg-alt)',
                   padding: '6px 12px',
                   borderRadius: 4,
-                  cursor: 'pointer',
-                  fontSize: 14
+                  cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
+                  fontSize: 14,
+                  opacity: optionsLoading || optionsError ? 0.5 : 1
                 }}
               >
                 <input
@@ -303,7 +344,8 @@ function HomePage() {
                   name="position"
                   checked={positionFilter === pos}
                   onChange={() => setPositionFilter(pos)}
-                  style={{ cursor: 'pointer' }}
+                  disabled={optionsLoading || optionsError}
+                  style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
                 />
                 {pos}
               </label>
@@ -311,6 +353,42 @@ function HomePage() {
           </div>
         </section>
       </div>
+
+      {/* Clear Filters Button - only show if filters are not at default */}
+      {(year !== '2025' || week !== null || manager !== null || positionFilter !== 'ALL') && (
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '1.5rem' }}>
+          <button
+            onClick={() => {
+              setYear('2025');
+              setWeek(null);
+              setManager(null);
+              setPositionFilter('ALL');
+            }}
+            style={{
+              padding: '10px 20px',
+              background: 'var(--accent)',
+              border: 'none',
+              borderRadius: 6,
+              cursor: 'pointer',
+              fontSize: 15,
+              fontWeight: 600,
+              color: 'white',
+              transition: 'all 0.2s ease',
+              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+            }}
+            onMouseOver={(e) => {
+              e.target.style.transform = 'translateY(-1px)';
+              e.target.style.boxShadow = '0 4px 8px rgba(0,0,0,0.15)';
+            }}
+            onMouseOut={(e) => {
+              e.target.style.transform = 'translateY(0)';
+              e.target.style.boxShadow = '0 2px 4px rgba(0,0,0,0.1)';
+            }}
+          >
+            Clear All Filters
+          </button>
+        </div>
+      )}
 
       {players.length > 0 && (
         <div className="table-wrapper">

@@ -38,8 +38,8 @@ export default function Layout({ children }) {
                 </div>
             </div>
 
-            {/* Page Content - Add padding to prevent header from covering */}
-            <div style={{ paddingTop: '1rem' }}>
+            {/* Page Content */}
+            <div>
                 {children}
             </div>
         </div>

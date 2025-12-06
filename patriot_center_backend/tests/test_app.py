@@ -476,7 +476,7 @@ class TestPlayersService:
         result = fetch_players()
 
         # Verify load_cache was called with correct file and players_cache flag
-        mock_load_cache.assert_called_once_with(PLAYERS_CACHE_FILE, players_cache=True)
+        mock_load_cache.assert_called_once_with(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
 
     @patch('patriot_center_backend.services.players.load_cache')
     def test_fetch_players_returns_dict(self, mock_load_cache, sample_players_list):

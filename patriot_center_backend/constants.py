@@ -42,12 +42,13 @@ SLEEPER_API_URL = "https://api.sleeper.app/v1"
 
 # Cache file paths
 _BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
-FFWAR_CACHE_FILE             = os.path.join(_BACKEND_DIR, "data", "ffWAR_cache.json")
-PLAYER_IDS_CACHE_FILE        = os.path.join(_BACKEND_DIR, "data", "player_ids.json")
-PLAYERS_CACHE_FILE           = os.path.join(_BACKEND_DIR, "data", "players_cache.json")
-REPLACEMENT_SCORE_CACHE_FILE = os.path.join(_BACKEND_DIR, "data", "replacement_score_cache.json")
-STARTERS_CACHE_FILE          = os.path.join(_BACKEND_DIR, "data", "starters_cache.json")
-VALID_OPTIONS_CACHE_FILE    = os.path.join(_BACKEND_DIR, "data", "valid_options_cache.json")
+FFWAR_CACHE_FILE               = os.path.join(_BACKEND_DIR, "data", "ffWAR_cache.json")
+PLAYER_IDS_CACHE_FILE          = os.path.join(_BACKEND_DIR, "data", "player_ids.json")
+PLAYERS_CACHE_FILE             = os.path.join(_BACKEND_DIR, "data", "players_cache.json")
+REPLACEMENT_SCORE_CACHE_FILE   = os.path.join(_BACKEND_DIR, "data", "replacement_score_cache.json")
+STARTERS_CACHE_FILE            = os.path.join(_BACKEND_DIR, "data", "starters_cache.json")
+VALID_OPTIONS_CACHE_FILE       = os.path.join(_BACKEND_DIR, "data", "valid_options_cache.json")
+CURRENT_OPTIONS_SELECTION_FILE = os.path.join(_BACKEND_DIR, "data", "current_options_selection.json")
 
 # Mapping of team IDs to their full names
 TEAM_DEFENSE_NAMES = {

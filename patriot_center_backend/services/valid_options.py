@@ -1,12 +1,20 @@
 import copy
 
-from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
+from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME, CURRENT_OPTIONS_SELECTION_FILE
 from patriot_center_backend.services.players import fetch_players, fetch_valid_options_cache
+from patriot_center_backend.utils.cache_utils import load_cache, save_cache
 
 VALID_OPTIONS_CACHE = fetch_valid_options_cache()
 
-def fetch_valid_options(arg1, arg2, arg3):
-    
+def fetch_valid_options(arg1, arg2, arg3, arg4=None):
+
+    # If a fourth argument is provided, return the last saved selection
+    if arg4 != None:
+        current_filter = load_cache(CURRENT_OPTIONS_SELECTION_FILE, initialize_with_last_updated_info=False)
+        if current_filter == {}:
+            raise ValueError("No saved filter selection found.")
+        return current_filter
+
     default_response = {
         "years": list(LEAGUE_IDS.keys()),
         "weeks": list(range(1, 18)),
@@ -28,6 +36,9 @@ def fetch_valid_options(arg1, arg2, arg3):
     filtered_dict = _filter_manager(manager, year, week, filtered_dict)
     filtered_dict = _filter_player(player, year, manager, week, filtered_dict)
 
+    filtered_dict["managers"].sort()
+
+    save_cache(CURRENT_OPTIONS_SELECTION_FILE, filtered_dict)
     return filtered_dict
 
 

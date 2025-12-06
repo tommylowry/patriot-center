@@ -8,7 +8,7 @@ def fetch_players():
     Returns:
         dict: Cached player data.
     """
-    return load_cache(PLAYERS_CACHE_FILE, players_cache=True)
+    return load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
 
 def fetch_valid_options_cache():
     """

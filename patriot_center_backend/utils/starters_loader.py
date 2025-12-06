@@ -37,7 +37,7 @@ def load_or_update_starters_cache():
         dict: Nested {season: {week: {manager: {...}}}}
     """
     cache = load_cache(STARTERS_CACHE_FILE)
-    valid_options_cache = load_cache(VALID_OPTIONS_CACHE_FILE, players_cache=True)
+    valid_options_cache = load_cache(VALID_OPTIONS_CACHE_FILE, initialize_with_last_updated_info=False)
 
     current_season, current_week = get_current_season_and_week()
     if current_week > 17:
@@ -325,7 +325,7 @@ def get_starters_data(sleeper_response_matchups,
         dict | None: {player_name: {points, position}, Total_Points} or None if not found.
     """
 
-    players_cache = load_cache(PLAYERS_CACHE_FILE, players_cache=True)
+    players_cache = load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
 
     matchups = sleeper_response_matchups[0]
     for matchup in matchups:

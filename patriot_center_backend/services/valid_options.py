@@ -243,5 +243,5 @@ def _parse_args(arg1, arg2, arg3):
     return year, week, manager, player
 
 
-d = fetch_valid_options(2019, None, None)
+d = fetch_valid_options(None, "Rome Odunze", None)
 print(d)

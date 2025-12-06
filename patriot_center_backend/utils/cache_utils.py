@@ -17,6 +17,8 @@ All functions return plain dicts or tuples for easy JSON serialization.
 import os
 import json
 from datetime import datetime
+from pathlib import Path
+
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS
 
@@ -79,6 +81,8 @@ def save_cache(file_path, data):
         data (dict): Cache content.
     """
     # Persist cache atomically by writing the entire structure with 4-space indentation
+    path = Path(file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     with open(file_path, "w") as file:
         json.dump(data, file, indent=4)
 

@@ -56,7 +56,7 @@ PLAYER_IDS_CACHE_FILE          = os.path.join(_BACKEND_DIR, "data", "player_ids.
 
 # Options selection and validation cache files
 VALID_OPTIONS_CACHE_FILE       = os.path.join(_BACKEND_DIR, "data", "valid_options_cache.json")
-CURRENT_OPTIONS_SELECTION_FILE = os.path.join(_BACKEND_DIR, "data", "current_options_selection.json")
+CURRENT_OPTIONS_SELECTION_FILE = os.path.join(_BACKEND_DIR, "data", "dynamic_data", "current_options_selection.json")
 # -- END FILE PATH CONSTANTS --
 
 

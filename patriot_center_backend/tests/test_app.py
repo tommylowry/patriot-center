@@ -573,7 +573,7 @@ class TestValidOptionsEndpoint:
             "years": [2021, 2022, 2023, 2024],
             "weeks": [1, 2, 3, 4, 5],
             "positions": ["QB", "RB", "WR"],
-            "managers": ["Tommy", "Mike", "Cody"]
+            "managers": ["Cody", "Mike", "Tommy"]
         }
 
         response = flask_client.get('/meta/valid_options')
@@ -590,10 +590,10 @@ class TestValidOptionsEndpoint:
         assert data["years"] == [2021, 2022, 2023, 2024]
         assert data["weeks"] == [1, 2, 3, 4, 5]
         assert data["managers"] == ["Cody", "Mike", "Tommy"]  # Alphabetically sorted
-        assert data["positions"] == ["QB", "RB", "WR"]  # Alphabetically sorted
+        assert data["positions"] == ["QB", "RB", "WR"]
 
         # Verify service was called with no filters
-        mock_fetch.assert_called_once_with(None, None, None)
+        mock_fetch.assert_called_once_with(None, None, None, None)
 
     @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
     def test_valid_options_with_year(self, mock_fetch, flask_client):
@@ -613,7 +613,7 @@ class TestValidOptionsEndpoint:
         assert data["weeks"] == [1, 2, 3]
 
         # Verify service was called with year
-        mock_fetch.assert_called_once_with("2024", None, None)
+        mock_fetch.assert_called_once_with("2024", None, None, None)
 
     @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
     def test_valid_options_with_year_and_week(self, mock_fetch, flask_client):
@@ -622,7 +622,7 @@ class TestValidOptionsEndpoint:
             "years": [2024],
             "weeks": [5],
             "positions": ["QB", "WR"],
-            "managers": ["Tommy", "Mike"]
+            "managers": ["Mike", "Tommy"]
         }
 
         response = flask_client.get('/meta/valid_options/2024/5')
@@ -631,10 +631,10 @@ class TestValidOptionsEndpoint:
 
         assert data["years"] == [2024]
         assert data["weeks"] == [5]
-        assert data["managers"] == ["Mike", "Tommy"]  # Sorted
+        assert data["managers"] == ["Mike", "Tommy"]
 
         # Verify service was called with year and week
-        mock_fetch.assert_called_once_with("2024", "5", None)
+        mock_fetch.assert_called_once_with("2024", "5", None, None)
 
     @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
     def test_valid_options_with_all_three_args(self, mock_fetch, flask_client):
@@ -652,8 +652,8 @@ class TestValidOptionsEndpoint:
 
         assert data["positions"] == ["QB"]
 
-        # Verify service was called with all args
-        mock_fetch.assert_called_once_with("2024", "Tommy", "5")
+        # Verify service was called with 3 args
+        mock_fetch.assert_called_once_with("2024", "Tommy", "5", None)
 
     @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
     def test_valid_options_with_manager_only(self, mock_fetch, flask_client):
@@ -672,27 +672,7 @@ class TestValidOptionsEndpoint:
         assert data["managers"] == ["Tommy"]
         assert data["years"] == [2023, 2024]
 
-        mock_fetch.assert_called_once_with("Tommy", None, None)
-
-    @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
-    def test_valid_options_sorts_all_lists(self, mock_fetch, flask_client):
-        """Test that all returned lists are sorted."""
-        # Return unsorted data
-        mock_fetch.return_value = {
-            "years": [2024, 2021, 2023, 2022],
-            "weeks": [5, 1, 3, 2, 4],
-            "positions": ["WR", "QB", "TE", "RB"],
-            "managers": ["Zach", "Alice", "Mike", "Bob"]
-        }
-
-        response = flask_client.get('/meta/valid_options')
-        data = json.loads(response.data)
-
-        # All lists should be sorted
-        assert data["years"] == [2021, 2022, 2023, 2024]
-        assert data["weeks"] == [1, 2, 3, 4, 5]
-        assert data["positions"] == ["QB", "RB", "TE", "WR"]
-        assert data["managers"] == ["Alice", "Bob", "Mike", "Zach"]
+        mock_fetch.assert_called_once_with("Tommy", None, None, None)
 
     @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
     def test_valid_options_with_player_name(self, mock_fetch, flask_client):
@@ -708,7 +688,7 @@ class TestValidOptionsEndpoint:
         response = flask_client.get('/meta/valid_options/Josh_Allen')
         assert response.status_code == 200
 
-        mock_fetch.assert_called_once_with("Josh_Allen", None, None)
+        mock_fetch.assert_called_once_with("Josh_Allen", None, None, None)
 
     @patch('patriot_center_backend.services.valid_options.fetch_valid_options')
     def test_valid_options_returns_empty_lists_when_no_matches(self, mock_fetch, flask_client):

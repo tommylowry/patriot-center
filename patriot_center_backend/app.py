@@ -155,6 +155,10 @@ def valid_options(arg1, arg2, arg3):
     from patriot_center_backend.services.valid_options import fetch_valid_options
 
     data = fetch_valid_options(arg1, arg2, arg3)
+    # Sort each list in the response for consistent ordering
+    for key in data:
+        if isinstance(data[key], list):
+            data[key].sort()
     return jsonify(data), 200
 
 def parse_arguments(arg1, arg2, arg3):

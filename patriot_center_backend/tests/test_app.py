@@ -287,7 +287,7 @@ class TestFlaskRoutes:
         data = json.loads(response.data)
         assert data["status"] == "healthy"
 
-    @patch('patriot_center_backend.app.fetch_starters')
+    @patch('patriot_center_backend.services.managers.fetch_starters')
     def test_get_starters_no_params(self, mock_fetch, flask_client):
         """Test getting starters with no parameters."""
         mock_fetch.return_value = {"2024": {"1": {"Tommy": {}}}}
@@ -296,7 +296,7 @@ class TestFlaskRoutes:
         assert response.status_code == 200
         mock_fetch.assert_called_once_with(manager=None, season=None, week=None)
 
-    @patch('patriot_center_backend.app.fetch_starters')
+    @patch('patriot_center_backend.services.managers.fetch_starters')
     def test_get_starters_with_year(self, mock_fetch, flask_client):
         """Test getting starters filtered by year."""
         mock_fetch.return_value = {"2024": {"1": {"Tommy": {}}}}
@@ -305,7 +305,7 @@ class TestFlaskRoutes:
         assert response.status_code == 200
         mock_fetch.assert_called_once_with(manager=None, season=2024, week=None)
 
-    @patch('patriot_center_backend.app.fetch_starters')
+    @patch('patriot_center_backend.services.managers.fetch_starters')
     def test_get_starters_json_format(self, mock_fetch, flask_client):
         """Test getting starters in JSON format."""
         mock_fetch.return_value = {"2024": {"1": {"Tommy": {}}}}
@@ -316,7 +316,7 @@ class TestFlaskRoutes:
         # Should return raw JSON, not flattened
         assert isinstance(data, dict)
 
-    @patch('patriot_center_backend.app.fetch_aggregated_players')
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_players')
     def test_get_aggregated_players(self, mock_fetch, flask_client, sample_aggregated_player_data):
         """Test the aggregated players endpoint."""
         mock_fetch.return_value = sample_aggregated_player_data
@@ -326,7 +326,7 @@ class TestFlaskRoutes:
         data = json.loads(response.data)
         assert isinstance(data, list)  # Should be converted to records
 
-    @patch('patriot_center_backend.app.fetch_aggregated_managers')
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
     def test_get_aggregated_managers(self, mock_fetch, flask_client, sample_aggregated_manager_data):
         """Test the aggregated managers endpoint."""
         mock_fetch.return_value = sample_aggregated_manager_data
@@ -336,7 +336,7 @@ class TestFlaskRoutes:
         data = json.loads(response.data)
         assert isinstance(data, list)
 
-    @patch('patriot_center_backend.app.fetch_aggregated_managers')
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
     def test_get_aggregated_managers_with_filters(self, mock_fetch, flask_client, sample_aggregated_manager_data):
         """Test aggregated managers with year and week filters."""
         mock_fetch.return_value = sample_aggregated_manager_data

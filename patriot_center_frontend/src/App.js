@@ -10,11 +10,19 @@ import Layout from './components/Layout';
 function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
-  // Initialize from URL params or defaults
-  const [year, setYear] = useState(searchParams.get('year') || '2025');
-  const [week, setWeek] = useState(searchParams.get('week') ? parseInt(searchParams.get('week')) : null);
-  const [manager, setManager] = useState(searchParams.get('manager') || null);
-  const [positionFilter, setPositionFilter] = useState(searchParams.get('position') || 'ALL');
+  // State for filters
+  const [year, setYear] = useState('2025');
+  const [week, setWeek] = useState(null);
+  const [manager, setManager] = useState(null);
+  const [positionFilter, setPositionFilter] = useState('ALL');
+
+  // Sync state with URL params on mount and URL changes
+  useEffect(() => {
+    setYear(searchParams.get('year') || '2025');
+    setWeek(searchParams.get('week') ? parseInt(searchParams.get('week')) : null);
+    setManager(searchParams.get('manager') || null);
+    setPositionFilter(searchParams.get('position') || 'ALL');
+  }, [searchParams]);
 
   // Fetch filter options
   const [options, setOptions] = useState({ seasons: [], weeks: [], managers: [] });
@@ -128,32 +136,35 @@ function HomePage() {
               />
               ALL
             </label>
-            {options.seasons.map(y => (
-              <label
-                key={y}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  background: year === y ? 'var(--accent)' : 'var(--bg-alt)',
-                  padding: '6px 12px',
-                  borderRadius: 4,
-                  cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
-                  fontSize: 14,
-                  opacity: optionsLoading || optionsError ? 0.5 : 1
-                }}
-              >
-                <input
-                  type="radio"
-                  name="year"
-                  checked={year === y}
-                  onChange={() => setYear(y)}
-                  disabled={optionsLoading || optionsError}
-                  style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
-                />
-                {y}
-              </label>
-            ))}
+            {options.seasons.map(y => {
+              const yearStr = String(y);
+              return (
+                <label
+                  key={y}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    background: year === yearStr ? 'var(--accent)' : 'var(--bg-alt)',
+                    padding: '6px 12px',
+                    borderRadius: 4,
+                    cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
+                    fontSize: 14,
+                    opacity: optionsLoading || optionsError ? 0.5 : 1
+                  }}
+                >
+                  <input
+                    type="radio"
+                    name="year"
+                    checked={year === yearStr}
+                    onChange={() => setYear(yearStr)}
+                    disabled={optionsLoading || optionsError}
+                    style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
+                  />
+                  {y}
+                </label>
+              );
+            })}
           </div>
         </section>
 

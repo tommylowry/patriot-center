@@ -225,15 +225,15 @@ def fetch_starters_for_week(season, week):
     league_id = LEAGUE_IDS[int(season)]
     sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
     if sleeper_response_users[1] != 200:
-        return {}
+        return {}, [], [], [], {}
 
     sleeper_response_rosters = fetch_sleeper_data(f"league/{league_id}/rosters")
     if sleeper_response_rosters[1] != 200:
-        return {}
+        return {}, [], [], [], {}
 
     sleeper_response_matchups = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
     if sleeper_response_matchups[1] != 200:
-        return {}
+        return {}, [], [], [], {}
     
     playoff_roster_ids = _get_relevant_playoff_roster_ids(season, week, league_id)
     

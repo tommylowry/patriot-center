@@ -158,7 +158,7 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         'ffWAR': player_data['ffWAR'],
         "position": player_data['position'],
         "player_image_endpoint": player_image_endpoint,
-        "team": PLAYERS_CACHE.get("team", None)
+        "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 
     # Handle playoff placement if present
@@ -210,7 +210,7 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
         'ffWAR': raw_item['ffWAR'],
         "position": raw_item['position'],
         "player_image_endpoint": player_image_endpoint,
-        "team": PLAYERS_CACHE.get("team", None)
+        "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 
     # Handle playoff placement if present

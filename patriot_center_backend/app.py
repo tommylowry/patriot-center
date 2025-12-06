@@ -114,12 +114,35 @@ def get_aggregated_managers(player, arg2, arg3):
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    player = player.replace("_", " ")
+    player = player.replace("_", " ").replace("%27", "'")
 
     data = fetch_aggregated_managers(player=player, season=year, week=week)
     if request.args.get("format") == "json":
         return jsonify(data), 200
     return jsonify(_to_records(data, key_name="player")), 200
+
+@app.route('/get_player_manager_aggregation/<string:player>/<string:manager>', defaults={'year': None, 'week': None}, methods=['GET'])
+@app.route('/get_player_manager_aggregation/<string:player>/<string:manager>/<string:year>', defaults={'week': None}, methods=['GET'])
+@app.route('/get_player_manager_aggregation/<string:player>/<string:manager>/<string:year>/<string:week>', methods=['GET'])
+def get_player_manager_aggregation(player, manager, year, week):
+    """
+    Aggregate totals for a specific player-manager pairing.
+
+    Player and manager are required path components. Remaining args are
+    interpreted as season and/or week. Underscores are converted to spaces
+    to allow URL-friendly player names.
+
+    Returns:
+        Flask Response: JSON payload (aggregated stats or error).
+    """
+    from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+    player = player.replace("_", " ").replace("%27", "'")
+
+    data = fetch_player_manager_aggregation(player=player, manager=manager, season=year, week=week)
+    if request.args.get("format") == "json":
+        return jsonify(data), 200
+    return jsonify(_to_records(data, key_name="manager")), 200
 
 @app.route('/players/list', methods=['GET'])
 def list_players():

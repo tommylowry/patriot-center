@@ -17,6 +17,28 @@ from patriot_center_backend.services.players import fetch_players
 PLAYERS_CACHE = fetch_players()
 FFWAR_CACHE   = load_or_update_ffWAR_cache()
 
+def fetch_player_manager_aggregation(player, manager, season=None, week=None):
+    """
+    Aggregate metrics for a specific player-manager pairing.
+
+    Args:
+        player (str): Player name key.
+        manager (str): Manager username key.
+        season (int | None): Optional season restriction.
+        week (int | None): Optional week restriction.
+
+    Returns:
+        dict: {total_points, num_games_started, ffWAR, position}
+              Empty if no appearances found in filtered slice.
+    """
+    player_data = fetch_aggregated_managers(player=player, season=season, week=week)
+    if manager not in player_data:
+        return {}
+    
+    return {
+        manager: player_data[manager]
+    }
+
 def fetch_aggregated_players(manager=None, season=None, week=None):
     """
     Aggregate player metrics for a given manager.
@@ -235,3 +257,6 @@ def _handle_playoff_placement(aggregation_dict, primary_item, secondary_item, ye
         aggregation_dict[primary_item]["playoff_placement"][secondary_item][year] = placement
     
     return aggregation_dict
+
+test_behavior = fetch_aggregated_managers(player="Trey McBride", season=2019, week=5)
+fetch_aggregated_player_and_manager("Trey McBride", "")

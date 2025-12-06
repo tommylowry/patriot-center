@@ -738,3 +738,115 @@ class TestValidOptionsEndpoint:
         """Test that response content type is JSON."""
         response = flask_client.get('/meta/valid_options')
         assert 'application/json' in response.content_type
+
+
+class TestPlayerManagerAggregationEndpoint:
+    """Test /get_player_manager_aggregation endpoint functionality."""
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_player_manager_aggregation')
+    def test_player_manager_aggregation_basic(self, mock_fetch, flask_client):
+        """Test basic player-manager aggregation endpoint."""
+        mock_fetch.return_value = {
+            "Tommy": {
+                "total_points": 45.5,
+                "num_games_started": 3,
+                "ffWAR": 5.2,
+                "position": "RB"
+            }
+        }
+
+        response = flask_client.get('/get_player_manager_aggregation/Christian_McCaffrey/Tommy')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert isinstance(data, list)
+        # Verify service was called with correct parameters
+        mock_fetch.assert_called_once_with(
+            player="Christian McCaffrey",
+            manager="Tommy",
+            season=None,
+            week=None
+        )
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_player_manager_aggregation')
+    def test_player_manager_aggregation_with_season(self, mock_fetch, flask_client):
+        """Test player-manager aggregation with season filter."""
+        mock_fetch.return_value = {
+            "Tommy": {"total_points": 30.0, "num_games_started": 2, "ffWAR": 3.5, "position": "WR"}
+        }
+
+        response = flask_client.get('/get_player_manager_aggregation/Amon-Ra_St._Brown/Tommy/2024')
+        assert response.status_code == 200
+
+        # Verify season was passed correctly
+        call_args = mock_fetch.call_args[1]
+        assert call_args['player'] == "Amon-Ra St. Brown"
+        assert call_args['manager'] == "Tommy"
+        assert call_args['season'] == "2024"
+        assert call_args['week'] is None
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_player_manager_aggregation')
+    def test_player_manager_aggregation_with_season_and_week(self, mock_fetch, flask_client):
+        """Test player-manager aggregation with both season and week filters."""
+        mock_fetch.return_value = {
+            "Tommy": {"total_points": 18.5, "num_games_started": 1, "ffWAR": 2.1, "position": "QB"}
+        }
+
+        response = flask_client.get('/get_player_manager_aggregation/Josh_Allen/Tommy/2024/5')
+        assert response.status_code == 200
+
+        # Verify all parameters were passed
+        call_args = mock_fetch.call_args[1]
+        assert call_args['player'] == "Josh Allen"
+        assert call_args['manager'] == "Tommy"
+        assert call_args['season'] == "2024"
+        assert call_args['week'] == "5"
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_player_manager_aggregation')
+    def test_player_manager_aggregation_empty_result(self, mock_fetch, flask_client):
+        """Test player-manager aggregation returns empty when no data."""
+        mock_fetch.return_value = {}
+
+        response = flask_client.get('/get_player_manager_aggregation/Unknown_Player/Tommy')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert isinstance(data, list)
+        assert len(data) == 0
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_player_manager_aggregation')
+    def test_player_manager_aggregation_json_format(self, mock_fetch, flask_client):
+        """Test player-manager aggregation with JSON format parameter."""
+        mock_fetch.return_value = {
+            "Tommy": {"total_points": 45.5, "num_games_started": 3, "ffWAR": 5.2, "position": "RB"}
+        }
+
+        response = flask_client.get('/get_player_manager_aggregation/Player/Tommy?format=json')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        # Should return raw dict when format=json
+        assert isinstance(data, dict)
+        assert "Tommy" in data
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_player_manager_aggregation')
+    def test_player_manager_aggregation_handles_apostrophe(self, mock_fetch, flask_client):
+        """Test player name with apostrophe is properly decoded."""
+        mock_fetch.return_value = {"Mike": {"total_points": 20.0, "num_games_started": 1, "ffWAR": 1.5, "position": "RB"}}
+
+        response = flask_client.get('/get_player_manager_aggregation/D%27Andre_Swift/Mike')
+        assert response.status_code == 200
+
+        # Verify player name was converted correctly
+        call_args = mock_fetch.call_args[1]
+        assert call_args['player'] == "D'Andre Swift"
+
+    def test_player_manager_aggregation_cors_headers(self, flask_client):
+        """Test that CORS headers are set."""
+        response = flask_client.get('/get_player_manager_aggregation/Player/Manager')
+        assert 'Access-Control-Allow-Origin' in response.headers
+
+    def test_player_manager_aggregation_content_type(self, flask_client):
+        """Test that response content type is JSON."""
+        response = flask_client.get('/get_player_manager_aggregation/Player/Manager')
+        assert 'application/json' in response.content_type

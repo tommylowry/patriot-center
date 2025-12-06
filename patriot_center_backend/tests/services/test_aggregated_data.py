@@ -624,3 +624,107 @@ class TestPlayoffPlacement:
         # Each manager should have playoff placement for this player
         assert result["Tommy"]["playoff_placement"]["Christian McCaffrey"]["2024"] == 2
         assert result["Mike"]["playoff_placement"]["Christian McCaffrey"]["2024"] == 1
+
+
+class TestFetchPlayerManagerAggregation:
+    """Test fetch_player_manager_aggregation function."""
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
+    def test_returns_single_manager_data(self, mock_fetch_aggregated_managers):
+        """Test returns data for a single manager."""
+        from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+        mock_fetch_aggregated_managers.return_value = {
+            "Tommy": {
+                "total_points": 45.5,
+                "num_games_started": 3,
+                "ffWAR": 5.2,
+                "position": "RB"
+            },
+            "Mike": {
+                "total_points": 30.2,
+                "num_games_started": 2,
+                "ffWAR": 3.1,
+                "position": "RB"
+            }
+        }
+
+        result = fetch_player_manager_aggregation(
+            player="Christian McCaffrey",
+            manager="Tommy",
+            season=2024,
+            week=5
+        )
+
+        assert "Tommy" in result
+        assert "Mike" not in result
+        assert result["Tommy"]["total_points"] == 45.5
+        assert result["Tommy"]["num_games_started"] == 3
+        assert result["Tommy"]["ffWAR"] == 5.2
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
+    def test_returns_empty_when_manager_not_found(self, mock_fetch_aggregated_managers):
+        """Test returns empty dict when manager not in aggregated data."""
+        from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+        mock_fetch_aggregated_managers.return_value = {
+            "Tommy": {
+                "total_points": 45.5,
+                "num_games_started": 3,
+                "ffWAR": 5.2,
+                "position": "RB"
+            }
+        }
+
+        result = fetch_player_manager_aggregation(
+            player="Christian McCaffrey",
+            manager="Cody",
+            season=2024
+        )
+
+        assert result == {}
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
+    def test_passes_filters_to_fetch_aggregated_managers(self, mock_fetch_aggregated_managers):
+        """Test correctly passes season and week filters."""
+        from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+        mock_fetch_aggregated_managers.return_value = {
+            "Tommy": {"total_points": 20.0, "num_games_started": 1, "ffWAR": 2.0, "position": "WR"}
+        }
+
+        fetch_player_manager_aggregation(
+            player="Amon-Ra St. Brown",
+            manager="Tommy",
+            season=2024,
+            week=3
+        )
+
+        mock_fetch_aggregated_managers.assert_called_once_with(
+            player="Amon-Ra St. Brown",
+            season=2024,
+            week=3
+        )
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
+    def test_works_without_optional_filters(self, mock_fetch_aggregated_managers):
+        """Test works with only player and manager (no season/week)."""
+        from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+        mock_fetch_aggregated_managers.return_value = {
+            "Tommy": {"total_points": 100.5, "num_games_started": 8, "ffWAR": 12.3, "position": "QB"}
+        }
+
+        result = fetch_player_manager_aggregation(
+            player="Josh Allen",
+            manager="Tommy"
+        )
+
+        assert "Tommy" in result
+        assert result["Tommy"]["total_points"] == 100.5
+
+        mock_fetch_aggregated_managers.assert_called_once_with(
+            player="Josh Allen",
+            season=None,
+            week=None
+        )

@@ -16,11 +16,13 @@ function HomePage() {
   const [manager, setManager] = useState(null);
   const [positionFilter, setPositionFilter] = useState('ALL');
 
-  // Track last params we set to avoid infinite loop
-  const lastParamsRef = useRef('');
+  // Track if we're initializing from URL to prevent loops
+  const isInitializedRef = useRef(false);
 
-  // Sync state with URL params on mount and URL changes
+  // Sync state with URL params ONLY on mount
   useEffect(() => {
+    if (isInitializedRef.current) return;
+
     const yearParam = searchParams.get('year');
     if (yearParam === 'ALL') {
       setYear(null);
@@ -30,15 +32,19 @@ function HomePage() {
     setWeek(searchParams.get('week') ? parseInt(searchParams.get('week')) : null);
     setManager(searchParams.get('manager') || null);
     setPositionFilter(searchParams.get('position') || 'ALL');
-  }, [searchParams]);
+
+    isInitializedRef.current = true;
+  }, []); // Only run once on mount
 
   // Fetch dynamic filter options based on current selections
   const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager);
 
   const { players, loading, error } = useAggregatedPlayers(year, week, manager);
 
-  // Update URL when filters change
+  // Update URL when filters change (after initialization)
   useEffect(() => {
+    if (!isInitializedRef.current) return;
+
     const params = new URLSearchParams();
 
     if (year === null) {
@@ -50,13 +56,7 @@ function HomePage() {
     if (manager) params.set('manager', manager);
     if (positionFilter && positionFilter !== 'ALL') params.set('position', positionFilter);
 
-    const newParamsString = params.toString();
-
-    // Only update URL if different from what we last set
-    if (newParamsString !== lastParamsRef.current) {
-      lastParamsRef.current = newParamsString;
-      setSearchParams(params, { replace: true });
-    }
+    setSearchParams(params, { replace: true });
   }, [year, week, manager, positionFilter, setSearchParams]);
 
   const [sortKey, setSortKey] = useState('ffWAR');
@@ -120,27 +120,27 @@ function HomePage() {
       {/* Inline filters centered */}
       <div style={{
         marginBottom: '1.5rem',
-        maxWidth: '900px',
-        margin: '0 auto 1.5rem',
-        border: '1px solid var(--border)',
-        borderRadius: '8px',
-        overflow: 'hidden'
+        display: 'flex',
+        gap: '0',
+        justifyContent: 'center',
+        flexWrap: 'wrap'
       }}>
         {/* Season Filter */}
-        <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Season</strong>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+        <section style={{ padding: '1rem', borderRight: '1px solid var(--border)', minWidth: '120px' }}>
+          <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Season</strong>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
             <label
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 4,
                 background: year === null ? 'var(--accent)' : 'var(--bg-alt)',
                 padding: '6px 12px',
                 borderRadius: 4,
-                cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
+                cursor: (optionsLoading || optionsError || (year !== null && week !== null)) ? 'not-allowed' : 'pointer',
                 fontSize: 14,
-                opacity: optionsLoading || optionsError ? 0.5 : 1
+                opacity: (optionsLoading || optionsError || (year !== null && week !== null)) ? 0.5 : 1
               }}
             >
               <input
@@ -148,8 +148,8 @@ function HomePage() {
                 name="year"
                 checked={year === null}
                 onChange={() => setYear(null)}
-                disabled={optionsLoading || optionsError}
-                style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
+                disabled={optionsLoading || optionsError || (year !== null && week !== null)}
+                style={{ cursor: (optionsLoading || optionsError || (year !== null && week !== null)) ? 'not-allowed' : 'pointer' }}
               />
               ALL
             </label>
@@ -161,6 +161,7 @@ function HomePage() {
                   style={{
                     display: 'flex',
                     alignItems: 'center',
+                    justifyContent: 'center',
                     gap: 4,
                     background: year === yearStr ? 'var(--accent)' : 'var(--bg-alt)',
                     padding: '6px 12px',
@@ -186,13 +187,14 @@ function HomePage() {
         </section>
 
         {/* Week Filter */}
-        <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Week</strong>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+        <section style={{ padding: '1rem', borderRight: '1px solid var(--border)', minWidth: '100px' }}>
+          <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Week</strong>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
             <label
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 4,
                 background: week === null ? 'var(--accent)' : 'var(--bg-alt)',
                 padding: '6px 12px',
@@ -218,6 +220,7 @@ function HomePage() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: 4,
                   background: week === w ? 'var(--accent)' : 'var(--bg-alt)',
                   padding: '6px 12px',
@@ -242,13 +245,14 @@ function HomePage() {
         </section>
 
         {/* Manager Filter */}
-        <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-          <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Manager</strong>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+        <section style={{ padding: '1rem', borderRight: '1px solid var(--border)', minWidth: '140px' }}>
+          <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Manager</strong>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
             <label
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 4,
                 background: manager === null ? 'var(--accent)' : 'var(--bg-alt)',
                 padding: '6px 12px',
@@ -274,6 +278,7 @@ function HomePage() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: 4,
                   background: manager === m ? 'var(--accent)' : 'var(--bg-alt)',
                   padding: '6px 12px',
@@ -298,13 +303,14 @@ function HomePage() {
         </section>
 
         {/* Position Filter */}
-        <section style={{ padding: '1rem' }}>
-          <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Position</strong>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+        <section style={{ padding: '1rem', minWidth: '120px' }}>
+          <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Position</strong>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
             <label
               style={{
                 display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 4,
                 background: positionFilter === 'ALL' ? 'var(--accent)' : 'var(--bg-alt)',
                 padding: '6px 12px',
@@ -330,6 +336,7 @@ function HomePage() {
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: 4,
                   background: positionFilter === pos ? 'var(--accent)' : 'var(--bg-alt)',
                   padding: '6px 12px',

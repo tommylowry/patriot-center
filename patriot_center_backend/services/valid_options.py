@@ -38,7 +38,10 @@ def fetch_valid_options(arg1, arg2, arg3, arg4=None):
 
     filtered_dict["managers"].sort()
 
-    save_cache(CURRENT_OPTIONS_SELECTION_FILE, filtered_dict)
+    # Save the current selection only if all three arguments are provided
+    if None not in [arg1, arg2, arg3]:
+        save_cache(CURRENT_OPTIONS_SELECTION_FILE, filtered_dict)
+    
     return filtered_dict
 
 
@@ -98,6 +101,19 @@ def _filter_player(player, year, manager, week, filtered_dict):
 
     position = PLAYERS_CACHE.get(player, {}).get("position", None)
     filtered_dict["positions"] = list([position])
+
+    # If year and week are specified, find the managers they played for that week
+    if year != None and week != None:
+        filtered_dict['years'] = list([year])
+        filtered_dict['weeks'] = list([week])
+        if manager != None:
+            filtered_dict['managers'] = list([manager])
+            return filtered_dict
+        else:
+            for manager_key in VALID_OPTIONS_CACHE.get(str(year), {}).get(str(week), {}).get("managers", []):
+                if player in VALID_OPTIONS_CACHE.get(str(year), {}).get(str(week), {}).get(manager_key, {}).get("players", []):
+                    filtered_dict['managers'] = list([manager_key])
+                    return filtered_dict
     
 
     reference_dict = copy.deepcopy(filtered_dict)

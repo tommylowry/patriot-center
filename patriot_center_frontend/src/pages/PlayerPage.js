@@ -25,7 +25,7 @@ export default function PlayerPage() {
     const { managers: allTimeManagers } = usePlayerManagers(slug, {});
 
     // Fetch filtered data for the table
-    const { managers, loading, error } = usePlayerManagers(slug, { year, week });
+    const { managers, loading, error } = usePlayerManagers(slug, { year, week, manager });
 
     // Extract player image URL from first manager object
     const playerImageUrl = managers?.[0]?.player_image_endpoint;
@@ -168,13 +168,13 @@ export default function PlayerPage() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '0.25rem'
+                                gap: '0.1rem'
                             }}>
                                 <div style={{
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    gap: '0.25rem',
+                                    gap: '0.05rem',
                                     minHeight: '80px',
                                     justifyContent: 'center'
                                 }}>
@@ -198,7 +198,9 @@ export default function PlayerPage() {
                                     color: 'var(--muted)',
                                     textAlign: 'center',
                                     lineHeight: 1.3,
-                                    maxWidth: '100px'
+                                    maxWidth: '100px',
+                                    borderTop: '1px solid var(--border)',
+                                    paddingTop: '0.25rem'
                                 }}>
                                     {playoffDetails[1].map((d, i) => (
                                         <div key={i}>{d.year}: {d.manager}</div>
@@ -211,13 +213,13 @@ export default function PlayerPage() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '0.25rem'
+                                gap: '0.1rem'
                             }}>
                                 <div style={{
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    gap: '0.25rem',
+                                    gap: '0.05rem',
                                     minHeight: '80px',
                                     justifyContent: 'center'
                                 }}>
@@ -241,7 +243,9 @@ export default function PlayerPage() {
                                     color: 'var(--muted)',
                                     textAlign: 'center',
                                     lineHeight: 1.3,
-                                    maxWidth: '100px'
+                                    maxWidth: '100px',
+                                    borderTop: '1px solid var(--border)',
+                                    paddingTop: '0.25rem'
                                 }}>
                                     {playoffDetails[2].map((d, i) => (
                                         <div key={i}>{d.year}: {d.manager}</div>
@@ -254,13 +258,13 @@ export default function PlayerPage() {
                                 display: 'flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '0.25rem'
+                                gap: '0.1rem'
                             }}>
                                 <div style={{
                                     display: 'flex',
                                     flexDirection: 'column',
                                     alignItems: 'center',
-                                    gap: '0.25rem',
+                                    gap: '0.05rem',
                                     minHeight: '80px',
                                     justifyContent: 'center'
                                 }}>
@@ -284,7 +288,9 @@ export default function PlayerPage() {
                                     color: 'var(--muted)',
                                     textAlign: 'center',
                                     lineHeight: 1.3,
-                                    maxWidth: '100px'
+                                    maxWidth: '100px',
+                                    borderTop: '1px solid var(--border)',
+                                    paddingTop: '0.25rem'
                                 }}>
                                     {playoffDetails[3].map((d, i) => (
                                         <div key={i}>{d.year}: {d.manager}</div>
@@ -316,27 +322,27 @@ export default function PlayerPage() {
             {/* Radio button filters */}
             <div style={{
                 marginBottom: '1.5rem',
-                maxWidth: '800px',
-                margin: '0 auto 1.5rem',
-                border: '1px solid var(--border)',
-                borderRadius: '8px',
-                overflow: 'hidden'
+                display: 'flex',
+                gap: '0',
+                justifyContent: 'center',
+                flexWrap: 'wrap'
             }}>
                 {/* Season Filter */}
-                <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-                    <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Season</strong>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+                <section style={{ padding: '1rem', borderRight: '1px solid var(--border)', minWidth: '120px' }}>
+                    <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Season</strong>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
                         <label
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
+                                justifyContent: 'center',
                                 gap: 4,
                                 background: year === null ? 'var(--accent)' : 'var(--bg-alt)',
                                 padding: '6px 12px',
                                 borderRadius: 4,
-                                cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
+                                cursor: (optionsLoading || optionsError || (year !== null && week !== null)) ? 'not-allowed' : 'pointer',
                                 fontSize: 14,
-                                opacity: optionsLoading || optionsError ? 0.5 : 1
+                                opacity: (optionsLoading || optionsError || (year !== null && week !== null)) ? 0.5 : 1
                             }}
                         >
                             <input
@@ -344,8 +350,8 @@ export default function PlayerPage() {
                                 name="year"
                                 checked={year === null}
                                 onChange={() => setYear(null)}
-                                disabled={optionsLoading || optionsError}
-                                style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
+                                disabled={optionsLoading || optionsError || (year !== null && week !== null)}
+                                style={{ cursor: (optionsLoading || optionsError || (year !== null && week !== null)) ? 'not-allowed' : 'pointer' }}
                             />
                             ALL
                         </label>
@@ -355,6 +361,7 @@ export default function PlayerPage() {
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: 4,
                                     background: year === y ? 'var(--accent)' : 'var(--bg-alt)',
                                     padding: '6px 12px',
@@ -379,13 +386,14 @@ export default function PlayerPage() {
                 </section>
 
                 {/* Week Filter */}
-                <section style={{ padding: '1rem', borderBottom: '1px solid var(--border)' }}>
-                    <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Week</strong>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+                <section style={{ padding: '1rem', borderRight: '1px solid var(--border)', minWidth: '100px' }}>
+                    <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Week</strong>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
                         <label
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
+                                justifyContent: 'center',
                                 gap: 4,
                                 background: week === null ? 'var(--accent)' : 'var(--bg-alt)',
                                 padding: '6px 12px',
@@ -411,6 +419,7 @@ export default function PlayerPage() {
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: 4,
                                     background: week === w ? 'var(--accent)' : 'var(--bg-alt)',
                                     padding: '6px 12px',
@@ -435,13 +444,14 @@ export default function PlayerPage() {
                 </section>
 
                 {/* Manager Filter */}
-                <section style={{ padding: '1rem' }}>
-                    <strong style={{ display: 'block', marginBottom: '0.5rem' }}>Manager</strong>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', justifyContent: 'center' }}>
+                <section style={{ padding: '1rem', minWidth: '140px' }}>
+                    <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Manager</strong>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
                         <label
                             style={{
                                 display: 'flex',
                                 alignItems: 'center',
+                                justifyContent: 'center',
                                 gap: 4,
                                 background: manager === null ? 'var(--accent)' : 'var(--bg-alt)',
                                 padding: '6px 12px',
@@ -467,6 +477,7 @@ export default function PlayerPage() {
                                 style={{
                                     display: 'flex',
                                     alignItems: 'center',
+                                    justifyContent: 'center',
                                     gap: 4,
                                     background: manager === m ? 'var(--accent)' : 'var(--bg-alt)',
                                     padding: '6px 12px',

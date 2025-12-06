@@ -557,3 +557,116 @@ class TestFetchValidOptions:
 
         assert sorted(result["years"]) == [2021, 2022]
         assert result["weeks"] == list(range(1, 18))  # No year specified, so all weeks
+
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1", 2022: "id2"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user", "Cody": "cody_user", "Alice": "alice_user"})
+    @patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE', {
+        "2021": {
+            "managers": ["Cody", "Tommy", "Alice"],
+            "weeks": [1, 2, 3],
+            "positions": ["QB", "RB"]
+        }
+    })
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    def test_sorts_managers_alphabetically(self, mock_fetch_players):
+        """Test that managers are sorted alphabetically before returning."""
+        mock_fetch_players.return_value = {}
+
+        result = fetch_valid_options(2021, None, None)
+
+        # Managers should be sorted alphabetically
+        assert result["managers"] == ["Alice", "Cody", "Tommy"]
+
+    @patch('patriot_center_backend.services.valid_options.load_cache')
+    @patch('patriot_center_backend.services.valid_options.save_cache')
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user"})
+    @patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE', {
+        "2021": {
+            "managers": ["Tommy"],
+            "weeks": [1, 2],
+            "positions": ["QB"],
+            "1": {
+                "managers": ["Tommy"],
+                "positions": ["QB"],
+                "Tommy": {
+                    "positions": ["QB"]
+                }
+            }
+        }
+    })
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    def test_saves_selection_when_three_args_provided(self, mock_fetch_players, mock_save_cache, mock_load_cache):
+        """Test that current selection is saved when all three arguments are provided."""
+        mock_fetch_players.return_value = {}
+
+        result = fetch_valid_options(2021, 1, "Tommy")
+
+        # Verify save_cache was called with the filtered result
+        mock_save_cache.assert_called_once()
+        call_args = mock_save_cache.call_args[0]
+
+        # First arg should be CURRENT_OPTIONS_SELECTION_FILE
+        from patriot_center_backend.constants import CURRENT_OPTIONS_SELECTION_FILE
+        assert call_args[0] == CURRENT_OPTIONS_SELECTION_FILE
+
+        # Second arg should be the result dict
+        assert call_args[1] == result
+
+    @patch('patriot_center_backend.services.valid_options.load_cache')
+    @patch('patriot_center_backend.services.valid_options.save_cache')
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user"})
+    @patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE', {})
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    def test_does_not_save_selection_when_fewer_than_three_args(self, mock_fetch_players, mock_save_cache, mock_load_cache):
+        """Test that selection is not saved when fewer than three arguments provided."""
+        mock_fetch_players.return_value = {}
+
+        # Test with no args
+        fetch_valid_options(None, None, None)
+        assert mock_save_cache.call_count == 0
+
+        # Test with one arg
+        fetch_valid_options(2021, None, None)
+        assert mock_save_cache.call_count == 0
+
+        # Test with two args
+        fetch_valid_options(2021, 1, None)
+        assert mock_save_cache.call_count == 0
+
+    @patch('patriot_center_backend.services.valid_options.load_cache')
+    @patch('patriot_center_backend.services.valid_options.LEAGUE_IDS', {2021: "id1"})
+    @patch('patriot_center_backend.services.valid_options.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user"})
+    @patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE', {})
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    def test_returns_saved_selection_when_fourth_arg_provided(self, mock_fetch_players, mock_load_cache):
+        """Test that saved selection is returned when fourth argument is provided."""
+        mock_fetch_players.return_value = {}
+
+        saved_selection = {
+            "years": [2021],
+            "weeks": [1, 2],
+            "managers": ["Tommy"],
+            "positions": ["QB", "RB"]
+        }
+        mock_load_cache.return_value = saved_selection
+
+        result = fetch_valid_options(2021, 1, "Tommy", "anything")
+
+        # Should return the saved selection
+        assert result == saved_selection
+
+        # Verify load_cache was called with correct file
+        from patriot_center_backend.constants import CURRENT_OPTIONS_SELECTION_FILE
+        mock_load_cache.assert_called_once_with(CURRENT_OPTIONS_SELECTION_FILE, initialize_with_last_updated_info=False)
+
+    @patch('patriot_center_backend.services.valid_options.load_cache')
+    @patch('patriot_center_backend.services.valid_options.fetch_players')
+    def test_raises_error_when_fourth_arg_but_no_saved_selection(self, mock_fetch_players, mock_load_cache):
+        """Test that error is raised when fourth arg provided but no saved selection exists."""
+        mock_fetch_players.return_value = {}
+        mock_load_cache.return_value = {}
+
+        with pytest.raises(ValueError, match="No saved filter selection found"):
+            fetch_valid_options("arg1", "arg2", "arg3", "arg4")

@@ -13,7 +13,7 @@ def fetch_players():
 def fetch_valid_options():
     """
     Retrieve valid options cache.
-    
+
     Returns:
         dict: Cached valid options data.
     """

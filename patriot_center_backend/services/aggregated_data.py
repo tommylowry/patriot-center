@@ -12,12 +12,10 @@ Notes:
 from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
 from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
-from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.services.players import fetch_players
 
 PLAYERS_CACHE = fetch_players()
-
-ffWAR_cache = load_or_update_ffWAR_cache()
+FFWAR_CACHE   = load_or_update_ffWAR_cache()
 
 def fetch_aggregated_players(manager=None, season=None, week=None):
     """
@@ -111,8 +109,8 @@ def fetch_ffWAR_for_player(player, season=None, week=None):
     season_str = str(season)
     week_str = str(week)
 
-    if season_str in ffWAR_cache and week_str in ffWAR_cache[season_str]:
-        week_data = ffWAR_cache[season_str][week_str]
+    if season_str in FFWAR_CACHE and week_str in FFWAR_CACHE[season_str]:
+        week_data = FFWAR_CACHE[season_str][week_str]
         if player in week_data and "ffWAR" in week_data[player]:
             return week_data[player]["ffWAR"]
 
@@ -149,7 +147,6 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
     """
     Create initial aggregation record for a player.
     """
-
     if player_data['player_id'].isnumeric():
         player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_data['player_id']}.jpg"
     else:

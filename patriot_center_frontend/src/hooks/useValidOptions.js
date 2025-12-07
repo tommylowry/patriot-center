@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { fetchValidOptions } from '../services/options';
 
-export function useValidOptions(year = null, week = null, manager = null, player = null) {
+export function useValidOptions(year = null, week = null, manager = null, player = null, position = null) {
   const [options, setOptions] = useState({
     years: [],
     weeks: [],
@@ -17,7 +17,7 @@ export function useValidOptions(year = null, week = null, manager = null, player
     setLoading(true);
     setError(null);
 
-    fetchValidOptions(year, week, manager, player)
+    fetchValidOptions(year, week, manager, player, position)
       .then(json => {
         if (!active) return;
 
@@ -32,14 +32,14 @@ export function useValidOptions(year = null, week = null, manager = null, player
         setOptions(validOptions);
 
         if (process.env.NODE_ENV === 'development') {
-          console.debug('useValidOptions:', { year, week, manager, player, validOptions });
+          console.debug('useValidOptions:', { year, week, manager, player, position, validOptions });
         }
       })
       .catch(e => active && setError(e.message))
       .finally(() => active && setLoading(false));
 
     return () => { active = false; };
-  }, [year, week, manager, player]);
+  }, [year, week, manager, player, position]);
 
   return { options, loading, error };
 }

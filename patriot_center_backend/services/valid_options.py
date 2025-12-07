@@ -8,7 +8,7 @@ VALID_OPTIONS_CACHE = fetch_valid_options_cache()
 
 def fetch_valid_options(arg1, arg2, arg3, arg4=None):
 
-    year, week, manager, player = _parse_args(arg1, arg2, arg3, arg4)
+    year, week, manager, player, position = _parse_args(arg1, arg2, arg3, arg4)
     
     default_response = {
         "years": list(LEAGUE_IDS.keys()),
@@ -24,14 +24,17 @@ def fetch_valid_options(arg1, arg2, arg3, arg4=None):
     if year == None and week != None:
         raise ValueError("Week specified without a year.")
     
-    if arg4 != None:
-        # Load the last saved filter selection if week is not specified
+    # Edge case in the player page when all but one player page filters are selected
+    if arg4 != None and player != None:
+        
+        # If Player, Manager, and Year are provided but Week is not, then all the weeks of the previous selection are valid and are returned
         if week == None:
             current_filter = load_cache(CURRENT_OPTIONS_SELECTION_FILE, initialize_with_last_updated_info=False)
             if current_filter == {}:
                 raise ValueError("No saved filter selection found.")
             return current_filter
-        # If week is specified, start from default response
+        
+        # If Player, Year, and Week are provided but Manager is not, then find the manager who started the player that week.
         else:
             filtered_dict = _filter_player(player, year, manager, week, default_response)
             filtered_dict["managers"].sort()
@@ -42,12 +45,18 @@ def fetch_valid_options(arg1, arg2, arg3, arg4=None):
     filtered_dict = _filter_week(week, year, filtered_dict) # week needs year
     filtered_dict = _filter_manager(manager, year, week, filtered_dict)
     filtered_dict = _filter_player(player, year, manager, week, filtered_dict)
+    filtered_dict = _filter_position(position, filtered_dict)
 
     filtered_dict["managers"].sort()
 
-    # Save the current selection only if all three arguments are provided
-    if None not in [arg1, arg2, arg3]:
-        save_cache(CURRENT_OPTIONS_SELECTION_FILE, filtered_dict)
+    # Save the current selection only if 3 or more arguments are provided for the player page edge case
+    if player != None:
+        filter_count = 0
+        for arg in [arg1, arg2, arg3, arg4]:
+            if arg != None:
+                filter_count += 1
+        if filter_count >= 3:
+            save_cache(CURRENT_OPTIONS_SELECTION_FILE, filtered_dict)
     
     return filtered_dict
 
@@ -208,7 +217,38 @@ def _filter_player(player, year, manager, week, filtered_dict):
     
     return filtered_dict
 
+def _filter_position(position, filtered_dict):
+    if position == None:
+        return filtered_dict
+    
+    reference_dict = copy.deepcopy(filtered_dict)
 
+    years = list()
+    weeks = list()
+    managers = list()
+
+    for year_key in reference_dict["years"]:
+        yearly_list = VALID_OPTIONS_CACHE.get(str(year_key), {})
+        if position in yearly_list.get("positions", []):
+            years.append(year_key)
+
+        for week_key in reference_dict["weeks"]:
+            weekly_lists = VALID_OPTIONS_CACHE.get(str(year_key), {}).get(str(week_key), {})
+            if position in weekly_lists.get("positions", []):
+                if year_key in years and week_key not in weeks:
+                    weeks.append(week_key)
+
+            for manager_key in reference_dict["managers"]:
+                if position in weekly_lists.get(manager_key, {}).get("positions", []):
+                    if year_key in years and week_key in weeks and manager_key not in managers:
+                        managers.append(manager_key)
+    
+    filtered_dict["years"]    = years
+    filtered_dict["weeks"]    = weeks
+    filtered_dict["managers"] = managers
+
+    return filtered_dict
+    
 
 def _trim_list(original_list, keep_list):
     if keep_list == []:
@@ -234,6 +274,7 @@ def _parse_args(arg1, arg2, arg3, arg4=None):
     week     = None
     manager  = None
     player   = None
+    position = None
 
     players = fetch_players()
 
@@ -270,7 +311,13 @@ def _parse_args(arg1, arg2, arg3, arg4=None):
                 if player != None:
                     raise ValueError("Multiple player arguments provided.")
                 player = arg.replace("_", " ").replace("%27", "'") # Normalize player name
+            
+            elif arg in ["QB", "RB", "WR", "TE", "K", "DEF"]:
+                if position != None:
+                    raise ValueError("Multiple position arguments provided.")
+                position = arg
+            
             else:
                 raise ValueError(f"Unrecognized argument: {arg}")
 
-    return year, week, manager, player
+    return year, week, manager, player, position

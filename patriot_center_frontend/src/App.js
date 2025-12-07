@@ -37,7 +37,7 @@ function HomePage() {
   }, []); // Only run once on mount
 
   // Fetch dynamic filter options based on current selections
-  const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager);
+  const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager, null, positionFilter !== 'ALL' ? positionFilter : null);
 
   const { players, loading, error } = useAggregatedPlayers(year, week, manager);
 

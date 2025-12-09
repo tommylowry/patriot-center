@@ -1,6 +1,6 @@
 {
     "Last_Updated_Season": "2025",
-    "Last_Updated_Week": 13,
+    "Last_Updated_Week": 14,
     "2019": {
         "1": {
             "Jameis Winston": {
@@ -55481,6 +55481,608 @@
             },
             "Green Bay Packers": {
                 "ffWAR": -0.076,
+                "manager": "Sam",
+                "position": "DEF"
+            }
+        },
+        "14": {
+            "Sam Darnold": {
+                "ffWAR": 0.106,
+                "manager": "Anthony",
+                "position": "QB"
+            },
+            "Jalen Hurts": {
+                "ffWAR": -0.22,
+                "manager": "Tommy",
+                "position": "QB"
+            },
+            "Josh Allen": {
+                "ffWAR": 0.326,
+                "manager": "Owen",
+                "position": "QB"
+            },
+            "Tyrod Taylor": {
+                "ffWAR": -0.25,
+                "manager": "Jay",
+                "position": "QB"
+            },
+            "Trevor Lawrence": {
+                "ffWAR": 0.061,
+                "manager": "Mitch",
+                "position": "QB"
+            },
+            "Jordan Love": {
+                "ffWAR": 0.061,
+                "manager": "Ty",
+                "position": "QB"
+            },
+            "Patrick Mahomes": {
+                "ffWAR": -0.136,
+                "manager": "Christian",
+                "position": "QB"
+            },
+            "Baker Mayfield": {
+                "ffWAR": -0.045,
+                "manager": "Cody",
+                "position": "QB"
+            },
+            "Jacoby Brissett": {
+                "ffWAR": 0.053,
+                "manager": "Dheeraj",
+                "position": "QB"
+            },
+            "Dak Prescott": {
+                "ffWAR": 0.0,
+                "manager": "Sach",
+                "position": "QB"
+            },
+            "Matthew Stafford": {
+                "ffWAR": 0.114,
+                "manager": "Benz",
+                "position": "QB"
+            },
+            "Daniel Jones": {
+                "ffWAR": -0.22,
+                "manager": "Sam",
+                "position": "QB"
+            },
+            "Zonovan Knight": {
+                "ffWAR": -0.023,
+                "manager": "Anthony",
+                "position": "RB"
+            },
+            "Saquon Barkley": {
+                "ffWAR": 0.106,
+                "manager": "Anthony",
+                "position": "RB"
+            },
+            "Josh Jacobs": {
+                "ffWAR": 0.091,
+                "manager": "Tommy",
+                "position": "RB"
+            },
+            "RJ Harvey": {
+                "ffWAR": 0.106,
+                "manager": "Tommy",
+                "position": "RB"
+            },
+            "Bucky Irving": {
+                "ffWAR": 0.076,
+                "manager": "Owen",
+                "position": "RB"
+            },
+            "Woody Marks": {
+                "ffWAR": 0.076,
+                "manager": "Owen",
+                "position": "RB"
+            },
+            "David Montgomery": {
+                "ffWAR": 0.068,
+                "manager": "Owen",
+                "position": "RB"
+            },
+            "Jonathan Taylor": {
+                "ffWAR": 0.045,
+                "manager": "Jay",
+                "position": "RB"
+            },
+            "Derrick Henry": {
+                "ffWAR": 0.038,
+                "manager": "Jay",
+                "position": "RB"
+            },
+            "Chris Rodriguez": {
+                "ffWAR": -0.023,
+                "manager": "Jay",
+                "position": "RB"
+            },
+            "Jordan Mason": {
+                "ffWAR": 0.038,
+                "manager": "Mitch",
+                "position": "RB"
+            },
+            "Omarion Hampton": {
+                "ffWAR": 0.068,
+                "manager": "Mitch",
+                "position": "RB"
+            },
+            "Kimani Vidal": {
+                "ffWAR": 0.038,
+                "manager": "Mitch",
+                "position": "RB"
+            },
+            "Travis Etienne": {
+                "ffWAR": 0.136,
+                "manager": "Ty",
+                "position": "RB"
+            },
+            "Quinshon Judkins": {
+                "ffWAR": 0.015,
+                "manager": "Ty",
+                "position": "RB"
+            },
+            "Ashton Jeanty": {
+                "ffWAR": -0.023,
+                "manager": "Ty",
+                "position": "RB"
+            },
+            "Breece Hall": {
+                "ffWAR": -0.023,
+                "manager": "Christian",
+                "position": "RB"
+            },
+            "Jaylen Warren": {
+                "ffWAR": 0.068,
+                "manager": "Christian",
+                "position": "RB"
+            },
+            "Aaron Jones": {
+                "ffWAR": 0.008,
+                "manager": "Christian",
+                "position": "RB"
+            },
+            "De'Von Achane": {
+                "ffWAR": 0.098,
+                "manager": "Cody",
+                "position": "RB"
+            },
+            "Kyren Williams": {
+                "ffWAR": 0.091,
+                "manager": "Cody",
+                "position": "RB"
+            },
+            "Zach Charbonnet": {
+                "ffWAR": 0.008,
+                "manager": "Dheeraj",
+                "position": "RB"
+            },
+            "Kenneth Walker": {
+                "ffWAR": -0.045,
+                "manager": "Dheeraj",
+                "position": "RB"
+            },
+            "Jahmyr Gibbs": {
+                "ffWAR": 0.288,
+                "manager": "Sach",
+                "position": "RB"
+            },
+            "James Cook": {
+                "ffWAR": 0.015,
+                "manager": "Sach",
+                "position": "RB"
+            },
+            "Kareem Hunt": {
+                "ffWAR": 0.015,
+                "manager": "Sach",
+                "position": "RB"
+            },
+            "Bijan Robinson": {
+                "ffWAR": 0.015,
+                "manager": "Benz",
+                "position": "RB"
+            },
+            "Javonte Williams": {
+                "ffWAR": 0.068,
+                "manager": "Benz",
+                "position": "RB"
+            },
+            "D'Andre Swift": {
+                "ffWAR": 0.03,
+                "manager": "Sam",
+                "position": "RB"
+            },
+            "Chase Brown": {
+                "ffWAR": 0.098,
+                "manager": "Sam",
+                "position": "RB"
+            },
+            "Devin Neal": {
+                "ffWAR": 0.076,
+                "manager": "Sam",
+                "position": "RB"
+            },
+            "Zay Flowers": {
+                "ffWAR": 0.076,
+                "manager": "Anthony",
+                "position": "WR"
+            },
+            "Luther Burden": {
+                "ffWAR": 0.0,
+                "manager": "Anthony",
+                "position": "WR"
+            },
+            "Cooper Kupp": {
+                "ffWAR": 0.008,
+                "manager": "Anthony",
+                "position": "WR"
+            },
+            "Christian Watson": {
+                "ffWAR": 0.174,
+                "manager": "Anthony",
+                "position": "WR"
+            },
+            "DK Metcalf": {
+                "ffWAR": 0.083,
+                "manager": "Tommy",
+                "position": "WR"
+            },
+            "Darnell Mooney": {
+                "ffWAR": -0.098,
+                "manager": "Tommy",
+                "position": "WR"
+            },
+            "DeVonta Smith": {
+                "ffWAR": -0.038,
+                "manager": "Tommy",
+                "position": "WR"
+            },
+            "Jayden Higgins": {
+                "ffWAR": -0.045,
+                "manager": "Tommy",
+                "position": "WR"
+            },
+            "Courtland Sutton": {
+                "ffWAR": 0.0,
+                "manager": "Owen",
+                "position": "WR"
+            },
+            "Michael Pittman": {
+                "ffWAR": 0.023,
+                "manager": "Owen",
+                "position": "WR"
+            },
+            "Devaughn Vele": {
+                "ffWAR": -0.038,
+                "manager": "Owen",
+                "position": "WR"
+            },
+            "Ladd McConkey": {
+                "ffWAR": -0.091,
+                "manager": "Jay",
+                "position": "WR"
+            },
+            "Troy Franklin": {
+                "ffWAR": -0.068,
+                "manager": "Jay",
+                "position": "WR"
+            },
+            "Jameson Williams": {
+                "ffWAR": 0.038,
+                "manager": "Jay",
+                "position": "WR"
+            },
+            "Romeo Doubs": {
+                "ffWAR": -0.129,
+                "manager": "Mitch",
+                "position": "WR"
+            },
+            "Chris Godwin": {
+                "ffWAR": -0.023,
+                "manager": "Mitch",
+                "position": "WR"
+            },
+            "Rashee Rice": {
+                "ffWAR": -0.038,
+                "manager": "Mitch",
+                "position": "WR"
+            },
+            "CeeDee Lamb": {
+                "ffWAR": 0.053,
+                "manager": "Ty",
+                "position": "WR"
+            },
+            "Ja'Marr Chase": {
+                "ffWAR": -0.023,
+                "manager": "Ty",
+                "position": "WR"
+            },
+            "Nico Collins": {
+                "ffWAR": 0.038,
+                "manager": "Ty",
+                "position": "WR"
+            },
+            "Puka Nacua": {
+                "ffWAR": 0.273,
+                "manager": "Christian",
+                "position": "WR"
+            },
+            "Amon-Ra St. Brown": {
+                "ffWAR": 0.023,
+                "manager": "Christian",
+                "position": "WR"
+            },
+            "Deebo Samuel": {
+                "ffWAR": -0.045,
+                "manager": "Christian",
+                "position": "WR"
+            },
+            "Jaxon Smith-Njigba": {
+                "ffWAR": 0.182,
+                "manager": "Cody",
+                "position": "WR"
+            },
+            "Michael Wilson": {
+                "ffWAR": 0.273,
+                "manager": "Cody",
+                "position": "WR"
+            },
+            "Keenan Allen": {
+                "ffWAR": -0.068,
+                "manager": "Cody",
+                "position": "WR"
+            },
+            "Emeka Egbuka": {
+                "ffWAR": -0.068,
+                "manager": "Dheeraj",
+                "position": "WR"
+            },
+            "Justin Jefferson": {
+                "ffWAR": -0.076,
+                "manager": "Dheeraj",
+                "position": "WR"
+            },
+            "Brian Thomas": {
+                "ffWAR": 0.008,
+                "manager": "Dheeraj",
+                "position": "WR"
+            },
+            "Alec Pierce": {
+                "ffWAR": 0.008,
+                "manager": "Dheeraj",
+                "position": "WR"
+            },
+            "A.J. Brown": {
+                "ffWAR": 0.038,
+                "manager": "Sach",
+                "position": "WR"
+            },
+            "Chris Olave": {
+                "ffWAR": -0.045,
+                "manager": "Sach",
+                "position": "WR"
+            },
+            "Jaylen Waddle": {
+                "ffWAR": 0.053,
+                "manager": "Benz",
+                "position": "WR"
+            },
+            "Tee Higgins": {
+                "ffWAR": 0.182,
+                "manager": "Benz",
+                "position": "WR"
+            },
+            "Davante Adams": {
+                "ffWAR": -0.045,
+                "manager": "Benz",
+                "position": "WR"
+            },
+            "Adonai Mitchell": {
+                "ffWAR": -0.068,
+                "manager": "Benz",
+                "position": "WR"
+            },
+            "Jakobi Meyers": {
+                "ffWAR": 0.038,
+                "manager": "Sam",
+                "position": "WR"
+            },
+            "George Pickens": {
+                "ffWAR": -0.045,
+                "manager": "Sam",
+                "position": "WR"
+            },
+            "Terry McLaurin": {
+                "ffWAR": -0.038,
+                "manager": "Sam",
+                "position": "WR"
+            },
+            "Oronde Gadsden": {
+                "ffWAR": -0.091,
+                "manager": "Anthony",
+                "position": "TE"
+            },
+            "Trey McBride": {
+                "ffWAR": 0.0,
+                "manager": "Tommy",
+                "position": "TE"
+            },
+            "Dallas Goedert": {
+                "ffWAR": 0.045,
+                "manager": "Owen",
+                "position": "TE"
+            },
+            "Brenton Strange": {
+                "ffWAR": -0.038,
+                "manager": "Jay",
+                "position": "TE"
+            },
+            "Tyler Warren": {
+                "ffWAR": -0.068,
+                "manager": "Mitch",
+                "position": "TE"
+            },
+            "Mark Andrews": {
+                "ffWAR": -0.091,
+                "manager": "Ty",
+                "position": "TE"
+            },
+            "Kyle Pitts": {
+                "ffWAR": 0.053,
+                "manager": "Christian",
+                "position": "TE"
+            },
+            "Jake Ferguson": {
+                "ffWAR": 0.008,
+                "manager": "Cody",
+                "position": "TE"
+            },
+            "Zach Ertz": {
+                "ffWAR": -0.091,
+                "manager": "Cody",
+                "position": "TE"
+            },
+            "Harold Fannin": {
+                "ffWAR": 0.136,
+                "manager": "Dheeraj",
+                "position": "TE"
+            },
+            "Travis Kelce": {
+                "ffWAR": -0.091,
+                "manager": "Sach",
+                "position": "TE"
+            },
+            "Dalton Kincaid": {
+                "ffWAR": 0.053,
+                "manager": "Sach",
+                "position": "TE"
+            },
+            "Brock Bowers": {
+                "ffWAR": 0.053,
+                "manager": "Benz",
+                "position": "TE"
+            },
+            "Juwan Johnson": {
+                "ffWAR": -0.03,
+                "manager": "Sam",
+                "position": "TE"
+            },
+            "Cairo Santos": {
+                "ffWAR": 0.0,
+                "manager": "Anthony",
+                "position": "K"
+            },
+            "Wil Lutz": {
+                "ffWAR": -0.03,
+                "manager": "Tommy",
+                "position": "K"
+            },
+            "Daniel Carlson": {
+                "ffWAR": -0.015,
+                "manager": "Owen",
+                "position": "K"
+            },
+            "Harrison Butker": {
+                "ffWAR": -0.038,
+                "manager": "Jay",
+                "position": "K"
+            },
+            "Ka'imi Fairbairn": {
+                "ffWAR": -0.008,
+                "manager": "Mitch",
+                "position": "K"
+            },
+            "Brandon Aubrey": {
+                "ffWAR": 0.114,
+                "manager": "Ty",
+                "position": "K"
+            },
+            "Jason Myers": {
+                "ffWAR": 0.008,
+                "manager": "Christian",
+                "position": "K"
+            },
+            "Jake Bates": {
+                "ffWAR": 0.03,
+                "manager": "Cody",
+                "position": "K"
+            },
+            "Chase McLaughlin": {
+                "ffWAR": 0.008,
+                "manager": "Dheeraj",
+                "position": "K"
+            },
+            "Chris Boswell": {
+                "ffWAR": -0.008,
+                "manager": "Sach",
+                "position": "K"
+            },
+            "Cam Little": {
+                "ffWAR": 0.008,
+                "manager": "Benz",
+                "position": "K"
+            },
+            "Cameron Dicker": {
+                "ffWAR": 0.083,
+                "manager": "Sam",
+                "position": "K"
+            },
+            "Denver Broncos": {
+                "ffWAR": 0.068,
+                "manager": "Anthony",
+                "position": "DEF"
+            },
+            "Tampa Bay Buccaneers": {
+                "ffWAR": -0.008,
+                "manager": "Tommy",
+                "position": "DEF"
+            },
+            "Kansas City Chiefs": {
+                "ffWAR": 0.0,
+                "manager": "Owen",
+                "position": "DEF"
+            },
+            "Tennessee Titans": {
+                "ffWAR": -0.068,
+                "manager": "Jay",
+                "position": "DEF"
+            },
+            "Los Angeles Rams": {
+                "ffWAR": 0.0,
+                "manager": "Mitch",
+                "position": "DEF"
+            },
+            "Philadelphia Eagles": {
+                "ffWAR": 0.068,
+                "manager": "Ty",
+                "position": "DEF"
+            },
+            "Washington Commanders": {
+                "ffWAR": -0.068,
+                "manager": "Christian",
+                "position": "DEF"
+            },
+            "Indianapolis Colts": {
+                "ffWAR": -0.083,
+                "manager": "Cody",
+                "position": "DEF"
+            },
+            "Minnesota Vikings": {
+                "ffWAR": 0.091,
+                "manager": "Dheeraj",
+                "position": "DEF"
+            },
+            "Baltimore Ravens": {
+                "ffWAR": -0.083,
+                "manager": "Sach",
+                "position": "DEF"
+            },
+            "Cleveland Browns": {
+                "ffWAR": -0.061,
+                "manager": "Benz",
+                "position": "DEF"
+            },
+            "Green Bay Packers": {
+                "ffWAR": -0.053,
                 "manager": "Sam",
                 "position": "DEF"
             }

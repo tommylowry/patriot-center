@@ -46,11 +46,18 @@ Note: week cannot be used as a filter without a year selected
 ||  Yes | Yes | Yes | No  | No  ||  28 | plyr_yr_wk_selected()      ||
 ||  Yes | Yes | Yes | No  | Yes ||  29 | plyr_yr_wk_pos_selected()  ||
 ||  Yes | Yes | Yes | Yes | No  ||  30 | plyr_yr_wk_mgr_selected()  ||
-||  Yes | Yes | Yes | Yes | Yes ||  31 | all_selected()             ||
+**************************************************************************************
+||  Yes | Yes | Yes | Yes | Yes ||  31 | all_selected()             || not implemented
+**************************************************************************************
 ----------------------------------------------------------------------
 """
 class ValidOptionsService:
-    def __init__(self, arg1: str, arg2: str, arg3: str, arg4: str):
+    def __init__(self,
+                 last_added: str | None,
+                 arg1:       str | None,
+                 arg2:       str | None,
+                 arg3:       str | None,
+                 arg4:       str | None):
         
         self.years_list     = list([str(year) for year in list(LEAGUE_IDS.keys())]).sort()
         self.weeks_list     = list([str(week) for week in list(range(1, 18))]).sort()
@@ -75,10 +82,14 @@ class ValidOptionsService:
 
         self._get_function_id()
 
+        self._parse_last_updated(last_added)
+
         self.done = False
 
         # Mapping of function IDs to their corresponding methods
-        # Note: week cannot be used as a filter without a year selected
+        # [4-7], [20-23] Note: week cannot be used as a filter without a year selected
+        # [31] Note; only 4 filters can be applied at once
+
         self.function_mapping = {
             0:  self._none_selected,
             1:  self._pos_selected,
@@ -110,8 +121,8 @@ class ValidOptionsService:
             27: self._plyr_yr_mgr_pos_selected,
             28: self._plyr_yr_wk_selected,
             29: self._plyr_yr_wk_pos_selected,
-            30: self._plyr_yr_wk_mgr_selected,
-            31: self._all_selected
+            30: self._plyr_yr_wk_mgr_selected
+          # 31: self._all_selected              (not implemented)
         }
     
     # ----------------------------------------
@@ -177,7 +188,41 @@ class ValidOptionsService:
             
             else:
                 raise ValueError(f"Unrecognized argument: {arg}")
-                
+
+    def _parse_last_updated(self, last_added: str | None):
+        if last_added == None:
+            if self.func_id != 0:
+                raise ValueError("Last added filter must be provided when filters are applied.")
+            return
+        
+        if last_added.lower() == "year" or last_added.lower() == "season": # 'year' or 'season' are used interchangeably
+            if not self._year_selected():
+                raise ValueError("Last added filter is 'year' but no year was selected.")
+            self.last_added = "year"
+        
+        if last_added.lower() == "week":
+            if not self._week_selected():
+                raise ValueError("Last added filter is 'week' but no week was selected.")
+            self.last_added = "week"
+        
+        if last_added.lower() == "manager":
+            if not self._manager_selected():
+                raise ValueError("Last added filter is 'manager' but no manager was selected.")
+            self.last_added = "manager"
+        
+        if last_added.lower() == "player":
+            if not self._player_selected():
+                raise ValueError("Last added filter is 'player' but no player was selected.")
+            self.last_added = "player"
+        
+        if last_added.lower() == "position":
+            if not self._position_selected():
+                raise ValueError("Last added filter is 'position' but no position was selected.")
+            self.last_added = "position"
+        
+        else:
+            raise ValueError(f"Unrecognized last added filter: {last_added}")
+
     def _get_function_id(self):
         func_id = 0
         if self._player_selected():
@@ -193,7 +238,12 @@ class ValidOptionsService:
         
         self.func_id = func_id
     
-    def _add_to_vaild_options(self, value : str, filter1 : str, filter2 : str = None, filter3 : str = None, filter4 : str = None):
+    def _add_to_vaild_options(self,
+                              value : str,
+                              filter1 : str,
+                              filter2 : str | None = None, 
+                              filter3 : str | None = None,
+                              filter4 : str | None = None):
         
         growing_filter1_list = getattr(self, f"growing_{filter1}s_list")
         filter1_list         = getattr(self, f"{filter1}s_list")
@@ -250,53 +300,10 @@ class ValidOptionsService:
             "positions": self.positions_list
         }
 
-
-    """
-    Note: week cannot be used as a filter without a year selected
-    ----------------------------------------------------------------------
-    || plyr | yr  | wk  | mgr | pos || num |             func           ||
-    ----------------------------------------------------------------------
-    ||  No  | No  | No  | No  | No  ||  0  | none_selected()            ||
-    ||  No  | No  | No  | No  | Yes ||  1  | pos_selected()             ||
-    ||  No  | No  | No  | Yes | No  ||  2  | mgr_selected()             ||
-    ||  No  | No  | No  | Yes | Yes ||  3  | mgr_pos_selected()         ||
-    **************************************************************************************
-    ||  No  | No  | Yes | No  | No  ||  4  | wk_selected()              || not implemented
-    ||  No  | No  | Yes | No  | Yes ||  5  | wk_pos_selected()          || not implemented
-    ||  No  | No  | Yes | Yes | No  ||  6  | wk_mgr_selected()          || not implemented
-    ||  No  | No  | Yes | Yes | Yes ||  7  | wk_mgr_pos_selected()      || not implemented
-    **************************************************************************************
-    ||  No  | Yes | No  | No  | No  ||  8  | yr_selected()              ||
-    ||  No  | Yes | No  | No  | Yes ||  9  | yr_pos_selected()          ||
-    ||  No  | Yes | No  | Yes | No  ||  10 | yr_mgr_selected()          ||
-    ||  No  | Yes | No  | Yes | Yes ||  11 | yr_mgr_pos_selected()      ||
-    ||  No  | Yes | Yes | No  | No  ||  12 | yr_wk_selected()           ||
-    ||  No  | Yes | Yes | No  | Yes ||  13 | yr_wk_pos_selected()       ||
-    ||  No  | Yes | Yes | Yes | No  ||  14 | yr_wk_mgr_selected()       ||
-    ||  No  | Yes | Yes | Yes | Yes ||  15 | yr_wk_mgr_pos_selected()   ||
-    ||  Yes | No  | No  | No  | No  ||  16 | plyr_selected()            ||
-    ||  Yes | No  | No  | No  | Yes ||  17 | plyr_pos_selected()        ||
-    ||  Yes | No  | No  | Yes | No  ||  18 | plyr_mgr_selected()        ||
-    ||  Yes | No  | No  | Yes | Yes ||  19 | plyr_mgr_pos_selected()    ||
-    **************************************************************************************
-    ||  Yes | No  | Yes | No  | No  ||  20 | plyr_wk_selected()         || not implemented
-    ||  Yes | No  | Yes | No  | Yes ||  21 | plyr_wk_pos_selected()     || not implemented
-    ||  Yes | No  | Yes | Yes | No  ||  22 | plyr_wk_mgr_selected()     || not implemented
-    ||  Yes | No  | Yes | Yes | Yes ||  23 | plyr_wk_mgr_pos_selected() || not implemented
-    **************************************************************************************
-    ||  Yes | Yes | No  | No  | No  ||  24 | plyr_yr_selected()         ||
-    ||  Yes | Yes | No  | No  | Yes ||  25 | plyr_yr_pos_selected()     ||
-    ||  Yes | Yes | No  | Yes | No  ||  26 | plyr_yr_mgr_selected()     ||
-    ||  Yes | Yes | No  | Yes | Yes ||  27 | plyr_yr_mgr_pos_selected() ||
-    ||  Yes | Yes | Yes | No  | No  ||  28 | plyr_yr_wk_selected()      ||
-    ||  Yes | Yes | Yes | No  | Yes ||  29 | plyr_yr_wk_pos_selected()  ||
-    ||  Yes | Yes | Yes | Yes | No  ||  30 | plyr_yr_wk_mgr_selected()  ||
-    ||  Yes | Yes | Yes | Yes | Yes ||  31 | all_selected()             ||
-    ----------------------------------------------------------------------
-    """
     # ------------------------------------
     # ---------- Function Stubs ----------
     # ------------------------------------
+    
     # 0
     def _none_selected(self):
         return
@@ -319,15 +326,16 @@ class ValidOptionsService:
                 
                 if self.position not in data.get(week, {}).get("positions", []):
                     continue
-                self._add_to_vaild_options(week, "week", "manager")
+                self._add_to_vaild_options(week, "week", "year", "manager")
                 if self.done:
                     break
                 
                 for manager in self.managers_list:
-                    if self.position in data.get(week, {}).get("managers", {}).get(manager, []):
-                        self._add_to_vaild_options(manager, "manager")
+                    if self.position in data.get(week, {}).get(manager, {}).get("positions", []):
+                        self._add_to_vaild_options(manager, "manager", "year", "week")
                         if self.done:
                             break
+            
                 if self.done:
                     break
             if self.done:
@@ -351,19 +359,20 @@ class ValidOptionsService:
             if self.done:
                 break
             
-            for week in data.get("weeks", []):
+            for week in self.weeks_list:
                 
                 if self.manager not in data.get(week, {}).get("managers", []):
                     continue
-                self._add_to_vaild_options(week, "week", "position")
+                self._add_to_vaild_options(week, "week", "year", "position")
                 if self.done:
                     break
                 
                 for position in self.positions_list:
-                    if position in data.get(week, {}).get("managers", {}).get(self.manager, []):
-                        self._add_to_vaild_options(position, "position")
+                    if position in data.get(week, {}).get(self.manager, {}).get("positions", []):
+                        self._add_to_vaild_options(position, "position", "year", "week")
                         if self.done:
                             break
+            
                 if self.done:
                     break
             if self.done:
@@ -394,9 +403,10 @@ class ValidOptionsService:
                     continue
                 if self.position not in data.get(week, {}).get("positions", []):
                     continue
-                self._add_to_vaild_options(week, "week")
+                self._add_to_vaild_options(week, "week", "year")
                 if self.done:
                     break
+            
             if self.done:
                 break
         
@@ -408,6 +418,7 @@ class ValidOptionsService:
     def _yr_selected(self):
         
         data = VALID_OPTIONS_CACHE.get(self.year, {})
+
         self.growing_managers_list  = copy.deepcopy(list(data.get("managers", [])))
         self.growing_positions_list = copy.deepcopy(list(data.get("positions", [])))
         self.growing_weeks_list     = copy.deepcopy(list(data.get("weeks", [])))
@@ -417,10 +428,7 @@ class ValidOptionsService:
         
         data = VALID_OPTIONS_CACHE.get(self.year, {})
 
-        eval_weeks_list    = data.get("weeks", [])
-        eval_managers_list = data.get("managers", [])
-        
-        for week in eval_weeks_list:
+        for week in self.weeks_list:
             
             if self.position not in data.get(week, {}).get("positions", []):
                 continue
@@ -428,11 +436,12 @@ class ValidOptionsService:
             if self.done:
                 break
             
-            for manager in eval_managers_list:
+            for manager in self.managers_list:
                 if self.position in data.get(week, {}).get(manager, {}).get("positions", []):
-                    self._add_to_vaild_options(manager, "manager")
+                    self._add_to_vaild_options(manager, "manager", "week")
                     if self.done:
                         break
+            
             if self.done:
                 break
         
@@ -444,10 +453,7 @@ class ValidOptionsService:
         
         data = VALID_OPTIONS_CACHE.get(self.year, {})
 
-        eval_weeks_list    = data.get("weeks", [])
-        eval_positions_list = data.get("positions", [])
-        
-        for week in eval_weeks_list:
+        for week in self.weeks_list:
             
             if self.manager not in data.get(week, {}).get("managers", []):
                 continue
@@ -455,13 +461,241 @@ class ValidOptionsService:
             if self.done:
                 break
             
-            for position in eval_positions_list:
+            for position in self.positions_list:
                 if position in data.get(week, {}).get(self.manager, {}).get("positions", []):
-                    self._add_to_vaild_options(position, "position")
+                    self._add_to_vaild_options(position, "position", "week")
                     if self.done:
                         break
+            
             if self.done:
                 break
         
         self.weeks_list     = copy.deepcopy(self.growing_weeks_list)
         self.positions_list = copy.deepcopy(self.growing_positions_list)
+    
+    # 11
+    def _yr_mgr_pos_selected(self):
+        
+        data = VALID_OPTIONS_CACHE.get(self.year, {})
+
+        for week in self.weeks_list:
+            
+            if self.manager not in data.get(week, {}).get("managers", []):
+                continue
+            if self.position not in data.get(week, {}).get("positions", []):
+                continue
+            self._add_to_vaild_options(week, "week")
+            if self.done:
+                break
+        
+        self.weeks_list = copy.deepcopy(self.growing_weeks_list)
+
+    # 12
+    def _yr_wk_selected(self):
+        
+        data = VALID_OPTIONS_CACHE.get(self.year, {}).get(self.week, {})
+
+        self.managers_list  = copy.deepcopy(list(data.get("managers", [])))
+        self.positions_list = copy.deepcopy(list(data.get("positions", [])))
+    
+    # 13
+    def _yr_wk_pos_selected(self):
+        
+        data = VALID_OPTIONS_CACHE.get(self.year, {}).get(self.week, {})
+
+        for manager in self.managers_list:
+            if self.position in data.get(manager, {}).get("positions", []):
+                self._add_to_vaild_options(manager, "manager")
+                if self.done:
+                    break
+
+        self.managers_list = copy.deepcopy(self.growing_managers_list)
+    
+    # 14
+    def _yr_wk_mgr_selected(self):
+        
+        data = VALID_OPTIONS_CACHE.get(self.year, {}).get(self.week, {}).get(self.manager, {})
+
+        self.positions_list = copy.deepcopy(list(data.get("positions", [])))
+    
+    # 15
+    def _yr_wk_mgr_pos_selected(self):
+        
+        # With 4 filters selected:
+        # Returns the filters that were previously applied
+        if self.last_added == "position":
+            self.function_id -= 1
+        elif self.last_added == "manager":
+            self.function_id -= 2
+        elif self.last_added == "week":
+            self.function_id -= 4
+        else: # year
+            raise ValueError("Year could not have been the last added filter with week selected.")
+        
+        return self.function_mapping[self.func_id]()
+    
+    # 16
+    def _plyr_selected(self):
+
+        # Position can only be the position of the player
+        self.positions_list = list([PLAYERS_DATA[self.player]["position"]])
+
+        for year in self.years_list:
+            
+            data = VALID_OPTIONS_CACHE.get(year, {})
+            
+            if self.player not in data.get("players", []):
+                continue
+            self._add_to_vaild_options(year, "year", "week", "manager", "position")
+            if self.done:
+                break
+            
+            eval_weeks_list = data.get("weeks", [])
+            for week in eval_weeks_list:
+                
+                if self.player not in data.get(week, {}).get("players", []):
+                    continue
+                self._add_to_vaild_options(week, "week", "year", "manager", "position")
+                if self.done:
+                    break
+                
+                eval_managers_list = data.get(week, {}).get("managers", [])
+                for manager in eval_managers_list:
+                    
+                    if self.player in data.get(week, {}).get(manager, {}).get("players", []):
+                        self._add_to_vaild_options(manager, "manager", "year", "week", "position")
+                        if self.done:
+                            break
+                
+                if self.done:
+                    break
+            if self.done:
+                break
+        
+        self.years_list     = copy.deepcopy(self.growing_years_list)
+        self.weeks_list     = copy.deepcopy(self.growing_weeks_list)
+        self.managers_list  = copy.deepcopy(self.growing_managers_list)
+    
+    # 17
+    def _plyr_pos_selected(self):
+        # Position can only be the position of the player
+        self._plyr_selected()
+    
+    # 18
+    def _plyr_mgr_selected(self):
+
+        # filter out everything that does not have the player and shorten the lists to loop through
+        self._plyr_selected()
+        self._mgr_selected()
+    
+    # 19
+    def _plyr_mgr_pos_selected(self):
+        # Position can only be the position of the player
+        self._plyr_mgr_selected()
+
+    # 24
+    def _plyr_yr_selected(self):
+
+        # filter out everything that does not have the player and shorten the lists to loop through
+        self._plyr_selected()
+        
+        data = VALID_OPTIONS_CACHE.get(self.year, {})
+
+        for week in self.weeks_list:
+            
+            if self.player not in data.get(week, {}).get("players", []):
+                continue
+            self._add_to_vaild_options(week, "week", "manager")
+            if self.done:
+                break
+            
+            for manager in self.managers_list:
+                if self.player in data.get(week, {}).get(manager, {}).get("players", []):
+                    self._add_to_vaild_options(manager, "manager", "week")
+                    if self.done:
+                        break
+            
+            if self.done:
+                break
+        
+        self.weeks_list    = copy.deepcopy(self.growing_weeks_list)
+        self.managers_list = copy.deepcopy(self.growing_managers_list)
+
+    # 25
+    def _plyr_yr_pos_selected(self):
+        # Position can only be the position of the player
+        self._plyr_yr_selected()
+    
+    # 26
+    def _plyr_yr_mgr_selected(self):
+
+        # filter out everything that does not have the player and shorten the lists to loop through
+        self._plyr_selected()
+        
+        data = VALID_OPTIONS_CACHE.get(self.year, {})
+        
+        for week in self.weeks_list:
+            
+            if self.manager in data.get(week, {}).get("managers", []):
+                self._add_to_vaild_options(week, "week")
+                if self.done:
+                    break
+        
+        self.weeks_list = copy.deepcopy(self.growing_weeks_list)
+    
+    # 27
+    def _plyr_yr_mgr_pos_selected(self):
+        
+        # With 4 filters selected:
+        # Returns the filters that were previously applied
+        if self.last_added == "position":
+            self.function_id -= 1
+        elif self.last_added == "manager":
+            self.function_id -= 2
+        elif self.last_added == "year":
+            self.function_id -= 8
+        
+        # Player could not have been the last added, player is always first
+        else:
+            raise ValueError("Player could not have been the last added filter.")
+        
+        return self.function_mapping[self.func_id]()
+
+    # 28
+    def _plyr_yr_wk_selected(self):
+
+        # filter out everything that does not have the player and shorten the lists to loop through
+        self._plyr_selected()
+        
+        data = VALID_OPTIONS_CACHE.get(self.year, {}).get(self.week, {})
+
+        for manager in self.managers_list:
+            if self.player in data.get(manager, {}).get("players", []):
+                self.growing_managers_list.append(manager)
+                self.manager_list = list([manager])
+                
+                # a player can only play for one manager in a given week
+                break
+    
+    # 29
+    def _plyr_yr_wk_pos_selected(self):
+        # Position can only be the position of the player
+        self._plyr_yr_wk_selected()
+    
+    # 30
+    def _plyr_yr_wk_mgr_selected(self):
+
+       # With 4 filters selected:
+        # Returns the filters that were previously applied
+        if self.last_added == "manager":
+            self.function_id -= 2
+        elif self.last_added == "week":
+            self.function_id -= 4
+        
+        elif self.last_added == "year":
+            raise ValueError("Year could not have been the last added filter with week selected.")
+        # Player could not have been the last added, player is always first
+        else:
+            raise ValueError("Player could not have been the last added filter.")
+        
+        return self.function_mapping[self.func_id]()

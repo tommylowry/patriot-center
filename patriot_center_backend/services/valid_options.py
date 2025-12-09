@@ -6,51 +6,6 @@ from patriot_center_backend.services.players import fetch_players, fetch_valid_o
 VALID_OPTIONS_CACHE = fetch_valid_options_cache()
 PLAYERS_DATA = fetch_players()
 
-"""
-Note: week cannot be used as a filter without a year selected
-----------------------------------------------------------------------
-|| plyr | yr  | wk  | mgr | pos || num |             func           ||
-----------------------------------------------------------------------
-||  No  | No  | No  | No  | No  ||  0  | none_selected()            ||
-||  No  | No  | No  | No  | Yes ||  1  | pos_selected()             ||
-||  No  | No  | No  | Yes | No  ||  2  | mgr_selected()             ||
-||  No  | No  | No  | Yes | Yes ||  3  | mgr_pos_selected()         ||
-**************************************************************************************
-||  No  | No  | Yes | No  | No  ||  4  | wk_selected()              || not implemented
-||  No  | No  | Yes | No  | Yes ||  5  | wk_pos_selected()          || not implemented
-||  No  | No  | Yes | Yes | No  ||  6  | wk_mgr_selected()          || not implemented
-||  No  | No  | Yes | Yes | Yes ||  7  | wk_mgr_pos_selected()      || not implemented
-**************************************************************************************
-||  No  | Yes | No  | No  | No  ||  8  | yr_selected()              ||
-||  No  | Yes | No  | No  | Yes ||  9  | yr_pos_selected()          ||
-||  No  | Yes | No  | Yes | No  ||  10 | yr_mgr_selected()          ||
-||  No  | Yes | No  | Yes | Yes ||  11 | yr_mgr_pos_selected()      ||
-||  No  | Yes | Yes | No  | No  ||  12 | yr_wk_selected()           ||
-||  No  | Yes | Yes | No  | Yes ||  13 | yr_wk_pos_selected()       ||
-||  No  | Yes | Yes | Yes | No  ||  14 | yr_wk_mgr_selected()       ||
-||  No  | Yes | Yes | Yes | Yes ||  15 | yr_wk_mgr_pos_selected()   ||
-||  Yes | No  | No  | No  | No  ||  16 | plyr_selected()            ||
-||  Yes | No  | No  | No  | Yes ||  17 | plyr_pos_selected()        ||
-||  Yes | No  | No  | Yes | No  ||  18 | plyr_mgr_selected()        ||
-||  Yes | No  | No  | Yes | Yes ||  19 | plyr_mgr_pos_selected()    ||
-**************************************************************************************
-||  Yes | No  | Yes | No  | No  ||  20 | plyr_wk_selected()         || not implemented
-||  Yes | No  | Yes | No  | Yes ||  21 | plyr_wk_pos_selected()     || not implemented
-||  Yes | No  | Yes | Yes | No  ||  22 | plyr_wk_mgr_selected()     || not implemented
-||  Yes | No  | Yes | Yes | Yes ||  23 | plyr_wk_mgr_pos_selected() || not implemented
-**************************************************************************************
-||  Yes | Yes | No  | No  | No  ||  24 | plyr_yr_selected()         ||
-||  Yes | Yes | No  | No  | Yes ||  25 | plyr_yr_pos_selected()     ||
-||  Yes | Yes | No  | Yes | No  ||  26 | plyr_yr_mgr_selected()     ||
-||  Yes | Yes | No  | Yes | Yes ||  27 | plyr_yr_mgr_pos_selected() ||
-||  Yes | Yes | Yes | No  | No  ||  28 | plyr_yr_wk_selected()      ||
-||  Yes | Yes | Yes | No  | Yes ||  29 | plyr_yr_wk_pos_selected()  ||
-||  Yes | Yes | Yes | Yes | No  ||  30 | plyr_yr_wk_mgr_selected()  ||
-**************************************************************************************
-||  Yes | Yes | Yes | Yes | Yes ||  31 | all_selected()             || not implemented
-**************************************************************************************
-----------------------------------------------------------------------
-"""
 class ValidOptionsService:
     def __init__(self,
                  last_added: str | None,
@@ -293,6 +248,9 @@ class ValidOptionsService:
         """
         Returns the valid options based on the current filters.
         """
+
+        self.function_mapping[self.func_id]()
+
         return {
             "years"    : self.years_list.sort(),
             "weeks"    : self.weeks_list.sort(),
@@ -300,15 +258,63 @@ class ValidOptionsService:
             "positions": self.positions_list
         }
 
+    
     # ------------------------------------
     # ---------- Function Stubs ----------
     # ------------------------------------
-    
+
+
+    """
+    Note: week cannot be used as a filter without a year selected
+    ----------------------------------------------------------------------
+    || plyr | yr  | wk  | mgr | pos || num |             func           ||
+    ----------------------------------------------------------------------
+    ||  No  | No  | No  | No  | No  ||  0  | none_selected()            ||
+    ||  No  | No  | No  | No  | Yes ||  1  | pos_selected()             ||
+    ||  No  | No  | No  | Yes | No  ||  2  | mgr_selected()             ||
+    ||  No  | No  | No  | Yes | Yes ||  3  | mgr_pos_selected()         ||
+    **************************************************************************************
+    ||  No  | No  | Yes | No  | No  ||  4  | wk_selected()              || not implemented
+    ||  No  | No  | Yes | No  | Yes ||  5  | wk_pos_selected()          || not implemented
+    ||  No  | No  | Yes | Yes | No  ||  6  | wk_mgr_selected()          || not implemented
+    ||  No  | No  | Yes | Yes | Yes ||  7  | wk_mgr_pos_selected()      || not implemented
+    **************************************************************************************
+    ||  No  | Yes | No  | No  | No  ||  8  | yr_selected()              ||
+    ||  No  | Yes | No  | No  | Yes ||  9  | yr_pos_selected()          ||
+    ||  No  | Yes | No  | Yes | No  ||  10 | yr_mgr_selected()          ||
+    ||  No  | Yes | No  | Yes | Yes ||  11 | yr_mgr_pos_selected()      ||
+    ||  No  | Yes | Yes | No  | No  ||  12 | yr_wk_selected()           ||
+    ||  No  | Yes | Yes | No  | Yes ||  13 | yr_wk_pos_selected()       ||
+    ||  No  | Yes | Yes | Yes | No  ||  14 | yr_wk_mgr_selected()       ||
+    ||  No  | Yes | Yes | Yes | Yes ||  15 | yr_wk_mgr_pos_selected()   ||
+    ||  Yes | No  | No  | No  | No  ||  16 | plyr_selected()            ||
+    ||  Yes | No  | No  | No  | Yes ||  17 | plyr_pos_selected()        ||
+    ||  Yes | No  | No  | Yes | No  ||  18 | plyr_mgr_selected()        ||
+    ||  Yes | No  | No  | Yes | Yes ||  19 | plyr_mgr_pos_selected()    ||
+    **************************************************************************************
+    ||  Yes | No  | Yes | No  | No  ||  20 | plyr_wk_selected()         || not implemented
+    ||  Yes | No  | Yes | No  | Yes ||  21 | plyr_wk_pos_selected()     || not implemented
+    ||  Yes | No  | Yes | Yes | No  ||  22 | plyr_wk_mgr_selected()     || not implemented
+    ||  Yes | No  | Yes | Yes | Yes ||  23 | plyr_wk_mgr_pos_selected() || not implemented
+    **************************************************************************************
+    ||  Yes | Yes | No  | No  | No  ||  24 | plyr_yr_selected()         ||
+    ||  Yes | Yes | No  | No  | Yes ||  25 | plyr_yr_pos_selected()     ||
+    ||  Yes | Yes | No  | Yes | No  ||  26 | plyr_yr_mgr_selected()     ||
+    ||  Yes | Yes | No  | Yes | Yes ||  27 | plyr_yr_mgr_pos_selected() ||
+    ||  Yes | Yes | Yes | No  | No  ||  28 | plyr_yr_wk_selected()      ||
+    ||  Yes | Yes | Yes | No  | Yes ||  29 | plyr_yr_wk_pos_selected()  ||
+    ||  Yes | Yes | Yes | Yes | No  ||  30 | plyr_yr_wk_mgr_selected()  ||
+    **************************************************************************************
+    ||  Yes | Yes | Yes | Yes | Yes ||  31 | all_selected()             || not implemented
+    **************************************************************************************
+    ----------------------------------------------------------------------
+    """
+
+
     # 0
     def _none_selected(self):
         return
     
-
     # 1
     def _pos_selected(self):
         
@@ -344,7 +350,6 @@ class ValidOptionsService:
         self.years_list    = copy.deepcopy(self.growing_years_list)
         self.weeks_list    = copy.deepcopy(self.growing_weeks_list)
         self.managers_list = copy.deepcopy(self.growing_managers_list)
-    
     
     # 2
     def _mgr_selected(self):
@@ -382,7 +387,6 @@ class ValidOptionsService:
         self.weeks_list     = copy.deepcopy(self.growing_weeks_list)
         self.positions_list = copy.deepcopy(self.growing_positions_list)
     
-
     # 3
     def _mgr_pos_selected(self):
         for year in self.years_list:
@@ -413,7 +417,6 @@ class ValidOptionsService:
         self.years_list = copy.deepcopy(self.growing_years_list)
         self.weeks_list = copy.deepcopy(self.growing_weeks_list)
     
-
     # 8
     def _yr_selected(self):
         

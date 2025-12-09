@@ -168,18 +168,19 @@ def meta_options():
         "managers": list(NAME_TO_MANAGER_USERNAME.keys())
     }), 200
 
-@app.route('/meta/valid_options', defaults={'arg1': None, 'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/meta/valid_options/<string:arg1>', defaults={'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/meta/valid_options/<string:arg1>/<string:arg2>', defaults={'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/meta/valid_options/<string:arg1>/<string:arg2>/<string:arg3>', defaults={'arg4': None}, methods=['GET'])
-@app.route('/meta/valid_options/<string:arg1>/<string:arg2>/<string:arg3>/<string:arg4>', methods=['GET'])
-def valid_options(arg1, arg2, arg3, arg4):
+@app.route('/meta/valid_options', defaults={'last_added': None, 'arg1': None, 'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/meta/valid_options/<string:last_added>/><string:arg1>', defaults={'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/meta/valid_options/<string:last_added>/<string:arg1>/<string:arg2>', defaults={'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/meta/valid_options/<string:last_added>/<string:arg1>/<string:arg2>/<string:arg3>', defaults={'arg4': None}, methods=['GET'])
+@app.route('/meta/valid_options/<string:last_added>/<string:arg1>/<string:arg2>/<string:arg3>/<string:arg4>', methods=['GET'])
+def valid_options(last_added, arg1, arg2, arg3, arg4):
     """
     Endpoint to validate provided season, week, manager, player, and position combinations.
     """
-    from patriot_center_backend.services.valid_options import fetch_valid_options
+    from patriot_center_backend.services.valid_options import ValidOptionsService
     try:
-        data = fetch_valid_options(arg1, arg2, arg3, arg4)
+        options = ValidOptionsService.get_valid_options(last_added, arg1, arg2, arg3, arg4)
+        options.get_valid_options()
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     return jsonify(data), 200

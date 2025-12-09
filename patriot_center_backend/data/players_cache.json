@@ -4774,5 +4774,29 @@
         "position": "RB",
         "team": "NO",
         "slug": "Devin_Neal"
+    },
+    "Devaughn Vele": {
+        "full_name": "Devaughn Vele",
+        "first_name": "Devaughn",
+        "last_name": "Vele",
+        "position": "WR",
+        "team": "NO",
+        "slug": "Devaughn_Vele"
+    },
+    "Tyrod Taylor": {
+        "full_name": "Tyrod Taylor",
+        "first_name": "Tyrod",
+        "last_name": "Taylor",
+        "position": "QB",
+        "team": "NYJ",
+        "slug": "Tyrod_Taylor"
+    },
+    "Adonai Mitchell": {
+        "full_name": "Adonai Mitchell",
+        "first_name": "Adonai",
+        "last_name": "Mitchell",
+        "position": "WR",
+        "team": "NYJ",
+        "slug": "Adonai_Mitchell"
     }
 }

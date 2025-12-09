@@ -36159,7 +36159,12 @@
             "Ty Johnson",
             "Blake Corum",
             "Harrison Mevis",
-            "Devin Neal"
+            "Devin Neal",
+            "Devaughn Vele",
+            "Tyrod Taylor",
+            "Tennessee Titans",
+            "Trevor Lawrence",
+            "Adonai Mitchell"
         ],
         "weeks": [
             "1",
@@ -36174,7 +36179,8 @@
             "10",
             "11",
             "12",
-            "13"
+            "13",
+            "14"
         ],
         "positions": [
             "QB",
@@ -41502,6 +41508,416 @@
                 "Juwan Johnson",
                 "Devin Neal",
                 "Khalil Shakir",
+                "Cameron Dicker",
+                "Green Bay Packers"
+            ],
+            "positions": [
+                "QB",
+                "RB",
+                "WR",
+                "TE",
+                "K",
+                "DEF"
+            ]
+        },
+        "14": {
+            "Anthony": {
+                "players": [
+                    "Sam Darnold",
+                    "Zonovan Knight",
+                    "Saquon Barkley",
+                    "Zay Flowers",
+                    "Luther Burden",
+                    "Oronde Gadsden",
+                    "Cooper Kupp",
+                    "Christian Watson",
+                    "Cairo Santos",
+                    "Denver Broncos"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Tommy": {
+                "players": [
+                    "Jalen Hurts",
+                    "Josh Jacobs",
+                    "RJ Harvey",
+                    "DK Metcalf",
+                    "Darnell Mooney",
+                    "Trey McBride",
+                    "DeVonta Smith",
+                    "Jayden Higgins",
+                    "Wil Lutz",
+                    "Tampa Bay Buccaneers"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Owen": {
+                "players": [
+                    "Josh Allen",
+                    "Bucky Irving",
+                    "Woody Marks",
+                    "Courtland Sutton",
+                    "Michael Pittman",
+                    "Dallas Goedert",
+                    "David Montgomery",
+                    "Devaughn Vele",
+                    "Daniel Carlson",
+                    "Kansas City Chiefs"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Jay": {
+                "players": [
+                    "Tyrod Taylor",
+                    "Jonathan Taylor",
+                    "Derrick Henry",
+                    "Ladd McConkey",
+                    "Troy Franklin",
+                    "Brenton Strange",
+                    "Chris Rodriguez",
+                    "Jameson Williams",
+                    "Harrison Butker",
+                    "Tennessee Titans"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Mitch": {
+                "players": [
+                    "Trevor Lawrence",
+                    "Jordan Mason",
+                    "Omarion Hampton",
+                    "Romeo Doubs",
+                    "Chris Godwin",
+                    "Tyler Warren",
+                    "Kimani Vidal",
+                    "Rashee Rice",
+                    "Ka'imi Fairbairn",
+                    "Los Angeles Rams"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Ty": {
+                "players": [
+                    "Jordan Love",
+                    "Travis Etienne",
+                    "Quinshon Judkins",
+                    "CeeDee Lamb",
+                    "Ja'Marr Chase",
+                    "Mark Andrews",
+                    "Ashton Jeanty",
+                    "Nico Collins",
+                    "Brandon Aubrey",
+                    "Philadelphia Eagles"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Christian": {
+                "players": [
+                    "Patrick Mahomes",
+                    "Breece Hall",
+                    "Jaylen Warren",
+                    "Puka Nacua",
+                    "Amon-Ra St. Brown",
+                    "Kyle Pitts",
+                    "Aaron Jones",
+                    "Deebo Samuel",
+                    "Jason Myers",
+                    "Washington Commanders"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Cody": {
+                "players": [
+                    "Baker Mayfield",
+                    "De'Von Achane",
+                    "Kyren Williams",
+                    "Jaxon Smith-Njigba",
+                    "Michael Wilson",
+                    "Jake Ferguson",
+                    "Keenan Allen",
+                    "Zach Ertz",
+                    "Jake Bates",
+                    "Indianapolis Colts"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Dheeraj": {
+                "players": [
+                    "Jacoby Brissett",
+                    "Zach Charbonnet",
+                    "Kenneth Walker",
+                    "Emeka Egbuka",
+                    "Justin Jefferson",
+                    "Harold Fannin",
+                    "Brian Thomas",
+                    "Alec Pierce",
+                    "Chase McLaughlin",
+                    "Minnesota Vikings"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Sach": {
+                "players": [
+                    "Dak Prescott",
+                    "Jahmyr Gibbs",
+                    "James Cook",
+                    "A.J. Brown",
+                    "Chris Olave",
+                    "Travis Kelce",
+                    "Kareem Hunt",
+                    "Dalton Kincaid",
+                    "Chris Boswell",
+                    "Baltimore Ravens"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Benz": {
+                "players": [
+                    "Matthew Stafford",
+                    "Bijan Robinson",
+                    "Javonte Williams",
+                    "Jaylen Waddle",
+                    "Tee Higgins",
+                    "Brock Bowers",
+                    "Davante Adams",
+                    "Adonai Mitchell",
+                    "Cam Little",
+                    "Cleveland Browns"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Sam": {
+                "players": [
+                    "Daniel Jones",
+                    "D'Andre Swift",
+                    "Chase Brown",
+                    "Jakobi Meyers",
+                    "George Pickens",
+                    "Juwan Johnson",
+                    "Devin Neal",
+                    "Terry McLaurin",
+                    "Cameron Dicker",
+                    "Green Bay Packers"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "managers": [
+                "Anthony",
+                "Tommy",
+                "Owen",
+                "Jay",
+                "Mitch",
+                "Ty",
+                "Christian",
+                "Cody",
+                "Dheeraj",
+                "Sach",
+                "Benz",
+                "Sam"
+            ],
+            "players": [
+                "Sam Darnold",
+                "Zonovan Knight",
+                "Saquon Barkley",
+                "Zay Flowers",
+                "Luther Burden",
+                "Oronde Gadsden",
+                "Cooper Kupp",
+                "Christian Watson",
+                "Cairo Santos",
+                "Denver Broncos",
+                "Jalen Hurts",
+                "Josh Jacobs",
+                "RJ Harvey",
+                "DK Metcalf",
+                "Darnell Mooney",
+                "Trey McBride",
+                "DeVonta Smith",
+                "Jayden Higgins",
+                "Wil Lutz",
+                "Tampa Bay Buccaneers",
+                "Josh Allen",
+                "Bucky Irving",
+                "Woody Marks",
+                "Courtland Sutton",
+                "Michael Pittman",
+                "Dallas Goedert",
+                "David Montgomery",
+                "Devaughn Vele",
+                "Daniel Carlson",
+                "Kansas City Chiefs",
+                "Tyrod Taylor",
+                "Jonathan Taylor",
+                "Derrick Henry",
+                "Ladd McConkey",
+                "Troy Franklin",
+                "Brenton Strange",
+                "Chris Rodriguez",
+                "Jameson Williams",
+                "Harrison Butker",
+                "Tennessee Titans",
+                "Trevor Lawrence",
+                "Jordan Mason",
+                "Omarion Hampton",
+                "Romeo Doubs",
+                "Chris Godwin",
+                "Tyler Warren",
+                "Kimani Vidal",
+                "Rashee Rice",
+                "Ka'imi Fairbairn",
+                "Los Angeles Rams",
+                "Jordan Love",
+                "Travis Etienne",
+                "Quinshon Judkins",
+                "CeeDee Lamb",
+                "Ja'Marr Chase",
+                "Mark Andrews",
+                "Ashton Jeanty",
+                "Nico Collins",
+                "Brandon Aubrey",
+                "Philadelphia Eagles",
+                "Patrick Mahomes",
+                "Breece Hall",
+                "Jaylen Warren",
+                "Puka Nacua",
+                "Amon-Ra St. Brown",
+                "Kyle Pitts",
+                "Aaron Jones",
+                "Deebo Samuel",
+                "Jason Myers",
+                "Washington Commanders",
+                "Baker Mayfield",
+                "De'Von Achane",
+                "Kyren Williams",
+                "Jaxon Smith-Njigba",
+                "Michael Wilson",
+                "Jake Ferguson",
+                "Keenan Allen",
+                "Zach Ertz",
+                "Jake Bates",
+                "Indianapolis Colts",
+                "Jacoby Brissett",
+                "Zach Charbonnet",
+                "Kenneth Walker",
+                "Emeka Egbuka",
+                "Justin Jefferson",
+                "Harold Fannin",
+                "Brian Thomas",
+                "Alec Pierce",
+                "Chase McLaughlin",
+                "Minnesota Vikings",
+                "Dak Prescott",
+                "Jahmyr Gibbs",
+                "James Cook",
+                "A.J. Brown",
+                "Chris Olave",
+                "Travis Kelce",
+                "Kareem Hunt",
+                "Dalton Kincaid",
+                "Chris Boswell",
+                "Baltimore Ravens",
+                "Matthew Stafford",
+                "Bijan Robinson",
+                "Javonte Williams",
+                "Jaylen Waddle",
+                "Tee Higgins",
+                "Brock Bowers",
+                "Davante Adams",
+                "Adonai Mitchell",
+                "Cam Little",
+                "Cleveland Browns",
+                "Daniel Jones",
+                "D'Andre Swift",
+                "Chase Brown",
+                "Jakobi Meyers",
+                "George Pickens",
+                "Juwan Johnson",
+                "Devin Neal",
+                "Terry McLaurin",
                 "Cameron Dicker",
                 "Green Bay Packers"
             ],

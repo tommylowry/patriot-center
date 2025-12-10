@@ -155,18 +155,18 @@ def list_players():
         return jsonify(players_data), 200
     return jsonify(_to_records(players_data, key_name="name")), 200
 
-@app.route('/valid_options', defaults={'last_added': None, 'arg1': None, 'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/valid_options/<string:last_added>/<string:arg1>', defaults={'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/valid_options/<string:last_added>/<string:arg1>/<string:arg2>', defaults={'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/valid_options/<string:last_added>/<string:arg1>/<string:arg2>/<string:arg3>', defaults={'arg4': None}, methods=['GET'])
-@app.route('/valid_options/<string:last_added>/<string:arg1>/<string:arg2>/<string:arg3>/<string:arg4>', methods=['GET'])
-def valid_options(last_added, arg1, arg2, arg3, arg4):
+@app.route('/valid_options', defaults={'arg1': None, 'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/valid_options/<string:arg1>', defaults={'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/valid_options/<string:arg1>/<string:arg2>', defaults={'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/valid_options/<string:arg1>/<string:arg2>/<string:arg3>', defaults={'arg4': None}, methods=['GET'])
+@app.route('/valid_options/<string:arg1>/<string:arg2>/<string:arg3>/<string:arg4>', methods=['GET'])
+def valid_options(arg1, arg2, arg3, arg4):
     """
     Endpoint to validate provided season, week, manager, player, and position combinations.
     """
     from patriot_center_backend.services.valid_options import ValidOptionsService
     try:
-        options = ValidOptionsService(last_added, arg1, arg2, arg3, arg4)
+        options = ValidOptionsService(arg1, arg2, arg3, arg4)
         data = options.get_valid_options()
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

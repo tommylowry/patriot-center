@@ -5,11 +5,10 @@ from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAM
 app = Flask(__name__)
 CORS(app, resources={
     r"/get_aggregated_players*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/meta/options": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_aggregated_managers*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/players/list": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/meta/valid_options*": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/valid_options*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_player_manager_aggregation*": {"origins": ["https://patriotcenter.netlify.app"]},
 })
 CORS(app)  # Enable CORS for all routes during development
@@ -156,31 +155,19 @@ def list_players():
         return jsonify(players_data), 200
     return jsonify(_to_records(players_data, key_name="name")), 200
 
-@app.route('/meta/options', methods=['GET'])
-def meta_options():
-    """
-    Expose selectable seasons, weeks, and managers for frontend filters.
-    Omitting any in requests to /get_aggregated_players yields ALL for that category.
-    """
-    return jsonify({
-        "seasons": list(LEAGUE_IDS),
-        "weeks": list(range(1, 18)),
-        "managers": list(NAME_TO_MANAGER_USERNAME.keys())
-    }), 200
-
-@app.route('/meta/valid_options', defaults={'last_added': None, 'arg1': None, 'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/meta/valid_options/<string:last_added>/><string:arg1>', defaults={'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/meta/valid_options/<string:last_added>/<string:arg1>/<string:arg2>', defaults={'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/meta/valid_options/<string:last_added>/<string:arg1>/<string:arg2>/<string:arg3>', defaults={'arg4': None}, methods=['GET'])
-@app.route('/meta/valid_options/<string:last_added>/<string:arg1>/<string:arg2>/<string:arg3>/<string:arg4>', methods=['GET'])
+@app.route('/valid_options', defaults={'last_added': None, 'arg1': None, 'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/valid_options/<string:last_added>/<string:arg1>', defaults={'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/valid_options/<string:last_added>/<string:arg1>/<string:arg2>', defaults={'arg3': None, 'arg4': None}, methods=['GET'])
+@app.route('/valid_options/<string:last_added>/<string:arg1>/<string:arg2>/<string:arg3>', defaults={'arg4': None}, methods=['GET'])
+@app.route('/valid_options/<string:last_added>/<string:arg1>/<string:arg2>/<string:arg3>/<string:arg4>', methods=['GET'])
 def valid_options(last_added, arg1, arg2, arg3, arg4):
     """
     Endpoint to validate provided season, week, manager, player, and position combinations.
     """
     from patriot_center_backend.services.valid_options import ValidOptionsService
     try:
-        options = ValidOptionsService.get_valid_options(last_added, arg1, arg2, arg3, arg4)
-        options.get_valid_options()
+        options = ValidOptionsService(last_added, arg1, arg2, arg3, arg4)
+        data = options.get_valid_options()
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     return jsonify(data), 200

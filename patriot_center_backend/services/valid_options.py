@@ -77,8 +77,8 @@ class ValidOptionsService:
             27: self._plyr_yr_mgr_pos_selected,
             28: self._plyr_yr_wk_selected,
             29: self._plyr_yr_wk_pos_selected,
-            30: self._plyr_yr_wk_mgr_selected
-          # 31: self._all_selected              (not implemented)
+            30: self._plyr_yr_wk_mgr_selected,
+            31: self._all_selected
         }
     
     # ----------------------------------------
@@ -315,7 +315,7 @@ class ValidOptionsService:
     ||  Yes | Yes | Yes | No  | No  ||  28 | plyr_yr_wk_selected()      ||
     ||  Yes | Yes | Yes | No  | Yes ||  29 | plyr_yr_wk_pos_selected()  ||
     ||  Yes | Yes | Yes | Yes | No  ||  30 | plyr_yr_wk_mgr_selected()  ||
-    ||  Yes | Yes | Yes | Yes | Yes ||  31 | all_selected()             || not implemented
+    ||  Yes | Yes | Yes | Yes | Yes ||  31 | all_selected()             ||
     ----------------------------------------------------------------------
     """
 

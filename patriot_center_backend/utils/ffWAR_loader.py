@@ -174,73 +174,93 @@ def _calculate_ffWAR_position(scores, season, week, position):
     Returns:
         dict: player -> {ffWAR, manager, position}
     """
+    # Get the 3-year rolling average replacement score for this position
     key = f"{position}_3yr_avg"
     replacement_average = REPLACEMENT_SCORES[str(season)][str(week)][key]
-    
-    
-    # get score minus the average
+
+
+    # Calculate the average score across all players at this position this week
+    # This helps normalize scores when simulating replacement scenarios
     num_players = 0
     total_position_score = 0.0
     for manager in scores:
         num_players += len(scores[manager]['players'])
         for player in scores[manager]['players']:
             total_position_score += scores[manager]['players'][player]
-    
+
     if num_players == 0:
-        return {}
+        return {}  # No players at this position this week
 
     average_player_score_this_week = total_position_score / num_players
 
 
+    # Pre-compute normalized scores for each manager
+    # These values are used in the simulation to isolate positional impact
     for manager in scores:
 
+        # Calculate this manager's average score at this position
         player_total_for_manager = 0.0
         for player in scores[manager]['players']:
             player_total_for_manager += scores[manager]['players'][player]
-        
+
         if len(scores[manager]['players']) == 0:
             player_average_for_manager = 0
         else:
             player_average_for_manager = player_total_for_manager / len(scores[manager]['players'])
 
-        # total_minus_position = total_points - player_average_for_manager
+        # Store manager's total points minus their positional contribution
+        # This represents the manager's "baseline" without this position's impact
         scores[manager]['total_minus_position'] = scores[manager]["total_points"] - player_average_for_manager
 
-        # weighted_total_score = total_points - manager_average + position average
+        # Store normalized weighted score (baseline + league average at position)
+        # Used as opponent's score in simulations
         scores[manager]['weighted_total_score'] = scores[manager]["total_points"] - player_average_for_manager  + average_player_score_this_week
 
+    # Simulate head-to-head matchups to compute ffWAR for each player
     ffWAR_position = {}
     for real_manager in scores:
         for player in scores[real_manager]['players']:
             # Initialize counters for simulated head-to-head comparisons
             num_simulated_games = 0
-            num_wins = 0
+            num_wins = 0  # Net wins: +1 when player adds a win, -1 when replacement would win instead
             player_score = scores[real_manager]['players'][player]
 
+            # Simulate all possible manager pairings with this player
             for manager_playing in scores:
                 for manager_opposing in scores:
                     if manager_playing == manager_opposing:
                         continue  # Skip self-matchups
 
+                    # Opponent's normalized score (baseline + position average)
                     simulated_opponent_score = scores[manager_opposing]['weighted_total_score']
+
+                    # Manager's score WITH this player at this position
                     simulated_player_score = scores[manager_playing]['total_minus_position'] + player_score
+
+                    # Manager's score with REPLACEMENT-level player at this position
                     simulated_replacement_score = scores[manager_playing]['total_minus_position'] + replacement_average
 
-                    # Player improves outcome where replacement fails
+                    # Case 1: Player wins but replacement would lose (player adds a win)
                     if (simulated_player_score > simulated_opponent_score) and (simulated_replacement_score < simulated_opponent_score):
                         num_wins += 1
-                    # Replacement improves outcome where player fails
+
+                    # Case 2: Player loses but replacement would win (player costs a win)
                     if (simulated_player_score < simulated_opponent_score) and (simulated_replacement_score > simulated_opponent_score):
                         num_wins -= 1
 
+                    # Case 3 & 4: Both win or both lose (no impact on outcome, ffWAR = 0 contribution)
+
                     num_simulated_games += 1
 
+            # Calculate final ffWAR score as win rate differential
             if num_simulated_games == 0:
                 ffWAR_score = 0.0
             else:
                 ffWAR_score = round(num_wins / num_simulated_games, 3)
 
-                # Playoffs: scale down ffWAR by factor of 3 because 4 out of 12 teams play in a given week
+                # Playoff adjustment: scale down by 1/3 since only 4 of 12 teams play each week
+                # 2020 and earlier: playoffs start week 14
+                # 2021 and later: playoffs start week 15
                 if season <= 2020 and week >=14 or season >=2021 and week >=15:
                     ffWAR_score = round (ffWAR_score / 3, 3)
 

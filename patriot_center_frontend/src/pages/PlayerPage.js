@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { displayFromSlug } from '../components/player/PlayerNameFormatter';
 import { usePlayerManagers } from '../hooks/usePlayerManagers';
 import { useValidOptions } from '../hooks/useValidOptions';
@@ -7,6 +7,7 @@ import { useValidOptions } from '../hooks/useValidOptions';
 export default function PlayerPage() {
     const { playerSlug } = useParams();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const slug = playerSlug || 'Amon-Ra_St._Brown'; // default capitalized
     const displayName = displayFromSlug(slug);
 
@@ -15,9 +16,43 @@ export default function PlayerPage() {
     const [manager, setManager] = useState(null);  // default: ALL managers
     const [imageError, setImageError] = useState(false);
 
+    // Track if we're syncing from URL to prevent loops
+    const isSyncingFromUrlRef = useRef(false);
+
+    // Sync state from URL params (runs on mount and when URL changes via back/forward)
+    useEffect(() => {
+        isSyncingFromUrlRef.current = true;
+
+        const yearParam = searchParams.get('year');
+        const weekParam = searchParams.get('week');
+        const managerParam = searchParams.get('manager');
+
+        setYear(yearParam && yearParam !== 'ALL' ? parseInt(yearParam) : null);
+        setWeek(weekParam && weekParam !== 'ALL' ? parseInt(weekParam) : null);
+        setManager(managerParam && managerParam !== 'ALL' ? managerParam : null);
+
+        // Reset flag after state updates have been processed
+        setTimeout(() => {
+            isSyncingFromUrlRef.current = false;
+        }, 0);
+    }, [searchParams]);
+
     const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager, slug);
 
-    React.useEffect(() => {
+    // Update URL when filters change from user interaction (not from URL sync)
+    useEffect(() => {
+        if (isSyncingFromUrlRef.current) return;
+
+        const params = new URLSearchParams();
+
+        if (year !== null) params.set('year', String(year));
+        if (week !== null) params.set('week', String(week));
+        if (manager !== null) params.set('manager', manager);
+
+        setSearchParams(params);
+    }, [year, week, manager, setSearchParams]);
+
+    useEffect(() => {
         setWeek(null);
     }, [year]);
 

@@ -13,7 +13,7 @@ Algorithm summary:
 
 Notes:
 - Import-time cache loading performs I/O and possible network calls.
-- Weeks are capped at 14 (exclude playoff data).
+- Weeks are capped at 17 (include playoff data).
 """
 
 import os

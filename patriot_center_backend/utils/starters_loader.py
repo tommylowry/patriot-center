@@ -11,7 +11,7 @@ Performance:
   * Only fetching week/user/roster/matchup data when needed.
 
 Notes:
-- Weeks are capped at 14 to exclude fantasy playoffs.
+- Weeks are capped at 17 to include fantasy playoffs.
 - Import-time execution at bottom warms the cache for downstream consumers.
 """
 from decimal import Decimal
@@ -29,7 +29,7 @@ def load_or_update_starters_cache():
 
     Logic:
     - Resume from Last_Updated_* markers (avoids redundant API calls).
-    - Cap weeks at 14 (exclude playoffs).
+    - Cap weeks at 17 (include playoffs).
     - Only fetch missing weeks per season; break early if fully current.
     - Strip metadata before returning to callers.
 
@@ -146,8 +146,8 @@ def _get_max_weeks(season, current_season, current_week):
 
     Rules:
     - Live season -> current_week (capped above).
-    - 2019/2020 -> 13 (legacy rule set).
-    - Other seasons -> 14 (regular season boundary).
+    - 2019/2020 -> 16 (legacy rule set).
+    - Other seasons -> 17 (regular season boundary).
 
     Returns:
         int: Max week to process for season.

@@ -175,8 +175,18 @@ def commit_and_push_cache_updates():
         )
 
         # Clean up: delete the local branch
+        print(f"Cleaning up local branch {branch_name}...")
         subprocess.run(
             ['git', 'branch', '-d', branch_name],
+            cwd=repo_root,
+            check=True,
+            env=env
+        )
+
+        # Clean up: delete the remote branch from GitHub
+        print(f"Deleting remote branch {branch_name} from GitHub...")
+        subprocess.run(
+            ['git', 'push', 'origin', '--delete', branch_name],
             cwd=repo_root,
             check=True,
             env=env

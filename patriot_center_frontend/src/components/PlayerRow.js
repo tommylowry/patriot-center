@@ -28,6 +28,7 @@ export function PlayerRow({ player }) {
       <td align="center" className="col-position">{player.position}</td>
       <td align="center">{player.total_points}</td>
       <td align="center">{player.num_games_started}</td>
+      <td align="center">{Number(player.ffWAR_per_game).toFixed(3)}</td>
       <td align="center" className={warClass}>{player.ffWAR}</td>
     </tr>
   );

@@ -331,8 +331,8 @@ class TestLoadOrUpdateFfwarCache:
     @patch('patriot_center_backend.utils.ffWAR_loader.load_cache')
     @patch('patriot_center_backend.utils.ffWAR_loader.save_cache')
     @patch('patriot_center_backend.utils.ffWAR_loader._fetch_ffWAR')
-    def test_caps_weeks_at_14_for_regular_seasons(self, mock_fetch, mock_save, mock_load, mock_current):
-        """Test that weeks are capped at 14."""
+    def test_caps_weeks_at_17_for_regular_seasons(self, mock_fetch, mock_save, mock_load, mock_current):
+        """Test that weeks are capped at 17."""
         from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
         
         mock_current.return_value = (2024, 18)
@@ -341,10 +341,10 @@ class TestLoadOrUpdateFfwarCache:
 
         result = load_or_update_ffWAR_cache()
 
-        # Should not process beyond week 14
-        assert len(result["2024"]) == 14
+        # Should not process beyond week 17
+        assert len(result["2024"]) == 17
         assert "18" not in result["2024"]
-        assert "14" in result["2024"]
+        assert "17" in result["2024"]
 
     @patch('patriot_center_backend.utils.ffWAR_loader.get_current_season_and_week')
     @patch('patriot_center_backend.utils.ffWAR_loader.load_cache')
@@ -375,7 +375,7 @@ class TestPlayoffScaling:
         """Test that regular season weeks (< week 14) are not scaled in 2020."""
         from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
 
-        # Regular season week 13 in 2020 - should NOT be scaled
+        # Playoff season week 14 in 2020 - should NOT be scaled
         scores = {
             "Tommy": {"total_points": 120.0, "players": {"Elite QB": 30.0}},
             "Mike": {"total_points": 110.0, "players": {"Good QB": 25.0}},
@@ -405,8 +405,8 @@ class TestPlayoffScaling:
         # (allowing for rounding differences)
         assert abs(playoff_ffwar * 3 - regular_season_ffwar) < 0.01
 
-    def test_playoff_scaling_2020_week_14(self):
-        """Test playoffs start at week 14 for 2020 and earlier."""
+    def test_playoff_scaling_2020_week_17(self):
+        """Test playoffs start at week 17 for 2020 and earlier."""
         from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
 
         # 4 playoff teams
@@ -417,10 +417,10 @@ class TestPlayoffScaling:
             "Seed4": {"total_points": 110.0, "players": {"Player4": 20.0}}
         }
 
-        mock_replacement_data = {"2020": {"14": {"QB_3yr_avg": 25.0}}}
+        mock_replacement_data = {"2020": {"17": {"QB_3yr_avg": 25.0}}}
 
         with patch('patriot_center_backend.utils.ffWAR_loader.REPLACEMENT_SCORES', mock_replacement_data):
-            result = _calculate_ffWAR_position(scores, season=2020, week=14, position="QB")
+            result = _calculate_ffWAR_position(scores, season=2020, week=17, position="QB")
 
         # Verify all players have results
         assert len(result) == 4

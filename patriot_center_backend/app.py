@@ -72,7 +72,7 @@ def get_starters(arg1, arg2, arg3):
 
     Path arguments are positional and inferred by type/value:
     - League IDs -> season
-    - Week numbers 1-14 -> week
+    - Week numbers 1-17 -> week
     - Known manager names -> manager
 
     Query param: format=json returns raw shape; otherwise flattened records.

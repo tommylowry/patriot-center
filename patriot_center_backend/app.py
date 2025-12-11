@@ -23,7 +23,8 @@ def index():
             "/get_starters",
             "/get_aggregated_players",
             "/get_aggregated_managers/<player>",
-            "/meta/options",
+            "/valid_options",
+            "/players/list",
             "/ping",
             "/health"
         ]

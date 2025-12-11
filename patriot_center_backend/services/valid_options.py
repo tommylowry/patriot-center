@@ -76,8 +76,8 @@ class ValidOptionsService:
             27: self._plyr_yr_mgr_pos_selected,
             28: self._plyr_yr_wk_selected,
             29: self._plyr_yr_wk_pos_selected,
-            30: self._plyr_yr_wk_mgr_selected,
-            31: self._all_selected
+            30: self._plyr_yr_wk_mgr_selected
+          # 31: self._all_selected              (not implemented)
         }
 
         self._position_bit = 1
@@ -87,6 +87,8 @@ class ValidOptionsService:
         self._player_bit   = 16
 
         self._get_function_id()
+
+        self._function_mapping[self._func_id]()
     
     # ----------------------------------------
     # ---------- Internal Functions ----------
@@ -140,7 +142,7 @@ class ValidOptionsService:
                 
                 if self._player_selected():
                     raise ValueError("Multiple player arguments provided.")
-                self._player = arg
+                self._player = arg.replace("_", " ").replace("%27", "'")
             
             elif arg in ["QB", "RB", "WR", "TE", "K", "DEF"]:
                 if self._position_selected():
@@ -248,8 +250,6 @@ class ValidOptionsService:
         Returns the valid options based on the current filters.
         """
 
-        self._function_mapping[self._func_id]()
-
         # Ensure weeks are sorted numerically
         self._weeks_list = [int(week) for week in self._weeks_list]
         self._weeks_list = sorted(self._weeks_list)
@@ -270,6 +270,7 @@ class ValidOptionsService:
 
     """
     Note: week cannot be used as a filter without a year selected
+    Note: only 4 filters can be applied at once, so all 5 selected is not implemented
     -----------------------------------------------------------------------
     || plyr | yr  | wk  | mgr | pos || num |             func            ||
     -----------------------------------------------------------------------
@@ -308,7 +309,9 @@ class ValidOptionsService:
     ||  Yes | Yes | Yes | No  | No  ||  28 | _plyr_yr_wk_selected()      ||
     ||  Yes | Yes | Yes | No  | Yes ||  29 | _plyr_yr_wk_pos_selected()  ||
     ||  Yes | Yes | Yes | Yes | No  ||  30 | _plyr_yr_wk_mgr_selected()  ||
-    ||  Yes | Yes | Yes | Yes | Yes ||  31 | _all_selected()             ||
+    ***************************************************************************************
+    ||  Yes | Yes | Yes | Yes | Yes ||  31 | _all_selected()             || not implemented
+    ***************************************************************************************
     -----------------------------------------------------------------------
     """
 
@@ -542,26 +545,20 @@ class ValidOptionsService:
 
     # 12
     def _yr_wk_selected(self):
-        
-        
-        self._reset_growing_lists()
-
-
-        self._reset_growing_lists()
 
         # Managers and Positions for the selected Year and Week
         data = VALID_OPTIONS_CACHE.get(self._year, {}).get(self._week, {})
 
+        # Get the vaid Positions and Managers for the selected Year and Week
+        for position in self._positions_list:
+            if position in data.get("positions", []):
+                self._add_to_vaild_options(position, "position")
+                if self._done:
+                    break
+
         for manager in self._managers_list:
             if manager in data.get("managers", []):
-                for position in self._positions_list:
-                    if position in data.get(manager, {}).get("positions", []):
-                        self._add_to_vaild_options(manager, "manager", "position")
-                        if self._done:
-                            break
-                        self._add_to_vaild_options(position, "position", "manager")
-                        if self._done:
-                            break
+                self._add_to_vaild_options(manager, "manager")
                 if self._done:
                     break
 
@@ -587,11 +584,11 @@ class ValidOptionsService:
 
         self._managers_list = copy.deepcopy(self._growing_managers_list)
 
-        # Within the valid Managers: Get the Position options that have the selected Year and Week
+        # Get the Positions list for the selected year and week
         self._call_new_function(self._year_bit + self._week_bit)
 
-        # Within the valid Managers: Get the Year options that have the selected Week and Position
-        self._call_new_function(self._week_bit + self._position_bit)
+        # Get the Weeks list for the selected year and position
+        self._call_new_function(self._year_bit + self._position_bit)
 
         # (Getting valid Year options for Week is not necessary as Week cannot be selected without Year)
     
@@ -651,8 +648,7 @@ class ValidOptionsService:
             if self._done:
                 break
             
-            eval_weeks_list = data.get("weeks", [])
-            for week in eval_weeks_list:
+            for week in self._weeks_list:
                 
                 if self._player not in data.get(week, {}).get("players", []):
                     continue
@@ -660,8 +656,7 @@ class ValidOptionsService:
                 if self._done:
                     break
                 
-                eval_managers_list = data.get(week, {}).get("managers", [])
-                for manager in eval_managers_list:
+                for manager in self._managers_list:
                     
                     if self._player in data.get(week, {}).get(manager, {}).get("players", []):
                         self._add_to_vaild_options(manager, "manager", "year", "week", "position")
@@ -818,9 +813,3 @@ class ValidOptionsService:
 
         # In a given year and week, the manager can only be the selected manager
         self._managers_list = list([self._manager])
-
-    # 31
-    def _all_selected(self):
-
-        # Position can only be the position of the player
-        self._plyr_yr_wk_mgr_selected()

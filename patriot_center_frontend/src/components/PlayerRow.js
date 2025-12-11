@@ -18,14 +18,14 @@ export function PlayerRow({ player }) {
   return (
     <tr>
       <td align="center">
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+        <div className="player-info" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
           <Link to={`/player/${slug}`} style={{ fontWeight: 500 }}>{player.key}</Link>
           <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
             {player.position}{player.team ? ` • ${player.team}` : ''}
           </span>
         </div>
       </td>
-      <td align="center">{player.position}</td>
+      <td align="center" className="col-position">{player.position}</td>
       <td align="center">{player.total_points}</td>
       <td align="center">{player.num_games_started}</td>
       <td align="center" className={warClass}>{player.ffWAR}</td>

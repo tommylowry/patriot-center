@@ -8,6 +8,7 @@ __pycache__/
 # Ignore virtual environment directories (optional, if you use venv)
 venv/
 env/
+*.env
 
 # Ignore other common Python-related files
 *.pyo

@@ -116,7 +116,7 @@ export default function PlayerPage() {
         <div className="App" style={{ paddingTop: '1rem' }}>
 
             {/* Player Hero Section */}
-            <div style={{
+            <div className="player-hero" style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '1.5rem',
@@ -157,7 +157,7 @@ export default function PlayerPage() {
                 </div>
                 {/* Playoff Ribbons */}
                 {(playoffCounts[1] > 0 || playoffCounts[2] > 0 || playoffCounts[3] > 0) && (
-                    <div style={{
+                    <div className="playoff-ribbons" style={{
                         display: 'flex',
                         gap: '1rem',
                         alignItems: 'flex-start',
@@ -178,7 +178,7 @@ export default function PlayerPage() {
                                     minHeight: '80px',
                                     justifyContent: 'center'
                                 }}>
-                                    <div style={{
+                                    <div className="emoji" style={{
                                         fontSize: '2.5rem',
                                         lineHeight: 1,
                                         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
@@ -193,7 +193,7 @@ export default function PlayerPage() {
                                         ×{playoffCounts[1]}
                                     </span>
                                 </div>
-                                <div style={{
+                                <div className="playoff-details" style={{
                                     fontSize: '0.7rem',
                                     color: 'var(--muted)',
                                     textAlign: 'center',
@@ -223,7 +223,7 @@ export default function PlayerPage() {
                                     minHeight: '80px',
                                     justifyContent: 'center'
                                 }}>
-                                    <div style={{
+                                    <div className="emoji" style={{
                                         fontSize: '2.5rem',
                                         lineHeight: 1,
                                         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
@@ -238,7 +238,7 @@ export default function PlayerPage() {
                                         ×{playoffCounts[2]}
                                     </span>
                                 </div>
-                                <div style={{
+                                <div className="playoff-details" style={{
                                     fontSize: '0.7rem',
                                     color: 'var(--muted)',
                                     textAlign: 'center',
@@ -268,7 +268,7 @@ export default function PlayerPage() {
                                     minHeight: '80px',
                                     justifyContent: 'center'
                                 }}>
-                                    <div style={{
+                                    <div className="emoji" style={{
                                         fontSize: '2.5rem',
                                         lineHeight: 1,
                                         filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
@@ -283,7 +283,7 @@ export default function PlayerPage() {
                                         ×{playoffCounts[3]}
                                     </span>
                                 </div>
-                                <div style={{
+                                <div className="playoff-details" style={{
                                     fontSize: '0.7rem',
                                     color: 'var(--muted)',
                                     textAlign: 'center',
@@ -319,187 +319,69 @@ export default function PlayerPage() {
                 </button>
             </p>
 
-            {/* Radio button filters */}
-            <div style={{
-                marginBottom: '1.5rem',
-                display: 'flex',
-                gap: '0',
-                justifyContent: 'center',
-                flexWrap: 'wrap'
-            }}>
+            {/* Dropdown filters */}
+            <div className="filters-container">
                 {/* Season Filter */}
-                <section style={{ padding: '1rem', borderRight: '1px solid var(--border)', minWidth: '120px' }}>
-                    <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Season</strong>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
-                        <label
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 4,
-                                background: year === null ? 'var(--accent)' : 'var(--bg-alt)',
-                                padding: '6px 12px',
-                                borderRadius: 4,
-                                cursor: (optionsLoading || optionsError) ? 'not-allowed' : 'pointer',
-                                fontSize: 14,
-                                opacity: (optionsLoading || optionsError) ? 0.5 : 1
-                            }}
-                        >
-                            <input
-                                type="radio"
-                                name="year"
-                                checked={year === null}
-                                onChange={() => { setYear(null); setWeek(null); }}
-                                disabled={optionsLoading || optionsError}
-                                style={{ cursor: (optionsLoading || optionsError) ? 'not-allowed' : 'pointer' }}
-                            />
-                            ALL
-                        </label>
+                <div className="filter-dropdown">
+                    <label htmlFor="player-year-select">Season</label>
+                    <select
+                        id="player-year-select"
+                        value={year === null ? 'ALL' : year}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === 'ALL') {
+                                setYear(null);
+                                setWeek(null);
+                            } else {
+                                setYear(parseInt(val));
+                            }
+                        }}
+                        disabled={optionsLoading || optionsError}
+                    >
+                        <option value="ALL">All Seasons</option>
                         {options.years.map(y => (
-                            <label
-                                key={y}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 4,
-                                    background: year === y ? 'var(--accent)' : 'var(--bg-alt)',
-                                    padding: '6px 12px',
-                                    borderRadius: 4,
-                                    cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
-                                    fontSize: 14,
-                                    opacity: optionsLoading || optionsError ? 0.5 : 1
-                                }}
-                            >
-                                <input
-                                    type="radio"
-                                    name="year"
-                                    checked={year === y}
-                                    onChange={() => setYear(y)}
-                                    disabled={optionsLoading || optionsError}
-                                    style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
-                                />
-                                {y}
-                            </label>
+                            <option key={y} value={y}>{y}</option>
                         ))}
-                    </div>
-                </section>
+                    </select>
+                </div>
 
                 {/* Week Filter */}
-                <section style={{ padding: '1rem', borderRight: '1px solid var(--border)', minWidth: '100px' }}>
-                    <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Week</strong>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
-                        <label
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 4,
-                                background: week === null ? 'var(--accent)' : 'var(--bg-alt)',
-                                padding: '6px 12px',
-                                borderRadius: 4,
-                                cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
-                                fontSize: 14,
-                                opacity: optionsLoading || optionsError ? 0.5 : 1
-                            }}
-                        >
-                            <input
-                                type="radio"
-                                name="week"
-                                checked={week === null}
-                                onChange={() => setWeek(null)}
-                                disabled={optionsLoading || optionsError}
-                                style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
-                            />
-                            ALL
-                        </label>
+                <div className="filter-dropdown">
+                    <label htmlFor="player-week-select">Week</label>
+                    <select
+                        id="player-week-select"
+                        value={week === null ? 'ALL' : week}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setWeek(val === 'ALL' ? null : parseInt(val));
+                        }}
+                        disabled={optionsLoading || optionsError}
+                    >
+                        <option value="ALL">All Weeks</option>
                         {(year ? options.weeks : []).map(w => (
-                            <label
-                                key={w}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 4,
-                                    background: week === w ? 'var(--accent)' : 'var(--bg-alt)',
-                                    padding: '6px 12px',
-                                    borderRadius: 4,
-                                    cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
-                                    fontSize: 14,
-                                    opacity: optionsLoading || optionsError ? 0.5 : 1
-                                }}
-                            >
-                                <input
-                                    type="radio"
-                                    name="week"
-                                    checked={week === w}
-                                    onChange={() => setWeek(w)}
-                                    disabled={optionsLoading || optionsError}
-                                    style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
-                                />
-                                {w}
-                            </label>
+                            <option key={w} value={w}>Week {w}</option>
                         ))}
-                    </div>
-                </section>
+                    </select>
+                </div>
 
                 {/* Manager Filter */}
-                <section style={{ padding: '1rem', minWidth: '140px' }}>
-                    <strong style={{ display: 'block', marginBottom: '0.5rem', textAlign: 'center' }}>Manager</strong>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', alignItems: 'stretch' }}>
-                        <label
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: 4,
-                                background: manager === null ? 'var(--accent)' : 'var(--bg-alt)',
-                                padding: '6px 12px',
-                                borderRadius: 4,
-                                cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
-                                fontSize: 14,
-                                opacity: optionsLoading || optionsError ? 0.5 : 1
-                            }}
-                        >
-                            <input
-                                type="radio"
-                                name="manager"
-                                checked={manager === null}
-                                onChange={() => setManager(null)}
-                                disabled={optionsLoading || optionsError}
-                                style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
-                            />
-                            ALL
-                        </label>
+                <div className="filter-dropdown">
+                    <label htmlFor="player-manager-select">Manager</label>
+                    <select
+                        id="player-manager-select"
+                        value={manager === null ? 'ALL' : manager}
+                        onChange={(e) => {
+                            const val = e.target.value;
+                            setManager(val === 'ALL' ? null : val);
+                        }}
+                        disabled={optionsLoading || optionsError}
+                    >
+                        <option value="ALL">All Managers</option>
                         {options.managers.map(m => (
-                            <label
-                                key={m}
-                                style={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: 4,
-                                    background: manager === m ? 'var(--accent)' : 'var(--bg-alt)',
-                                    padding: '6px 12px',
-                                    borderRadius: 4,
-                                    cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer',
-                                    fontSize: 14,
-                                    opacity: optionsLoading || optionsError ? 0.5 : 1
-                                }}
-                            >
-                                <input
-                                    type="radio"
-                                    name="manager"
-                                    checked={manager === m}
-                                    onChange={() => setManager(m)}
-                                    disabled={optionsLoading || optionsError}
-                                    style={{ cursor: optionsLoading || optionsError ? 'not-allowed' : 'pointer' }}
-                                />
-                                {m}
-                            </label>
+                            <option key={m} value={m}>{m}</option>
                         ))}
-                    </div>
-                </section>
+                    </select>
+                </div>
             </div>
 
             {/* Clear Filters Button - only show if filters are not at default */}
@@ -549,13 +431,19 @@ export default function PlayerPage() {
                         <thead>
                             <tr>
                                 <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('manager')}>
-                                    Manager {sortKey === 'manager' && (sortDir === 'asc' ? '▲' : '▼')}
+                                    <span className="col-header-full">Manager</span>
+                                    <span className="col-header-abbr">Mgr</span>
+                                    {' '}{sortKey === 'manager' && (sortDir === 'asc' ? '▲' : '▼')}
                                 </th>
                                 <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('total_points')}>
-                                    Total Points {sortKey === 'total_points' && (sortDir === 'asc' ? '▲' : '▼')}
+                                    <span className="col-header-full">Total Points</span>
+                                    <span className="col-header-abbr">Pts</span>
+                                    {' '}{sortKey === 'total_points' && (sortDir === 'asc' ? '▲' : '▼')}
                                 </th>
                                 <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('num_games_started')}>
-                                    Games Started {sortKey === 'num_games_started' && (sortDir === 'asc' ? '▲' : '▼')}
+                                    <span className="col-header-full">Games Started</span>
+                                    <span className="col-header-abbr">GS</span>
+                                    {' '}{sortKey === 'num_games_started' && (sortDir === 'asc' ? '▲' : '▼')}
                                 </th>
                                 <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR')}>
                                     ffWAR {sortKey === 'ffWAR' && (sortDir === 'asc' ? '▲' : '▼')}
@@ -570,7 +458,7 @@ export default function PlayerPage() {
                                 return (
                                     <tr key={i}>
                                         <td>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
                                                 <span>{m.manager || '—'}</span>
                                                 {hasPlacements && (
                                                     <div style={{ display: 'flex', gap: '0.15rem' }}>

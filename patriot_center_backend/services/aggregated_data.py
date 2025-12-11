@@ -5,6 +5,12 @@ Exposes helpers to:
 - Aggregate totals across weeks/seasons for a manager by player.
 - Aggregate totals across weeks/seasons for a player by manager.
 
+Key features:
+- Fetches ffWAR scores for each player/week and includes them in aggregations
+- Tracks playoff placements for players/managers
+- Generates player image endpoints using Sleeper CDN
+- Rounds financial totals to 2 decimals, ffWAR to 3 decimals
+
 Notes:
 - Results are simple dicts suitable for JSON responses.
 - Totals are rounded to two decimals via Decimal normalization (ffWAR to 3).
@@ -14,6 +20,7 @@ from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
 from patriot_center_backend.services.players import fetch_players
 
+# Load caches at module import for fast access
 PLAYERS_CACHE = fetch_players()
 FFWAR_CACHE   = load_or_update_ffWAR_cache()
 
@@ -142,15 +149,24 @@ def _update_player_data(players_dict, player, player_data, manager, year):
     """
     Increment aggregation totals for an existing player entry.
 
+    Updates:
+        - total_points: cumulative fantasy points scored
+        - ffWAR: cumulative wins above replacement
+        - num_games_started: count of games started
+        - playoff_placement: nested dict tracking playoff finishes by manager/year
+
     Rounds:
         total_points -> 2 decimals
         ffWAR -> 3 decimals
     """
     player_dict_item = players_dict[player]
+
+    # Accumulate totals
     player_dict_item['total_points'] += player_data['points']
     player_dict_item['ffWAR'] += player_data['ffWAR']
     player_dict_item['num_games_started'] += 1
 
+    # Round to appropriate precision using Decimal for exact rounding
     player_dict_item["total_points"] = float(
         Decimal(player_dict_item["total_points"]).quantize(Decimal('0.01')).normalize()
     )
@@ -159,16 +175,25 @@ def _update_player_data(players_dict, player, player_data, manager, year):
     )
     players_dict[player] = player_dict_item
 
-    # Handle playoff placement if present
+    # Track playoff finishes (1st, 2nd, 3rd place) by manager and year
     if "placement" in player_data:
         players_dict = _handle_playoff_placement(players_dict, player, manager, year, player_data["placement"])
-    
+
     return players_dict
 
 def _initialize_player_data(players_dict, player, player_data, manager, year):
     """
     Create initial aggregation record for a player.
+
+    Sets up initial totals and metadata including:
+        - Points, games started, and ffWAR from first appearance
+        - Player image URL (different format for players vs team defenses)
+        - Team affiliation from player cache
+        - Playoff placements if applicable
     """
+    # Determine image URL based on player type
+    # Numeric IDs = individual players (use player headshot)
+    # String IDs = team defenses (use team logo)
     if player_data['player_id'].isnumeric():
         player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_data['player_id']}.jpg"
     else:
@@ -183,10 +208,10 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 
-    # Handle playoff placement if present
+    # Track playoff finishes (1st, 2nd, 3rd place) if this is the last playoff week
     if "placement" in player_data:
         players_dict = _handle_playoff_placement(players_dict, player, manager, year, player_data["placement"])
-    
+
     return players_dict
 
 def _update_manager_data(managers_dict, manager, raw_item, player, year):

@@ -1,7 +1,19 @@
+"""
+Configuration constants for the Patriot Center backend.
+
+This module defines all static configuration values used throughout the application:
+- League identifiers mapped to seasons
+- Username mappings for display purposes
+- API endpoints and URLs
+- File paths for cache storage
+- NFL team defense metadata
+
+All constants are loaded at import time and referenced across services and utilities.
+"""
 # patriot_center_backend/constants.py
 import os
 
-# Map year to the league ids
+# Map year to the league ids (Sleeper league IDs for each fantasy season)
 LEAGUE_IDS = {
     2019: "399260536505671680",
     2020: "567745628522500096",

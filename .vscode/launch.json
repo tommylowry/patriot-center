@@ -62,6 +62,26 @@
         "PYTHONPATH": "${workspaceFolder}"
       },
       "justMyCode": false
+    },
+    {
+      "name": "Patriot-Center API Debug",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+          "FLASK_APP": "patriot_center_backend.app",
+          "FLASK_ENV": "development"
+      },
+      "args": [
+          "run",
+          "--no-debugger",
+          "--no-reload",
+          "--host=127.0.0.1",
+          "--port=8080"
+      ],
+      "jinja": true,
+      "justMyCode": false,
+      "cwd": "${workspaceFolder}"
     }
   ]
 }

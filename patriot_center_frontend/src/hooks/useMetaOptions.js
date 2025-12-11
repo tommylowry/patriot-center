@@ -14,7 +14,7 @@ export function useMetaOptions() {
     fetchOptions()
       .then(json => {
         if (!active) return;
-        const yrs = Array.isArray(json?.seasons) ? json.seasons.map(y => String(y)) : [];
+        const yrs = Array.isArray(json?.years) ? json.years.map(y => String(y)) : [];
         const globalWeeks = Array.isArray(json?.weeks)
           ? Array.from(new Set(json.weeks.map(n => Number(n)).filter(Number.isFinite))).sort((a, b) => a - b)
           : [];
@@ -22,7 +22,7 @@ export function useMetaOptions() {
         setYears(yrs);
         setWeeksByYear(wksByYear);
         if (process.env.NODE_ENV === 'development') {
-          console.debug('meta/options normalized:', { years: yrs, weeksByYear: wksByYear });
+          console.debug('valid_options normalized:', { years: yrs, weeksByYear: wksByYear });
         }
       })
       .catch(e => active && setError(e.message))

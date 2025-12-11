@@ -12,8 +12,32 @@ Notes:
 from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
 from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
+from patriot_center_backend.services.players import fetch_players
 
-ffWAR_cache = load_or_update_ffWAR_cache()
+PLAYERS_CACHE = fetch_players()
+FFWAR_CACHE   = load_or_update_ffWAR_cache()
+
+def fetch_player_manager_aggregation(player, manager, season=None, week=None):
+    """
+    Aggregate metrics for a specific player-manager pairing.
+
+    Args:
+        player (str): Player name key.
+        manager (str): Manager username key.
+        season (int | None): Optional season restriction.
+        week (int | None): Optional week restriction.
+
+    Returns:
+        dict: {total_points, num_games_started, ffWAR, position}
+              Empty if no appearances found in filtered slice.
+    """
+    player_data = fetch_aggregated_managers(player=player, season=season, week=week)
+    if manager not in player_data:
+        return {}
+    
+    return {
+        manager: player_data[manager]
+    }
 
 def fetch_aggregated_players(manager=None, season=None, week=None):
     """
@@ -107,8 +131,8 @@ def fetch_ffWAR_for_player(player, season=None, week=None):
     season_str = str(season)
     week_str = str(week)
 
-    if season_str in ffWAR_cache and week_str in ffWAR_cache[season_str]:
-        week_data = ffWAR_cache[season_str][week_str]
+    if season_str in FFWAR_CACHE and week_str in FFWAR_CACHE[season_str]:
+        week_data = FFWAR_CACHE[season_str][week_str]
         if player in week_data and "ffWAR" in week_data[player]:
             return week_data[player]["ffWAR"]
 
@@ -145,7 +169,6 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
     """
     Create initial aggregation record for a player.
     """
-
     if player_data['player_id'].isnumeric():
         player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_data['player_id']}.jpg"
     else:
@@ -156,7 +179,8 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         "num_games_started": 1,
         'ffWAR': player_data['ffWAR'],
         "position": player_data['position'],
-        "player_image_endpoint": player_image_endpoint
+        "player_image_endpoint": player_image_endpoint,
+        "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 
     # Handle playoff placement if present
@@ -207,7 +231,8 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
         "num_games_started": 1,
         'ffWAR': raw_item['ffWAR'],
         "position": raw_item['position'],
-        "player_image_endpoint": player_image_endpoint
+        "player_image_endpoint": player_image_endpoint,
+        "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 
     # Handle playoff placement if present

@@ -56085,12 +56085,7 @@
                 "ffWAR": -0.053,
                 "manager": "Sam",
                 "position": "DEF"
-            },
-            "Test Deleteme": {
-                "ffWAR": 0.000,
-                "manager": "Tommy",
-                "position": "WR"
-           }
+            }
         }
     }
 }

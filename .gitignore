@@ -19,3 +19,6 @@ env/
 coverage.xml
 htmlcov/
 .pytest_cache/
+
+# Ignore dynamic data files
+dynamic_data/

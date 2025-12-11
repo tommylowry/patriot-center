@@ -17,11 +17,13 @@ All functions return plain dicts or tuples for easy JSON serialization.
 import os
 import json
 from datetime import datetime
+from pathlib import Path
+
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS
 
 
-def load_cache(file_path, players_cache=False):
+def load_cache(file_path, initialize_with_last_updated_info=True):
     """
     Load JSON cache or initialize baseline structure.
 
@@ -47,7 +49,7 @@ def load_cache(file_path, players_cache=False):
         # Load and return existing cache content
         with open(file_path, "r") as file:
             return json.load(file)
-    elif not players_cache:
+    if initialize_with_last_updated_info:
         # Initialize the cache with all years (plus historical years for replacement score caches)
         cache = {"Last_Updated_Season": "0", "Last_Updated_Week": 0}
         
@@ -79,6 +81,8 @@ def save_cache(file_path, data):
         data (dict): Cache content.
     """
     # Persist cache atomically by writing the entire structure with 4-space indentation
+    path = Path(file_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
     with open(file_path, "w") as file:
         json.dump(data, file, indent=4)
 

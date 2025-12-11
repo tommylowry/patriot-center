@@ -14,14 +14,12 @@ Notes:
 - Weeks are capped at 14 to exclude fantasy playoffs.
 - Import-time execution at bottom warms the cache for downstream consumers.
 """
-import os
 from decimal import Decimal
+
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE
+from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
-
-
 
 PLAYER_IDS = load_player_ids()
 
@@ -39,10 +37,11 @@ def load_or_update_starters_cache():
         dict: Nested {season: {week: {manager: {...}}}}
     """
     cache = load_cache(STARTERS_CACHE_FILE)
+    valid_options_cache = load_cache(VALID_OPTIONS_CACHE_FILE, initialize_with_last_updated_info=False)
 
     current_season, current_week = get_current_season_and_week()
-    if current_week > 14:
-        current_week = 14  # Regular season cap
+    if current_week > 17:
+        current_week = 17  # Regular season cap
 
     for year in LEAGUE_IDS.keys():
         last_updated_season = int(cache.get("Last_Updated_Season", 0))
@@ -75,7 +74,37 @@ def load_or_update_starters_cache():
 
         for week in weeks_to_update:
             cache.setdefault(str(year), {})
-            cache[str(year)][str(week)] = fetch_starters_for_week(year, week)
+            valid_options_cache.setdefault(str(year), {})
+
+            managers = valid_options_cache[str(year)].get("managers", [])
+            players = valid_options_cache[str(year)].get("players", [])
+            weeks = list(valid_options_cache[str(year)].keys())
+            for key in weeks.copy():
+                if not key.isdigit():
+                    weeks.remove(key)
+            positions = valid_options_cache[str(year)].get("positions", [])
+
+            
+            week_data, weekly_managers_summary_array, weekly_players_summary_array, weekly_positions_summary_array, week_valid_data = fetch_starters_for_week(year, week)
+            for weekly_manager in weekly_managers_summary_array:
+                if weekly_manager not in managers:
+                    managers.append(weekly_manager)
+            for weekly_player in weekly_players_summary_array:
+                if weekly_player not in players:
+                    players.append(weekly_player)
+            for weekly_position in weekly_positions_summary_array:
+                if weekly_position not in positions:
+                    positions.append(weekly_position)
+            
+            weeks.append(str(week))
+            
+            valid_options_cache[str(year)]["managers"] = managers
+            valid_options_cache[str(year)]["players"] = players
+            valid_options_cache[str(year)]["weeks"] = weeks
+            valid_options_cache[str(year)]["positions"] = positions
+            valid_options_cache[str(year)][str(week)] = week_valid_data
+
+            cache[str(year)][str(week)] = week_data
 
             # Advance progress markers (enables resumable incremental updates).
             cache['Last_Updated_Season'] = str(year)
@@ -83,6 +112,7 @@ def load_or_update_starters_cache():
             print(f"  Starters cache updated internally for season {year}, week {week}")
 
     save_cache(STARTERS_CACHE_FILE, cache)
+    save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
     return cache
@@ -195,21 +225,28 @@ def fetch_starters_for_week(season, week):
     league_id = LEAGUE_IDS[int(season)]
     sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
     if sleeper_response_users[1] != 200:
-        return {}
+        return {}, [], [], [], {}
 
     sleeper_response_rosters = fetch_sleeper_data(f"league/{league_id}/rosters")
     if sleeper_response_rosters[1] != 200:
-        return {}
+        return {}, [], [], [], {}
 
     sleeper_response_matchups = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
     if sleeper_response_matchups[1] != 200:
-        return {}
+        return {}, [], [], [], {}
     
     playoff_roster_ids = _get_relevant_playoff_roster_ids(season, week, league_id)
     
+    managers_summary_array = []
+    players_summary_array = []
+    positions_summary_array = []
+    week_valid_data = {}
+
     managers = sleeper_response_users[0]
     week_data = {}
     for manager in managers:
+        players_summary_array_per_manager   = []
+        positions_summary_array_per_manager = []
         real_name = USERNAME_TO_REAL_NAME.get(manager['display_name'], "Unknown Manager")
 
         # 2019 early-week reassignment (historical manual correction).
@@ -228,11 +265,28 @@ def fetch_starters_for_week(season, week):
         if playoff_roster_ids != {} and roster_id not in playoff_roster_ids['round_roster_ids']:
             continue  # Skip non-playoff rosters in playoff weeks
 
-        starters_data = get_starters_data(sleeper_response_matchups, roster_id, playoff_roster_ids)
+        starters_data, players_summary_array_per_manager, positions_summary_array_per_manager = get_starters_data(sleeper_response_matchups,
+                                                                                                                  roster_id, 
+                                                                                                                  playoff_roster_ids, 
+                                                                                                                  players_summary_array_per_manager, 
+                                                                                                                  positions_summary_array_per_manager)
         if starters_data:
             week_data[real_name] = starters_data
+            week_valid_data[real_name] = { "players": players_summary_array_per_manager, "positions": positions_summary_array_per_manager }
 
-    return week_data
+            managers_summary_array.append(real_name)
+            for player in players_summary_array_per_manager:
+                if player not in players_summary_array:
+                    players_summary_array.append(player)
+            for position in positions_summary_array_per_manager:
+                if position not in positions_summary_array:
+                    positions_summary_array.append(position)
+    
+    week_valid_data["managers"] = managers_summary_array
+    week_valid_data["players"] = players_summary_array
+    week_valid_data["positions"] = positions_summary_array
+
+    return week_data, managers_summary_array, players_summary_array, positions_summary_array, week_valid_data
 
 def get_roster_id(sleeper_response_rosters, user_id):
     """
@@ -251,7 +305,11 @@ def get_roster_id(sleeper_response_rosters, user_id):
             return roster['roster_id']
     return None
 
-def get_starters_data(sleeper_response_matchups, roster_id, playoff_roster_ids):
+def get_starters_data(sleeper_response_matchups,
+                      roster_id,
+                      playoff_roster_ids,
+                      players_summary_array,
+                      positions_summary_array):
     """
     Extract starters + total points for one roster/week.
 
@@ -267,7 +325,7 @@ def get_starters_data(sleeper_response_matchups, roster_id, playoff_roster_ids):
         dict | None: {player_name: {points, position}, Total_Points} or None if not found.
     """
 
-    players_cache = load_cache(PLAYERS_CACHE_FILE, players_cache=True)
+    players_cache = load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
 
     matchups = sleeper_response_matchups[0]
     for matchup in matchups:
@@ -283,6 +341,11 @@ def get_starters_data(sleeper_response_matchups, roster_id, playoff_roster_ids):
                 player_position = player_meta.get('position')
                 if not player_position:
                     continue  # Skip if no position resolved
+
+                if player_name not in players_summary_array:
+                    players_summary_array.append(player_name)
+                if player_position not in positions_summary_array:
+                    positions_summary_array.append(player_position)
 
                 _update_players_cache(player_meta, players_cache)
 
@@ -307,7 +370,7 @@ def get_starters_data(sleeper_response_matchups, roster_id, playoff_roster_ids):
             manager_data["Total_Points"] = float(
                 Decimal(manager_data["Total_Points"]).quantize(Decimal('0.01')).normalize()
             )
-            return manager_data
-    return None
+            return manager_data, players_summary_array, positions_summary_array
+    return {}, players_summary_array, positions_summary_array
 
 load_or_update_starters_cache()

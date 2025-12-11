@@ -9,6 +9,7 @@ from decimal import Decimal
 class TestFetchAggregatedPlayers:
     """Test fetch_aggregated_players function."""
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {"Amon-Ra St. Brown": {"team": "DET", "position": "WR"}})
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_aggregates_single_player_single_week(self, mock_ffwar, mock_starters):
@@ -37,6 +38,7 @@ class TestFetchAggregatedPlayers:
         assert result["Amon-Ra St. Brown"]["num_games_started"] == 1
         assert result["Amon-Ra St. Brown"]["ffWAR"] == 2.5
         assert result["Amon-Ra St. Brown"]["position"] == "WR"
+        assert result["Amon-Ra St. Brown"]["team"] == "DET"
         assert "player_image_endpoint" in result["Amon-Ra St. Brown"]
 
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
@@ -146,10 +148,29 @@ class TestFetchAggregatedPlayers:
         assert result["Kansas City Chiefs"]["player_image_endpoint"] == \
                "https://sleepercdn.com/images/team_logos/nfl/kc.jpg"
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {})
+    @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
+    @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
+    def test_team_is_none_when_player_not_in_cache(self, mock_ffwar, mock_starters):
+        """Test that team field is None when player not in PLAYERS_CACHE."""
+        from patriot_center_backend.services.aggregated_data import fetch_aggregated_players
+
+        mock_starters.return_value = {
+            "2024": {"1": {"Tommy": {"Unknown Player": {
+                "points": 10.0, "position": "WR", "player_id": "9999"
+            }}}}
+        }
+        mock_ffwar.return_value = 1.0
+
+        result = fetch_aggregated_players(manager="Tommy")
+        assert "Unknown Player" in result
+        assert result["Unknown Player"]["team"] is None
+
 
 class TestFetchAggregatedManagers:
     """Test fetch_aggregated_managers function."""
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {"Amon-Ra St. Brown": {"team": "DET", "position": "WR"}})
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_aggregates_single_manager_single_week(self, mock_ffwar, mock_starters):
@@ -169,6 +190,7 @@ class TestFetchAggregatedManagers:
         assert result["Tommy"]["total_points"] == 18.5
         assert result["Tommy"]["num_games_started"] == 1
         assert result["Tommy"]["ffWAR"] == 2.5
+        assert result["Tommy"]["team"] == "DET"
 
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
@@ -234,12 +256,12 @@ class TestFetchFfwarForPlayer:
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Player", season=2024, week=None) == 0.0
 
-    @patch('patriot_center_backend.services.aggregated_data.ffWAR_cache', {"2024": {"1": {"Amon-Ra St. Brown": {"ffWAR": 2.345}}}})
+    @patch('patriot_center_backend.services.aggregated_data.FFWAR_CACHE', {"2024": {"1": {"Amon-Ra St. Brown": {"ffWAR": 2.345}}}})
     def test_returns_ffwar_from_cache(self):
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Amon-Ra St. Brown", season=2024, week=1) == 2.345
 
-    @patch('patriot_center_backend.services.aggregated_data.ffWAR_cache', {"2024": {"1": {}}})
+    @patch('patriot_center_backend.services.aggregated_data.FFWAR_CACHE', {"2024": {"1": {}}})
     def test_returns_zero_when_player_not_in_cache(self):
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Unknown Player", season=2024, week=1) == 0.0
@@ -602,3 +624,107 @@ class TestPlayoffPlacement:
         # Each manager should have playoff placement for this player
         assert result["Tommy"]["playoff_placement"]["Christian McCaffrey"]["2024"] == 2
         assert result["Mike"]["playoff_placement"]["Christian McCaffrey"]["2024"] == 1
+
+
+class TestFetchPlayerManagerAggregation:
+    """Test fetch_player_manager_aggregation function."""
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
+    def test_returns_single_manager_data(self, mock_fetch_aggregated_managers):
+        """Test returns data for a single manager."""
+        from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+        mock_fetch_aggregated_managers.return_value = {
+            "Tommy": {
+                "total_points": 45.5,
+                "num_games_started": 3,
+                "ffWAR": 5.2,
+                "position": "RB"
+            },
+            "Mike": {
+                "total_points": 30.2,
+                "num_games_started": 2,
+                "ffWAR": 3.1,
+                "position": "RB"
+            }
+        }
+
+        result = fetch_player_manager_aggregation(
+            player="Christian McCaffrey",
+            manager="Tommy",
+            season=2024,
+            week=5
+        )
+
+        assert "Tommy" in result
+        assert "Mike" not in result
+        assert result["Tommy"]["total_points"] == 45.5
+        assert result["Tommy"]["num_games_started"] == 3
+        assert result["Tommy"]["ffWAR"] == 5.2
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
+    def test_returns_empty_when_manager_not_found(self, mock_fetch_aggregated_managers):
+        """Test returns empty dict when manager not in aggregated data."""
+        from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+        mock_fetch_aggregated_managers.return_value = {
+            "Tommy": {
+                "total_points": 45.5,
+                "num_games_started": 3,
+                "ffWAR": 5.2,
+                "position": "RB"
+            }
+        }
+
+        result = fetch_player_manager_aggregation(
+            player="Christian McCaffrey",
+            manager="Cody",
+            season=2024
+        )
+
+        assert result == {}
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
+    def test_passes_filters_to_fetch_aggregated_managers(self, mock_fetch_aggregated_managers):
+        """Test correctly passes season and week filters."""
+        from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+        mock_fetch_aggregated_managers.return_value = {
+            "Tommy": {"total_points": 20.0, "num_games_started": 1, "ffWAR": 2.0, "position": "WR"}
+        }
+
+        fetch_player_manager_aggregation(
+            player="Amon-Ra St. Brown",
+            manager="Tommy",
+            season=2024,
+            week=3
+        )
+
+        mock_fetch_aggregated_managers.assert_called_once_with(
+            player="Amon-Ra St. Brown",
+            season=2024,
+            week=3
+        )
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_aggregated_managers')
+    def test_works_without_optional_filters(self, mock_fetch_aggregated_managers):
+        """Test works with only player and manager (no season/week)."""
+        from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
+
+        mock_fetch_aggregated_managers.return_value = {
+            "Tommy": {"total_points": 100.5, "num_games_started": 8, "ffWAR": 12.3, "position": "QB"}
+        }
+
+        result = fetch_player_manager_aggregation(
+            player="Josh Allen",
+            manager="Tommy"
+        )
+
+        assert "Tommy" in result
+        assert result["Tommy"]["total_points"] == 100.5
+
+        mock_fetch_aggregated_managers.assert_called_once_with(
+            player="Josh Allen",
+            season=None,
+            week=None
+        )

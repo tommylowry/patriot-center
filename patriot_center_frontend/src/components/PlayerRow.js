@@ -18,7 +18,12 @@ export function PlayerRow({ player }) {
   return (
     <tr>
       <td align="center">
-        <Link to={`/player/${slug}`}>{player.key}</Link>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+          <Link to={`/player/${slug}`} style={{ fontWeight: 500 }}>{player.key}</Link>
+          <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+            {player.position}{player.team ? ` • ${player.team}` : ''}
+          </span>
+        </div>
       </td>
       <td align="center">{player.position}</td>
       <td align="center">{player.total_points}</td>

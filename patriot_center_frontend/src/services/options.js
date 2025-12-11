@@ -1,7 +1,7 @@
 import { apiGet } from '../config/api';
 
 export async function fetchOptions() {
-  return apiGet('/meta/options');
+  return apiGet('/valid_options');
 }
 
 export async function fetchValidOptions(year = null, week = null, manager = null, player = null, position = null) {
@@ -13,8 +13,8 @@ export async function fetchValidOptions(year = null, week = null, manager = null
   if (position && position !== 'ALL') parts.push(String(position));
 
   const path = parts.length > 0
-    ? `/meta/valid_options/${parts.join('/')}`
-    : '/meta/valid_options';
+    ? `/valid_options/${parts.join('/')}`
+    : '/valid_options';
 
   return apiGet(path);
 }

@@ -4,7 +4,7 @@ import { fetchOptions } from '../services/options';
 export function FilterDropdown({ value, onChange, loadingExternal, positionFilter, onPositionChange }) {
   // value shape: { year: number|null, week: number|null, manager: string|null }
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState({ seasons: [], weeks: [], managers: [] });
+  const [options, setOptions] = useState({ years: [], weeks: [], managers: [] });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -98,14 +98,14 @@ export function FilterDropdown({ value, onChange, loadingExternal, positionFilte
                     />
                     ALL
                   </label>
-                  {options.seasons.map(season => (
+                  {options.years.map(year => (
                     <label
-                      key={season}
+                      key={year}
                       style={{
                         display: 'flex',
                         alignItems: 'center',
                         gap: 4,
-                        background: draft.year === season ? 'var(--accent)' : 'var(--bg)',
+                        background: draft.year === year ? 'var(--accent)' : 'var(--bg)',
                         padding: '4px 8px',
                         borderRadius: 4,
                         cursor: 'pointer',
@@ -115,11 +115,11 @@ export function FilterDropdown({ value, onChange, loadingExternal, positionFilte
                       <input
                         type="radio"
                         name="year"
-                        checked={draft.year === season}
-                        onChange={() => setDraft(d => ({ ...d, year: season }))}
+                        checked={draft.year === year}
+                        onChange={() => setDraft(d => ({ ...d, year: year }))}
                         style={{ cursor: 'pointer' }}
                       />
-                      {season}
+                      {year}
                     </label>
                   ))}
                 </div>

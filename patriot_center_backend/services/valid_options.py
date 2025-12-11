@@ -65,6 +65,12 @@ class ValidOptionsService:
         self._managers_list  = list(NAME_TO_MANAGER_USERNAME.keys())
         self._positions_list = list(["QB", "RB", "WR", "TE", "K", "DEF"])
 
+        # Store original full lists for iteration (prevents bugs when lists are modified)
+        self._original_years_list     = copy.deepcopy(self._years_list)
+        self._original_weeks_list     = copy.deepcopy(self._weeks_list)
+        self._original_managers_list  = copy.deepcopy(self._managers_list)
+        self._original_positions_list = copy.deepcopy(self._positions_list)
+
         # Tracking lists that grow as we find valid combinations
         self._growing_years_list     = list()
         self._growing_weeks_list     = list()
@@ -87,7 +93,6 @@ class ValidOptionsService:
 
         # Control flags for filtering logic
         self._done = False  # Tracks whether all valid options have been found
-        self._player_filtered = False  # Prevents duplicate player filtering
 
         # Mapping of function IDs to their corresponding methods
         # Function IDs are computed using bit flags (see class docstring)
@@ -736,43 +741,41 @@ class ValidOptionsService:
     # 16
     def _plyr_selected(self):
 
-        if self._player_filtered:
-            return
-        self._player_filtered = True
-
-        # Position can only be the position of the player
+        # Position can only be the position of the player (set once)
         self._positions_list = list([PLAYERS_DATA[self._player]["position"]])
 
-        for year in self._years_list:
-            
+        # Always reset the lists to find valid options for the player
+        # Use original lists for iteration to avoid bugs from modified lists
+        for year in self._original_years_list:
+
             data = VALID_OPTIONS_CACHE.get(year, {})
-            
+
             if self._player not in data.get("players", []):
                 continue
             self._add_to_vaild_options(year, "year", "week", "manager", "position")
             if self._done:
                 break
-            
-            for week in self._weeks_list:
-                
+
+            for week in self._original_weeks_list:
+
                 if self._player not in data.get(week, {}).get("players", []):
                     continue
                 self._add_to_vaild_options(week, "week", "year", "manager", "position")
                 if self._done:
                     break
-                
-                for manager in self._managers_list:
-                    
+
+                for manager in self._original_managers_list:
+
                     if self._player in data.get(week, {}).get(manager, {}).get("players", []):
                         self._add_to_vaild_options(manager, "manager", "year", "week", "position")
                         if self._done:
                             break
-                
+
                 if self._done:
                     break
             if self._done:
                 break
-        
+
         self._years_list     = copy.deepcopy(self._growing_years_list)
         self._weeks_list     = copy.deepcopy(self._growing_weeks_list)
         self._managers_list  = copy.deepcopy(self._growing_managers_list)
@@ -854,8 +857,28 @@ class ValidOptionsService:
         # Get all the options for the selected year and player (position is already set)
         self._call_new_function(self._player_bit)
 
-        # Get the weeks for the selected year, manager, and player (position is already set)
-        self._call_new_function(self._year_bit + self._manager_bit)
+        # Get the Year options that have the selected Manager and Player
+        self._call_new_function(self._player_bit + self._manager_bit)
+
+        # Save years list before getting managers (so it doesn't get overwritten)
+        saved_years_list = copy.deepcopy(self._years_list)
+
+        # Get the Managers options that have the selected Year and Player
+        self._call_new_function(self._player_bit + self._year_bit)
+
+        # Restore the years list (it was overwritten by the function call above)
+        self._years_list = saved_years_list
+
+        # Get the Weeks options that have the selected Year, Manager and Player
+        data = VALID_OPTIONS_CACHE.get(self._year, {})
+
+        for week in self._weeks_list:
+            if self._player in data.get(week, {}).get(self._manager, {}).get("players", []):
+                self._add_to_vaild_options(week, "week")
+                if self._done:
+                    break
+
+        self._weeks_list = copy.deepcopy(self._growing_weeks_list)
         
     # 27
     def _plyr_yr_mgr_pos_selected(self):
@@ -868,7 +891,7 @@ class ValidOptionsService:
 
         # filter out everything that does not have the player and shorten the lists to loop through
         self._call_new_function(self._player_bit)
-        
+
         # get the managers for the selected year, week, and player (position is already set)
         data = VALID_OPTIONS_CACHE.get(self._year, {}).get(self._week, {})
 
@@ -877,14 +900,28 @@ class ValidOptionsService:
                 self._add_to_vaild_options(manager, "manager")
                 if self._done:
                     break
-        
+
         self._managers_list = copy.deepcopy(self._growing_managers_list)
 
+        # Save managers list before getting weeks (so it doesn't get overwritten)
+        saved_managers_list = copy.deepcopy(self._managers_list)
 
         # Within the valid Managers: Get the Weeks options that have the selected Year and Player
-        self._plyr_yr_selected()
+        self._call_new_function(self._player_bit + self._year_bit)
 
-        # (No need to get Year options for Week as Week cannot be selected without Year)
+        # Restore the managers list (it was overwritten by the function call above)
+        self._managers_list = saved_managers_list
+
+        # Get Year options: years where the player played in the selected week
+        # Week requires year, so we need to find all years where player played in this specific week
+        for year in self._years_list:
+            data = VALID_OPTIONS_CACHE.get(year, {})
+            if self._player in data.get(self._week, {}).get("players", []):
+                self._add_to_vaild_options(year, "year")
+                if self._done:
+                    break
+
+        self._years_list = copy.deepcopy(self._growing_years_list)
     
     # 29
     def _plyr_yr_wk_pos_selected(self):

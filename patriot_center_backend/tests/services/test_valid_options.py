@@ -58,7 +58,7 @@ def mock_valid_options_cache():
     return {
         "2024": {
             "managers": ["Tommy", "Jack", "Owen", "Sach"],
-            "players": ["Patrick Mahomes", "Christian McCaffrey", "Tyreek Hill", "Travis Kelce", "Amon-Ra St. Brown", "Justin Tucker", "Kansas City Chiefs"],
+            "players": ["Patrick Mahomes", "Christian McCaffrey", "Tyreek Hill", "Travis Kelce", "Amon-Ra St. Brown", "Justin Tucker", "Kansas City Chiefs", "Javonte Williams"],
             "weeks": ["1", "2", "3", "4"],
             "positions": ["QB", "RB", "WR", "TE", "K", "DEF"],
             "1": {
@@ -89,10 +89,10 @@ def mock_valid_options_cache():
             },
             "3": {
                 "managers": ["Jack", "Sach"],
-                "players": ["Christian McCaffrey", "Justin Tucker", "Kansas City Chiefs"],
+                "players": ["Christian McCaffrey", "Justin Tucker", "Kansas City Chiefs", "Javonte Williams"],
                 "positions": ["RB", "K", "DEF"],
                 "Jack": {
-                    "players": ["Christian McCaffrey"],
+                    "players": ["Christian McCaffrey", "Javonte Williams"],
                     "positions": ["RB"]
                 },
                 "Sach": {
@@ -148,16 +148,107 @@ def mock_valid_options_cache():
             }
         },
         "2022": {
-            "managers": ["Owen"],
-            "players": ["Christian McCaffrey"],
-            "weeks": ["1"],
+            "managers": ["Owen", "Dheeraj"],
+            "players": ["Christian McCaffrey", "Javonte Williams"],
+            "weeks": ["1", "2", "3", "4"],
             "positions": ["RB"],
             "1": {
-                "managers": ["Owen"],
-                "players": ["Christian McCaffrey"],
+                "managers": ["Owen", "Dheeraj"],
+                "players": ["Christian McCaffrey", "Javonte Williams"],
                 "positions": ["RB"],
                 "Owen": {
                     "players": ["Christian McCaffrey"],
+                    "positions": ["RB"]
+                },
+                "Dheeraj": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            },
+            "2": {
+                "managers": ["Dheeraj"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Dheeraj": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            },
+            "3": {
+                "managers": ["Dheeraj"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Dheeraj": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            },
+            "4": {
+                "managers": ["Dheeraj"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Dheeraj": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            }
+        },
+        "2021": {
+            "managers": ["Dheeraj", "Ty"],
+            "players": ["Javonte Williams"],
+            "weeks": ["6", "7", "8", "12", "13", "14"],
+            "positions": ["RB"],
+            "6": {
+                "managers": ["Dheeraj"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Dheeraj": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            },
+            "7": {
+                "managers": ["Dheeraj"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Dheeraj": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            },
+            "8": {
+                "managers": ["Dheeraj"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Dheeraj": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            },
+            "12": {
+                "managers": ["Dheeraj"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Dheeraj": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            },
+            "13": {
+                "managers": ["Ty"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Ty": {
+                    "players": ["Javonte Williams"],
+                    "positions": ["RB"]
+                }
+            },
+            "14": {
+                "managers": ["Ty"],
+                "players": ["Javonte Williams"],
+                "positions": ["RB"],
+                "Ty": {
+                    "players": ["Javonte Williams"],
                     "positions": ["RB"]
                 }
             }
@@ -175,7 +266,8 @@ def mock_players_data():
         "Travis Kelce": {"position": "TE", "full_name": "Travis Kelce", "team": "KC"},
         "Amon-Ra St. Brown": {"position": "WR", "full_name": "Amon-Ra St. Brown", "team": "DET"},
         "Justin Tucker": {"position": "K", "full_name": "Justin Tucker", "team": "BAL"},
-        "Kansas City Chiefs": {"position": "DEF", "full_name": "Kansas City Chiefs", "team": "KC"}
+        "Kansas City Chiefs": {"position": "DEF", "full_name": "Kansas City Chiefs", "team": "KC"},
+        "Javonte Williams": {"position": "RB", "full_name": "Javonte Williams", "team": "DEN"}
     }
 
 
@@ -183,6 +275,7 @@ def mock_players_data():
 def mock_league_ids():
     """Mock LEAGUE_IDS with generic IDs."""
     return {
+        2021: "test_league_id_2021",
         2022: "test_league_id_2022",
         2023: "test_league_id_2023",
         2024: "test_league_id_2024"
@@ -196,7 +289,9 @@ def mock_name_to_manager():
         "Tommy": "test_user_tommy",
         "Jack": "test_user_jack",
         "Owen": "test_user_owen",
-        "Sach": "test_user_sach"
+        "Sach": "test_user_sach",
+        "Dheeraj": "test_user_dheeraj",
+        "Ty": "test_user_ty"
     }
 
 
@@ -240,13 +335,13 @@ class TestSingleFilterSelected:
         assert set(result["positions"]) == {"QB", "RB"}
 
         # All managers should be available (not filtered by manager yet)
-        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach"}
+        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach", "Dheeraj", "Ty"}
 
     def test_rule_one_filter_year_selected(self, setup_mocks):
         """
         RULE: Select 2024
         EXPECT:
-          - years: ALL years [2024, 2023, 2022] (to allow "what if I change year?")
+          - years: ALL years [2024, 2023, 2022, 2021] (to allow "what if I change year?")
           - weeks: all weeks in 2024 [1, 2, 3, 4]
           - positions: all positions in 2024 [QB, RB, WR, TE, "K", "DEF"]
           - managers: all managers in 2024 [Tommy, Jack, Owen, Sach]
@@ -255,7 +350,7 @@ class TestSingleFilterSelected:
         result = service.get_valid_options()
 
         # ALL years should be available (RULE 1)
-        assert set(result["years"]) == {"2024", "2023", "2022"}
+        assert set(result["years"]) == {"2024", "2023", "2022", "2021"}
         assert set(result["weeks"]) == {"1", "2", "3", "4"}
         assert set(result["positions"]) == {"QB", "RB", "WR", "TE", "K", "DEF"}
         assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach"}
@@ -584,8 +679,8 @@ class TestEdgeCasesAndValidation:
         service = ValidOptionsService(None, None, None, None)
         result = service.get_valid_options()
 
-        assert set(result["years"]) == {"2024", "2023", "2022"}
-        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach"}
+        assert set(result["years"]) == {"2024", "2023", "2022", "2021"}
+        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach", "Dheeraj", "Ty"}
         assert "QB" in result["positions"]
         assert "RB" in result["positions"]
         assert "WR" in result["positions"]
@@ -637,7 +732,7 @@ class TestEdgeCasesAndValidation:
           - years: [2024, 2023] (years Sach played)
           - weeks: [3, 4] in 2024, [3] in 2023 => [3, 4]
           - positions: [WR, K, DEF, TE]
-          - managers: [Tommy, Jack, Owen, Sach] (all managers)
+          - managers: all managers (including Dheeraj and Ty from 2021/2022 data)
         """
         service = ValidOptionsService("Sach", None, None, None)
         result = service.get_valid_options()
@@ -652,7 +747,7 @@ class TestEdgeCasesAndValidation:
         assert set(result["positions"]) == {"WR", "K", "DEF", "TE"}
 
         # All managers available
-        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach"}
+        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach", "Dheeraj", "Ty"}
 
     def test_invalid_argument_raises_error(self, setup_mocks):
         """
@@ -743,91 +838,33 @@ class TestRealWorldScenarios:
         assert set(result["years"]) == {"2024"}
         assert set(result["weeks"]) == {"3"}
     
-    def test_manager_player_year_scenario(self, setup_mocks):
+    def test_special_edge_case_manager_player_year_scenario(self, setup_mocks):
         """
-        Scenario: Select Christian McCaffrey (RB), Select Tommy as manager, Select 2022 year
-        Edge Case: Tommy had Christian McCaffrey in 2022 weeks 6, 7, 8, 12 and 2023 weeks 1, 2, 3, 4
-        EXPECT: Years: [2022, 2023], Weeks: [6, 7, 8, 12] for 2022
+        Scenario: Select Javonte Williams (RB), Select Dheeraj as manager, Select 2021 year
+        Edge Case: Javonte Williams played for Dheeraj in 2021 weeks 6, 7, 8, 12 and 2022 weeks 1, 2, 3, 4
+                   Javonte Williams played for Ty in 2021 weeks 13 and 14
+        EXPECT: Years: [2021, 2022], Weeks: [6, 7, 8, 12], Managers: [Dheeraj, Ty]
         """
-        import copy
-        weekly_dict = {
-            "managers": ["Tommy"],
-            "players": ["Christian McCaffrey"],
-            "positions": ["RB"],
-            "Tommy": {
-                "players": ["Christian McCaffrey"],
-                "positions": ["RB"]
-            }
-        }
-        with patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE',
-                   {
-                        "2022": {
-                                "managers": ["Tommy"],
-                                "players": ["Christian McCaffrey"],
-                                "weeks": ["6", "7", "8", "12"],
-                                "positions": ["RB"],
-                                "6": copy.deepcopy(weekly_dict),
-                                "7": copy.deepcopy(weekly_dict),
-                                "8": copy.deepcopy(weekly_dict),
-                                "12": copy.deepcopy(weekly_dict)
-                        },
-                        "2023": {
-                                "managers": ["Tommy"],
-                                "players": ["Christian McCaffrey"],
-                                "weeks": ["1", "2", "3", "4"],
-                                "positions": ["RB"],
-                                "1": copy.deepcopy(weekly_dict),
-                                "2": copy.deepcopy(weekly_dict),
-                                "3": copy.deepcopy(weekly_dict),
-                                "4": copy.deepcopy(weekly_dict)
-                        }
-                }):
-                service = ValidOptionsService("Christian McCaffrey", "Tommy", "2022", None)
-                result = service.get_valid_options()
+        service = ValidOptionsService("Javonte Williams", "Dheeraj", "2021", None)
+        result = service.get_valid_options()
 
-                assert set(result["years"]) == {"2022", "2023"}
-                assert set(result["weeks"]) == {"6", "7", "8", "12"}
-    
-    def test_manager_year_scenario(self, setup_mocks):
-        """
-        Scenario: Select Tommy as manager, Select 2022 year
-        Edge Case: Tommy played 2022 weeks 6, 7, 8, 12 and 2023 weeks 1, 2, 3, 4
-        EXPECT: Years: [2022, 2023], Weeks: [6, 7, 8, 12] for 2022
-        """
-        import copy
-        weekly_dict = {
-            "managers": ["Tommy"],
-            "positions": ["RB"],
-            "Tommy": {
-                "positions": ["RB"]
-            }
-        }
-        with patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE',
-                    {
-                        "2022": {
-                                "managers": ["Tommy"],
-                                "weeks": ["6", "7", "8", "12"],
-                                "positions": ["RB"],
-                                "6": copy.deepcopy(weekly_dict),
-                                "7": copy.deepcopy(weekly_dict),
-                                "8": copy.deepcopy(weekly_dict),
-                                "12": copy.deepcopy(weekly_dict)
-                        },
-                        "2023": {
-                                "managers": ["Tommy"],
-                                "weeks": ["1", "2", "3", "4"],
-                                "positions": ["RB"],
-                                "1": copy.deepcopy(weekly_dict),
-                                "2": copy.deepcopy(weekly_dict),
-                                "3": copy.deepcopy(weekly_dict),
-                                "4": copy.deepcopy(weekly_dict)
-                        }
-                }):
-                service = ValidOptionsService("Tommy", "2022", None, None)
-                result = service.get_valid_options()
+        assert set(result["years"]) == {"2021", "2022"}
+        assert set(result["weeks"]) == {"6", "7", "8", "12"}
+        assert set(result["managers"]) == {"Dheeraj", "Ty"}
 
-                assert set(result["years"]) == {"2022", "2023"}
-                assert set(result["weeks"]) == {"6", "7", "8", "12"}
+    def test_special_edge_case_manager_week_year_scenario(self, setup_mocks):
+        """
+        Scenario: Select Javonte Williams (RB), Select 13 as week, Select 2021 year
+        Edge Case: Javonte Williams played for Dheeraj in 2021 weeks 6, 7, 8, 12 and 2022 weeks 1, 2, 3, 4
+                   Javonte Williams played for Ty in 2021 weeks 13 and 14
+        EXPECT: Years: [2021], Weeks: [6, 7, 8, 12, 13, 14], Managers: [Ty]
+        """
+        service = ValidOptionsService("Javonte Williams", "13", "2021", None)
+        result = service.get_valid_options()
+
+        assert set(result["years"]) == {"2021"}
+        assert set(result["weeks"]) == {"6", "7", "8", "12", "13", "14"}
+        assert set(result["managers"]) == {"Ty"}
 
 
 
@@ -1062,16 +1099,6 @@ class TestInternalMethods:
         for func_id in implemented_functions:
             assert func_id in service._function_mapping
             assert callable(service._function_mapping[func_id])
-
-    def test_player_filtered_flag(self, setup_mocks):
-        """Test _player_filtered flag prevents double processing."""
-        service = ValidOptionsService("Patrick Mahomes", None, None, None)
-
-        # After initialization, player should be filtered
-        assert service._player_filtered == True
-
-        # Position should be set to player's position
-        assert service._positions_list == ["QB"]
 
     def test_all_position_types(self, setup_mocks):
         """Test all position types can be selected."""

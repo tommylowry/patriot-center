@@ -742,6 +742,93 @@ class TestRealWorldScenarios:
         assert set(result["managers"]) == {"Sach"}
         assert set(result["years"]) == {"2024"}
         assert set(result["weeks"]) == {"3"}
+    
+    def test_manager_player_year_scenario(self, setup_mocks):
+        """
+        Scenario: Select Christian McCaffrey (RB), Select Tommy as manager, Select 2022 year
+        Edge Case: Tommy had Christian McCaffrey in 2022 weeks 6, 7, 8, 12 and 2023 weeks 1, 2, 3, 4
+        EXPECT: Years: [2022, 2023], Weeks: [6, 7, 8, 12] for 2022
+        """
+        import copy
+        weekly_dict = {
+            "managers": ["Tommy"],
+            "players": ["Christian McCaffrey"],
+            "positions": ["RB"],
+            "Tommy": {
+                "players": ["Christian McCaffrey"],
+                "positions": ["RB"]
+            }
+        }
+        with patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE',
+                   {
+                        "2022": {
+                                "managers": ["Tommy"],
+                                "players": ["Christian McCaffrey"],
+                                "weeks": ["6", "7", "8", "12"],
+                                "positions": ["RB"],
+                                "6": copy.deepcopy(weekly_dict),
+                                "7": copy.deepcopy(weekly_dict),
+                                "8": copy.deepcopy(weekly_dict),
+                                "12": copy.deepcopy(weekly_dict)
+                        },
+                        "2023": {
+                                "managers": ["Tommy"],
+                                "players": ["Christian McCaffrey"],
+                                "weeks": ["1", "2", "3", "4"],
+                                "positions": ["RB"],
+                                "1": copy.deepcopy(weekly_dict),
+                                "2": copy.deepcopy(weekly_dict),
+                                "3": copy.deepcopy(weekly_dict),
+                                "4": copy.deepcopy(weekly_dict)
+                        }
+                }):
+                service = ValidOptionsService("Christian McCaffrey", "Tommy", "2022", None)
+                result = service.get_valid_options()
+
+                assert set(result["years"]) == {"2022", "2023"}
+                assert set(result["weeks"]) == {"6", "7", "8", "12"}
+    
+    def test_manager_year_scenario(self, setup_mocks):
+        """
+        Scenario: Select Tommy as manager, Select 2022 year
+        Edge Case: Tommy played 2022 weeks 6, 7, 8, 12 and 2023 weeks 1, 2, 3, 4
+        EXPECT: Years: [2022, 2023], Weeks: [6, 7, 8, 12] for 2022
+        """
+        import copy
+        weekly_dict = {
+            "managers": ["Tommy"],
+            "positions": ["RB"],
+            "Tommy": {
+                "positions": ["RB"]
+            }
+        }
+        with patch('patriot_center_backend.services.valid_options.VALID_OPTIONS_CACHE',
+                    {
+                        "2022": {
+                                "managers": ["Tommy"],
+                                "weeks": ["6", "7", "8", "12"],
+                                "positions": ["RB"],
+                                "6": copy.deepcopy(weekly_dict),
+                                "7": copy.deepcopy(weekly_dict),
+                                "8": copy.deepcopy(weekly_dict),
+                                "12": copy.deepcopy(weekly_dict)
+                        },
+                        "2023": {
+                                "managers": ["Tommy"],
+                                "weeks": ["1", "2", "3", "4"],
+                                "positions": ["RB"],
+                                "1": copy.deepcopy(weekly_dict),
+                                "2": copy.deepcopy(weekly_dict),
+                                "3": copy.deepcopy(weekly_dict),
+                                "4": copy.deepcopy(weekly_dict)
+                        }
+                }):
+                service = ValidOptionsService("Tommy", "2022", None, None)
+                result = service.get_valid_options()
+
+                assert set(result["years"]) == {"2022", "2023"}
+                assert set(result["weeks"]) == {"6", "7", "8", "12"}
+
 
 
 # ============================================================================

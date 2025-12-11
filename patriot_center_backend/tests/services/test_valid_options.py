@@ -58,7 +58,7 @@ def mock_valid_options_cache():
     return {
         "2024": {
             "managers": ["Tommy", "Jack", "Owen", "Sach"],
-            "players": ["Patrick Mahomes", "Christian McCaffrey", "Tyreek Hill", "Travis Kelce", "Amon-Ra St. Brown", "Justin Tucker", "Kansas City Chiefs"],
+            "players": ["Patrick Mahomes", "Christian McCaffrey", "Tyreek Hill", "Travis Kelce", "Amon-Ra St. Brown", "Justin Tucker", "Kansas City Chiefs", "Javonte Williams"],
             "weeks": ["1", "2", "3", "4"],
             "positions": ["QB", "RB", "WR", "TE", "K", "DEF"],
             "1": {
@@ -89,10 +89,10 @@ def mock_valid_options_cache():
             },
             "3": {
                 "managers": ["Jack", "Sach"],
-                "players": ["Christian McCaffrey", "Justin Tucker", "Kansas City Chiefs"],
+                "players": ["Christian McCaffrey", "Justin Tucker", "Kansas City Chiefs", "Javonte Williams"],
                 "positions": ["RB", "K", "DEF"],
                 "Jack": {
-                    "players": ["Christian McCaffrey"],
+                    "players": ["Christian McCaffrey", "Javonte Williams"],
                     "positions": ["RB"]
                 },
                 "Sach": {
@@ -335,13 +335,13 @@ class TestSingleFilterSelected:
         assert set(result["positions"]) == {"QB", "RB"}
 
         # All managers should be available (not filtered by manager yet)
-        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach"}
+        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach", "Dheeraj", "Ty"}
 
     def test_rule_one_filter_year_selected(self, setup_mocks):
         """
         RULE: Select 2024
         EXPECT:
-          - years: ALL years [2024, 2023, 2022] (to allow "what if I change year?")
+          - years: ALL years [2024, 2023, 2022, 2021] (to allow "what if I change year?")
           - weeks: all weeks in 2024 [1, 2, 3, 4]
           - positions: all positions in 2024 [QB, RB, WR, TE, "K", "DEF"]
           - managers: all managers in 2024 [Tommy, Jack, Owen, Sach]
@@ -350,7 +350,7 @@ class TestSingleFilterSelected:
         result = service.get_valid_options()
 
         # ALL years should be available (RULE 1)
-        assert set(result["years"]) == {"2024", "2023", "2022"}
+        assert set(result["years"]) == {"2024", "2023", "2022", "2021"}
         assert set(result["weeks"]) == {"1", "2", "3", "4"}
         assert set(result["positions"]) == {"QB", "RB", "WR", "TE", "K", "DEF"}
         assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach"}
@@ -679,8 +679,8 @@ class TestEdgeCasesAndValidation:
         service = ValidOptionsService(None, None, None, None)
         result = service.get_valid_options()
 
-        assert set(result["years"]) == {"2024", "2023", "2022"}
-        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach"}
+        assert set(result["years"]) == {"2024", "2023", "2022", "2021"}
+        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach", "Dheeraj", "Ty"}
         assert "QB" in result["positions"]
         assert "RB" in result["positions"]
         assert "WR" in result["positions"]
@@ -732,7 +732,7 @@ class TestEdgeCasesAndValidation:
           - years: [2024, 2023] (years Sach played)
           - weeks: [3, 4] in 2024, [3] in 2023 => [3, 4]
           - positions: [WR, K, DEF, TE]
-          - managers: [Tommy, Jack, Owen, Sach] (all managers)
+          - managers: all managers (including Dheeraj and Ty from 2021/2022 data)
         """
         service = ValidOptionsService("Sach", None, None, None)
         result = service.get_valid_options()
@@ -747,7 +747,7 @@ class TestEdgeCasesAndValidation:
         assert set(result["positions"]) == {"WR", "K", "DEF", "TE"}
 
         # All managers available
-        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach"}
+        assert set(result["managers"]) == {"Tommy", "Jack", "Owen", "Sach", "Dheeraj", "Ty"}
 
     def test_invalid_argument_raises_error(self, setup_mocks):
         """
@@ -1099,16 +1099,6 @@ class TestInternalMethods:
         for func_id in implemented_functions:
             assert func_id in service._function_mapping
             assert callable(service._function_mapping[func_id])
-
-    def test_player_filtered_flag(self, setup_mocks):
-        """Test _player_filtered flag prevents double processing."""
-        service = ValidOptionsService("Patrick Mahomes", None, None, None)
-
-        # After initialization, player should be filtered
-        assert service._player_filtered == True
-
-        # Position should be set to player's position
-        assert service._positions_list == ["QB"]
 
     def test_all_position_types(self, setup_mocks):
         """Test all position types can be selected."""

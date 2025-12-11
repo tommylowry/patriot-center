@@ -137,7 +137,7 @@ export default function SearchBar() {
     };
 
     return (
-        <div ref={searchRef} style={{ position: 'relative', width: '300px' }}>
+        <div ref={searchRef} className="search-bar-wrapper" style={{ position: 'relative', width: '300px', maxWidth: '100%' }}>
             <input
                 type="text"
                 placeholder="Search players..."
@@ -223,6 +223,14 @@ export default function SearchBar() {
                     No players found
                 </div>
             )}
+
+            <style jsx>{`
+                @media (max-width: 768px) {
+                    .search-bar-wrapper {
+                        width: 100% !important;
+                    }
+                }
+            `}</style>
         </div>
     );
 }

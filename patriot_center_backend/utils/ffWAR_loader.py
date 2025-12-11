@@ -35,7 +35,7 @@ def load_or_update_ffWAR_cache():
 
     Process:
         - Iterate seasons; compute missing weeks only.
-        - Cap weeks at 14.
+        - Cap weeks at 17.
         - Store progress via Last_Updated_* markers.
     """
     # Load existing cache or initialize a new one if the file does not exist/cannot be parsed.
@@ -43,9 +43,9 @@ def load_or_update_ffWAR_cache():
 
     # Dynamically determine the current season and week according to Sleeper API/util logic.
     current_season, current_week = get_current_season_and_week()
-    if current_week > 14:
+    if current_week > 17:
         # Cap at the end of the fantasy regular season to keep ffWAR comparable across years.
-        current_week = 14  # Cap the current week at 14
+        current_week = 17  # Cap the current week at 17
 
     # Process all years configured for leagues; this drives which seasons we consider for updates.
     years = list(LEAGUE_IDS.keys())

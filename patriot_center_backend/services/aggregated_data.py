@@ -165,6 +165,7 @@ def _update_player_data(players_dict, player, player_data, manager, year):
     player_dict_item['total_points'] += player_data['points']
     player_dict_item['ffWAR'] += player_data['ffWAR']
     player_dict_item['num_games_started'] += 1
+    player_dict_item['ffWAR_per_game'] = player_dict_item['ffWAR'] / player_dict_item['num_games_started']
 
     # Round to appropriate precision using Decimal for exact rounding
     player_dict_item["total_points"] = float(
@@ -172,6 +173,9 @@ def _update_player_data(players_dict, player, player_data, manager, year):
     )
     player_dict_item["ffWAR"] = float(
         Decimal(player_dict_item["ffWAR"]).quantize(Decimal('0.001')).normalize()
+    )
+    player_dict_item["ffWAR_per_game"] = float(
+        Decimal(player_dict_item["ffWAR_per_game"]).quantize(Decimal('0.001')).normalize()
     )
     players_dict[player] = player_dict_item
 
@@ -203,6 +207,7 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         "total_points": player_data['points'],
         "num_games_started": 1,
         'ffWAR': player_data['ffWAR'],
+        'ffWAR_per_game': player_data['ffWAR'],
         "position": player_data['position'],
         "player_image_endpoint": player_image_endpoint,
         "team": PLAYERS_CACHE.get(player, {}).get("team", None)
@@ -227,12 +232,18 @@ def _update_manager_data(managers_dict, manager, raw_item, player, year):
     manager_dict_item['ffWAR'] += raw_item['ffWAR']
     manager_dict_item['num_games_started'] += 1
 
+    manager_dict_item['ffWAR_per_game'] = manager_dict_item['ffWAR'] / manager_dict_item['num_games_started']
+
     manager_dict_item["total_points"] = float(
         Decimal(manager_dict_item["total_points"]).quantize(Decimal('0.01')).normalize()
     )
     manager_dict_item["ffWAR"] = float(
         Decimal(manager_dict_item["ffWAR"]).quantize(Decimal('0.001')).normalize()
     )
+    manager_dict_item["ffWAR_per_game"] = float(
+        Decimal(manager_dict_item["ffWAR_per_game"]).quantize(Decimal('0.001')).normalize()
+    )
+
     managers_dict[manager] = manager_dict_item
 
     # Handle playoff placement if present
@@ -255,6 +266,7 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
         "total_points": raw_item['points'],
         "num_games_started": 1,
         'ffWAR': raw_item['ffWAR'],
+        'ffWAR_per_game': raw_item['ffWAR'],
         "position": raw_item['position'],
         "player_image_endpoint": player_image_endpoint,
         "team": PLAYERS_CACHE.get(player, {}).get("team", None)

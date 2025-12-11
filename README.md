@@ -23,13 +23,22 @@ Patriot Center tracks 16 managers in a multi-year fantasy football league and pr
 - Built with react-scripts
 
 ### Backend
-- Python Flask with CORS support
-- Gunicorn WSGI server with nginx reverse proxy
-- Deployed on Oracle Cloud Infrastructure (Always Free Tier)
+- **Framework**: Python Flask with CORS support
+- **Server**: Gunicorn WSGI server with nginx reverse proxy
+- **Deployment**: Oracle Cloud Infrastructure (Always Free Tier)
+- **Architecture**:
+  - Service layer for business logic (aggregations, filtering, validation)
+  - Utility layer for data loading and caching
+  - Incremental cache updates to minimize API calls
+  - JSON file-based caching system with progress markers
 
 ### Data Sources
-- Sleeper API for real-time fantasy football data
-- Local JSON caches for calculated metrics
+- **Sleeper API**: Real-time fantasy football data (rosters, matchups, player stats)
+- **Calculated Metrics**:
+  - ffWAR (Fantasy Football Wins Above Replacement)
+  - Replacement-level scores (3-year rolling averages)
+  - Aggregated player/manager statistics
+- **Caching Strategy**: Local JSON caches with incremental updates and resumability
 
 ## Project Structure
 
@@ -47,12 +56,35 @@ Patriot Center tracks 16 managers in a multi-year fantasy football league and pr
 │   └── package.json           # Frontend dependencies
 │
 ├── patriot_center_backend/    # Python Flask backend
-│   ├── app.py                 # Main Flask application
-│   ├── services/              # Business logic services
-│   ├── utils/                 # Utility functions
-│   ├── data/                  # JSON data caches
-│   ├── tests/                 # Unit tests
-│   └── constants.py           # Configuration constants
+│   ├── app.py                 # Main Flask application and route handlers
+│   ├── constants.py           # Configuration (league IDs, file paths, team data)
+│   │
+│   ├── services/              # Business logic layer
+│   │   ├── managers.py        # Starters data filtering and queries
+│   │   ├── aggregated_data.py # Player/manager aggregation logic
+│   │   ├── players.py         # Player cache access
+│   │   └── valid_options.py   # Dynamic filter validation service
+│   │
+│   ├── utils/                 # Data loading and caching utilities
+│   │   ├── cache_utils.py     # Generic cache load/save operations
+│   │   ├── sleeper_api_handler.py  # Sleeper API client
+│   │   ├── starters_loader.py      # Weekly roster data loader
+│   │   ├── ffWAR_loader.py         # ffWAR computation and caching
+│   │   ├── replacement_score_loader.py  # Replacement-level calculations
+│   │   ├── player_ids_loader.py    # Player metadata management
+│   │   └── update_all_caches.py    # Batch cache update orchestrator
+│   │
+│   ├── data/                  # JSON cache files (auto-generated)
+│   │   ├── starters_cache.json          # Weekly starter rosters
+│   │   ├── ffWAR_cache.json             # Computed ffWAR values
+│   │   ├── replacement_score_cache.json # Positional baselines
+│   │   ├── players_cache.json           # Player metadata
+│   │   └── valid_options_cache.json     # Filter validation data
+│   │
+│   └── tests/                 # Unit and integration tests
+│       ├── test_app.py        # API endpoint tests
+│       ├── services/          # Service layer tests
+│       └── utils/             # Utility function tests
 │
 ├── deployment/                # Deployment scripts and guides
 │   ├── oracle_deploy.sh       # Oracle Cloud setup script
@@ -65,12 +97,65 @@ Patriot Center tracks 16 managers in a multi-year fantasy football league and pr
 
 ## API Endpoints
 
-- `GET /get_starters` - Roster data by season/week/manager
-- `GET /get_aggregated_players` - Player stats aggregated across weeks
-- `GET /get_aggregated_managers/<player>` - Manager stats for specific player
-- `GET /meta/options` - Available seasons, weeks, managers for UI filters
-- `GET /health` - Health check endpoint
-- `GET /ping` - Liveness check
+All endpoints support flexible positional parameters that are automatically parsed:
+- Numeric values matching league years (2019-2025) are interpreted as seasons
+- Numeric values 1-17 are interpreted as weeks
+- String values matching manager names are interpreted as manager filters
+- String values matching player names are interpreted as player filters
+
+### Core Data Endpoints
+
+#### Starters Data
+```
+GET /get_starters[/<year>][/<week>][/<manager>]
+```
+Returns weekly starter rosters with points scored and position information.
+- Supports any combination of year, week, and manager filters
+- Query param `format=json` returns nested structure (default is flattened records)
+
+#### Aggregated Player Stats
+```
+GET /get_aggregated_players[/<year>][/<week>][/<manager>]
+```
+Returns aggregated player statistics (total points, games started, ffWAR) for a manager.
+- Aggregates across all weeks/seasons matching the filters
+- Includes player images, positions, and teams
+
+#### Aggregated Manager Stats
+```
+GET /get_aggregated_managers/<player>[/<year>][/<week>]
+```
+Returns aggregated statistics showing which managers have used a specific player.
+- Player name in URL (use underscores for spaces, %27 for apostrophes)
+- Shows total points, games started, and ffWAR per manager
+
+#### Player-Manager Aggregation
+```
+GET /get_player_manager_aggregation/<player>/<manager>[/<year>][/<week>]
+```
+Returns statistics for a specific player-manager pairing.
+
+#### Player List
+```
+GET /players/list
+```
+Returns metadata for all players in the system (names, positions, teams, slugs).
+
+### Filter Validation
+```
+GET /valid_options[/<arg1>][/<arg2>][/<arg3>][/<arg4>]
+```
+Dynamic endpoint that returns valid filter options based on current selections.
+- Accepts up to 4 filter arguments (year, week, manager, player, position)
+- Returns available options that have data for the selected filters
+- Used by frontend to populate dropdown menus
+
+### Health & Status
+```
+GET /        # Service info and endpoint list
+GET /health  # Health check (returns {"status": "healthy"})
+GET /ping    # Liveness check (returns "pong")
+```
 
 ## Development Setup
 
@@ -149,11 +234,62 @@ ffWAR (Fantasy Football Wins Above Replacement) measures a player's value by:
 
 This provides a more nuanced view of player value than raw points alone.
 
+## Backend Architecture
+
+### Caching Strategy
+
+The backend uses an incremental JSON caching system to minimize API calls and computation:
+
+1. **Progress Markers**: Each cache tracks `Last_Updated_Season` and `Last_Updated_Week`
+2. **Resumability**: Updates can be interrupted and resumed without losing progress
+3. **Incremental Updates**: Only fetches/computes data for new weeks since last update
+4. **Import-time Loading**: Caches are loaded when modules are imported for fast access
+
+### Cache Dependencies
+
+The caching system has a specific order of operations:
+
+```
+1. player_ids_cache.json      (Sleeper API: player metadata, refreshed weekly)
+   ↓
+2. starters_cache.json         (Sleeper API: weekly rosters + matchups)
+   ↓
+3. replacement_score_cache.json (Computed: positional replacement levels)
+   ↓
+4. ffWAR_cache.json            (Computed: wins above replacement via simulations)
+   ↓
+5. valid_options_cache.json    (Derived: available filter combinations)
+```
+
+### Data Flow
+
+```
+Sleeper API
+    ↓
+player_ids_loader → player_ids.json
+    ↓
+starters_loader → starters_cache.json + valid_options_cache.json
+    ↓
+replacement_score_loader → replacement_score_cache.json
+    ↓
+ffWAR_loader → ffWAR_cache.json
+    ↓
+aggregated_data service → Aggregated responses
+```
+
+### Key Design Patterns
+
+- **Service Layer**: Business logic separated from Flask routes (services/)
+- **Utility Layer**: Reusable data loading and caching logic (utils/)
+- **Constants Module**: Centralized configuration (league IDs, file paths, team data)
+- **Positional Arguments**: Flexible URL parsing allows filter arguments in any order
+- **Response Formats**: Dual format support (nested JSON vs flattened records)
+
 ## League Information
 
 - **Number of Managers**: 16
 - **Seasons Tracked**: 2019-2025
-- **Regular Season Weeks**: 1-14 (excludes playoffs)
+- **Regular Season Weeks**: 1-17
 - **Positions**: QB, RB, WR, TE, K, DEF
 
 ## License

@@ -1,12 +1,42 @@
+"""
+Valid filtering options service for the Patriot Center backend.
+
+This service handles complex filtering logic to determine which combinations of
+year, week, manager, player, and position are valid based on the available data.
+It uses a bit-flag system to map filter combinations to specialized handler methods.
+
+The service supports up to 4 simultaneous filters (player, year, week, manager, position)
+and ensures that returned options are consistent with the underlying data cache.
+
+Key constraints:
+- Week filter requires year to be selected
+- Player filter restricts position to the player's actual position
+- Some combinations (5 filters) are not implemented as they exceed practical limits
+"""
 import copy
 
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.services.players import fetch_players, fetch_valid_options_cache
 
+# Load caches at module import time for fast access
 VALID_OPTIONS_CACHE = fetch_valid_options_cache()
 PLAYERS_DATA = fetch_players()
 
 class ValidOptionsService:
+    """
+    Service to compute valid filtering options based on selected criteria.
+
+    Uses a bit-flag mapping system where each filter type has a bit value:
+    - Position: 1
+    - Manager: 2
+    - Week: 4
+    - Year: 8
+    - Player: 16
+
+    The sum of selected filter bits maps to a handler method that computes
+    which other filter values remain valid given the current selection.
+    """
+
     def __init__(
         self,
         arg1: str | None,
@@ -14,36 +44,55 @@ class ValidOptionsService:
         arg3: str | None,
         arg4: str | None
     ):
-        
-        
+        """
+        Initialize the service and compute valid options.
+
+        Args:
+            arg1-arg4 (str | None): Up to 4 filter arguments that can be:
+                - Year (int matching LEAGUE_IDS)
+                - Week (int 1-17)
+                - Manager name (str matching NAME_TO_MANAGER_USERNAME)
+                - Player name (str matching PLAYERS_DATA)
+                - Position (str: QB, RB, WR, TE, K, DEF)
+
+        Raises:
+            ValueError: If arguments are invalid, duplicated, or violate constraints
+        """
+
+        # Initialize master lists with all possible values
         self._years_list     = list(str(year) for year in LEAGUE_IDS.keys())
         self._weeks_list     = list(str(week) for week in range(1, 18))
         self._managers_list  = list(NAME_TO_MANAGER_USERNAME.keys())
         self._positions_list = list(["QB", "RB", "WR", "TE", "K", "DEF"])
 
+        # Tracking lists that grow as we find valid combinations
         self._growing_years_list     = list()
         self._growing_weeks_list     = list()
         self._growing_managers_list  = list()
         self._growing_positions_list = list()
 
+        # Currently selected filter values (parsed from args)
         self._year      = None
         self._week      = None
         self._manager   = None
         self._player    = None
         self._position  = None
 
+        # Parse all provided arguments to determine what filters are active
         self._parse_arg(arg1)
         self._parse_arg(arg2)
         self._parse_arg(arg3)
         self._parse_arg(arg4)
         self._check_year_and_week()
 
-        self._done = False
-        self._player_filtered = False
+        # Control flags for filtering logic
+        self._done = False  # Tracks whether all valid options have been found
+        self._player_filtered = False  # Prevents duplicate player filtering
 
         # Mapping of function IDs to their corresponding methods
-        # [4-7], [20-23] Note: week cannot be used as a filter without a year selected
-        # [31] Note; only 4 filters can be applied at once
+        # Function IDs are computed using bit flags (see class docstring)
+        # Note: [4-7], [20-23] week cannot be used as a filter without a year selected
+        # Note: [31] all 5 filters selected simultaneously is not implemented (exceeds 4-filter limit)
 
         self._function_mapping = {
             0:  self._none_selected,
@@ -80,35 +129,52 @@ class ValidOptionsService:
           # 31: self._all_selected              (not implemented)
         }
 
-        self._position_bit = 1
-        self._manager_bit  = 2
-        self._week_bit     = 4
-        self._year_bit     = 8
-        self._player_bit   = 16
+        # Bit flags for computing function IDs (powers of 2 for bitwise operations)
+        self._position_bit = 1   # 2^0
+        self._manager_bit  = 2   # 2^1
+        self._week_bit     = 4   # 2^2
+        self._year_bit     = 8   # 2^3
+        self._player_bit   = 16  # 2^4
 
+        # Compute which handler function to call based on active filters
         self._get_function_id()
 
+        # Execute the appropriate handler function to populate valid options
         self._function_mapping[self._func_id]()
-    
+
     # ----------------------------------------
     # ---------- Internal Functions ----------
     # ----------------------------------------
     def _year_selected(self) -> bool:
+        """Check if year filter is active."""
         return False if self._year == None else True
-    
+
     def _week_selected(self) -> bool:
+        """Check if week filter is active."""
         return False if self._week == None else True
-    
+
     def _manager_selected(self) -> bool:
+        """Check if manager filter is active."""
         return False if self._manager == None else True
-    
+
     def _player_selected(self) -> bool:
+        """Check if player filter is active."""
         return False if self._player == None else True
-    
+
     def _position_selected(self) -> bool:
+        """Check if position filter is active."""
         return False if self._position == None else True
-        
+
     def _parse_arg(self, arg : str | None):
+        """
+        Parse a single argument and classify it as year, week, manager, player, or position.
+
+        Args:
+            arg (str | None): Argument to parse
+
+        Raises:
+            ValueError: If argument is invalid, duplicated, or unrecognized
+        """
         
         if arg == None:
             return
@@ -151,13 +217,24 @@ class ValidOptionsService:
 
             else:
                 raise ValueError(f"Unrecognized argument: {arg}")
-            
+
     def _check_year_and_week(self):
+        """
+        Validate that week filter is only used when year is also selected.
+
+        Raises:
+            ValueError: If week is selected without year
+        """
         if self._week_selected() and not self._year_selected():
             raise ValueError("Week filter cannot be applied without a Year filter.")
 
     def _get_function_id(self):
+        """
+        Compute function ID by summing bit flags for all active filters.
 
+        The resulting ID maps to a handler function in _function_mapping that
+        knows how to compute valid options for that specific filter combination.
+        """
         self._func_id = 0
         if self._position_selected():
             self._func_id += self._position_bit
@@ -169,15 +246,26 @@ class ValidOptionsService:
             self._func_id += self._year_bit
         if self._player_selected():
             self._func_id += self._player_bit
-    
+
     def _add_to_vaild_options(
             self,
             value : str,
             filter1 : str,
-            filter2 : str | None = None, 
+            filter2 : str | None = None,
             filter3 : str | None = None,
             filter4 : str | None = None
         ):
+        """
+        Add a valid option value to the appropriate growing list.
+
+        Tracks progress by checking if all possible values for the primary filter
+        have been found. Sets self._done = True when complete to short-circuit searches.
+
+        Args:
+            value (str): The valid option value to add
+            filter1 (str): Primary filter type (e.g., "year", "manager")
+            filter2-4 (str | None): Additional filters to check for completeness
+        """
         
         growing_filter1_list = getattr(self, f"_growing_{filter1}s_list")
         filter1_list         = getattr(self, f"_{filter1}s_list")
@@ -222,23 +310,40 @@ class ValidOptionsService:
                     self._done = True
             else:
                 self._done = True
-    
+
     def _reset_growing_lists(self):
+        """
+        Reset all growing lists and done flag for a fresh filter computation.
+
+        Used when recursively calling handler functions to compute options for
+        different filter combinations.
+        """
         self._done = False
         self._growing_years_list     = list()
         self._growing_weeks_list     = list()
         self._growing_managers_list  = list()
         self._growing_positions_list = list()
-    
+
     def _call_new_function(self, bit: int):
-        
+        """
+        Invoke a handler function for a different filter combination.
+
+        Used to recursively compute valid options when one filter is changed
+        but others remain constant.
+
+        Args:
+            bit (int): Function ID computed from bit flags
+
+        Raises:
+            ValueError: If the bit combination is not implemented
+        """
         self._reset_growing_lists()
-        
+
         if bit not in self._function_mapping:
             raise ValueError(f"Function for bit {bit} not implemented.")
-        
+
         self._function_mapping[bit]()
-        
+
         self._reset_growing_lists()
 
 

@@ -1,8 +1,27 @@
+"""
+Flask application for the Patriot Center backend API.
+
+This module defines the REST API endpoints for the Patriot Center fantasy
+football analytics platform. It provides endpoints for:
+- Fetching starter data filtered by season, week, and manager
+- Aggregating player and manager statistics
+- Listing available players and valid filter options
+- Health and liveness checks
+
+All endpoints support flexible positional arguments that are automatically
+parsed to determine whether they represent years, weeks, managers, or players.
+
+The API supports two response formats:
+- Default: Flattened record list suitable for tabular display
+- format=json: Nested hierarchical structure preserving original cache shape
+"""
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 
 app = Flask(__name__)
+
+# Configure CORS for production (Netlify frontend)
 CORS(app, resources={
     r"/get_aggregated_players*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
@@ -61,9 +80,13 @@ def get_starters(arg1, arg2, arg3):
     """
     from patriot_center_backend.services.managers import fetch_starters
 
+    # Parse positional arguments to determine filter values
     year, week, manager = parse_arguments(arg1, arg2, arg3)
 
+    # Fetch filtered starters data from cache
     data = fetch_starters(season=year, manager=manager, week=week)
+
+    # Return either nested JSON or flattened records based on format parameter
     if request.args.get("format") == "json":
         return jsonify(data), 200
     return jsonify(_to_records(data)), 200
@@ -179,7 +202,7 @@ def parse_arguments(arg1, arg2, arg3):
 
     Resolution order:
     - Integers matching LEAGUE_IDS -> season
-    - Integers 1-14 -> week
+    - Integers 1-17 -> week
     - Strings matching NAME_TO_MANAGER_USERNAME -> manager
     - Rejects duplicates or ambiguous assignments.
 
@@ -192,20 +215,25 @@ def parse_arguments(arg1, arg2, arg3):
     Raises:
         ValueError: On invalid values, duplicates, or week without season.
     """
+    # Initialize result values
     year = None
     manager = None
     week = None
 
+    # Iterate through all provided arguments and classify each
     for arg in (arg1, arg2, arg3):
         if arg is None:
             continue
-        
+
+        # Numeric arguments: check if it's a year or week
         if arg.isnumeric() == True:
             arg_int = int(arg)
+            # Check if it matches a known league year
             if arg_int in LEAGUE_IDS:
                 if year is not None:
                     raise ValueError("Multiple year arguments provided.")
                 year = arg_int
+            # Check if it's a valid week number (1-17)
             elif 1 <= arg_int <= 17:
                 if week is not None:
                     raise ValueError("Multiple week arguments provided.")
@@ -213,7 +241,7 @@ def parse_arguments(arg1, arg2, arg3):
             else:
                 raise ValueError("Invalid integer argument provided.")
         else:
-            # Non-integer -> attempt manager match
+            # Non-numeric arguments: check if it's a manager name
             if arg in NAME_TO_MANAGER_USERNAME:
                 if manager is not None:
                     raise ValueError("Multiple manager arguments provided.")
@@ -222,8 +250,8 @@ def parse_arguments(arg1, arg2, arg3):
             else:
                 raise ValueError(f"Invalid argument provided: {arg}")
 
+    # Validate that week is only provided with year (week alone is ambiguous)
     if week is not None and year is None:
-        # Week without season is not meaningful
         raise ValueError("Week provided without a corresponding year.")
 
     return year, week, manager
@@ -244,12 +272,15 @@ def _flatten_dict(d, parent_key="", sep="."):
         dict: Flattened dictionary.
     """
     out = {}
+    # Safe iteration: handles None/non-dict inputs gracefully
     for k, v in (d or {}).items() if isinstance(d, dict) else []:
+        # Build nested key path using separator
         nk = f"{parent_key}{sep}{k}" if parent_key else k
         if isinstance(v, dict):
-            # Recurse into nested dicts
+            # Recurse into nested dicts to flatten deeper levels
             out.update(_flatten_dict(v, nk, sep))
         else:
+            # Leaf value: add to output with full key path
             out[nk] = v
     return out
 
@@ -268,30 +299,35 @@ def _to_records(data, key_name="key"):
     Returns:
         list[dict]: List of normalized record dictionaries.
     """
+    # Handle list inputs: flatten each item
     if isinstance(data, list):
         return [(_flatten_dict(x) if isinstance(x, dict) else {"value": x}) for x in data]
+
+    # Handle dict inputs: convert to list of records with key field
     if isinstance(data, dict):
         rows = []
         for k, v in data.items():
             if isinstance(v, list):
-                # Expand list items under the same key
+                # Expand list values: create one record per list item
                 for item in v:
                     row = {key_name: k}
                     row.update(_flatten_dict(item) if isinstance(item, dict) else {"value": item})
                     rows.append(row)
             elif isinstance(v, dict):
+                # Nested dict: flatten and merge into record
                 row = {key_name: k}
                 row.update(_flatten_dict(v))
                 rows.append(row)
             else:
+                # Scalar value: simple key-value record
                 rows.append({key_name: k, "value": v})
 
-        # sort the records by key_name if possible
+        # Sort records alphabetically by key field for consistent ordering
         rows.sort(key=lambda x: x.get(key_name, ""), reverse=False)
 
         return rows
 
-    # Fallback for scalar values
+    # Fallback for scalar inputs: wrap in single-item list
     return [{"value": data}]
 
 if __name__ == '__main__':

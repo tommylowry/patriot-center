@@ -259,6 +259,11 @@ function HomePage() {
                   <span className="col-header-abbr">GS</span>
                   {' '}{sortKey === 'num_games_started' && (sortDir === 'asc' ? '▲' : '▼')}
                 </th>
+                <th align="center" style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR_per_game')}>
+                  <span className="col-header-full">ffWAR/G</span>
+                  <span className="col-header-abbr">WAR/G</span>
+                  {' '}{sortKey === 'ffWAR_per_game' && (sortDir === 'asc' ? '▲' : '▼')}
+                </th>
                 <th align="center" style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR')}>
                   ffWAR {sortKey === 'ffWAR' && (sortDir === 'asc' ? '▲' : '▼')}
                 </th>

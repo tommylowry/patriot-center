@@ -92,6 +92,7 @@ export default function PlayerPage() {
             manager: m.manager ?? m.player ?? m.key ?? '',
             total_points: Number(m.total_points ?? m.points ?? 0),
             num_games_started: Number(m.num_games_started ?? m.games_started ?? m.started ?? 0),
+            ffWAR_per_game: Number(m.ffWAR_per_game ?? 0),
             ffWAR: Number(m.ffWAR ?? 0),
             placements: managerPlacements
         };
@@ -445,6 +446,11 @@ export default function PlayerPage() {
                                     <span className="col-header-abbr">GS</span>
                                     {' '}{sortKey === 'num_games_started' && (sortDir === 'asc' ? '▲' : '▼')}
                                 </th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR_per_game')}>
+                                    <span className="col-header-full">ffWAR/G</span>
+                                    <span className="col-header-abbr">WAR/G</span>
+                                    {' '}{sortKey === 'ffWAR_per_game' && (sortDir === 'asc' ? '▲' : '▼')}
+                                </th>
                                 <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR')}>
                                     ffWAR {sortKey === 'ffWAR' && (sortDir === 'asc' ? '▲' : '▼')}
                                 </th>
@@ -501,6 +507,7 @@ export default function PlayerPage() {
                                         </td>
                                         <td>{m.total_points}</td>
                                         <td>{m.num_games_started}</td>
+                                        <td>{Number(m.ffWAR_per_game).toFixed(3)}</td>
                                         <td className={warClass}>{m.ffWAR}</td>
                                     </tr>
                                 );

@@ -854,23 +854,8 @@ class ValidOptionsService:
         # Get all the options for the selected year and player (position is already set)
         self._call_new_function(self._player_bit)
 
-        # Get the Managers options that have the selected Year and Player
-        self._call_new_function(self._player_bit + self._year_bit)
-
-        # Get the Year options that have the selected Manager and Player
-        self._call_new_function(self._player_bit + self._manager_bit)
-
-
-        # Get the Weeks options that have the selected Year, Manager and Player
-        data = VALID_OPTIONS_CACHE.get(self._year, {})
-
-        for week in self._weeks_list:
-            if self._player in data.get(week, {}).get(self._manager, {}).get("players", []):
-                self._add_to_vaild_options(week, "week")
-                if self._done:
-                    break
-        
-        self._weeks_list = copy.deepcopy(self._growing_weeks_list)
+        # Get the weeks for the selected year, manager, and player (position is already set)
+        self._call_new_function(self._year_bit + self._manager_bit)
         
     # 27
     def _plyr_yr_mgr_pos_selected(self):

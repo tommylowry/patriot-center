@@ -1,0 +1,47 @@
+name: Update Cache Data
+
+# ONLY runs on schedule - no manual trigger option
+on:
+  schedule:
+    # Runs every Monday at 1:00 AM EST (08:00 UTC)
+    - cron: '0 6 * * 1'
+  workflow_dispatch: 
+
+jobs:
+  update-caches:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          cd patriot_center_backend
+          pip install -r requirements.txt
+
+      - name: Update caches
+        run: |
+          cd patriot_center_backend
+          python3 -c "
+          from utils.update_all_caches import update_all_caches
+
+          print('Updating all caches...')
+          update_all_caches()
+
+          print('Cache update complete!')
+          "
+
+      - name: Commit and push if changes
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update cache data ($(date +'%Y-%m-%d %H:%M:%S'))" && git push)

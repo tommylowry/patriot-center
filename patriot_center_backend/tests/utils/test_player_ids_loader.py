@@ -12,19 +12,12 @@ from datetime import datetime, timedelta
 class TestLoadPlayerIds:
     """Test load_player_ids function."""
 
-    @patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE')
-    @patch('patriot_center_backend.utils.player_ids_loader.datetime')
-    def test_returns_fresh_cache_when_less_than_7_days_old(self, mock_datetime, mock_file_path):
-        """Test returns cached data when cache is less than 7 days old."""
+    def test_returns_fresh_cache_when_less_than_7_days_old(self):
+        """Test returns cached data when file was modified less than 7 days ago."""
         from patriot_center_backend.utils.player_ids_loader import load_player_ids
 
-        # Mock current time
-        mock_datetime.now.return_value = datetime(2024, 11, 20)
-        mock_datetime.strptime = datetime.strptime
-
-        # Create temp file with fresh cache (updated 3 days ago)
+        # Create temp file with fresh cache (no Last_Updated field)
         cache_data = {
-            "Last_Updated": "2024-11-17",  # 3 days ago
             "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown", "position": "WR"},
             "KC": {"full_name": "Kansas City Chiefs", "first_name": "Kansas City", "last_name": "Chiefs", "position": "DEF"}
         }
@@ -34,6 +27,7 @@ class TestLoadPlayerIds:
             temp_path = f.name
 
         try:
+            # File was just created, so mtime is fresh
             with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
                 result = load_player_ids()
 
@@ -43,18 +37,12 @@ class TestLoadPlayerIds:
         finally:
             os.remove(temp_path)
 
-    @patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE')
-    @patch('patriot_center_backend.utils.player_ids_loader.datetime')
-    def test_ensures_defenses_present_in_cached_data(self, mock_datetime, mock_file_path):
+    def test_ensures_defenses_present_in_cached_data(self):
         """Test adds missing defense entries to cached data."""
         from patriot_center_backend.utils.player_ids_loader import load_player_ids
 
-        mock_datetime.now.return_value = datetime(2024, 11, 20)
-        mock_datetime.strptime = datetime.strptime
-
-        # Cache is fresh but missing some defenses
+        # Cache is fresh but missing some defenses (no Last_Updated field)
         cache_data = {
-            "Last_Updated": "2024-11-19",  # 1 day ago
             "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown", "position": "WR"}
             # Missing defenses
         }
@@ -77,18 +65,12 @@ class TestLoadPlayerIds:
             os.remove(temp_path)
 
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
-    @patch('patriot_center_backend.utils.player_ids_loader.datetime')
-    def test_refreshes_stale_cache(self, mock_datetime, mock_fetch):
-        """Test refreshes cache when older than 7 days."""
+    def test_refreshes_stale_cache(self, mock_fetch):
+        """Test refreshes cache when file mtime is older than 7 days."""
         from patriot_center_backend.utils.player_ids_loader import load_player_ids
 
-        # Mock current time
-        mock_datetime.now.return_value = datetime(2024, 11, 20)
-        mock_datetime.strptime = datetime.strptime
-
-        # Create temp file with stale cache (updated 10 days ago)
+        # Create temp file with cache data (no Last_Updated field)
         cache_data = {
-            "Last_Updated": "2024-11-10",  # 10 days ago - stale!
             "old_player": {"full_name": "Old Player", "first_name": "Old", "last_name": "Player"}
         }
 
@@ -97,6 +79,10 @@ class TestLoadPlayerIds:
             temp_path = f.name
 
         try:
+            # Set file mtime to 10 days ago (stale!)
+            ten_days_ago = (datetime.now() - timedelta(days=10)).timestamp()
+            os.utime(temp_path, (ten_days_ago, ten_days_ago))
+
             # Mock fetched data
             mock_fetch.return_value = {
                 "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown", "position": "WR"}
@@ -113,12 +99,9 @@ class TestLoadPlayerIds:
             os.remove(temp_path)
 
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
-    @patch('patriot_center_backend.utils.player_ids_loader.datetime')
-    def test_creates_cache_when_file_missing(self, mock_datetime, mock_fetch):
+    def test_creates_cache_when_file_missing(self, mock_fetch):
         """Test creates new cache when file doesn't exist."""
         from patriot_center_backend.utils.player_ids_loader import load_player_ids
-
-        mock_datetime.now.return_value = datetime(2024, 11, 20)
 
         # Use non-existent path
         non_existent_path = "/tmp/nonexistent_player_ids_12345.json"
@@ -133,49 +116,37 @@ class TestLoadPlayerIds:
 
             # Should have called fetch
             mock_fetch.assert_called_once()
-            # Should have Last_Updated
-            assert "Last_Updated" in result
+            # Should have player data (no Last_Updated field)
+            assert "7547" in result
         finally:
             if os.path.exists(non_existent_path):
                 os.remove(non_existent_path)
 
-    @patch('patriot_center_backend.utils.player_ids_loader.datetime')
-    def test_handles_malformed_timestamp(self, mock_datetime):
-        """Test handles malformed Last_Updated timestamp gracefully."""
+    @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
+    def test_handles_corrupted_json_gracefully(self, mock_fetch):
+        """Test handles corrupted JSON file gracefully by refreshing."""
         from patriot_center_backend.utils.player_ids_loader import load_player_ids
 
-        mock_datetime.now.return_value = datetime(2024, 11, 20)
-        mock_datetime.strptime = datetime.strptime
-
-        # Cache with malformed timestamp
-        cache_data = {
-            "Last_Updated": "invalid-date",
-            "7547": {"full_name": "Amon-Ra St. Brown", "first_name": "Amon-Ra", "last_name": "St. Brown"}
-        }
-
+        # Create temp file with corrupted JSON
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            json.dump(cache_data, f)
+            f.write("{ this is not valid json }")
             temp_path = f.name
 
         try:
-            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
-                # Should handle gracefully by falling back to epoch (will trigger refresh)
-                with patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids') as mock_fetch:
-                    mock_fetch.return_value = {"new": "data"}
-                    result = load_player_ids()
+            mock_fetch.return_value = {"new": "data"}
 
-                    # Should have refreshed due to malformed timestamp
-                    mock_fetch.assert_called_once()
+            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
+                load_player_ids()
+
+                # Should have refreshed due to corrupted JSON
+                mock_fetch.assert_called_once()
         finally:
             os.remove(temp_path)
 
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
-    @patch('patriot_center_backend.utils.player_ids_loader.datetime')
-    def test_saves_refreshed_cache_to_disk(self, mock_datetime, mock_fetch):
-        """Test saves refreshed cache to disk with timestamp."""
+    def test_saves_refreshed_cache_to_disk(self, mock_fetch):
+        """Test saves refreshed cache to disk without metadata fields."""
         from patriot_center_backend.utils.player_ids_loader import load_player_ids
-
-        mock_datetime.now.return_value = datetime(2024, 11, 20)
 
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
             temp_path = f.name
@@ -186,14 +157,16 @@ class TestLoadPlayerIds:
             }
 
             with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
-                result = load_player_ids()
+                load_player_ids()
 
             # Should have saved to disk
             with open(temp_path, 'r') as f:
                 saved_data = json.load(f)
 
-            assert "Last_Updated" in saved_data
-            assert saved_data["Last_Updated"] == "2024-11-20"
+            # Should NOT have Last_Updated (we use file mtime now)
+            assert "Last_Updated" not in saved_data
+            # Should have player data
+            assert "7547" in saved_data
         finally:
             os.remove(temp_path)
 

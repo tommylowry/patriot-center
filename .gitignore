@@ -22,9 +22,4 @@ htmlcov/
 .pytest_cache/
 
 # Ignore git credentials and SSH keys (security)
-.git-credentials
-*.pem
 *.key
-id_rsa
-id_ed25519
-*.ppk

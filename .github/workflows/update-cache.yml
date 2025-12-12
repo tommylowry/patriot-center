@@ -25,13 +25,11 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          cd patriot_center_backend
 
       - name: Update caches
         run: |
-          cd patriot_center_backend
           python3 -c "
-          from utils.update_all_caches import update_all_caches
+          from patriot_center_backend.utils.update_all_caches import update_all_caches
 
           print('Updating all caches...')
           update_all_caches()

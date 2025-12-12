@@ -24,8 +24,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd patriot_center_backend
           pip install -r requirements.txt
+          cd patriot_center_backend
 
       - name: Update caches
         run: |

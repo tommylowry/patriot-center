@@ -9,9 +9,9 @@ Responsibilities:
 
 Notes:
 - This module performs file I/O and may perform network requests to Sleeper.
-- The cache is timestamped with a Last_Updated YYYY-MM-DD string.
+- Cache freshness is determined by file modification time (not a timestamp field).
 - Only a subset of fields specified in FIELDS_TO_KEEP is retained from the API.
-- Returned structure includes a "Last_Updated" key plus player/team entries.
+- Returned structure contains player/team entries (no metadata fields).
 """
 
 import json
@@ -32,45 +32,46 @@ def load_player_ids():
     """
     Load player metadata (cached) or refresh if >7 days stale.
 
+    Uses file modification time instead of embedded timestamp to determine freshness.
+    This allows git commits to track version history without metadata fields in the JSON.
+
     Ensures:
         - Synthetic DEF entries present for all teams.
         - Only whitelisted fields retained.
+        - Expensive Sleeper API only called if cache is >1 week old.
     """
     # Fast path: existing cache present
     if os.path.exists(PLAYER_IDS_CACHE_FILE):
         try:
-            with open(PLAYER_IDS_CACHE_FILE, "r") as file:
-                data = json.load(file)
+            # Check file modification time to determine if cache is stale
+            file_mtime = os.path.getmtime(PLAYER_IDS_CACHE_FILE)
+            file_age = datetime.now() - datetime.fromtimestamp(file_mtime)
 
-            try:
-                # Parse timestamp (fallback to epoch for missing/malformed value)
-                last_updated = datetime.strptime(data.get("Last_Updated", "1970-01-01"), "%Y-%m-%d")
-                refresh = False
-            except:
-                refresh = True
+            # If file was modified within the last week, reuse it
+            if file_age < timedelta(weeks=1):
+                with open(PLAYER_IDS_CACHE_FILE, "r") as file:
+                    data = json.load(file)
 
-            if not refresh:
-            # Reuse cache if still fresh
-                if datetime.now() - last_updated < timedelta(weeks=1):
-                    # Ensure defense entries always present even on reuse
-                    for team_code, team_names in TEAM_DEFENSE_NAMES.items():
-                        if team_code not in data or data[team_code].get("position") != "DEF":
-                            data[team_code] = {
-                                "full_name": team_names["full_name"],
-                                "first_name": team_names["first_name"],
-                                "last_name": team_names["last_name"],
-                                "team": team_code,
-                                "position": "DEF"
-                            }
-                    return data
-            refresh = True
-        except json.JSONDecodeError:
-            # File exists but is empty or corrupted - trigger refresh
-            refresh = True
+                # Ensure defense entries always present even on reuse
+                for team_code, team_names in TEAM_DEFENSE_NAMES.items():
+                    if team_code not in data or data[team_code].get("position") != "DEF":
+                        data[team_code] = {
+                            "full_name": team_names["full_name"],
+                            "first_name": team_names["first_name"],
+                            "last_name": team_names["last_name"],
+                            "team": team_code,
+                            "position": "DEF"
+                        }
+                return data
 
-    # Slow path: stale or missing -> rebuild
+            # File exists but is stale (>1 week old) - trigger refresh
+
+        except (json.JSONDecodeError, OSError):
+            # File exists but is empty, corrupted, or unreadable - trigger refresh
+            pass
+
+    # Slow path: stale or missing -> rebuild from expensive API
     new_data = fetch_updated_player_ids()
-    new_data["Last_Updated"] = datetime.now().strftime("%Y-%m-%d")
 
     # Ensure all team defenses exist (avoid overwriting if already inserted)
     for team_id, team_names in TEAM_DEFENSE_NAMES.items():

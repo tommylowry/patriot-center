@@ -97,3 +97,4 @@ def _filter_by_manager(manager, season, week):
                 filtered_data[season_key][week_key][manager] = starters[manager]
 
     return filtered_data
+

@@ -38,6 +38,7 @@ def load_or_update_starters_cache():
     """
     cache = load_cache(STARTERS_CACHE_FILE)
     valid_options_cache = load_cache(VALID_OPTIONS_CACHE_FILE, initialize_with_last_updated_info=False)
+    manager_metadata_cache = load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
 
     current_season, current_week = get_current_season_and_week()
     if current_week > 17:

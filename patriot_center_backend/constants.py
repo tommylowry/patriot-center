@@ -63,6 +63,9 @@ PLAYERS_CACHE_FILE             = os.path.join(_BACKEND_DIR, "data", "players_cac
 REPLACEMENT_SCORE_CACHE_FILE   = os.path.join(_BACKEND_DIR, "data", "replacement_score_cache.json")
 STARTERS_CACHE_FILE            = os.path.join(_BACKEND_DIR, "data", "starters_cache.json")
 
+# Manager metadata cache file
+MANAGER_METADATA_CACHE_FILE    = os.path.join(_BACKEND_DIR, "data", "manager_metadata_cache.json")
+
 # Sleeper player IDs cache file
 PLAYER_IDS_CACHE_FILE          = os.path.join(_BACKEND_DIR, "data", "player_ids.json")
 

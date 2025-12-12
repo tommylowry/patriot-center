@@ -536,11 +536,23 @@ class ValidOptionsService:
         self._years_list = copy.deepcopy(self._growing_years_list)
         self._weeks_list = copy.deepcopy(self._growing_weeks_list)
 
+        # Save years and weeks before getting managers (so they don't get overwritten)
+        saved_years_list = copy.deepcopy(self._years_list)
+        saved_weeks_list = copy.deepcopy(self._weeks_list)
+
         # Within the valid Years and Weeks: Get the Manager options that have the selected Position
         self._call_new_function(self._position_bit)
 
+        # Restore the years and weeks lists (they were overwritten by the function call above)
+        self._years_list = saved_years_list
+        self._weeks_list = saved_weeks_list
+
         # Within the valid Years and Weeks: Get the Position options that have the selected Manager
         self._call_new_function(self._manager_bit)
+
+        # Restore the years and weeks lists again (they were overwritten by the function call above)
+        self._years_list = saved_years_list
+        self._weeks_list = saved_weeks_list
     
     # 8
     def _yr_selected(self):
@@ -588,11 +600,23 @@ class ValidOptionsService:
         self._weeks_list    = copy.deepcopy(self._growing_weeks_list)
         self._managers_list = copy.deepcopy(self._growing_managers_list)
 
+        # Save weeks and managers before getting positions (so they don't get overwritten)
+        saved_weeks_list = copy.deepcopy(self._weeks_list)
+        saved_managers_list = copy.deepcopy(self._managers_list)
+
         # Within the valid Weeks and Managers: Get the Position options that have the selected Year
         self._call_new_function(self._year_bit)
 
+        # Restore the weeks and managers lists (they were overwritten by the function call above)
+        self._weeks_list = saved_weeks_list
+        self._managers_list = saved_managers_list
+
         # Within the valid Weeks and Managers: Get the Year options that have the selected Position
         self._call_new_function(self._position_bit)
+
+        # Restore the weeks and managers lists again (they were overwritten by the function call above)
+        self._weeks_list = saved_weeks_list
+        self._managers_list = saved_managers_list
     
     # 10
     def _yr_mgr_selected(self):
@@ -620,11 +644,23 @@ class ValidOptionsService:
         self._weeks_list     = copy.deepcopy(self._growing_weeks_list)
         self._positions_list = copy.deepcopy(self._growing_positions_list)
 
+        # Save weeks and positions before getting managers (so they don't get overwritten)
+        saved_weeks_list = copy.deepcopy(self._weeks_list)
+        saved_positions_list = copy.deepcopy(self._positions_list)
+
         # Within the valid Weeks and Positions: Get the Manager options that have the selected Year
         self._call_new_function(self._year_bit)
 
+        # Restore the weeks and positions lists (they were overwritten by the function call above)
+        self._weeks_list = saved_weeks_list
+        self._positions_list = saved_positions_list
+
         # Within the valid Weeks and Positions: Get the Year options that have the selected Manager
         self._call_new_function(self._manager_bit)
+
+        # Restore the weeks and positions lists again (they were overwritten by the function call above)
+        self._weeks_list = saved_weeks_list
+        self._positions_list = saved_positions_list
     
     # 11
     def _yr_mgr_pos_selected(self):
@@ -675,8 +711,16 @@ class ValidOptionsService:
         self._managers_list  = copy.deepcopy(self._growing_managers_list)
         self._positions_list = copy.deepcopy(self._growing_positions_list)
 
+        # Save managers and positions before getting weeks (so they don't get overwritten)
+        saved_managers_list = copy.deepcopy(self._managers_list)
+        saved_positions_list = copy.deepcopy(self._positions_list)
+
         # Within the valid Managers and Positions: Get the Week options that have the selected Year
         self._call_new_function(self._year_bit)
+
+        # Restore the managers and positions lists (they were overwritten by the function call above)
+        self._managers_list = saved_managers_list
+        self._positions_list = saved_positions_list
 
         # (Getting valid Year options for Week is not necessary as Week cannot be selected without Year)
     
@@ -694,11 +738,20 @@ class ValidOptionsService:
 
         self._managers_list = copy.deepcopy(self._growing_managers_list)
 
+        # Save managers before getting positions and weeks (so it doesn't get overwritten)
+        saved_managers_list = copy.deepcopy(self._managers_list)
+
         # Get the Positions list for the selected year and week
         self._call_new_function(self._year_bit + self._week_bit)
 
+        # Restore the managers list (it was overwritten by the function call above)
+        self._managers_list = saved_managers_list
+
         # Get the Weeks list for the selected year and position
         self._call_new_function(self._year_bit + self._position_bit)
+
+        # Restore the managers list again (it was overwritten by the function call above)
+        self._managers_list = saved_managers_list
 
         # (Getting valid Year options for Week is not necessary as Week cannot be selected without Year)
     
@@ -716,11 +769,20 @@ class ValidOptionsService:
 
         self._positions_list = copy.deepcopy(self._growing_positions_list)
 
+        # Save positions before getting managers and weeks (so it doesn't get overwritten)
+        saved_positions_list = copy.deepcopy(self._positions_list)
+
         # Within the valid Positions: Get the Manager options that have the selected Year and Week
         self._call_new_function(self._year_bit + self._week_bit)
 
+        # Restore the positions list (it was overwritten by the function call above)
+        self._positions_list = saved_positions_list
+
         # Within the valid Positions: Get the Week options that have the selected Year and Manager
         self._call_new_function(self._year_bit + self._manager_bit)
+
+        # Restore the positions list again (it was overwritten by the function call above)
+        self._positions_list = saved_positions_list
 
         # (Getting valid Year options for Week is not necessary as Week cannot be selected without Year)
     
@@ -940,3 +1002,7 @@ class ValidOptionsService:
 
         # In a given year and week, the manager can only be the selected manager
         self._managers_list = list([self._manager])
+
+valid = ValidOptionsService("Jameis Winston", "Owen", "2019", None).get_valid_options()
+
+print("")

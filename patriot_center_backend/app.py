@@ -29,7 +29,6 @@ CORS(app, resources={
     r"/players/list": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/valid_options*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_player_manager_aggregation*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/update_caches": {"origins": ["https://patriotcenter.netlify.app"]},
 })
 CORS(app)  # Enable CORS for all routes during development
 
@@ -45,7 +44,6 @@ def index():
             "/get_aggregated_managers/<player>",
             "/valid_options",
             "/players/list",
-            "/update_caches",
             "/ping",
             "/health"
         ]
@@ -198,38 +196,8 @@ def valid_options(arg1, arg2, arg3, arg4):
         return jsonify({"error": str(e)}), 400
     return jsonify(data), 200
 
-@app.route('/update_caches', methods=['POST'])
-def update_caches():
-    """
-    Trigger manual cache update with optional auto-commit.
-
-    This endpoint updates all caches (starters, replacement scores, ffWAR) and
-    optionally commits the changes to git if auto-commit is enabled via the
-    PATRIOT_AUTO_COMMIT_CACHE environment variable.
-
-    Returns:
-        JSON response with update status and commit information
-    """
-    from patriot_center_backend.utils.update_all_caches import update_all_caches
-    import os
-
-    try:
-        # Trigger cache update (auto-commit controlled by environment variable)
-        result = update_all_caches()
-
-        auto_commit_enabled = os.environ.get('PATRIOT_AUTO_COMMIT_CACHE', 'false').lower() == 'true'
-
-        return jsonify({
-            "status": "success",
-            "message": "Caches updated successfully",
-            "auto_commit_enabled": auto_commit_enabled,
-            "caches_updated": list(result.keys())
-        }), 200
-    except Exception as e:
-        return jsonify({
-            "status": "error",
-            "message": f"Cache update failed: {str(e)}"
-        }), 500
+# /update_caches endpoint removed - cache updates now handled by GitHub Actions
+# See .github/workflows/update-cache.yml
 
 def parse_arguments(arg1, arg2, arg3):
     """

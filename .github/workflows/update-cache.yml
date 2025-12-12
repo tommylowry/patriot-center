@@ -5,7 +5,6 @@ on:
   schedule:
     # Runs every Monday at 1:00 AM EST (08:00 UTC)
     - cron: '0 6 * * 1'
-  workflow_dispatch: 
 
 jobs:
   update-caches:
@@ -24,14 +23,12 @@ jobs:
 
       - name: Install dependencies
         run: |
-          cd patriot_center_backend
           pip install -r requirements.txt
 
       - name: Update caches
         run: |
-          cd patriot_center_backend
           python3 -c "
-          from utils.update_all_caches import update_all_caches
+          from patriot_center_backend.utils.update_all_caches import update_all_caches
 
           print('Updating all caches...')
           update_all_caches()

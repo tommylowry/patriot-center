@@ -40,7 +40,6 @@ def load_or_update_starters_cache():
     """
     cache = load_cache(STARTERS_CACHE_FILE)
     valid_options_cache = load_cache(VALID_OPTIONS_CACHE_FILE, initialize_with_last_updated_info=False)
-    MANAGER_METADATA.load()
 
     current_season, current_week = get_current_season_and_week()
     if current_week > 17:
@@ -118,7 +117,6 @@ def load_or_update_starters_cache():
 
     save_cache(STARTERS_CACHE_FILE, cache)
     save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
-    MANAGER_METADATA.save()
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
     return cache

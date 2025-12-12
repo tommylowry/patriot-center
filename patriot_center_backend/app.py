@@ -29,7 +29,6 @@ CORS(app, resources={
     r"/players/list": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/valid_options*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_player_manager_aggregation*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/update_caches": {"origins": ["https://patriotcenter.netlify.app"]},
 })
 CORS(app)  # Enable CORS for all routes during development
 
@@ -45,7 +44,6 @@ def index():
             "/get_aggregated_managers/<player>",
             "/valid_options",
             "/players/list",
-            "/update_caches",
             "/ping",
             "/health"
         ]

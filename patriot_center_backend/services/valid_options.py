@@ -1002,7 +1002,3 @@ class ValidOptionsService:
 
         # In a given year and week, the manager can only be the selected manager
         self._managers_list = list([self._manager])
-
-valid = ValidOptionsService("Jameis Winston", "Owen", "2019", None).get_valid_options()
-
-print("")

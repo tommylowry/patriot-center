@@ -36,6 +36,9 @@ class ManagerMetadataManager:
             # }
         }
 
+        # FAAB usage flag
+        self._use_faab = False
+
         # Predefined templates for initializing new data
         self._initialize_summary_templates()
 
@@ -43,6 +46,7 @@ class ManagerMetadataManager:
         self._weekly_roster_ids = {
             # roster_id: manager
         }
+        
         self._year = None
         self._week = None
         
@@ -54,6 +58,17 @@ class ManagerMetadataManager:
 
     def set_roster_id(self, manager: str, year: str, week: str, roster_id: int):
         """Set the roster ID for a given manager and year."""
+        if roster_id == None:
+            # Co-manager scenario; skip
+            return
+
+        self._year = year
+        self._week = week
+
+        if week == "1":
+            # Fetch league settings to determine FAAB usage at start of season
+            league_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year), '')}")[0]
+            self._use_faab = True if league_settings.get("settings", {}).get("waiver_type", 1)==2 else False
 
         self._set_defaults_if_missing(manager, year, week)
         self._cache[manager]["years"][year]["roster_id"] = roster_id
@@ -67,35 +82,30 @@ class ManagerMetadataManager:
                 user_payload, status_code = fetch_sleeper_data(f"user/{username}")
                 if status_code == 200 and "user_id" in user_payload:
                     self._cache[manager]["summary"]["user_id"] = user_payload["user_id"]
-            
+
                 else:
                     raise ValueError(f"Failed to fetch user data for manager {manager} with username {username}.")
             else:
                 raise ValueError(f"No username mapping found for manager {manager}.")
-            
-            
-        self._save()
-
-
-        self._save()
 
 
 
     
     def cache_week_data(self, year: str, week: str):
         """Cache week-specific data for a given week and year."""
-        
+
         # Ensure preconditions are met
         self._caching_preconditions_met()
 
+        # Load player ID mappings
         self._player_ids = load_player_ids()
 
-        #
+        # Scrub transaction data for the week
         self._scrub_transaction_data(year, week)
-
-        self._save()
-
-        self._clear_weekly_metadata()
+        
+        # Clear weekly metadata
+        self._year = None
+        self._week = None
 
     
 
@@ -110,16 +120,18 @@ class ManagerMetadataManager:
         """Load the entire manager metadata cache."""
         self._cache = load_cache(MANAGER_METADATA_CACHE_FILE, initialize_with_last_updated_info=False)
 
-    def _save(self):
+    def save(self):
         """Save the entire manager metadata cache."""
         save_cache(MANAGER_METADATA_CACHE_FILE, self._cache)
     
     def _clear_weekly_metadata(self):
-        """Clear the entire manager metadata."""
-        self._weekly_roster_ids = {}
-        self._year = None
+        """Clear weekly metadata used during caching sessions."""
+        if self._year == "2024" and self._week == "17":
+            self._weekly_roster_ids = {}
         self._week = None
-    
+        self._year = None
+
+
     def _set_defaults_if_missing(self, manager: str, year: str, week: str):
         """Helper to initialize nested structures if missing."""
         if manager not in self._cache:
@@ -134,6 +146,9 @@ class ManagerMetadataManager:
         
         if week not in self._cache[manager]["years"][year]["weeks"]:
             self._cache[manager]["years"][year]["weeks"][week] = copy.deepcopy(self._weekly_summary_template)
+        
+        if self._use_faab:
+            self._initialize_faab_template(manager)
 
     def _caching_preconditions_met(self):
         """Check if preconditions for caching week data are met."""
@@ -166,6 +181,9 @@ class ManagerMetadataManager:
         # Determine transaction type
         transaction_type = transaction.get("type", "")
 
+        if transaction_type in ["free_agent", "waiver", "commissioner"]:
+            transaction_type = "add_or_drop"
+
         # Dynamically collect the proper function to process this transaction type
         process_transaction_type = getattr(self, f"_process_{transaction_type}_transaction", None)
 
@@ -190,9 +208,9 @@ class ManagerMetadataManager:
             trade_partners.remove(roster_id)
             for i in range(len(trade_partners)):
                 trade_partners[i] = self._weekly_roster_ids.get(trade_partners[i], "unknown_manager")
+
             
-
-
+            # Players/Draft Picks Acquired and Sent
             acquired = {}
             if "adds" in transaction and transaction["adds"] != None:
                 for player_id in transaction.get("adds", {}):
@@ -224,10 +242,26 @@ class ManagerMetadataManager:
 
             transaction_id = transaction.get("transaction_id", "")
 
-            print(f"{manager} traded with {trade_partners}: acquired {acquired}, sent {sent}")
-
             # add trade details to the cache
             self._add_trade_details_to_cache(manager, trade_partners, acquired, sent, transaction_id)
+        
+
+        # Faab Trading
+        if self._use_faab and transaction.get("waiver_budget", []) != []:
+            for faab_transaction in transaction.get("waiver_budget", []):
+                
+                faab_amount = faab_transaction.get("amount", 0)
+                sender = self._weekly_roster_ids.get(faab_transaction.get("sender", ""), None)
+                receiver = self._weekly_roster_ids.get(faab_transaction.get("receiver", ""), None)
+                transaction_id = transaction.get("transaction_id", "")
+
+                # add faab trade details to the cache
+                self._add_faab_details_to_cache("trade", sender, "FAAB", faab_amount, transaction_id, trade_partner=receiver)
+                self._add_faab_details_to_cache("trade", receiver, "FAAB", -faab_amount, transaction_id, trade_partner=sender)
+
+            
+            
+
     
 
     def _draft_pick_decipher(self, draft_pick_dict: dict) -> str:
@@ -286,13 +320,15 @@ class ManagerMetadataManager:
         # Add trade details in all summaries
         for summary in summaries:
 
-
+            # Process total trades
+            if trade_partners:
+                summary["total"] += 1
+            
             # Process trade partners
             for trade_partner in trade_partners:
-                if trade_partner not in [summary["trade_partners"].keys()]:
+                if trade_partner not in summary["trade_partners"]:
                     summary["trade_partners"][trade_partner] = 0
                 summary["trade_partners"][trade_partner] += 1
-                summary["total"] += 1
 
 
             # Process players acquired
@@ -300,7 +336,6 @@ class ManagerMetadataManager:
             for player in acquired:
                 if player not in acquired_summary:
                     acquired_summary[player] = copy.deepcopy(player_initial_dict)
-                    acquired_summary[player]["trade_partners"][acquired[player]] = 0
                 if acquired[player] not in acquired_summary[player]["trade_partners"]:
                     acquired_summary[player]["trade_partners"][acquired[player]] = 0
                 acquired_summary[player]["trade_partners"][acquired[player]] += 1
@@ -312,12 +347,12 @@ class ManagerMetadataManager:
             for player in sent:
                 if player not in sent_summary:
                     sent_summary[player] = copy.deepcopy(player_initial_dict)
-                    sent_summary[player]["trade_partners"][sent[player]] = 0
                 if sent[player] not in sent_summary[player]["trade_partners"]:
                     sent_summary[player]["trade_partners"][sent[player]] = 0
                 sent_summary[player]["trade_partners"][sent[player]] += 1
                 sent_summary[player]["total"] += 1
-        
+
+
         # Finally, add transaction ID to weekly summary to avoid double counting
         weekly_summary["transaction_ids"].append(transaction_id)
     
@@ -326,39 +361,46 @@ class ManagerMetadataManager:
 
 
 
-
-    def _process_free_agent_transaction(self, transaction: dict):
+    def _process_add_or_drop_transaction(self, transaction: dict):
         adds  = transaction.get("adds", {})
         drops = transaction.get("drops", {})
 
-        if not adds:
+        if not adds and not drops:
+            print("Waiver transaction with no adds or drops:", transaction)
             return
-        for player_id in adds:
-            roster_id = adds[player_id]
-            
-            manager = self._weekly_roster_ids.get(roster_id, None)
-            player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
-            
-            transaction_id = transaction.get("transaction_id", "")
-
-            # add add details to the cache
-            self._add_free_agent_details_to_cache("add", manager, player_name, transaction_id)
         
-        if not drops:
-            return
-        for player_id in drops:
-            roster_id = drops[player_id]
-            
-            manager = self._weekly_roster_ids.get(roster_id, None)
-            player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
-            
-            transaction_id = transaction.get("transaction_id", "")
+        if adds:
+            for player_id in adds:
+                roster_id = adds[player_id]
+                
+                manager = self._weekly_roster_ids.get(roster_id, None)
+                player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
+                
+                transaction_id = transaction.get("transaction_id", "")
 
-            # add drop details to the cache
-            self._add_free_agent_details_to_cache("drop", manager, player_name, transaction_id)
+                # add add details to the cache
+                self._add_add_or_drop_details_to_cache("add", manager, player_name, transaction_id)
+                
+                # add FAAB details to the cache
+                if self._use_faab and transaction.get("settings", None) != None:
+                    faab_amount = transaction.get("settings", {}).get("waiver_bid", 0)
+                    transaction_type = transaction.get("type", "")
+                    self._add_faab_details_to_cache(transaction_type, manager, player_name, faab_amount, transaction_id)
+        
+        if drops:
+            for player_id in drops:
+                roster_id = drops[player_id]
+                
+                manager = self._weekly_roster_ids.get(roster_id, None)
+                player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
+                
+                transaction_id = transaction.get("transaction_id", "")
+
+                # add drop details to the cache
+                self._add_add_or_drop_details_to_cache("drop", manager, player_name, transaction_id)
     
 
-    def _add_free_agent_details_to_cache(self, free_agent_type: str, manager: str, player_name: str, transaction_id: str):
+    def _add_add_or_drop_details_to_cache(self, free_agent_type: str, manager: str, player_name: str, transaction_id: str):
         """
         "adds": {
             "total": 0,
@@ -389,24 +431,77 @@ class ManagerMetadataManager:
         
         # Finally, add transaction ID to weekly summary to avoid double counting
         weekly_summary["transaction_ids"].append(transaction_id)
+    
 
+    def _add_faab_details_to_cache(self, transaction_type: str, manager: str, player_name: str, faab_amount: int, transaction_id: str, trade_partner: str = None):
+        """
+        "faab" = {
+            "total_lost_or_gained": 0,
+            "players":{
+                # "player_name": faab_amount
+            },
+            "traded_away": {
+                "total": 0,
+                # "trade_partner": amount_sent
+            },
+            "acquired_from": {
+                "total": 0
+                # "trade_partner": amount_received
+            }
+        }
+        """
 
+        if transaction_type == "trade" and trade_partner is None:
+            print("Trade transaction missing trade partner for FAAB processing:", transaction_type, manager, player_name, faab_amount, transaction_id)
+            return
 
-
-
-
-
-    def _process_waiver_transaction(self, transaction: dict):
+        if transaction_id in self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"]["faab"]["transaction_ids"]:
+            # Waiver already processed for this week
+            return
         
-        # Waiver transactions are treated the same as free agent transactions
-        self._process_free_agent_transaction(transaction)
+        top_level_summary = self._cache[manager]["summary"]["transactions"]["faab"]
+        yearly_summary = self._cache[manager]["years"][self._year]["summary"]["transactions"]["faab"]
+        weekly_summary = self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"]["faab"]
+        summaries = [top_level_summary, yearly_summary, weekly_summary]
 
-        # Later, faab logic will be added here
+        if transaction_type in ["free_agent", "waiver", "commissioner"]:
+            # Add waiver details in all summaries
+            for summary in summaries:
+                # Process total lost or gained
+                summary["total_lost_or_gained"] -= faab_amount
 
-    def _process_commissioner_transaction(self, transaction: dict):
+                # Process player-specific FAAB amounts
+                if player_name not in summary["players"]:
+                    summary["players"][player_name] = 0
+                summary["players"][player_name] += faab_amount
         
-        # Commissioner transactions are treated the same as free agent transactions
-        self._process_free_agent_transaction(transaction)
+        elif transaction_type == "trade":
+            # Add trade FAAB details in all summaries
+            for summary in summaries:
+                if faab_amount > 0:
+                    # Acquired FAAB
+                    summary["total_lost_or_gained"] += faab_amount
+                    summary["acquired_from"]["total"] += faab_amount
+                    
+                    if trade_partner not in summary["acquired_from"]["trade_partners"]:
+                        summary["acquired_from"]["trade_partners"][trade_partner] = 0
+                    summary["acquired_from"]["trade_partners"][trade_partner] += faab_amount
+                
+                # Traded FAAB away
+                if faab_amount < 0:
+                    summary["total_lost_or_gained"] += faab_amount
+                    summary["traded_away"]["total"] -= faab_amount
+                    
+                    if trade_partner not in summary["traded_away"]["trade_partners"]:
+                        summary["traded_away"]["trade_partners"][trade_partner] = 0
+                    summary["traded_away"]["trade_partners"][trade_partner] -= faab_amount
+        
+        else:
+            print("Unexpected transaction type for FAAB processing:", transaction_type)
+            return
+        
+        # Finally, add transaction ID to weekly summary to avoid double counting
+        weekly_summary["transaction_ids"].append(transaction_id)
 
 
 
@@ -425,7 +520,7 @@ class ManagerMetadataManager:
         
 
         # Validate transaction type
-        if transaction_type not in {"trade", "free_agent", "waiver", "commissioner"}:
+        if transaction_type not in {"trade", "add_or_drop"}:
             print("Unexpected transaction type:", transaction)
             return False
         
@@ -454,6 +549,18 @@ class ManagerMetadataManager:
         
         return True
     
+    def _initialize_faab_template(self, manager: str):
+        if "faab" not in self._cache[manager]["summary"]["transactions"]:
+            self._cache[manager]["summary"]["transactions"]["faab"] = copy.deepcopy(self._faab_template)
+        
+        if "faab" not in self._cache[manager]["years"][self._year]["summary"]["transactions"]:
+            self._cache[manager]["years"][self._year]["summary"]["transactions"]["faab"] = copy.deepcopy(self._faab_template)
+            
+        if "faab" not in self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"]:
+            faab_template_with_transaction_ids = copy.deepcopy(self._faab_template)
+            faab_template_with_transaction_ids["transaction_ids"] = []
+            self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"]["faab"] = copy.deepcopy(faab_template_with_transaction_ids)
+
     def _initialize_summary_templates(self):
         
         # Common matchup data template
@@ -461,6 +568,25 @@ class ManagerMetadataManager:
             "total": 0.0,
             "opponents": {
                 # "opponent_manager": value
+            }
+        }
+
+        self._faab_template = {
+            "total_lost_or_gained": 0,
+            "players":{
+                # "player_name": faab_amount
+            },
+            "traded_away": {
+                "total": 0,
+                "trade_partners": {
+                    # "trade_partner": amount_received
+                }
+            },
+            "acquired_from": {
+                "total": 0,
+                "trade_partners": {
+                    # "trade_partner": amount_received
+                }
             }
         }
 
@@ -500,7 +626,28 @@ class ManagerMetadataManager:
                     # "player_name": num_times_dropped
                 }
             }
+            # "faab" = {
+            #     "total_lost_or_gained": 0,
+            #     "players":{
+            #         # "player_name": faab_amount
+            #     },
+            #     "traded_away": {
+            #         "total": 0,
+            #         "trade_partners": {
+            #             "trade_partner": amount_received
+            #         }
+            #     },
+            #     "acquired_from": {
+            #         "total": 0
+            #         "trade_partners": {
+            #             "trade_partner": amount_received
+            #         }
+            #     }
+            # }
         }
+
+        if self._use_faab:
+            transaction_data["faab"] = copy.deepcopy(self._faab_template)
         
         
         self._yearly_summary_template = {
@@ -543,6 +690,8 @@ class ManagerMetadataManager:
         self._weekly_summary_template["transactions"]["trades"]["transaction_ids"] = []
         self._weekly_summary_template["transactions"]["adds"]["transaction_ids"] = []
         self._weekly_summary_template["transactions"]["drops"]["transaction_ids"] = []
+        if self._use_faab:
+            self._weekly_summary_template["transactions"]["faab"]["transaction_ids"] = []
 
         self._top_level_summary_template = copy.deepcopy(self._yearly_summary_template)
         self._top_level_summary_template["overall_data"] = {

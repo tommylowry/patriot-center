@@ -114,6 +114,9 @@ def load_or_update_starters_cache():
             cache['Last_Updated_Season'] = str(year)
             cache['Last_Updated_Week'] = week
             print(f"  Starters cache updated internally for season {year}, week {week}")
+        
+        # Persist manager metadata after each season update.
+        MANAGER_METADATA.save()
 
     save_cache(STARTERS_CACHE_FILE, cache)
     save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
@@ -262,14 +265,15 @@ def fetch_starters_for_week(season, week):
             # Hard-coded correction for a known roster mismatch (2024 Davey).
             if int(season) == 2024 and real_name == "Davey":
                 roster_id = 4
+        
+        # Initialize manager metadata for this season/week before skipping playoff filtering.
+        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id)
 
         if not roster_id:
             continue  # Skip unresolved roster
 
         if playoff_roster_ids != {} and roster_id not in playoff_roster_ids['round_roster_ids']:
             continue  # Skip non-playoff rosters in playoff weeks
-
-        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id)
 
         starters_data, players_summary_array_per_manager, positions_summary_array_per_manager = get_starters_data(sleeper_response_matchups,
                                                                                                                   roster_id, 

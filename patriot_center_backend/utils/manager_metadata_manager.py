@@ -1,4 +1,5 @@
 import copy
+from time import sleep
 
 from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache
@@ -72,6 +73,10 @@ class ManagerMetadataManager:
             else:
                 raise ValueError(f"No username mapping found for manager {manager}.")
             
+            
+        self._save()
+
+
         self._save()
 
 
@@ -89,7 +94,7 @@ class ManagerMetadataManager:
         self._scrub_transaction_data(year, week)
 
         self._save()
-        
+
         self._clear_weekly_metadata()
 
     
@@ -118,17 +123,17 @@ class ManagerMetadataManager:
     def _set_defaults_if_missing(self, manager: str, year: str, week: str):
         """Helper to initialize nested structures if missing."""
         if manager not in self._cache:
-            self._cache[manager] = {"summary": self._top_level_summary_template, "years": {}}
+            self._cache[manager] = {"summary": copy.deepcopy(self._top_level_summary_template), "years": {}}
         
         if year not in self._cache[manager]["years"]:
             self._cache[manager]["years"][year] = {
-                "summary": self._yearly_summary_template,
+                "summary": copy.deepcopy(self._yearly_summary_template),
                 "roster_id": None,
                 "weeks": {}
             }
         
         if week not in self._cache[manager]["years"][year]["weeks"]:
-            self._cache[manager]["years"][year]["weeks"][week] = self._weekly_summary_template
+            self._cache[manager]["years"][year]["weeks"][week] = copy.deepcopy(self._weekly_summary_template)
 
     def _caching_preconditions_met(self):
         """Check if preconditions for caching week data are met."""
@@ -153,7 +158,6 @@ class ManagerMetadataManager:
             raise ValueError(f"No league ID found for year {year}.")
         
         transactions_list , _ = fetch_sleeper_data(f"league/{league_id}/transactions/{week}")
-
         for transaction in transactions_list:
            self._process_transaction(transaction)
 
@@ -220,6 +224,8 @@ class ManagerMetadataManager:
 
             transaction_id = transaction.get("transaction_id", "")
 
+            print(f"{manager} traded with {trade_partners}: acquired {acquired}, sent {sent}")
+
             # add trade details to the cache
             self._add_trade_details_to_cache(manager, trade_partners, acquired, sent, transaction_id)
     
@@ -235,7 +241,7 @@ class ManagerMetadataManager:
         return f"{origin_manager}'s {season} Round {round_num} Draft Pick"
     
 
-    def _add_trade_details_to_cache(self, manager: str, partner_managers: list, acquired: dict, sent: dict, transaction_id: str):
+    def _add_trade_details_to_cache(self, manager: str, trade_partners: list, acquired: dict, sent: dict, transaction_id: str):
         """
         "trades": {
             "total": 0,
@@ -282,18 +288,20 @@ class ManagerMetadataManager:
 
 
             # Process trade partners
-            for partner_manager in partner_managers:
-                if partner_manager not in [summary["trade_partners"].keys()]:
-                    summary["trade_partners"][partner_manager] = 0
-                summary["trade_partners"][partner_manager] += 1
+            for trade_partner in trade_partners:
+                if trade_partner not in [summary["trade_partners"].keys()]:
+                    summary["trade_partners"][trade_partner] = 0
+                summary["trade_partners"][trade_partner] += 1
                 summary["total"] += 1
 
 
             # Process players acquired
             acquired_summary = summary["trade_players_acquired"]
             for player in acquired:
-                if player not in [acquired_summary.keys()]:
+                if player not in acquired_summary:
                     acquired_summary[player] = copy.deepcopy(player_initial_dict)
+                    acquired_summary[player]["trade_partners"][acquired[player]] = 0
+                if acquired[player] not in acquired_summary[player]["trade_partners"]:
                     acquired_summary[player]["trade_partners"][acquired[player]] = 0
                 acquired_summary[player]["trade_partners"][acquired[player]] += 1
                 acquired_summary[player]["total"] += 1
@@ -302,8 +310,10 @@ class ManagerMetadataManager:
             # Process players sent
             sent_summary = summary["trade_players_sent"]
             for player in sent:
-                if player not in [summary.keys()]:
+                if player not in sent_summary:
                     sent_summary[player] = copy.deepcopy(player_initial_dict)
+                    sent_summary[player]["trade_partners"][sent[player]] = 0
+                if sent[player] not in sent_summary[player]["trade_partners"]:
                     sent_summary[player]["trade_partners"][sent[player]] = 0
                 sent_summary[player]["trade_partners"][sent[player]] += 1
                 sent_summary[player]["total"] += 1
@@ -517,7 +527,7 @@ class ManagerMetadataManager:
                     "ties":           copy.deepcopy(matchup_data)
                 }
             },
-            "transactions": transaction_data
+            "transactions": copy.deepcopy(transaction_data)
         }
 
         # Blank summary template for initializing new weekly data
@@ -528,7 +538,7 @@ class ManagerMetadataManager:
                 "points_for": 0.0,
                 "points_against": 0.0
             },
-            "transactions": transaction_data
+            "transactions": copy.deepcopy(transaction_data)
         }
         self._weekly_summary_template["transactions"]["trades"]["transaction_ids"] = []
         self._weekly_summary_template["transactions"]["adds"]["transaction_ids"] = []

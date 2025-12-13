@@ -102,24 +102,21 @@
                                 "Jay": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 2,
                     "players": {
                         "Jordan Scarlett": 1,
                         "Gus Edwards": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 2,
                     "players": {
                         "Gus Edwards": 1,
                         "Justice Hill": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
@@ -232,24 +229,21 @@
                                         "Jay": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 2,
                             "players": {
                                 "Jordan Scarlett": 1,
                                 "Gus Edwards": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 2,
                             "players": {
                                 "Gus Edwards": 1,
                                 "Justice Hill": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -723,8 +717,7 @@
                                 "Jay": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 5,
@@ -733,23 +726,21 @@
                         "Tyler Eifert": 1,
                         "Matt Bryant": 2,
                         "Detroit Lions": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 2,
                     "players": {
                         "Matt Bryant": 1,
                         "Josh Allen": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "399261307120963584"
         },
         "years": {
             "2019": {
@@ -1147,8 +1138,7 @@
                                         "Jay": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 5,
@@ -1157,16 +1147,14 @@
                                 "Tyler Eifert": 1,
                                 "Matt Bryant": 2,
                                 "Detroit Lions": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 2,
                             "players": {
                                 "Matt Bryant": 1,
                                 "Josh Allen": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -1662,9 +1650,9 @@
                             }
                         },
                         "Derrick Henry": {
-                            "total": 1,
+                            "total": 2,
                             "trade_partners": {
-                                "Christian": 1
+                                "Christian": 2
                             }
                         },
                         "Devin Singletary": {
@@ -1734,8 +1722,9 @@
                             }
                         },
                         "Owen's 2019 Round 1 Draft Pick": {
-                            "total": 1,
+                            "total": 2,
                             "trade_partners": {
+                                "Luke": 1,
                                 "Owen": 1
                             }
                         },
@@ -1752,8 +1741,9 @@
                             }
                         },
                         "Mitch's 2019 Round 9 Draft Pick": {
-                            "total": 1,
+                            "total": 2,
                             "trade_partners": {
+                                "Luke": 1,
                                 "Mitch": 1
                             }
                         },
@@ -1914,8 +1904,9 @@
                             }
                         },
                         "Billiam's 2019 Round 5 Draft Pick": {
-                            "total": 1,
+                            "total": 2,
                             "trade_partners": {
+                                "Owen": 1,
                                 "Billiam": 1
                             }
                         },
@@ -2126,8 +2117,9 @@
                             }
                         },
                         "Jay's 2019 Round 9 Draft Pick": {
-                            "total": 1,
+                            "total": 2,
                             "trade_partners": {
+                                "Jack": 1,
                                 "Luke": 1
                             }
                         },
@@ -2246,8 +2238,9 @@
                             }
                         },
                         "Billiam's 2019 Round 5 Draft Pick": {
-                            "total": 1,
+                            "total": 2,
                             "trade_partners": {
+                                "Mitch": 1,
                                 "Owen": 1
                             }
                         },
@@ -2288,8 +2281,9 @@
                             }
                         },
                         "Jay's 2019 Round 5 Draft Pick": {
-                            "total": 1,
+                            "total": 2,
                             "trade_partners": {
+                                "Luke": 1,
                                 "Owen": 1
                             }
                         },
@@ -2317,8 +2311,7 @@
                                 "Owen": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 27,
@@ -2346,8 +2339,7 @@
                         "Darren Waller": 1,
                         "Bilal Powell": 2,
                         "Ty Montgomery": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 26,
@@ -2376,15 +2368,14 @@
                         "Andy Isabella": 1,
                         "Marquise Brown": 1,
                         "C.J. Anderson": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "447901687189860352"
         },
         "years": {
             "2019": {
@@ -2498,9 +2489,9 @@
                                     }
                                 },
                                 "Derrick Henry": {
-                                    "total": 1,
+                                    "total": 2,
                                     "trade_partners": {
-                                        "Christian": 1
+                                        "Christian": 2
                                     }
                                 },
                                 "Devin Singletary": {
@@ -2570,8 +2561,9 @@
                                     }
                                 },
                                 "Owen's 2019 Round 1 Draft Pick": {
-                                    "total": 1,
+                                    "total": 2,
                                     "trade_partners": {
+                                        "Luke": 1,
                                         "Owen": 1
                                     }
                                 },
@@ -2588,8 +2580,9 @@
                                     }
                                 },
                                 "Mitch's 2019 Round 9 Draft Pick": {
-                                    "total": 1,
+                                    "total": 2,
                                     "trade_partners": {
+                                        "Luke": 1,
                                         "Mitch": 1
                                     }
                                 },
@@ -2750,8 +2743,9 @@
                                     }
                                 },
                                 "Billiam's 2019 Round 5 Draft Pick": {
-                                    "total": 1,
+                                    "total": 2,
                                     "trade_partners": {
+                                        "Owen": 1,
                                         "Billiam": 1
                                     }
                                 },
@@ -2962,8 +2956,9 @@
                                     }
                                 },
                                 "Jay's 2019 Round 9 Draft Pick": {
-                                    "total": 1,
+                                    "total": 2,
                                     "trade_partners": {
+                                        "Jack": 1,
                                         "Luke": 1
                                     }
                                 },
@@ -3082,8 +3077,9 @@
                                     }
                                 },
                                 "Billiam's 2019 Round 5 Draft Pick": {
-                                    "total": 1,
+                                    "total": 2,
                                     "trade_partners": {
+                                        "Mitch": 1,
                                         "Owen": 1
                                     }
                                 },
@@ -3124,8 +3120,9 @@
                                     }
                                 },
                                 "Jay's 2019 Round 5 Draft Pick": {
-                                    "total": 1,
+                                    "total": 2,
                                     "trade_partners": {
+                                        "Luke": 1,
                                         "Owen": 1
                                     }
                                 },
@@ -3153,8 +3150,7 @@
                                         "Owen": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 27,
@@ -3182,8 +3178,7 @@
                                 "Darren Waller": 1,
                                 "Bilal Powell": 2,
                                 "Ty Montgomery": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 26,
@@ -3212,8 +3207,7 @@
                                 "Andy Isabella": 1,
                                 "Marquise Brown": 1,
                                 "C.J. Anderson": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -3267,9 +3261,9 @@
                                         }
                                     },
                                     "Derrick Henry": {
-                                        "total": 1,
+                                        "total": 2,
                                         "trade_partners": {
-                                            "Christian": 1
+                                            "Christian": 2
                                         }
                                     },
                                     "Devin Singletary": {
@@ -3339,8 +3333,9 @@
                                         }
                                     },
                                     "Owen's 2019 Round 1 Draft Pick": {
-                                        "total": 1,
+                                        "total": 2,
                                         "trade_partners": {
+                                            "Luke": 1,
                                             "Owen": 1
                                         }
                                     },
@@ -3357,8 +3352,9 @@
                                         }
                                     },
                                     "Mitch's 2019 Round 9 Draft Pick": {
-                                        "total": 1,
+                                        "total": 2,
                                         "trade_partners": {
+                                            "Luke": 1,
                                             "Mitch": 1
                                         }
                                     },
@@ -3519,8 +3515,9 @@
                                         }
                                     },
                                     "Billiam's 2019 Round 5 Draft Pick": {
-                                        "total": 1,
+                                        "total": 2,
                                         "trade_partners": {
+                                            "Owen": 1,
                                             "Billiam": 1
                                         }
                                     },
@@ -3731,8 +3728,9 @@
                                         }
                                     },
                                     "Jay's 2019 Round 9 Draft Pick": {
-                                        "total": 1,
+                                        "total": 2,
                                         "trade_partners": {
+                                            "Jack": 1,
                                             "Luke": 1
                                         }
                                     },
@@ -3851,8 +3849,9 @@
                                         }
                                     },
                                     "Billiam's 2019 Round 5 Draft Pick": {
-                                        "total": 1,
+                                        "total": 2,
                                         "trade_partners": {
+                                            "Mitch": 1,
                                             "Owen": 1
                                         }
                                     },
@@ -3893,8 +3892,9 @@
                                         }
                                     },
                                     "Jay's 2019 Round 5 Draft Pick": {
-                                        "total": 1,
+                                        "total": 2,
                                         "trade_partners": {
+                                            "Luke": 1,
                                             "Owen": 1
                                         }
                                     },
@@ -4222,8 +4222,7 @@
                                 "Jay": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 4,
@@ -4232,8 +4231,7 @@
                         "Michael Gallup": 1,
                         "Kalen Ballage": 1,
                         "Brett Maher": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 4,
@@ -4242,15 +4240,14 @@
                         "Kyle Rudolph": 1,
                         "Alexander Mattison": 1,
                         "Giorgio Tavecchio": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "447903340865515520"
         },
         "years": {
             "2019": {
@@ -4406,8 +4403,7 @@
                                         "Jay": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 4,
@@ -4416,8 +4412,7 @@
                                 "Michael Gallup": 1,
                                 "Kalen Ballage": 1,
                                 "Brett Maher": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 4,
@@ -4426,8 +4421,7 @@
                                 "Kyle Rudolph": 1,
                                 "Alexander Mattison": 1,
                                 "Giorgio Tavecchio": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -4805,8 +4799,7 @@
                                 "Tommy": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 5,
@@ -4816,8 +4809,7 @@
                         "Giovani Bernard": 1,
                         "Jason Myers": 1,
                         "Philadelphia Eagles": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 5,
@@ -4827,15 +4819,14 @@
                         "Peyton Barber": 1,
                         "Dan Bailey": 1,
                         "Geronimo Allison": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "447903614824869888"
         },
         "years": {
             "2019": {
@@ -5077,8 +5068,7 @@
                                         "Tommy": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 5,
@@ -5088,8 +5078,7 @@
                                 "Giovani Bernard": 1,
                                 "Jason Myers": 1,
                                 "Philadelphia Eagles": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 5,
@@ -5099,8 +5088,7 @@
                                 "Peyton Barber": 1,
                                 "Dan Bailey": 1,
                                 "Geronimo Allison": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -5726,8 +5714,7 @@
                                 "Jay": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 5,
@@ -5737,8 +5724,7 @@
                         "Mark Andrews": 1,
                         "Damion Willis": 1,
                         "J.J. Arcega-Whiteside": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 3,
@@ -5746,15 +5732,14 @@
                         "C.J. Anderson": 1,
                         "Kalen Ballage": 1,
                         "J.J. Arcega-Whiteside": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "447928129864855552"
         },
         "years": {
             "2019": {
@@ -6151,8 +6136,7 @@
                                         "Jay": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 5,
@@ -6162,8 +6146,7 @@
                                 "Mark Andrews": 1,
                                 "Damion Willis": 1,
                                 "J.J. Arcega-Whiteside": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 3,
@@ -6171,8 +6154,7 @@
                                 "C.J. Anderson": 1,
                                 "Kalen Ballage": 1,
                                 "J.J. Arcega-Whiteside": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -6710,25 +6692,22 @@
                                 "Jay": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 0,
-                    "players": {},
-                    "transaction_ids": []
+                    "players": {}
                 },
                 "drops": {
                     "total": 0,
-                    "players": {},
-                    "transaction_ids": []
+                    "players": {}
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "448188504854228992"
         },
         "years": {
             "2019": {
@@ -6883,18 +6862,15 @@
                                         "Jay": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 0,
-                            "players": {},
-                            "transaction_ids": []
+                            "players": {}
                         },
                         "drops": {
                             "total": 0,
-                            "players": {},
-                            "transaction_ids": []
+                            "players": {}
                         }
                     }
                 },
@@ -7176,29 +7152,26 @@
                                 "Jay": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 1,
                     "players": {
                         "Alexander Mattison": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 1,
                     "players": {
                         "Jaylen Samuels": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "448279276198817792"
         },
         "years": {
             "2019": {
@@ -7365,22 +7338,19 @@
                                         "Jay": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 1,
                             "players": {
                                 "Alexander Mattison": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 1,
                             "players": {
                                 "Jaylen Samuels": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -7693,27 +7663,24 @@
                                 "Soup": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 1,
                     "players": {
                         "Denver Broncos": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 0,
-                    "players": {},
-                    "transaction_ids": []
+                    "players": {}
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "461683800494043136"
         },
         "years": {
             "2019": {
@@ -7892,20 +7859,17 @@
                                         "Soup": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 1,
                             "players": {
                                 "Denver Broncos": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 0,
-                            "players": {},
-                            "transaction_ids": []
+                            "players": {}
                         }
                     }
                 },
@@ -8198,9 +8162,9 @@
                             }
                         },
                         "Derrick Henry": {
-                            "total": 1,
+                            "total": 2,
                             "trade_partners": {
-                                "Jay": 1
+                                "Jay": 2
                             }
                         },
                         "Devin Singletary": {
@@ -8221,29 +8185,26 @@
                                 "Jay": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 1,
                     "players": {
                         "Marquise Brown": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 1,
                     "players": {
                         "Greg Olsen": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "463021579102580736"
         },
         "years": {
             "2019": {
@@ -8393,9 +8354,9 @@
                                     }
                                 },
                                 "Derrick Henry": {
-                                    "total": 1,
+                                    "total": 2,
                                     "trade_partners": {
-                                        "Jay": 1
+                                        "Jay": 2
                                     }
                                 },
                                 "Devin Singletary": {
@@ -8416,22 +8377,19 @@
                                         "Jay": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 1,
                             "players": {
                                 "Marquise Brown": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 1,
                             "players": {
                                 "Greg Olsen": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -8521,9 +8479,9 @@
                                         }
                                     },
                                     "Derrick Henry": {
-                                        "total": 1,
+                                        "total": 2,
                                         "trade_partners": {
-                                            "Jay": 1
+                                            "Jay": 2
                                         }
                                     },
                                     "Devin Singletary": {
@@ -8728,8 +8686,7 @@
                                 "Jay": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 3,
@@ -8737,8 +8694,7 @@
                         "Malcolm Brown": 1,
                         "Hunter Renfrow": 1,
                         "Kenny Stills": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 3,
@@ -8746,15 +8702,14 @@
                         "Hunter Renfrow": 1,
                         "Kenny Stills": 1,
                         "Anthony Miller": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "730451835554529280"
         },
         "years": {
             "2019": {
@@ -8909,8 +8864,7 @@
                                         "Jay": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 3,
@@ -8918,8 +8872,7 @@
                                 "Malcolm Brown": 1,
                                 "Hunter Renfrow": 1,
                                 "Kenny Stills": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 3,
@@ -8927,8 +8880,7 @@
                                 "Hunter Renfrow": 1,
                                 "Kenny Stills": 1,
                                 "Anthony Miller": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },
@@ -9314,8 +9266,7 @@
                                 "Owen": 1
                             }
                         }
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "adds": {
                     "total": 10,
@@ -9330,8 +9281,7 @@
                         "DeVante Parker": 1,
                         "Anthony Miller": 1,
                         "Ted Ginn": 1
-                    },
-                    "transaction_ids": []
+                    }
                 },
                 "drops": {
                     "total": 5,
@@ -9341,15 +9291,14 @@
                         "DeVante Parker": 1,
                         "Ronald Jones": 1,
                         "Damien Harris": 1
-                    },
-                    "transaction_ids": []
+                    }
                 }
             },
             "overall_data": {
                 "placement": {},
                 "playoff_appearances": []
             },
-            "user_id": "338769223406862336"
+            "user_id": "399258572535365632"
         },
         "years": {
             "2019": {
@@ -9604,8 +9553,7 @@
                                         "Owen": 1
                                     }
                                 }
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "adds": {
                             "total": 10,
@@ -9620,8 +9568,7 @@
                                 "DeVante Parker": 1,
                                 "Anthony Miller": 1,
                                 "Ted Ginn": 1
-                            },
-                            "transaction_ids": []
+                            }
                         },
                         "drops": {
                             "total": 5,
@@ -9631,8 +9578,7 @@
                                 "DeVante Parker": 1,
                                 "Ronald Jones": 1,
                                 "Damien Harris": 1
-                            },
-                            "transaction_ids": []
+                            }
                         }
                     }
                 },

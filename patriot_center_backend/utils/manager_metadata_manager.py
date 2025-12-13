@@ -15,8 +15,8 @@ class ManagerMetadataManager:
         self._cache = {}
 
         # FAAB usage flag
-        self._use_faab = False
-        self._league_evaluated_for_faab = False
+        self._use_faab           = None
+        self._playoff_week_start = None
 
         # Predefined templates for initializing new data
         self._initialize_summary_templates()
@@ -32,6 +32,9 @@ class ManagerMetadataManager:
         # Weekly metadata
         self._year = None
         self._week = None
+
+        # Playoff roster IDs
+        self._playoff_roster_ids = {}
         
         # Load existing cache from disk
         self._load()
@@ -41,7 +44,7 @@ class ManagerMetadataManager:
 
 
     # ---------- Public Methods ----------
-    def set_roster_id(self, manager: str, year: str, week: str, roster_id: int, use_faab: int = False):
+    def set_roster_id(self, manager: str, year: str, week: str, roster_id: int, playoff_roster_ids: dict = {}):
         """Set the roster ID for a given manager and year."""
         if roster_id == None:
             # Co-manager scenario; skip
@@ -49,18 +52,17 @@ class ManagerMetadataManager:
 
         self._year = year
         self._week = week
+        self._playoff_roster_ids = playoff_roster_ids
 
-        if week == "1" and self._league_evaluated_for_faab == False:
+        if week == "1" or self._use_faab == None or self._playoff_week_start == None:
             # Fetch league settings to determine FAAB usage at start of season
             league_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year), '')}")[0]
             self._use_faab = True if league_settings.get("settings", {}).get("waiver_type", 1)==2 else False
-            self._league_evaluated_for_faab = True
+            self._playoff_week_start = league_settings.get("settings", {}).get("playoff_week_start", None)
 
-        self._set_defaults_if_missing(manager, year, week)
-        self._cache[manager]["years"][year]["roster_id"] = roster_id
         self._weekly_roster_ids[roster_id] = manager
-        self._year = year
-        self._week = week
+        self._set_defaults_if_missing(roster_id)
+        self._cache[manager]["years"][year]["roster_id"] = roster_id
 
         if "user_id" not in self._cache[manager]["summary"]:
             username = NAME_TO_MANAGER_USERNAME.get(manager, "")
@@ -84,8 +86,13 @@ class ManagerMetadataManager:
         # Scrub transaction data for the week
         self._scrub_transaction_data(year, week)
 
+        # Scrub matchup data for the week
         self._scrub_matchup_data(year, week)
-        
+
+        # Scrub playoff data for the week if applicable
+        if self._get_season_state() == "playoffs":
+            self._scrub_playoff_data(year, week)
+
         # Clear weekly metadata
         self._year = None
         self._week = None    
@@ -103,7 +110,6 @@ class ManagerMetadataManager:
     def save(self):
         """Save the entire manager metadata cache."""
         save_cache(MANAGER_METADATA_CACHE_FILE, self._cache)
-        self._league_evaluated_for_faab = False
 
 
 
@@ -118,20 +124,29 @@ class ManagerMetadataManager:
         self._year = None
 
 
-    def _set_defaults_if_missing(self, manager: str, year: str, week: str):
+    def _set_defaults_if_missing(self, roster_id: int):
         """Helper to initialize nested structures if missing."""
+
+        manager = self._weekly_roster_ids.get(roster_id, None)
+
         if manager not in self._cache:
             self._cache[manager] = {"summary": copy.deepcopy(self._top_level_summary_template), "years": {}}
         
-        if year not in self._cache[manager]["years"]:
-            self._cache[manager]["years"][year] = {
+        if self._year not in self._cache[manager]["years"]:
+            self._cache[manager]["years"][self._year] = {
                 "summary": copy.deepcopy(self._yearly_summary_template),
                 "roster_id": None,
                 "weeks": {}
             }
         
-        if week not in self._cache[manager]["years"][year]["weeks"]:
-            self._cache[manager]["years"][year]["weeks"][week] = copy.deepcopy(self._weekly_summary_template)
+        # Initialize week template if missing
+        if self._week not in self._cache[manager]["years"][self._year]["weeks"]:
+
+            # Differentiate between playoff and non-playoff weeks
+            if self._get_season_state() == "playoffs" and roster_id not in self._playoff_roster_ids:
+                self._cache[manager]["years"][self._year]["weeks"][self._week] = copy.deepcopy(self._weekly_summary_template_not_in_playoffs)
+            else:
+                self._cache[manager]["years"][self._year]["weeks"][self._week] = copy.deepcopy(self._weekly_summary_template)
         
         if self._use_faab:
             self._initialize_faab_template(manager)
@@ -155,19 +170,18 @@ class ManagerMetadataManager:
 
     def _get_season_state(self):
         """Determine if current week is regular season or playoffs."""
+
         if not self._week or not self._year:
             raise ValueError("Week or Year not set. Cannot determine season state.")
         
-        if int(self._year) <= 2020:
-            if int(self._week) <= 13:
-                return "regular_season"
-            else:
-                return "playoffs"
-        else:
-            if int(self._week) <= 14:
-                return "regular_season"
-            else:
-                return "playoffs"
+        if not self._playoff_week_start:
+            league_info = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(self._year), '')}")[0]
+            self._playoff_week_start = league_info.get("settings", {}).get("playoff_week_start", None)
+        
+        if int(self._week) >= self._playoff_week_start:
+            return "playoffs"
+        return "regular_season"
+    
 
 
 
@@ -562,6 +576,10 @@ class ManagerMetadataManager:
         matchups_evaluated = []
         manager_matchup_data , _ = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
         for manager_1_data in manager_matchup_data:
+            if self._get_season_state() == "playoffs" and manager_1_data.get("roster_id", None) not in self._playoff_roster_ids.get("round_roster_ids", []):
+                # Manager not in playoffs; skip
+                continue
+
             matchup_id = manager_1_data.get("matchup_id", None)
             if matchup_id in matchups_evaluated:
                 continue
@@ -609,6 +627,9 @@ class ManagerMetadataManager:
     
 
     def _add_matchup_details_to_cache(self, matchup_data: dict):
+        from decimal import Decimal
+        
+        # Extract matchup data
         manager = matchup_data.get("manager", None)
         opponent_manager = matchup_data.get("opponent_manager", None)
         points_for = matchup_data.get("points_for", 0.0)
@@ -625,32 +646,100 @@ class ManagerMetadataManager:
         weekly_summary["points_against"] = points_against
         weekly_summary["result"] = result
 
-        # Update yearly and top-level summaries
-        for summary_level in ["years", "summary"]:
-            yearly_summary = self._cache[manager][summary_level]["summary"]["matchup_data"]
-            overall_summary = yearly_summary["overall"]
-            season_type = "regular_season" if int(self._week) <= 14 else "playoffs"
-            season_summary = yearly_summary[season_type]
+        # Prepare yearly and top-level summaries
+        yearly_overall_summary         = self._cache[manager]["years"][self._year]["summary"]["matchup_data"]["overall"]
+        yearly_season_state_summary    = self._cache[manager]["years"][self._year]["summary"]["matchup_data"][self._get_season_state()]
 
-            # Update overall summary
-            overall_summary["points_for"]["total"] += points_for
-            overall_summary["points_against"]["total"] += points_against
-            overall_summary["points_for"]["opponents"].setdefault(opponent_manager, 0.0)
-            overall_summary["points_for"]["opponents"][opponent_manager] += points_for
-            overall_summary["points_against"]["opponents"].setdefault(opponent_manager, 0.0)
-            overall_summary["points_against"]["opponents"][opponent_manager] += points_against
-
-            if result == "win":
-                overall_summary["wins"]["total"] += 1
-                overall_summary["wins"]["opponents"].setdefault(opponent_manager, 0)
-                overall_summary["wins"]["opponents"][opponent_manager] += 1
-            elif result == "loss":
-                overall_summary["losses"]["total"] += 1
-                overall_summary["losses"]["opponents"].setdefault(opponent_manager, 0)
-                overall_summary["losses"]["opponents"][opponent_manager] += 1
-            elif result == "tie":
-                overall_summary["ties"]["total"] += 1
+        top_level_overall_summary      = self._cache[manager]["summary"]["matchup_data"]["overall"]
+        top_level_season_state_summary = self._cache[manager]["summary"]["matchup_data"][self._get_season_state()]
         
+        summaries = [yearly_overall_summary, yearly_season_state_summary,
+                     top_level_overall_summary, top_level_season_state_summary]
+        
+        # Determine result key
+        if result == "win":
+            result_key = "wins"
+        elif result == "loss":
+            result_key = "losses"
+        elif result == "tie":
+            result_key = "ties"
+        else:
+            raise ValueError("Invalid matchup result for caching:", result)
+        
+        
+        # Add matchup details in all summaries
+        for summary in summaries:
+            
+            # Points for
+            summary["points_for"]["total"] += points_for
+            if opponent_manager not in summary["points_for"]["opponents"]:
+                summary["points_for"]["opponents"][opponent_manager] = 0.0
+            summary["points_for"]["opponents"][opponent_manager] += points_for
+
+            # Points against
+            summary["points_against"]["total"] += points_against
+            if opponent_manager not in summary["points_against"]["opponents"]:
+                summary["points_against"]["opponents"][opponent_manager] = 0.0
+            summary["points_against"]["opponents"][opponent_manager] += points_against
+
+            # Total matchups
+            summary["total_matchups"]["total"] += 1
+            if opponent_manager not in summary["total_matchups"]["opponents"]:
+                summary["total_matchups"]["opponents"][opponent_manager] = 0
+            summary["total_matchups"]["opponents"][opponent_manager] += 1
+
+            # Wins/Losses/Ties
+            summary[result_key]["total"] += 1
+            if opponent_manager not in summary[result_key]["opponents"]:
+                summary[result_key]["opponents"][opponent_manager] = 0
+            summary[result_key]["opponents"][opponent_manager] += 1
+
+            # Quantize points to 2 decimal places
+            summary["points_for"]["total"] = float(Decimal(summary["points_for"]["total"]).quantize(Decimal('0.01')))
+            summary["points_for"]["opponents"][opponent_manager] = float(Decimal(summary["points_for"]["opponents"][opponent_manager]).quantize(Decimal('0.01')))
+            
+            summary["points_against"]["total"] = float(Decimal(summary["points_against"]["total"]).quantize(Decimal('0.01')))
+            summary["points_against"]["opponents"][opponent_manager] = float(Decimal(summary["points_against"]["opponents"][opponent_manager]).quantize(Decimal('0.01')))
+            
+    
+
+
+
+    # ---------- Internal Playoff Data Scrubbing ----------
+    def _scrub_playoff_data(self, year: str, week: str):
+        """Scrub playoff data for all cached roster IDs for a given week."""
+
+        for roster_ids in self._playoff_roster_ids.get("round_roster_ids", []):
+            manager = self._weekly_roster_ids.get(roster_ids, None)
+            if not manager:
+                continue
+
+            manager_overall_data = self._cache[manager]["summary"]["overall_data"]
+
+            # Mark week as playoff week in the weekly summary
+            if self._year not in manager_overall_data["playoff_appearances"]:
+                manager_overall_data["playoff_appearances"].append(self._year)
+        
+        first_place_roster_id = self._playoff_roster_ids.get("first_place_id", None)
+        second_place_roster_id = self._playoff_roster_ids.get("second_place_id", None)
+        third_place_roster_id = self._playoff_roster_ids.get("third_place_id", None)
+
+        if first_place_roster_id is None or second_place_roster_id is None or third_place_roster_id is None:
+            print("Incomplete playoff roster IDs for caching playoff data:", self._playoff_roster_ids)
+            return
+
+        first_place_manager = self._weekly_roster_ids.get(first_place_roster_id, None)
+        second_place_manager = self._weekly_roster_ids.get(second_place_roster_id, None)
+        third_place_manager = self._weekly_roster_ids.get(third_place_roster_id, None)
+
+        if year not in self._cache[first_place_manager]["summary"]["overall_data"]["placement"]:
+            self._cache[first_place_manager]["summary"]["overall_data"]["placement"][year] = 1
+        if year not in self._cache[second_place_manager]["summary"]["overall_data"]["placement"]:
+            self._cache[second_place_manager]["summary"]["overall_data"]["placement"][year] = 2
+        if year not in self._cache[third_place_manager]["summary"]["overall_data"]["placement"]:
+            self._cache[third_place_manager]["summary"]["overall_data"]["placement"][year] = 3
+                
+
     
     
 
@@ -691,10 +780,11 @@ class ManagerMetadataManager:
         full_matchup_data = {
             "points_for":     copy.deepcopy(matchup_data_float),
             "points_against": copy.deepcopy(matchup_data_float),
+            "total_matchups": copy.deepcopy(matchup_data_int),
             "wins":           copy.deepcopy(matchup_data_int),
             "losses":         copy.deepcopy(matchup_data_int),
             "ties":           copy.deepcopy(matchup_data_int)
-        },
+        }
 
 
 
@@ -796,9 +886,20 @@ class ManagerMetadataManager:
             },
             "transactions": copy.deepcopy(transaction_data)
         }
+        self._weekly_summary_template_not_in_playoffs = {
+            "matchup_data": {}, # No matchup data when not in playoffs
+            "transactions": copy.deepcopy(transaction_data)
+        }
+
+
         self._weekly_summary_template["transactions"]["trades"]["transaction_ids"] = []
         self._weekly_summary_template["transactions"]["adds"]["transaction_ids"] = []
         self._weekly_summary_template["transactions"]["drops"]["transaction_ids"] = []
+        self._weekly_summary_template_not_in_playoffs["transactions"]["trades"]["transaction_ids"] = []
+        self._weekly_summary_template_not_in_playoffs["transactions"]["adds"]["transaction_ids"] = []
+        self._weekly_summary_template_not_in_playoffs["transactions"]["drops"]["transaction_ids"] = []
+
+
         if self._use_faab:
             self._weekly_summary_template["transactions"]["faab"]["transaction_ids"] = []
 

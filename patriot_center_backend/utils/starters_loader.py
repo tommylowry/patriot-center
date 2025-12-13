@@ -114,9 +114,11 @@ def load_or_update_starters_cache():
             cache['Last_Updated_Season'] = str(year)
             cache['Last_Updated_Week'] = week
             print(f"  Starters cache updated internally for season {year}, week {week}")
+
         
         # Persist manager metadata after each season update.
         MANAGER_METADATA.save()
+    
 
     save_cache(STARTERS_CACHE_FILE, cache)
     save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
@@ -267,7 +269,7 @@ def fetch_starters_for_week(season, week):
                 roster_id = 4
         
         # Initialize manager metadata for this season/week before skipping playoff filtering.
-        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id)
+        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id, playoff_roster_ids)
 
         if not roster_id:
             continue  # Skip unresolved roster

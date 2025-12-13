@@ -38,4 +38,5 @@ def fetch_sleeper_data(endpoint: str):
         return {"error": error_string}, 500
 
     # Return parsed JSON along with success status
+    print(url)
     return response.json(), 200

@@ -12,32 +12,11 @@ class ManagerMetadataManager:
     def __init__(self):
         
         # In-memory cache structure (see _initialize_summary_templates for details on sub-structures)
-        self._cache = {
-            # "manager":{
-            #     "summary": { ... },
-            #     "years": {
-            #         "year": {
-            #             "summary": { ... },
-            #             "roster_id": int,
-            #             "weeks": {
-            #                 "week": {
-            #                     "matchup_data":
-            #                     {
-            #                         "opponent_manager": str,
-            #                         "result": str,  # "win", "loss", "tie"
-            #                         "points_for": float,
-            #                         "points_against": float
-            #                     },
-            #                     "transactions": { ... }
-            #                 }
-            #             }
-            #         }
-            #     }
-            # }
-        }
+        self._cache = {}
 
         # FAAB usage flag
         self._use_faab = False
+        self._league_evaluated_for_faab = False
 
         # Predefined templates for initializing new data
         self._initialize_summary_templates()
@@ -46,17 +25,23 @@ class ManagerMetadataManager:
         self._weekly_roster_ids = {
             # roster_id: manager
         }
+
+        # Player ID mapping
+        self._player_ids = load_player_ids()
         
+        # Weekly metadata
         self._year = None
         self._week = None
         
+        # Load existing cache from disk
         self._load()
 
 
 
 
 
-    def set_roster_id(self, manager: str, year: str, week: str, roster_id: int):
+    # ---------- Public Methods ----------
+    def set_roster_id(self, manager: str, year: str, week: str, roster_id: int, use_faab: int = False):
         """Set the roster ID for a given manager and year."""
         if roster_id == None:
             # Co-manager scenario; skip
@@ -65,10 +50,11 @@ class ManagerMetadataManager:
         self._year = year
         self._week = week
 
-        if week == "1":
+        if week == "1" and self._league_evaluated_for_faab == False:
             # Fetch league settings to determine FAAB usage at start of season
             league_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year), '')}")[0]
             self._use_faab = True if league_settings.get("settings", {}).get("waiver_type", 1)==2 else False
+            self._league_evaluated_for_faab = True
 
         self._set_defaults_if_missing(manager, year, week)
         self._cache[manager]["years"][year]["roster_id"] = roster_id
@@ -89,41 +75,41 @@ class ManagerMetadataManager:
                 raise ValueError(f"No username mapping found for manager {manager}.")
 
 
-
-    
     def cache_week_data(self, year: str, week: str):
         """Cache week-specific data for a given week and year."""
 
         # Ensure preconditions are met
         self._caching_preconditions_met()
 
-        # Load player ID mappings
-        self._player_ids = load_player_ids()
-
         # Scrub transaction data for the week
         self._scrub_transaction_data(year, week)
+
+        self._scrub_matchup_data(year, week)
         
         # Clear weekly metadata
         self._year = None
-        self._week = None
-
-    
+        self._week = None    
 
 
 
 
 
-
-
-
+    # ---------- Internal Save/Load Methods ----------
     def _load(self):
         """Load the entire manager metadata cache."""
         self._cache = load_cache(MANAGER_METADATA_CACHE_FILE, initialize_with_last_updated_info=False)
 
+
     def save(self):
         """Save the entire manager metadata cache."""
         save_cache(MANAGER_METADATA_CACHE_FILE, self._cache)
-    
+        self._league_evaluated_for_faab = False
+
+
+
+
+
+    # ---------- Internal Helper Methods ----------
     def _clear_weekly_metadata(self):
         """Clear weekly metadata used during caching sessions."""
         if self._year == "2024" and self._week == "17":
@@ -150,6 +136,7 @@ class ManagerMetadataManager:
         if self._use_faab:
             self._initialize_faab_template(manager)
 
+
     def _caching_preconditions_met(self):
         """Check if preconditions for caching week data are met."""
         if len(self._weekly_roster_ids) == 0:
@@ -164,8 +151,29 @@ class ManagerMetadataManager:
             raise ValueError("Year not set. Cannot cache week data.")
         if not self._week:
             raise ValueError("Week not set. Cannot cache week data.")
+
+
+    def _get_season_state(self):
+        """Determine if current week is regular season or playoffs."""
+        if not self._week or not self._year:
+            raise ValueError("Week or Year not set. Cannot determine season state.")
         
-    
+        if int(self._year) <= 2020:
+            if int(self._week) <= 13:
+                return "regular_season"
+            else:
+                return "playoffs"
+        else:
+            if int(self._week) <= 14:
+                return "regular_season"
+            else:
+                return "playoffs"
+
+
+
+
+
+    # ---------- Internal Data Scrubbing Methods ----------
     def _scrub_transaction_data(self, year: str, week: str):
         """Scrub transaction data for all cached roster IDs for a given week."""
         league_id = LEAGUE_IDS.get(int(year), "")
@@ -194,12 +202,52 @@ class ManagerMetadataManager:
         process_transaction_type(transaction)
 
 
+    def _validate_transaction(self, transaction: dict, transaction_type: str, process_transaction_type) -> bool:
+        
+        # Skip failed transactions
+        if transaction.get("status", "") == "failed":
+            return False
+        
+        if transaction.get("status", "") != "complete":
+            print("Unexpected transaction status:", transaction)
+            return False
+        
+        
+
+        # Validate transaction type
+        if transaction_type not in {"trade", "add_or_drop"}:
+            print("Unexpected transaction type:", transaction)
+            return False
+        
+        if not process_transaction_type:
+            print("No processor for transaction type:", transaction)
+            return False
+        
+        if transaction_type == "trade":
+            # Validate trade transaction specifics
+
+            if "transaction_id" not in transaction:
+                print("Invalid trade transaction (missing transaction_id):", transaction)
+                return False
+
+            if "roster_ids" not in transaction or len(transaction["roster_ids"]) < 2:
+                print("Invalid trade transaction (missing roster_ids):", transaction)
+                return False
+            
+            if "adds" not in transaction or "drops" not in transaction:
+                print("Invalid trade transaction (missing adds/drops):", transaction)
+                return False
+            
+            if not any(roster_id in self._weekly_roster_ids for roster_id in transaction["roster_ids"]):
+                # No involved roster IDs are relevant to this caching session
+                return False
+        
+        return True
 
 
 
 
-
-
+    # ---------- Transaction Type Processors ----------
     def _process_trade_transaction(self, transaction: dict):
         for roster_id in transaction.get("roster_ids", []):
             manager = self._weekly_roster_ids.get(roster_id, None)
@@ -260,10 +308,6 @@ class ManagerMetadataManager:
                 self._add_faab_details_to_cache("trade", receiver, "FAAB", -faab_amount, transaction_id, trade_partner=sender)
 
             
-            
-
-    
-
     def _draft_pick_decipher(self, draft_pick_dict: dict) -> str:
         """Convert draft pick dictionary to a human-readable string."""
         season = draft_pick_dict.get("season", "unknown_year")
@@ -360,7 +404,7 @@ class ManagerMetadataManager:
 
 
 
-
+    # ---------- Add or Drop Transaction Processor ----------
     def _process_add_or_drop_transaction(self, transaction: dict):
         adds  = transaction.get("adds", {})
         drops = transaction.get("drops", {})
@@ -507,48 +551,116 @@ class ManagerMetadataManager:
 
 
 
-    def _validate_transaction(self, transaction: dict, transaction_type: str, process_transaction_type) -> bool:
-        
-        # Skip failed transactions
-        if transaction.get("status", "") == "failed":
-            return False
-        
-        if transaction.get("status", "") != "complete":
-            print("Unexpected transaction status:", transaction)
-            return False
-        
-        
 
-        # Validate transaction type
-        if transaction_type not in {"trade", "add_or_drop"}:
-            print("Unexpected transaction type:", transaction)
-            return False
+    # ---------- Internal Matchup Data Scrubbing ----------
+    def _scrub_matchup_data(self, year: str, week: str):
+        """Scrub matchup data for all cached roster IDs for a given week."""
+        league_id = LEAGUE_IDS.get(int(year), "")
+        if not league_id:
+            raise ValueError(f"No league ID found for year {year}.")
         
-        if not process_transaction_type:
-            print("No processor for transaction type:", transaction)
-            return False
-        
-        if transaction_type == "trade":
-            # Validate trade transaction specifics
+        matchups_evaluated = []
+        manager_matchup_data , _ = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
+        for manager_1_data in manager_matchup_data:
+            matchup_id = manager_1_data.get("matchup_id", None)
+            if matchup_id in matchups_evaluated:
+                continue
+            matchups_evaluated.append(matchup_id)
 
-            if "transaction_id" not in transaction:
-                print("Invalid trade transaction (missing transaction_id):", transaction)
-                return False
-
-            if "roster_ids" not in transaction or len(transaction["roster_ids"]) < 2:
-                print("Invalid trade transaction (missing roster_ids):", transaction)
-                return False
+            # Find opponent manager data
+            for manager_2_data in manager_matchup_data:
+                if manager_2_data.get("roster_id", None) == manager_1_data.get("roster_id", None):
+                    continue
+                if manager_2_data.get("matchup_id", None) == matchup_id:
+                    break
             
-            if "adds" not in transaction or "drops" not in transaction:
-                print("Invalid trade transaction (missing adds/drops):", transaction)
-                return False
+            # Extract points data
+            manager_1_points = manager_1_data.get("points", 0.0)
+            manager_2_points = manager_2_data.get("points", 0.0)
+
+            # Construct manager matchup dicts
+            manager_1 = {
+                "manager": self._weekly_roster_ids.get(manager_1_data.get("roster_id", None), None),
+                "opponent_manager": self._weekly_roster_ids.get(manager_2_data.get("roster_id", None), None),
+                "points_for": manager_1_points,
+                "points_against": manager_2_points
+            }
+            manager_2 = {
+                "manager": self._weekly_roster_ids.get(manager_2_data.get("roster_id", None), None),
+                "opponent_manager": self._weekly_roster_ids.get(manager_1_data.get("roster_id", None), None),
+                "points_for": manager_2_data.get("points", 0.0),
+                "points_against": manager_1_points
+            }
+
+            # Determine results
+            if manager_1["points_for"] > manager_2["points_for"]:
+                manager_1["result"] = "win"
+                manager_2["result"] = "loss"
+            elif manager_1["points_for"] < manager_2["points_for"]:
+                manager_1["result"] = "loss"
+                manager_2["result"] = "win"
+            else:
+                manager_1["result"] = "tie"
+                manager_2["result"] = "tie"
             
-            if not any(roster_id in self._weekly_roster_ids for roster_id in transaction["roster_ids"]):
-                # No involved roster IDs are relevant to this caching session
-                return False
-        
-        return True
+
+            self._add_matchup_details_to_cache(manager_1)
+            self._add_matchup_details_to_cache(manager_2)
     
+
+    def _add_matchup_details_to_cache(self, matchup_data: dict):
+        manager = matchup_data.get("manager", None)
+        opponent_manager = matchup_data.get("opponent_manager", None)
+        points_for = matchup_data.get("points_for", 0.0)
+        points_against = matchup_data.get("points_against", 0.0)
+        result = matchup_data.get("result", None)
+
+        if not manager or not opponent_manager or result is None:
+            raise ValueError("Invalid matchup data for caching:", matchup_data)
+        
+        # Update weekly summary
+        weekly_summary = self._cache[manager]["years"][self._year]["weeks"][self._week]["matchup_data"]
+        weekly_summary["opponent_manager"] = opponent_manager
+        weekly_summary["points_for"] = points_for
+        weekly_summary["points_against"] = points_against
+        weekly_summary["result"] = result
+
+        # Update yearly and top-level summaries
+        for summary_level in ["years", "summary"]:
+            yearly_summary = self._cache[manager][summary_level]["summary"]["matchup_data"]
+            overall_summary = yearly_summary["overall"]
+            season_type = "regular_season" if int(self._week) <= 14 else "playoffs"
+            season_summary = yearly_summary[season_type]
+
+            # Update overall summary
+            overall_summary["points_for"]["total"] += points_for
+            overall_summary["points_against"]["total"] += points_against
+            overall_summary["points_for"]["opponents"].setdefault(opponent_manager, 0.0)
+            overall_summary["points_for"]["opponents"][opponent_manager] += points_for
+            overall_summary["points_against"]["opponents"].setdefault(opponent_manager, 0.0)
+            overall_summary["points_against"]["opponents"][opponent_manager] += points_against
+
+            if result == "win":
+                overall_summary["wins"]["total"] += 1
+                overall_summary["wins"]["opponents"].setdefault(opponent_manager, 0)
+                overall_summary["wins"]["opponents"][opponent_manager] += 1
+            elif result == "loss":
+                overall_summary["losses"]["total"] += 1
+                overall_summary["losses"]["opponents"].setdefault(opponent_manager, 0)
+                overall_summary["losses"]["opponents"][opponent_manager] += 1
+            elif result == "tie":
+                overall_summary["ties"]["total"] += 1
+        
+    
+    
+
+
+
+
+
+
+
+    # ---------- Internal Template Initialization Methods ----------
     def _initialize_faab_template(self, manager: str):
         if "faab" not in self._cache[manager]["summary"]["transactions"]:
             self._cache[manager]["summary"]["transactions"]["faab"] = copy.deepcopy(self._faab_template)
@@ -564,12 +676,27 @@ class ManagerMetadataManager:
     def _initialize_summary_templates(self):
         
         # Common matchup data template
-        matchup_data = {
+        matchup_data_int = {
+            "total": 0,
+            "opponents": {
+                # "opponent_manager": value
+            }
+        }
+        matchup_data_float = {
             "total": 0.0,
             "opponents": {
                 # "opponent_manager": value
             }
         }
+        full_matchup_data = {
+            "points_for":     copy.deepcopy(matchup_data_float),
+            "points_against": copy.deepcopy(matchup_data_float),
+            "wins":           copy.deepcopy(matchup_data_int),
+            "losses":         copy.deepcopy(matchup_data_int),
+            "ties":           copy.deepcopy(matchup_data_int)
+        },
+
+
 
         self._faab_template = {
             "total_lost_or_gained": 0,
@@ -652,27 +779,9 @@ class ManagerMetadataManager:
         
         self._yearly_summary_template = {
             "matchup_data": {
-                "overall": {
-                    "points_for":     copy.deepcopy(matchup_data),
-                    "points_against": copy.deepcopy(matchup_data),
-                    "wins":           copy.deepcopy(matchup_data),
-                    "losses":         copy.deepcopy(matchup_data),
-                    "ties":           copy.deepcopy(matchup_data)
-                },
-                "regular_season": {
-                    "points_for":     copy.deepcopy(matchup_data),
-                    "points_against": copy.deepcopy(matchup_data),
-                    "wins":           copy.deepcopy(matchup_data),
-                    "losses":         copy.deepcopy(matchup_data),
-                    "ties":           copy.deepcopy(matchup_data)
-                },
-                "playoffs": {
-                    "points_for":     copy.deepcopy(matchup_data),
-                    "points_against": copy.deepcopy(matchup_data),
-                    "wins":           copy.deepcopy(matchup_data),
-                    "losses":         copy.deepcopy(matchup_data),
-                    "ties":           copy.deepcopy(matchup_data)
-                }
+                "overall":        copy.deepcopy(full_matchup_data),
+                "regular_season": copy.deepcopy(full_matchup_data),
+                "playoffs":       copy.deepcopy(full_matchup_data)
             },
             "transactions": copy.deepcopy(transaction_data)
         }

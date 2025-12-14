@@ -1,6 +1,6 @@
 import copy
 
-from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
+from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, TRANSACTION_IDS_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
@@ -26,7 +26,8 @@ class ManagerMetadataManager:
         }
 
         # Player ID mapping
-        self._player_ids = load_player_ids()
+        self._player_ids      = load_player_ids()
+        self._transaction_ids = load_cache(TRANSACTION_IDS_FILE, initialize_with_last_updated_info = False)
         
         # Weekly metadata
         self._year = None
@@ -222,6 +223,7 @@ class ManagerMetadataManager:
                 "total": weekly_transactions["drops"]["total"]
             }
             transaction_data["drops"]["by_week"].append(copy.deepcopy(drop_item))
+
 
 
         
@@ -583,6 +585,7 @@ class ManagerMetadataManager:
 
         # Run the transaction through the appropriate processor
         process_transaction_type(transaction)
+        self._add_to_transaction_id_cache(transaction)
 
 
     def _validate_transaction(self, transaction: dict, transaction_type: str, process_transaction_type) -> bool:
@@ -784,6 +787,8 @@ class ManagerMetadataManager:
         weekly_summary["transaction_ids"].append(transaction_id)
     
 
+    def _add_to_transaction_id_cache(self, transaction: dict):
+        return
 
 
 

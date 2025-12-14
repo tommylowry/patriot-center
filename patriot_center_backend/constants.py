@@ -65,6 +65,7 @@ STARTERS_CACHE_FILE            = os.path.join(_BACKEND_DIR, "data", "starters_ca
 
 # Manager metadata cache file
 MANAGER_METADATA_CACHE_FILE    = os.path.join(_BACKEND_DIR, "data", "manager_metadata_cache.json")
+TRANSACTION_IDS_FILE           = os.path.join(_BACKEND_DIR, "data", "transaction_ids.json")
 
 # Sleeper player IDs cache file
 PLAYER_IDS_CACHE_FILE          = os.path.join(_BACKEND_DIR, "data", "player_ids.json")

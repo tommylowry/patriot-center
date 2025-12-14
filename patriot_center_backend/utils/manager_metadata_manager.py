@@ -1,5 +1,4 @@
 import copy
-from time import sleep
 
 from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache
@@ -43,7 +42,7 @@ class ManagerMetadataManager:
 
 
 
-    # ---------- Public Methods ----------
+    # ---------- Public Methods For Importing Data ----------
     def set_roster_id(self, manager: str, year: str, week: str, roster_id: int, playoff_roster_ids: dict = {}):
         """Set the roster ID for a given manager and year."""
         if roster_id == None:
@@ -70,6 +69,8 @@ class ManagerMetadataManager:
                 user_payload, status_code = fetch_sleeper_data(f"user/{username}")
                 if status_code == 200 and "user_id" in user_payload:
                     self._cache[manager]["summary"]["user_id"] = user_payload["user_id"]
+                    self._cache[manager]["summary"]["overall_data"]["avatar_urls"]["full_size"] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+                    self._cache[manager]["summary"]["overall_data"]["avatar_urls"]["thumbnail"] = f"https://sleepercdn.com/avatars/thumbs/{user_payload.get('avatar','')}"
 
                 else:
                     raise ValueError(f"Failed to fetch user data for manager {manager} with username {username}.")
@@ -96,6 +97,41 @@ class ManagerMetadataManager:
         # Clear weekly metadata
         self._year = None
         self._week = None    
+
+
+
+
+    # ---------- Public Methods for Exporting Data ----------
+    def get_managers_list(self) -> dict:
+        """Returns list of all managers with basic info."""
+        managers_list = []
+        
+        for manager in self._cache:
+            wins = self._cache[manager]["summary"]["matchup_data"]["overall"]["wins"]["total"]
+            losses = self._cache[manager]["summary"]["matchup_data"]["overall"]["losses"]["total"]
+            ties = self._cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
+            manager_item = {
+                "name": manager,
+                "user_id": self._cache[manager]["summary"].get("user_id", ""),
+                "avatar_urls": self._cache[manager]["summary"]["overall_data"].get("avatar_urls", {}),
+                "years_active": list(self._cache[manager].get("years", {}).keys()),
+                "total_trades": self._cache[manager]["summary"]["transactions"]["trades"]["total"],
+                "overall_record": f"{wins}-{losses}-{ties}"
+            }
+            managers_list.append(manager_item)
+        
+        
+        
+        managers_list["managers"] = managers_list.copy()
+
+
+
+
+
+
+
+
+
 
 
 
@@ -131,7 +167,7 @@ class ManagerMetadataManager:
 
         if manager not in self._cache:
             self._cache[manager] = {"summary": copy.deepcopy(self._top_level_summary_template), "years": {}}
-        
+        #######
         if self._year not in self._cache[manager]["years"]:
             self._cache[manager]["years"][self._year] = {
                 "summary": copy.deepcopy(self._yearly_summary_template),
@@ -910,5 +946,12 @@ class ManagerMetadataManager:
             },
             "playoff_appearances": [ 
                 # list of years with playoff appearances    
-            ]
+            ],
+            "avatar_urls": {
+                "full_size": "",
+                "thumbnail": ""
+            }
         }
+
+test_manager_metadata_manager = ManagerMetadataManager().get_managers_list()
+print(test_manager_metadata_manager)

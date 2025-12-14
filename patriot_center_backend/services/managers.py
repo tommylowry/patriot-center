@@ -38,6 +38,16 @@ def fetch_starters(manager=None, season=None, week=None):
 
     return _filter_by_manager(manager, season, week)
 
+
+
+
+
+
+
+
+
+
+
 def _filter_by_season_and_week(season, week):
     """
     Slice cache down to season and optionally week.

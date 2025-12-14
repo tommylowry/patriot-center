@@ -118,6 +118,10 @@ def load_or_update_starters_cache():
         
         # Persist manager metadata after each season update.
         MANAGER_METADATA.save()
+        
+        # DEBUG
+        save_cache(STARTERS_CACHE_FILE, cache)
+        save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
     
 
     save_cache(STARTERS_CACHE_FILE, cache)

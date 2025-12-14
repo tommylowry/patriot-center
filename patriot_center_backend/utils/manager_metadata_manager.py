@@ -586,8 +586,24 @@ class ManagerMetadataManager:
         # Determine transaction type
         transaction_type = transaction.get("type", "")
 
-        if transaction_type in ["free_agent", "waiver", "commissioner"]:
+        if transaction_type in ["free_agent", "waiver"]:
             transaction_type = "add_or_drop"
+        
+        elif transaction_type == "commissioner":
+            # No swap, so it must be add or drop
+            if transaction.get("adds", None) is None:
+                transaction_type = "add_or_drop"
+            elif transaction.get("drops", None) is None:
+                transaction_type = "add_or_drop"
+            
+            # if adds or drops is multiple players, its commish forced swap/trade
+            elif len(transaction.get("adds", {})) > 1 or len(transaction.get("drops", {}) > 1):
+                transaction_type = "trade"
+            
+            # only one add and only one drop, so add_or_drop
+            else:
+                transaction_type = "add_or_drop"
+        
 
         # Dynamically collect the proper function to process this transaction type
         process_transaction_type = getattr(self, f"_process_{transaction_type}_transaction", None)
@@ -969,15 +985,119 @@ class ManagerMetadataManager:
 
     # ---------- Set Transaction Data to Transacion ID Cache ----------
     def _add_to_transaction_id_cache(self, transaction_info: dict):
-        
-        if "type" not in transaction_info:
+
+
+        transaction_type = transaction_info.get("type", "")
+        if not transaction_type:
             raise ValueError(f"Transaction type not found in transaction_info: {transaction_info}")
         
-        if "transaction_id" not in transaction_info:
+        transaction_id = transaction_info.get("transaction_id", "")
+        if not transaction_id:
             raise ValueError(f"Transaction transaction_id not found in transaction_info: {transaction_info}")
+        
+        manager = transaction_info.get("manager", "")
+        if not manager:
+            raise ValueError(f"Transaction manager not found in transaction_info: {transaction_info}")
+        
+        valid_add_or_drop_types = ["add", "drop", "commissioner"]
+        if transaction_type == "add_or_drop":
+            transaction_type = transaction_info.get("free_agent_type", "")
+            if transaction_type not in valid_add_or_drop_types:
+                raise ValueError(f"Transaction type {transaction_info.get('type') } not a valid 'add_or_drop' type, needs to be one of: {valid_add_or_drop_types}")
+
+        
+        # If transaction not in cache, make a new object
+        if transaction_id not in self._transaction_id_cache:
+            self._transaction_id_cache[transaction_id] = {
+                "year":              self._year,
+                "week":              self._week,
+                "managers_involved": [],
+                "types":             [],
+                "players_involved":  []
+            }
+        transaction_info_to_cache = self._transaction_id_cache[transaction_id]
+
+        
+
+        if manager not in transaction_info_to_cache["managers_involved"]:
+            transaction_info_to_cache["managers_involved"].append(manager)
+            
+        if transaction_type not in transaction_info_to_cache["types"]:
+            transaction_info_to_cache["types"].append(transaction_type)
+
+        if self._use_faab:
+            print("debug")
+
+        # Add/Drop transactions
+        if transaction_type in valid_add_or_drop_types:
+            player_name = transaction_info.get("player_name", "")
+            if not player_name:
+                raise ValueError(f"player_name not found for {transaction_type} with info: {transaction_info}")
+            transaction_info_to_cache["players_involved"].append(transaction_info.get("player_name", ""))
+            
+            if transaction_type in transaction_info_to_cache:
+                raise ValueError(f"Can only add or drop one player per transaction.")
+            
+            transaction_info_to_cache[transaction_type] = player_name
+        
+        # Trade transaction
+        elif transaction_type == "trade":
+            
+            # Initialize trade details if not already in cache
+            if "trade_details" not in transaction_info_to_cache:
+                transaction_info_to_cache["trade_details"] = {}
+
+            # Add all managers involved if not already in list
+            for partner in transaction_info.get("trade_partners", []):
+                if partner and partner not in transaction_info_to_cache["managers_involved"]:
+                    transaction_info_to_cache["managers_involved"].append(partner)
+            
+            # Get players acquired and players sent
+            players_acquired = transaction_info.get("acquired", {})
+            if not players_acquired:
+                raise ValueError(f"No players in acquired: {transaction_info}")
+            
+            players_sent = transaction_info.get("sent", {})
+            if not players_sent:
+                raise ValueError(f"No players in sent: {transaction_info}")
+            
+            
+            # Adding player from players_acquired into players_involved and into the trade
+            # details if not already in cache
+            for player in players_acquired:
+                if not player:
+                    raise ValueError(f"No players in acquired: {transaction_info}")
+                
+                if player not in transaction_info_to_cache["players_involved"]:
+                    transaction_info_to_cache["players_involved"].append(player)
+                
+                if player not in transaction_info_to_cache["trade_details"]:
+                    transaction_info_to_cache["trade_details"][player] = {
+                        "old_manager": players_acquired[player],
+                        "new_manager": manager
+                    }
+                
+            
+            # Adding player from players_sent into players_involved and into the trade
+            # details if not already in cache
+            for player in players_sent:
+                if not player:
+                    raise ValueError(f"No players in sent: {transaction_info}")
+                
+                if player not in transaction_info_to_cache["players_involved"]:
+                    transaction_info_to_cache["players_involved"].append(player)
+                
+                if player not in transaction_info_to_cache["trade_details"]:
+                    transaction_info_to_cache["trade_details"][player] = {
+                        "old_manager": manager,
+                        "new_manager": players_sent[player]
+                    }
+        
+        # Transaction type unknown
+        else:
+            raise ValueError(f"Unknown transaction type: {transaction_type}")
 
 
-        print("")
         
 
 

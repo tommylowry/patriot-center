@@ -116,7 +116,6 @@ class ManagerMetadataManager:
             ties   = self._cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
             manager_item = {
                 "name":           manager,
-                "user_id":        self._cache[manager]["summary"].get("user_id", ""),
                 "avatar_urls":    self._cache[manager]["summary"]["overall_data"].get("avatar_urls", {}),
                 "years_active":   list(self._cache[manager].get("years", {}).keys()),
                 "total_trades":   self._cache[manager]["summary"]["transactions"]["trades"]["total"],
@@ -148,6 +147,86 @@ class ManagerMetadataManager:
         return_dict["head_to_head"] = self._get_head_to_head_details_from_cache(manager_name, year)
 
         return copy.deepcopy(return_dict)
+    
+
+    def get_manager_yearly_data(self, manager_name: str, year: str) -> dict:
+        """Returns detailed yearly data for a manager."""
+        if manager_name not in self._cache:
+            raise ValueError(f"Manager {manager_name} not found in cache.")
+        
+        if year not in self._cache[manager_name]["years"]:
+            raise ValueError(f"Year {year} not found for manager {manager_name} in cache.")
+        
+        cached_yearly_data = copy.deepcopy(self._cache[manager_name]["years"][year])
+
+        yearly_data = {
+            "manager_name": manager_name,
+            "year":         year,
+            "avatar_urls":  copy.deepcopy(self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {})),
+            "matchup_data": self._get_matchup_details_from_cache(manager_name, year)
+        }
+
+        # Matchup Data
+        
+        weekly_scores = []
+        for week in cached_yearly_data.get("weeks", {}):
+            week_data = copy.deepcopy(cached_yearly_data["weeks"][week]["matchup_data"])
+            weekly_score_item = {
+                "week":              week,
+                "opponent":          week_data.get("opponent_manager", "N/A"),
+                "points_for":        week_data.get("points_for", 0.0),
+                "points_against":    week_data.get("points_against", 0.0),
+                "result":            week_data.get("result", "N/A"),
+            }
+            weekly_scores.append(copy.deepcopy(weekly_score_item))
+        
+        yearly_data["matchup_data"]["overall"]["weekly_scores"] = weekly_scores
+
+        
+        # Transactions Data
+        transaction_data = {
+            "trades": {
+                "total": cached_yearly_data["summary"]["transactions"]["trades"]["total"],
+                "by_week": []
+            },
+            "adds": {
+                "total": cached_yearly_data["summary"]["transactions"]["adds"]["total"],
+                "by_week": []
+            },
+            "drops": {
+                "total": cached_yearly_data["summary"]["transactions"]["drops"]["total"],
+                "by_week": []
+            }
+        }
+        
+        for week in cached_yearly_data.get("weeks", {}):
+            weekly_transactions = cached_yearly_data["weeks"][week]["transactions"]
+            
+            # Trades
+            trade_item = {
+                "week": week,
+                "partner": weekly_transactions["trades"]["transaction_ids"],
+            }
+            transaction_data["trades"]["by_week"].append(copy.deepcopy(trade_item))
+
+            # Adds
+            add_item = {
+                "week": week,
+                "total": weekly_transactions["adds"]["total"]
+            }
+            transaction_data["adds"]["by_week"].append(copy.deepcopy(add_item))
+
+            # Drops
+            drop_item = {
+                "week": week,
+                "total": weekly_transactions["drops"]["total"]
+            }
+            transaction_data["drops"]["by_week"].append(copy.deepcopy(drop_item))
+
+
+        
+
+
 
 
 
@@ -213,7 +292,7 @@ class ManagerMetadataManager:
             # Points for/against and averages
             total_points_for         = cached_matchup_data[season_state]["points_for"]["total"]
             total_points_against     = cached_matchup_data[season_state]["points_against"]["total"]
-            total_point_differential = total_points_for - total_points_against
+            total_point_differential = float(Decimal((total_points_for - total_points_against)).quantize(Decimal('0.01')))
             
             average_points_for         = 0.0
             average_points_against     = 0.0
@@ -292,7 +371,7 @@ class ManagerMetadataManager:
         # ---- FAAB Summary ----
         faab = {
             "total_spent": abs(cached_transaction_data["faab"]["total_lost_or_gained"]),
-            "biggest_acquisitions": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["faab"]["players"]))
+            "biggest_acquisitions": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["faab"]["players"]), key_name = "amount")
         }
 
         # FAAB Traded
@@ -448,7 +527,7 @@ class ManagerMetadataManager:
         return "regular_season"
     
 
-    def _get_top_three_of_dict(self, data_dict: dict) -> dict:
+    def _get_top_three_of_dict(self, data_dict: dict, key_name = "count") -> dict:
         """Helper to get top three entries of a dictionary based on values."""
         
         for key in data_dict:
@@ -469,7 +548,7 @@ class ManagerMetadataManager:
         for item in top_three:
             long_dict = {}
             long_dict["name"] = item
-            long_dict["count"] = top_three[item]
+            long_dict[key_name] = top_three[item]
             items.append(copy.deepcopy(long_dict))
 
 
@@ -1207,5 +1286,5 @@ class ManagerMetadataManager:
             }
         }
 
-test_manager_metadata_manager = ManagerMetadataManager().get_manager_summary("Tommy")
+test_manager_metadata_manager = ManagerMetadataManager().get_manager_yearly_data("Tommy", "2025")
 print(test_manager_metadata_manager)

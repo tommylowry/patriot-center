@@ -120,9 +120,26 @@ class ManagerMetadataManager:
             }
             managers_list.append(manager_item)
         
+        return { "managers": managers_list }
+    
+
+    def get_manager_summary(self, manager_name: str, year: str = None) -> dict:
+        """Returns complete summary data for a manager."""
+        if manager_name not in self._cache:
+            raise ValueError(f"Manager {manager_name} not found in cache.")
         
+        if year:
+            if year not in self._cache[manager_name]["years"]:
+                raise ValueError(f"Year {year} not found for manager {manager_name} in cache.")
         
-        managers_list["managers"] = managers_list.copy()
+        return_dict = {}
+        return_dict["manager_name"] = manager_name
+        return_dict["user_id"] = self._cache[manager_name]["summary"].get("user_id", "")
+        return_dict["avatar_urls"] = self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {})
+        return_dict["years_active"] = list(self._cache[manager_name].get("years", {}).keys())
+
+        return_dict["matchup_data"] = self._get_matchup_details_from_cache(manager_name, year)
+        
 
 
 
@@ -130,6 +147,71 @@ class ManagerMetadataManager:
 
 
 
+    # ---------- Internal Public Helper Methods ----------
+    def _get_matchup_details_from_cache(self, manager_name: str, year: str = None) -> dict:
+        """Helper to extract matchup details from cache for a manager."""
+        from decimal import Decimal
+
+        matchup_data = {
+            "overall": {},
+            "regular_season": {},
+            "playoffs": {}
+        }
+        
+        cached_matchup_data = copy.deepcopy(self._cache[manager_name]["summary"]["matchup_data"])
+        if year:
+            cached_matchup_data = copy.deepcopy(self._cache[manager_name]["years"][year]["summary"]["matchup_data"])
+
+        for season_state in ["overall", "regular_season", "playoffs"]:
+            
+            if season_state == "playoffs":
+                playoff = True
+                playoff_appearances = self._cache[manager_name]["summary"]["overall_data"]["playoff_appearances"]
+                if playoff_appearances == 0:
+                    playoff = False
+                elif year is not None and year not in self._cache[manager_name]["years"]:
+                    playoff = False
+            
+            
+            
+            # Extract record components
+            num_wins = cached_matchup_data[season_state]["wins"]["total"]
+            num_losses = cached_matchup_data[season_state]["losses"]["total"]
+            num_ties = cached_matchup_data[season_state]["ties"]["total"]
+
+            matchup_data[season_state]["record"] = f"{num_wins}-{num_losses}-{num_ties}"
+
+            # Calculate win percentage
+            num_matchups = num_wins + num_losses + num_ties
+
+            win_percentage = 0.0
+            if num_matchups != 0:
+                win_percentage = float(Decimal((num_wins / num_matchups * 100)).quantize(Decimal('0.1')))
+
+            matchup_data[season_state]["win_percentage"] = win_percentage
+
+            # Points for/against and averages
+            total_points_for         = cached_matchup_data[season_state]["points_for"]["total"]
+            total_points_against     = cached_matchup_data[season_state]["points_against"]["total"]
+            total_point_differential = total_points_for - total_points_against
+            
+            average_points_for         = 0.0
+            average_points_against     = 0.0
+            average_point_differential = 0.0
+            if num_matchups != 0:
+                average_points_for         = float(Decimal((total_points_for / num_matchups)).quantize(Decimal('0.01')))
+                average_points_against     = float(Decimal((total_points_against / num_matchups)).quantize(Decimal('0.01')))
+                average_point_differential = float(Decimal(((total_point_differential) / num_matchups)).quantize(Decimal('0.01')))
+            
+
+            matchup_data[season_state]["total_points_for"] = total_points_for
+            matchup_data[season_state]["total_points_against"] = total_points_against
+            matchup_data[season_state]["point_differential"] = total_point_differential
+            matchup_data[season_state]["average_points_for"] = average_points_for
+            matchup_data[season_state]["average_points_against"] = average_points_against
+            matchup_data[season_state]["average_point_differential"] = average_point_differential
+
+            print("")
 
 
 
@@ -953,5 +1035,5 @@ class ManagerMetadataManager:
             }
         }
 
-test_manager_metadata_manager = ManagerMetadataManager().get_managers_list()
+test_manager_metadata_manager = ManagerMetadataManager().get_manager_summary("Tommy")
 print(test_manager_metadata_manager)

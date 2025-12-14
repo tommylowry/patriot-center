@@ -101,21 +101,25 @@ class ManagerMetadataManager:
 
 
 
+
+
+
+
     # ---------- Public Methods for Exporting Data ----------
     def get_managers_list(self) -> dict:
         """Returns list of all managers with basic info."""
         managers_list = []
         
         for manager in self._cache:
-            wins = self._cache[manager]["summary"]["matchup_data"]["overall"]["wins"]["total"]
+            wins   = self._cache[manager]["summary"]["matchup_data"]["overall"]["wins"]["total"]
             losses = self._cache[manager]["summary"]["matchup_data"]["overall"]["losses"]["total"]
-            ties = self._cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
+            ties   = self._cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
             manager_item = {
-                "name": manager,
-                "user_id": self._cache[manager]["summary"].get("user_id", ""),
-                "avatar_urls": self._cache[manager]["summary"]["overall_data"].get("avatar_urls", {}),
-                "years_active": list(self._cache[manager].get("years", {}).keys()),
-                "total_trades": self._cache[manager]["summary"]["transactions"]["trades"]["total"],
+                "name":           manager,
+                "user_id":        self._cache[manager]["summary"].get("user_id", ""),
+                "avatar_urls":    self._cache[manager]["summary"]["overall_data"].get("avatar_urls", {}),
+                "years_active":   list(self._cache[manager].get("years", {}).keys()),
+                "total_trades":   self._cache[manager]["summary"]["transactions"]["trades"]["total"],
                 "overall_record": f"{wins}-{losses}-{ties}"
             }
             managers_list.append(manager_item)
@@ -134,14 +138,16 @@ class ManagerMetadataManager:
         
         return_dict = {}
         return_dict["manager_name"] = manager_name
-        return_dict["user_id"] = self._cache[manager_name]["summary"].get("user_id", "")
-        return_dict["avatar_urls"] = self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {})
+        return_dict["user_id"]      = self._cache[manager_name]["summary"].get("user_id", "")
+        return_dict["avatar_urls"]  = self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {})
         return_dict["years_active"] = list(self._cache[manager_name].get("years", {}).keys())
 
         return_dict["matchup_data"] = self._get_matchup_details_from_cache(manager_name, year)
-        
+        return_dict["transactions"] = self._get_trasaction_details_from_cache(manager_name, year)
+        return_dict["overall_data"] = self._get_overall_data_details_from_cache(manager_name)
+        return_dict["head_to_head"] = self._get_head_to_head_details_from_cache(manager_name, year)
 
-
+        return copy.deepcopy(return_dict)
 
 
 
@@ -153,9 +159,9 @@ class ManagerMetadataManager:
         from decimal import Decimal
 
         matchup_data = {
-            "overall": {},
+            "overall":        {},
             "regular_season": {},
-            "playoffs": {}
+            "playoffs":       {}
         }
         
         cached_matchup_data = copy.deepcopy(self._cache[manager_name]["summary"]["matchup_data"])
@@ -164,13 +170,27 @@ class ManagerMetadataManager:
 
         for season_state in ["overall", "regular_season", "playoffs"]:
             
+            # Handle no playoff appearances
             if season_state == "playoffs":
                 playoff = True
                 playoff_appearances = self._cache[manager_name]["summary"]["overall_data"]["playoff_appearances"]
-                if playoff_appearances == 0:
+                if len(playoff_appearances) == 0:
                     playoff = False
                 elif year is not None and year not in self._cache[manager_name]["years"]:
                     playoff = False
+
+                if playoff == False:
+                    matchup_data[season_state] = {
+                        "record":                     "0-0-0",
+                        "win_percentage":             0.0,
+                        "total_points_for":           0,
+                        "total_points_against":       0,
+                        "point_differential":         0,
+                        "average_points_for":         0.0,
+                        "average_points_against":     0.0,
+                        "average_point_differential": 0.0
+                    }
+                    continue
             
             
             
@@ -204,14 +224,141 @@ class ManagerMetadataManager:
                 average_point_differential = float(Decimal(((total_point_differential) / num_matchups)).quantize(Decimal('0.01')))
             
 
-            matchup_data[season_state]["total_points_for"] = total_points_for
-            matchup_data[season_state]["total_points_against"] = total_points_against
-            matchup_data[season_state]["point_differential"] = total_point_differential
-            matchup_data[season_state]["average_points_for"] = average_points_for
-            matchup_data[season_state]["average_points_against"] = average_points_against
+            matchup_data[season_state]["total_points_for"]           = total_points_for
+            matchup_data[season_state]["total_points_against"]       = total_points_against
+            matchup_data[season_state]["point_differential"]         = total_point_differential
+            matchup_data[season_state]["average_points_for"]         = average_points_for
+            matchup_data[season_state]["average_points_against"]     = average_points_against
             matchup_data[season_state]["average_point_differential"] = average_point_differential
 
-            print("")
+        return copy.deepcopy(matchup_data)
+
+    def _get_trasaction_details_from_cache(self, manager_name: str, year: str = None) -> dict:
+        """Helper to extract transaction summary from cache for a manager."""
+        transaction_summary = {
+            "trades":      {},
+            "adds":        {},
+            "drops":       {},
+            "faab":        {}
+        }
+
+        cached_transaction_data = copy.deepcopy(self._cache[manager_name]["summary"]["transactions"])
+        if year:
+            cached_transaction_data = copy.deepcopy(self._cache[manager_name]["years"][year]["summary"]["transactions"])
+        
+        
+        trades = {
+            "total":              cached_transaction_data["trades"]["total"],
+            "top_trade_partners": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["trades"]["trade_partners"]))
+        }
+
+        # ---- Trades Summary ----
+        
+        # Most Aquired Players
+        trade_players_acquired = cached_transaction_data["trades"]["trade_players_acquired"]
+        most_acquired_players = self._get_top_three_of_dict(copy.deepcopy(trade_players_acquired))
+        for player in most_acquired_players:
+            player_details = copy.deepcopy(trade_players_acquired[player["name"]])
+            player["from"] = player_details.get("trade_partners", {})
+        trades["most_aquired_players"] = most_acquired_players
+
+        # Most Sent Players
+        trade_players_sent = cached_transaction_data["trades"]["trade_players_sent"]
+        most_sent_players = self._get_top_three_of_dict(copy.deepcopy(trade_players_sent))
+        for player in most_sent_players:
+            player_details = copy.deepcopy(trade_players_sent[player["name"]])
+            player["to"] = player_details.get("trade_partners", {})
+        trades["most_sent_players"] = most_sent_players
+
+        transaction_summary["trades"] = trades
+
+
+        # ---- Adds Summary ----
+        adds = {
+            "total":             cached_transaction_data["adds"]["total"],
+            "top_players_added": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["adds"]["players"]))
+        }
+        transaction_summary["adds"] = adds 
+       
+
+        # ---- Drops Summary ----
+        drops = {
+                "total":               cached_transaction_data["drops"]["total"],
+                "top_players_dropped": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["drops"]["players"]))
+        }
+        transaction_summary["drops"] = drops
+
+
+        # ---- FAAB Summary ----
+        faab = {
+            "total_spent": abs(cached_transaction_data["faab"]["total_lost_or_gained"]),
+            "biggest_acquisitions": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["faab"]["players"]))
+        }
+
+        # FAAB Traded
+        sent = cached_transaction_data["faab"]["traded_away"]["total"]
+        received = cached_transaction_data["faab"]["acquired_from"]["total"]
+        net = received - sent
+        faab["faab_traded"] = {
+            "sent":     sent,
+            "received": received,
+            "net":      net
+        }
+        transaction_summary["faab"] = faab
+
+
+        # Return final transaction summary
+        return copy.deepcopy(transaction_summary)
+
+    def _get_overall_data_details_from_cache(self, manager_name: str) -> dict:
+        """Helper to extract overall data details from cache for a manager."""
+        cached_overall_data = copy.deepcopy(self._cache[manager_name]["summary"]["overall_data"])
+
+        
+        overall_data = {
+            "playoff_appearances": len(cached_overall_data.get("playoff_appearances", []))
+        }
+
+        # ----- Other Overall Data -----
+        placements = []
+        best_finish = None
+        championships = 0
+        for year in cached_overall_data.get("placement", {}):
+            if cached_overall_data["placement"][year] == 1:
+                championships += 1
+            if best_finish is None or cached_overall_data["placement"][year] < best_finish:
+                best_finish = cached_overall_data["placement"][year]
+            placement_item = {
+                "year": year,
+                "placement": cached_overall_data["placement"][year]
+            }
+            placements.append(placement_item)
+
+        overall_data["placements"]    = placements
+        overall_data["best_finish"]   = best_finish if best_finish is not None else 0
+        overall_data["championships"] = championships
+
+        return copy.deepcopy(overall_data)
+
+    def _get_head_to_head_details_from_cache(self, manager_name: str, year: str = None) -> dict:
+        """Helper to extract head-to-head details from cache for a manager."""
+        head_to_head_data = {}
+        
+        cached_head_to_head_data = copy.deepcopy(self._cache[manager_name]["summary"]["matchup_data"]["overall"])
+        if year:
+            cached_head_to_head_data = copy.deepcopy(self._cache[manager_name]["years"][year]["summary"]["matchup_data"]["overall"])
+        
+        for opponent in cached_head_to_head_data.get("points_for", {}).get("opponents", {}):
+
+            head_to_head_data[opponent] = {
+                "wins":           cached_head_to_head_data["wins"]["opponents"].get(opponent, 0),
+                "losses":         cached_head_to_head_data["losses"]["opponents"].get(opponent, 0),
+                "ties":           cached_head_to_head_data["ties"]["opponents"].get(opponent, 0),
+                "points_for":     cached_head_to_head_data["points_for"]["opponents"].get(opponent, 0.0),
+                "points_against": cached_head_to_head_data["points_against"]["opponents"].get(opponent, 0.0)
+            }
+        
+        return copy.deepcopy(head_to_head_data)
 
 
 
@@ -301,7 +448,32 @@ class ManagerMetadataManager:
         return "regular_season"
     
 
+    def _get_top_three_of_dict(self, data_dict: dict) -> dict:
+        """Helper to get top three entries of a dictionary based on values."""
+        
+        for key in data_dict:
+            if not isinstance(data_dict[key], dict):
+                break
+            data_dict[key] = data_dict[key]["total"]
+        
+        
+        sorted_items = sorted(data_dict.items(), key=lambda item: item[1], reverse=True)
+        
+        # Handle ties for third place
+        for i in range(2, len(sorted_items)):
+            if sorted_items[i][1] != sorted_items[i+1][1]:
+                break
+        top_three = dict(sorted_items[:i+1])
 
+        items = []
+        for item in top_three:
+            long_dict = {}
+            long_dict["name"] = item
+            long_dict["count"] = top_three[item]
+            items.append(copy.deepcopy(long_dict))
+
+
+        return copy.deepcopy(items)
 
 
 

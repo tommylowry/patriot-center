@@ -228,12 +228,6 @@ class ManagerMetadataManager:
 
         
 
-
-
-
-
-
-
     # ---------- Internal Public Helper Methods ----------
     def _get_matchup_details_from_cache(self, manager_name: str, year: str = None) -> dict:
         """Helper to extract matchup details from cache for a manager."""
@@ -445,13 +439,10 @@ class ManagerMetadataManager:
 
 
 
-
-
     # ---------- Internal Save/Load Methods ----------
     def _load(self):
         """Load the entire manager metadata cache."""
         self._cache = load_cache(MANAGER_METADATA_CACHE_FILE, initialize_with_last_updated_info=False)
-
 
     def save(self):
         """Save the entire manager metadata cache."""
@@ -469,7 +460,6 @@ class ManagerMetadataManager:
             self._weekly_roster_ids = {}
         self._week = None
         self._year = None
-
 
     def _set_defaults_if_missing(self, roster_id: int):
         """Helper to initialize nested structures if missing."""
@@ -498,7 +488,6 @@ class ManagerMetadataManager:
         if self._use_faab:
             self._initialize_faab_template(manager)
 
-
     def _caching_preconditions_met(self):
         """Check if preconditions for caching week data are met."""
         if len(self._weekly_roster_ids) == 0:
@@ -513,7 +502,6 @@ class ManagerMetadataManager:
             raise ValueError("Year not set. Cannot cache week data.")
         if not self._week:
             raise ValueError("Week not set. Cannot cache week data.")
-    
 
     def _draft_pick_decipher(self, draft_pick_dict: dict) -> str:
         """Convert draft pick dictionary to a human-readable string."""
@@ -524,7 +512,6 @@ class ManagerMetadataManager:
         origin_manager = self._weekly_roster_ids.get(origin_team, "unknown_manager")
 
         return f"{origin_manager}'s {season} Round {round_num} Draft Pick"
-
 
     def _get_season_state(self):
         """Determine if current week is regular season or playoffs."""
@@ -539,7 +526,6 @@ class ManagerMetadataManager:
         if int(self._week) >= self._playoff_week_start:
             return "playoffs"
         return "regular_season"
-    
 
     def _get_top_three_of_dict(self, data_dict: dict, key_name = "count") -> dict:
         """Helper to get top three entries of a dictionary based on values."""
@@ -570,6 +556,8 @@ class ManagerMetadataManager:
 
 
 
+
+
     # ---------- Internal Data Scrubbing Methods ----------
     def _scrub_transaction_data(self, year: str, week: str):
         """Scrub transaction data for all cached roster IDs for a given week."""
@@ -580,7 +568,6 @@ class ManagerMetadataManager:
         transactions_list , _ = fetch_sleeper_data(f"league/{league_id}/transactions/{week}")
         for transaction in transactions_list:
            self._process_transaction(transaction)
-
 
     def _process_transaction(self, transaction: dict):
         # Determine transaction type
@@ -597,7 +584,7 @@ class ManagerMetadataManager:
                 transaction_type = "add_or_drop"
             
             # if adds or drops is multiple players, its commish forced swap/trade
-            elif len(transaction.get("adds", {})) > 1 or len(transaction.get("drops", {}) > 1):
+            elif len(transaction.get("adds", {})) > 1 or len(transaction.get("drops", {})) > 1:
                 transaction_type = "trade"
             
             # only one add and only one drop, so add_or_drop
@@ -613,7 +600,6 @@ class ManagerMetadataManager:
 
         # Run the transaction through the appropriate processor
         process_transaction_type(transaction)
-
 
     def _validate_transaction(self, transaction: dict, transaction_type: str, process_transaction_type) -> bool:
         
@@ -656,6 +642,7 @@ class ManagerMetadataManager:
                 return False
         
         return True
+
 
 
 
@@ -703,6 +690,22 @@ class ManagerMetadataManager:
 
             transaction_id = transaction.get("transaction_id", "")
 
+            # get faab traded information
+            if self._use_faab and len(transaction.get("waiver_budget", [])) != 0:
+                for faab_details in transaction["waiver_budget"]:
+                    faab_receiver = self._weekly_roster_ids[faab_details["receiver"]]
+                    faab_sender   = self._weekly_roster_ids[faab_details["sender"]]
+                    faab_amount   = faab_details["amount"]
+
+                    faab_string = f"${faab_amount} FAAB"
+                    
+                    # same faab amount traded in this trade with another party
+                    if faab_string in sent or faab_string in acquired:
+                        print(f"WARNING: {faab_string} already in internal storage for the following trade: {transaction}")
+                    
+                    sent[faab_string] = faab_sender
+                    acquired[faab_string] = faab_receiver
+            
             # add trade details to the cache
             self._add_trade_details_to_cache(manager, trade_partners, acquired, sent, transaction_id)
         
@@ -719,7 +722,6 @@ class ManagerMetadataManager:
                 # add faab trade details to the cache
                 self._add_faab_details_to_cache("trade", sender, "FAAB", faab_amount, transaction_id, trade_partner=receiver)
                 self._add_faab_details_to_cache("trade", receiver, "FAAB", -faab_amount, transaction_id, trade_partner=sender)
-
 
     def _add_trade_details_to_cache(self, manager: str, trade_partners: list, acquired: dict, sent: dict, transaction_id: str):
         """
@@ -811,7 +813,8 @@ class ManagerMetadataManager:
 
         # Finally, add transaction ID to weekly summary to avoid double counting
         weekly_summary["transaction_ids"].append(transaction_id)
-    
+
+
 
 
 
@@ -834,7 +837,10 @@ class ManagerMetadataManager:
                 transaction_id = transaction.get("transaction_id", "")
 
                 # add add details to the cache
-                self._add_add_or_drop_details_to_cache("add", manager, player_name, transaction_id)
+                waiver_bid = None
+                if self._use_faab and transaction.get("settings", None) != None:
+                    waiver_bid = transaction.get("settings", {}).get("waiver_bid", None)
+                self._add_add_or_drop_details_to_cache("add", manager, player_name, transaction_id, waiver_bid)
                 
                 # add FAAB details to the cache
                 if self._use_faab and transaction.get("settings", None) != None:
@@ -853,9 +859,8 @@ class ManagerMetadataManager:
 
                 # add drop details to the cache
                 self._add_add_or_drop_details_to_cache("drop", manager, player_name, transaction_id)
-    
 
-    def _add_add_or_drop_details_to_cache(self, free_agent_type: str, manager: str, player_name: str, transaction_id: str):
+    def _add_add_or_drop_details_to_cache(self, free_agent_type: str, manager: str, player_name: str, transaction_id: str, waiver_bid: int|None = None):
         """
         "adds": {
             "total": 0,
@@ -878,7 +883,8 @@ class ManagerMetadataManager:
                 "free_agent_type": free_agent_type,
                 "manager": manager,
                 "player_name": player_name,
-                "transaction_id": transaction_id
+                "transaction_id": transaction_id,
+                "waiver_bid": waiver_bid
             }
         )
         
@@ -898,7 +904,6 @@ class ManagerMetadataManager:
         weekly_summary["transaction_ids"].append(transaction_id)
 
         return copy.deepcopy(weekly_summary)
-    
 
     def _add_faab_details_to_cache(self, transaction_type: str, manager: str, player_name: str, faab_amount: int, transaction_id: str, trade_partner: str = None):
         """
@@ -926,17 +931,6 @@ class ManagerMetadataManager:
             # Waiver already processed for this week
             return
         
-        self._add_to_transaction_id_cache(
-            {
-                "type": "faab",
-                "transaction_type": transaction_type,
-                "manager": manager,
-                "player_name": player_name,
-                "faab_amount": faab_amount,
-                "transaction_id": transaction_id,
-                "trade_partner": trade_partner
-            }
-        )
         
         top_level_summary = self._cache[manager]["summary"]["transactions"]["faab"]
         yearly_summary = self._cache[manager]["years"][self._year]["summary"]["transactions"]["faab"]
@@ -983,9 +977,11 @@ class ManagerMetadataManager:
         weekly_summary["transaction_ids"].append(transaction_id)
 
 
+
+
+
     # ---------- Set Transaction Data to Transacion ID Cache ----------
     def _add_to_transaction_id_cache(self, transaction_info: dict):
-
 
         transaction_type = transaction_info.get("type", "")
         if not transaction_type:
@@ -1024,9 +1020,7 @@ class ManagerMetadataManager:
             
         if transaction_type not in transaction_info_to_cache["types"]:
             transaction_info_to_cache["types"].append(transaction_type)
-
-        if self._use_faab:
-            print("debug")
+        
 
         # Add/Drop transactions
         if transaction_type in valid_add_or_drop_types:
@@ -1039,6 +1033,9 @@ class ManagerMetadataManager:
                 raise ValueError(f"Can only add or drop one player per transaction.")
             
             transaction_info_to_cache[transaction_type] = player_name
+
+            if transaction_type == "add" and self._use_faab and transaction_info.get("waiver_bid", None) != None:
+                transaction_info_to_cache["faab_spent"] = transaction_info["waiver_bid"]
         
         # Trade transaction
         elif transaction_type == "trade":
@@ -1055,18 +1052,17 @@ class ManagerMetadataManager:
             # Get players acquired and players sent
             players_acquired = transaction_info.get("acquired", {})
             if not players_acquired:
-                raise ValueError(f"No players in acquired: {transaction_info}")
+                print(f"WARNING: Player sent with no return, transaction_info: {transaction_info}")
             
             players_sent = transaction_info.get("sent", {})
             if not players_sent:
-                raise ValueError(f"No players in sent: {transaction_info}")
-            
+                print(f"WARNING: Player sent with no return, transaction_info: {transaction_info}")
             
             # Adding player from players_acquired into players_involved and into the trade
             # details if not already in cache
             for player in players_acquired:
                 if not player:
-                    raise ValueError(f"No players in acquired: {transaction_info}")
+                    continue
                 
                 if player not in transaction_info_to_cache["players_involved"]:
                     transaction_info_to_cache["players_involved"].append(player)
@@ -1082,7 +1078,7 @@ class ManagerMetadataManager:
             # details if not already in cache
             for player in players_sent:
                 if not player:
-                    raise ValueError(f"No players in sent: {transaction_info}")
+                    continue
                 
                 if player not in transaction_info_to_cache["players_involved"]:
                     transaction_info_to_cache["players_involved"].append(player)
@@ -1092,6 +1088,10 @@ class ManagerMetadataManager:
                         "old_manager": manager,
                         "new_manager": players_sent[player]
                     }
+        
+        # FAAB data being handled in trades and add/drop for transactions
+        elif transaction_type == "faab":
+            return
         
         # Transaction type unknown
         else:
@@ -1160,7 +1160,6 @@ class ManagerMetadataManager:
 
             self._add_matchup_details_to_cache(manager_1)
             self._add_matchup_details_to_cache(manager_2)
-    
 
     def _add_matchup_details_to_cache(self, matchup_data: dict):
         from decimal import Decimal
@@ -1274,15 +1273,9 @@ class ManagerMetadataManager:
             self._cache[second_place_manager]["summary"]["overall_data"]["placement"][year] = 2
         if year not in self._cache[third_place_manager]["summary"]["overall_data"]["placement"]:
             self._cache[third_place_manager]["summary"]["overall_data"]["placement"][year] = 3
-                
 
     
     
-
-
-
-
-
 
 
     # ---------- Internal Template Initialization Methods ----------

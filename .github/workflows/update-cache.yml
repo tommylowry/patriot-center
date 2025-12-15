@@ -3,8 +3,8 @@ name: Update Cache Data
 # ONLY runs on schedule - no manual trigger option
 on:
   schedule:
-    # Runs every Monday at 1:00 AM EST (08:00 UTC)
-    - cron: '0 6 * * 1'
+    # Runs every Tuesday at 1:00 AM EST (08:00 UTC)
+    - cron: '0 1 * * 2'
 
 jobs:
   update-caches:

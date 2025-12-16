@@ -838,7 +838,17 @@ class ManagerMetadataManager:
         }
 
         """
+
+        if manager_name not in self._cache:
+            raise ValueError(f"Manager {manager_name} not found in cache.")
         
+        awards_data = {
+            "manager_name": manager_name,
+            "avatar_urls":  self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {}),
+            "awards":       self._get_manager_awards_from_cache(manager_name)
+        }
+
+        return copy.deepcopy(awards_data)
         
 
     
@@ -1345,7 +1355,64 @@ class ManagerMetadataManager:
         
         return trades_between
 
+    def _get_manager_awards_from_cache(self, manager_name: str) -> dict:
+        """Helper to extract awards/achievements from cache for a manager."""
+        from decimal import Decimal
 
+        awards = {}
+
+        cached_overall_data = copy.deepcopy(self._cache[manager_name]["summary"]["overall_data"])
+        
+        # First/Second/Third Place Finishes
+        placement_counts = {
+            "first_place": 0,
+            "second_place": 0,
+            "third_place": 0
+        }
+        for year in cached_overall_data.get("placement", {}):
+            placement = cached_overall_data["placement"][year]
+            if placement == 1:
+                placement_counts["first_place"] += 1
+            elif placement == 2:
+                placement_counts["second_place"] += 1
+            elif placement == 3:
+                placement_counts["third_place"] += 1
+        awards.update(copy.deepcopy(placement_counts))
+
+
+        # Most Trades in a Year
+        most_trades_in_year = {
+            "count": 0,
+            "year":  ""
+        }
+        for year in self._cache[manager_name].get("years", {}):
+            num_trades = self._cache[manager_name]["years"][year]["summary"]["transactions"]["trades"]["total"]
+            if num_trades > most_trades_in_year["count"]:
+                most_trades_in_year["count"] = num_trades
+                most_trades_in_year["year"] = year
+        awards["most_trades_in_year"] = copy.deepcopy(most_trades_in_year)
+
+
+        # Biggest FAAB Bid
+        biggest_faab_bid = {
+            "player": "",
+            "amount": 0,
+            "year":   ""
+        }
+        for player in self._cache[manager_name].get("summary", {}).get("transactions", {}).get("faab", {}).get("players", {}):
+            faab_spent = self._cache[manager_name]["summary"]["transactions"]["faab"]["players"][player]
+            if faab_spent > biggest_faab_bid["amount"]:
+                biggest_faab_bid["player"] = player
+                biggest_faab_bid["amount"] = faab_spent
+        # Find year of biggest bid
+        for year in self._cache[manager_name].get("years", {}):
+            if player in self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"]:
+                if self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"][player] == faab_spent:
+                    biggest_faab_bid["year"] = year
+                    break
+
+
+        return copy.deepcopy(awards)
 
 
     # ---------- Internal Save/Load Methods ----------

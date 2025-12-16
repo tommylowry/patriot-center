@@ -470,8 +470,8 @@ class ManagerMetadataManager:
                     "tommy_score": 131.16,
                     "soup_score": 104.82,
                     "tommy_top_3_scorers": [
-                        {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"}
-                        {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                        {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
+                        {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
                         {"name": "Kyler Murray", "score": 17.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
                     ]
                     "soup_top_3_scorers:": [
@@ -567,10 +567,285 @@ class ManagerMetadataManager:
         return copy.deepcopy(trades_between)
 
         
-
-
+    def get_manager_transactions(self, 
+                                manager_name: str,
+                                year: str = None, 
+                                transaction_type: str = None,
+                                limit: int = 50, 
+                                offset: int = 0) -> dict:
+        """
+        Returns transaction history for a manager with filtering.
+        
+        Get transaction history for a manager with filtering options. Frontend sends:
+            URL parameter: manager_name
+            Query parameters (optional):
+            year: Filter by year
+            type: Filter by transaction type ("trade", "add", "drop", "add_and_or_drop")
+                # NOTE: "add_and_or_drop" covers both adds and drops and transactions when a player is added and dropped in the same transaction
+                # NOTE: "faab_spent" is null when FAAB was not implemented in league settings for that year or when a player was added as a free agent without FAAB spending
+            limit: Number of results to return (default: 50)
+            offset: Pagination offset (default: 0)
+        
+        EXAMPLE:
+        {
+            "manager_name": "Tommy",
+            "avatar_urls": {
+                "full_size" = "https://sleepercdn.com/avatars/avatar_link",
+                "thumbnail" = "https://sleepercdn.com/avatars/thumbs/avatar_link"
+            },
+            "total_count": 264,
+            "transactions": [
+                {
+                    "year": "2019",
+                    "week": "1",
+                    "type": "trade",
+                    "partners": ["Jay"],
+                    "acquired": ["Aaron Rodgers", "Billiam's 2019 Round 9 Draft Pick"],
+                    "sent": ["Anthony's 2019 Round 10 Draft Pick", "$5 FAAB"],
+                    "transaction_id" = "abc123xyz"
+                },
+                {
+                    "year": "2019",
+                    "week": "1",
+                    "type": "trade",
+                    "partners": ["Jay", "Owen"],
+                    "acquired": ["Aaron Rodgers", "Billiam's 2019 Round 9 Draft Pick"],
+                    "sent": ["Anthony's 2019 Round 10 Draft Pick", "$5 FAAB"],
+                    "transaction_id" = "abc123xyz"
+                },
+                {
+                    "year": "2024",
+                    "week": "2",
+                    "type": "add",
+                    "player": "Isaiah Likely",
+                    "faab_spent": 46,
+                    "transaction_id" = "abc123xyz"
+                },
+                {
+                    "year": "2024",
+                    "week": "2",
+                    "type": "drop",
+                    "player": "Gus Edwards",
+                    "transaction_id" = "abc123xyz"
+                },
+                {
+                    "year": "2019",
+                    "week": "3",
+                    "type": "add_and_drop",
+                    "added_player": "Travis Kelce",
+                    "dropped_player": "Tyler Higbee",
+                    "faab_spent": null,
+                    "transaction_id" = "abc123xyz"
+                }
+            ]
+        }
+        
+        """
         
 
+        if manager_name not in self._cache:
+            raise ValueError(f"Manager {manager_name} not found in cache.")
+        if year:
+            if year not in self._cache[manager_name]["years"]:
+                raise ValueError(f"Year {year} not found for manager {manager_name} in cache.")
+        
+        
+        transaction_history = {
+            "manager_name": manager_name,
+            "avatar_urls":  self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {}),
+            "total_count":  0,
+            "transactions": []
+        }
+
+        # Gather transactions based on filters
+        filtered_transactions = []
+        years_to_check = [year] if year else list(self._cache[manager_name]["years"].keys())
+        
+        for yr in years_to_check:
+            yearly_data = self._cache[manager_name]["years"][yr]
+            for week in yearly_data.get("weeks", {}):
+                weekly_transactions = yearly_data["weeks"][week]["transactions"]
+                
+                # Trades
+                if transaction_type in [None, "trade"]:
+                    for transaction_id in weekly_transactions.get("trades", []).get("transaction_ids", []):
+                        trade_details = self._transaction_id_cache.get(transaction_id, {})
+                        if trade_details:
+                            
+                            acquired = []
+                            sent     = []
+
+                            for player in trade_details.get("trade_details", {}):
+                                if trade_details["trade_details"][player].get("new_manager", None) == manager_name:
+                                    acquired.append(player)
+                                elif trade_details["trade_details"][player].get("old_manager", None) == manager_name:
+                                    sent.append(player)
+
+                            transaction_item = {
+                                "year":          yr,
+                                "week":          week,
+                                "type":          "trade",
+                                "partners":      trade_details.get("managers_involved", []).remove(manager_name),
+                                "acquired":      acquired,
+                                "sent":          sent,
+                                "transaction_id": transaction_id
+                            }
+                            filtered_transactions.append(copy.deepcopy(transaction_item))
+                        
+                
+                # Adds
+                if transaction_type in [None, "add", "add_and_or_drop"]:
+                    for transaction_id in weekly_transactions.get("adds", []).get("transaction_ids", []):
+                        add_details = self._transaction_id_cache.get(transaction_id, {})
+                        if add_details:
+                            
+                            # Only include adds portion of a transaction for "add" filter
+                            if "add" in add_details.get("types", []):
+                                
+                                transaction_item = {
+                                    "year":          yr,
+                                    "week":          week,
+                                    "type":          "add",
+                                    "player":        add_details.get("add", ""),
+                                    "faab_spent":    add_details.get("faab_spent", None), # None if FAAB not implemented yet or a free agent add
+                                    "transaction_id": transaction_id
+                                }
+                                filtered_transactions.append(copy.deepcopy(transaction_item))
+                
+
+                # Drops
+                if transaction_type in [None, "drop", "add_and_or_drop"]:
+                    for transaction_id in weekly_transactions.get("drops", []).get("transaction_ids", []):
+                        drop_details = self._transaction_id_cache.get(transaction_id, {})
+                        if drop_details:
+                            
+                            # Only include drops portion of a transaction for "drop" filter
+                            if "drop" in drop_details.get("types", []):
+                                
+                                transaction_item = {
+                                    "year":          yr,
+                                    "week":          week,
+                                    "type":          "drop",
+                                    "player":        drop_details.get("drop", ""),
+                                    "transaction_id": transaction_id
+                                }
+                                filtered_transactions.append(copy.deepcopy(transaction_item))
+                
+                # Adds and Drops
+                if transaction_type in [None, "add_and_or_drop"]:
+                    
+                    # 
+                    for transaction_id in weekly_transactions.get("adds", []).get("transaction_ids", []):
+                        add_drop_details = self._transaction_id_cache.get(transaction_id, {})
+                        if add_drop_details:
+                            
+                            # Only include add_and_drop transactions
+                            if "add" in add_drop_details.get("types", []) and "drop" in add_drop_details.get("types", []):
+                                transaction_item = {
+                                    "year":          yr,
+                                    "week":          week,
+                                    "type":          "add_and_drop",
+                                    "added_player":  add_drop_details.get("add", ""),
+                                    "dropped_player":add_drop_details.get("drop", ""),
+                                    "faab_spent":    add_drop_details.get("faab_spent", None), # None if FAAB not implemented yet or a free agent add/drop
+                                    "transaction_id": transaction_id
+                                }
+                                filtered_transactions.append(copy.deepcopy(transaction_item))
+                
+        # Set total count before pagination
+        transaction_history["total_count"] = len(filtered_transactions)
+
+        # Apply pagination
+        paginated_transactions = filtered_transactions[offset:offset+limit] 
+        
+        # Set transactions in output
+        transaction_history["transactions"] = copy.deepcopy(paginated_transactions)
+        
+        return copy.deepcopy(transaction_history)
+                    
+    def get_manager_awards(self, manager_name: str) -> dict:
+        """
+        Returns awards and achievements for a manager.
+        
+        Get awards/achievements for a manager (for fun stats display).
+
+        EXAMPLE:
+        {
+            "manager_name": "Tommy",
+            "avatar_urls": {
+                "full_size" = "https://sleepercdn.com/avatars/avatar_link",
+                "thumbnail" = "https://sleepercdn.com/avatars/thumbs/avatar_link"
+            },
+            "awards": {
+                "first_place": 0,
+                "second_place": 1,
+                "third_place": 2,
+                "playoff_appearances": 5,
+                "most_trades_in_year": {
+                    "count": 25,
+                    "year": "2022"
+                },
+                    "biggest_faab_bid": {
+                    "player": "Isaiah Likely",
+                    "amount": 46,
+                    "year": "2023"
+                },
+                "highest_weekly_score": {
+                    "score": 163.56,
+                    "week": "1",
+                    "year": "2019",
+                    "opponent": "Luke"
+                    "top_3_scorers": [
+                        {"name": "Indianapolis Colts", "score": 28.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
+                        {"name": "James Conner", "score": 27.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                        {"name": "Kyler Murray", "score": 26.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                    ]
+                },
+                "lowest_weekly_score": {
+                    "score": 43.23,
+                    "week": "8",
+                    "year": "2020",
+                    "opponent": "Davey"
+                    "top_3_scorers": [
+                        {"name": "Indianapolis Colts", "score": 8.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
+                        {"name": "James Conner", "score": 7.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                        {"name": "Kyler Murray", "score": 6.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                    ]
+                },
+                "biggest_blowout_win": {
+                    "differential": 45.5,
+                    "week": "3",
+                    "year": "2021",
+                    "opponent": "Parker"
+                    "top_3_scorers": [
+                        {"name": "Indianapolis Colts", "score": 30.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
+                        {"name": "James Conner", "score": 28.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                        {"name": "Kyler Murray", "score": 27.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                    ]
+                },
+                "biggest_blowout_loss": {
+                    "differential": -52.3,
+                    "week": "8",
+                    "year": "2020",
+                    "opponent": "Christian"
+                    "top_3_scorers": [
+                        {"name": "Indianapolis Colts", "score": 10.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
+                        {"name": "James Conner", "score": 9.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                        {"name": "Kyler Murray", "score": 8.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                    ]
+                }
+            }
+        }
+
+        """
+        
+        
+
+    
+    
+    
+    
+    
     # ---------- Internal Public Helper Methods ----------
     def _get_matchup_details_from_cache(self, manager_name: str, year: str = None) -> dict:
         """Helper to extract matchup details from cache for a manager."""
@@ -1034,11 +1309,9 @@ class ManagerMetadataManager:
                 transaction_ids.extend(weekly_trade_transaction_ids)
 
 
-        transactions_cache = load_cache(TRANSACTION_IDS_FILE)
-
         # Filter to only those involving both managers
         for tid in copy.deepcopy(transaction_ids):
-            if manager_2 not in transactions_cache.get(tid, {}).get("managers_involved", []):
+            if manager_2 not in self._transaction_id_cache.get(tid, {}).get("managers_involved", []):
                 transaction_ids.remove(tid)
 
 
@@ -1046,7 +1319,7 @@ class ManagerMetadataManager:
         
 
         for t in transaction_ids:
-            trans =  transactions_cache[t]
+            trans =  self._transaction_id_cache[t]
             trade_item = {
                 "year": trans["year"],
                 "week": trans["week"],
@@ -2193,7 +2466,7 @@ class ManagerMetadataManager:
 
 
 man = ManagerMetadataManager()
-d = man.get_head_to_head("Tommy", "Anthony")
+d = man.get_manager_transactions("Tommy", "2025")
 import json
 pretty_json_string = json.dumps(d, indent=4)
 print(pretty_json_string)

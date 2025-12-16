@@ -31876,12 +31876,12 @@
             "Patrick Mahomes",
             "Mike Williams",
             "Jamaal Williams",
-            "$50 FAAB",
             "Kirk Cousins",
             "DeAndre Hopkins",
             "Melvin Gordon",
             "Alvin Kamara",
-            "Tee Higgins"
+            "Tee Higgins",
+            "$50 FAAB"
         ],
         "trade_details": {
             "Amari Cooper": {
@@ -31904,10 +31904,6 @@
                 "old_manager": "Soup",
                 "new_manager": "Davey"
             },
-            "$50 FAAB": {
-                "old_manager": "Soup",
-                "new_manager": "Davey"
-            },
             "Kirk Cousins": {
                 "old_manager": "Davey",
                 "new_manager": "Soup"
@@ -31925,6 +31921,10 @@
                 "new_manager": "Soup"
             },
             "Tee Higgins": {
+                "old_manager": "Davey",
+                "new_manager": "Soup"
+            },
+            "$50 FAAB": {
                 "old_manager": "Davey",
                 "new_manager": "Soup"
             }
@@ -32421,19 +32421,19 @@
         ],
         "players_involved": [
             "Tom Brady",
-            "$1 FAAB",
-            "Tyler Higbee"
+            "Tyler Higbee",
+            "$1 FAAB"
         ],
         "trade_details": {
             "Tom Brady": {
                 "old_manager": "Benz",
                 "new_manager": "Owen"
             },
-            "$1 FAAB": {
-                "old_manager": "Benz",
-                "new_manager": "Owen"
-            },
             "Tyler Higbee": {
+                "old_manager": "Owen",
+                "new_manager": "Benz"
+            },
+            "$1 FAAB": {
                 "old_manager": "Owen",
                 "new_manager": "Benz"
             }
@@ -33025,8 +33025,8 @@
                 "new_manager": "Anthony"
             },
             "$5 FAAB": {
-                "old_manager": "Davey",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Davey"
             }
         }
     },
@@ -33517,10 +33517,10 @@
             "Tyler Boyd",
             "Miles Sanders",
             "Mac Jones",
-            "$50 FAAB",
             "David Johnson",
             "Mike Davis",
-            "Deebo Samuel"
+            "Deebo Samuel",
+            "$50 FAAB"
         ],
         "trade_details": {
             "Tyler Boyd": {
@@ -33535,10 +33535,6 @@
                 "old_manager": "Luke",
                 "new_manager": "Cody"
             },
-            "$50 FAAB": {
-                "old_manager": "Luke",
-                "new_manager": "Cody"
-            },
             "David Johnson": {
                 "old_manager": "Cody",
                 "new_manager": "Luke"
@@ -33548,6 +33544,10 @@
                 "new_manager": "Luke"
             },
             "Deebo Samuel": {
+                "old_manager": "Cody",
+                "new_manager": "Luke"
+            },
+            "$50 FAAB": {
                 "old_manager": "Cody",
                 "new_manager": "Luke"
             }
@@ -33623,7 +33623,7 @@
                 "new_manager": "Owen"
             },
             "$5 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Anthony",
                 "new_manager": "Owen"
             },
             "Harrison Butker": {
@@ -34643,19 +34643,19 @@
         ],
         "players_involved": [
             "Robbie Chosen",
-            "$50 FAAB",
-            "Jaylen Waddle"
+            "Jaylen Waddle",
+            "$50 FAAB"
         ],
         "trade_details": {
             "Robbie Chosen": {
                 "old_manager": "Benz",
                 "new_manager": "Luke"
             },
-            "$50 FAAB": {
-                "old_manager": "Benz",
-                "new_manager": "Luke"
-            },
             "Jaylen Waddle": {
+                "old_manager": "Luke",
+                "new_manager": "Benz"
+            },
+            "$50 FAAB": {
                 "old_manager": "Luke",
                 "new_manager": "Benz"
             }
@@ -34848,7 +34848,7 @@
         ],
         "trade_details": {
             "$7 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Christian",
                 "new_manager": "Cody"
             },
             "Alexander Mattison": {
@@ -34952,7 +34952,7 @@
         ],
         "trade_details": {
             "$25 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Davey",
                 "new_manager": "Owen"
             },
             "Brandon Aiyuk": {
@@ -35524,8 +35524,8 @@
                 "new_manager": "Owen"
             },
             "$5 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -35710,8 +35710,8 @@
                 "new_manager": "Tommy"
             },
             "$12 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
+                "old_manager": "Tommy",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -35833,7 +35833,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Tommy",
                 "new_manager": "Davey"
             },
             "Kenyan Drake": {
@@ -35894,8 +35894,8 @@
                 "new_manager": "Owen"
             },
             "$10 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -37225,7 +37225,7 @@
                 "new_manager": "Soup"
             },
             "$30 FAAB": {
-                "old_manager": "Soup",
+                "old_manager": "Dheeraj",
                 "new_manager": "Soup"
             },
             "Joe Burrow": {
@@ -37735,8 +37735,8 @@
                 "new_manager": "Luke"
             },
             "$17 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Luke"
+                "old_manager": "Luke",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -37834,8 +37834,8 @@
                 "new_manager": "Owen"
             },
             "$6 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -38096,7 +38096,7 @@
         ],
         "trade_details": {
             "$10 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Christian",
                 "new_manager": "Davey"
             },
             "Odell Beckham": {
@@ -38119,10 +38119,10 @@
             "Marvin Jones",
             "Sony Michel",
             "Darrell Henderson",
-            "$20 FAAB",
             "Brandon Bolden",
             "Amari Cooper",
-            "Damien Harris"
+            "Damien Harris",
+            "$20 FAAB"
         ],
         "trade_details": {
             "Marvin Jones": {
@@ -38137,10 +38137,6 @@
                 "old_manager": "Benz",
                 "new_manager": "Anthony"
             },
-            "$20 FAAB": {
-                "old_manager": "Benz",
-                "new_manager": "Anthony"
-            },
             "Brandon Bolden": {
                 "old_manager": "Anthony",
                 "new_manager": "Benz"
@@ -38150,6 +38146,10 @@
                 "new_manager": "Benz"
             },
             "Damien Harris": {
+                "old_manager": "Anthony",
+                "new_manager": "Benz"
+            },
+            "$20 FAAB": {
                 "old_manager": "Anthony",
                 "new_manager": "Benz"
             }
@@ -40198,19 +40198,19 @@
         ],
         "players_involved": [
             "Rashod Bateman",
-            "$6 FAAB",
-            "DeVante Parker"
+            "DeVante Parker",
+            "$6 FAAB"
         ],
         "trade_details": {
             "Rashod Bateman": {
                 "old_manager": "Christian",
                 "new_manager": "Tommy"
             },
-            "$6 FAAB": {
-                "old_manager": "Christian",
-                "new_manager": "Tommy"
-            },
             "DeVante Parker": {
+                "old_manager": "Tommy",
+                "new_manager": "Christian"
+            },
+            "$6 FAAB": {
                 "old_manager": "Tommy",
                 "new_manager": "Christian"
             }
@@ -40484,8 +40484,8 @@
                 "new_manager": "Luke"
             },
             "$5 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Luke"
+                "old_manager": "Luke",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -40740,7 +40740,7 @@
         ],
         "trade_details": {
             "$15 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Soup",
                 "new_manager": "Mitch"
             },
             "Mark Ingram": {
@@ -41671,7 +41671,7 @@
                 "new_manager": "Davey"
             },
             "$32 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Dheeraj",
                 "new_manager": "Davey"
             },
             "Jalen Hurts": {
@@ -41736,7 +41736,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Dheeraj",
                 "new_manager": "Davey"
             },
             "Elijah Moore": {
@@ -42082,7 +42082,7 @@
                 "new_manager": "Cody"
             },
             "$10 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Mitch",
                 "new_manager": "Cody"
             },
             "Austin Ekeler": {
@@ -42171,7 +42171,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Benz",
                 "new_manager": "Mitch"
             },
             "Ryan Tannehill": {
@@ -42314,8 +42314,8 @@
                 "new_manager": "Anthony"
             },
             "$6 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -43808,7 +43808,7 @@
         ],
         "trade_details": {
             "$7 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Mitch",
                 "new_manager": "Anthony"
             },
             "Marvin Jones": {
@@ -43960,7 +43960,7 @@
         ],
         "trade_details": {
             "$19 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Luke",
                 "new_manager": "Davey"
             },
             "Jeff Wilson": {
@@ -44786,8 +44786,8 @@
                 "new_manager": "Soup"
             },
             "$10 FAAB": {
-                "old_manager": "Luke",
-                "new_manager": "Soup"
+                "old_manager": "Soup",
+                "new_manager": "Luke"
             }
         }
     },
@@ -44948,8 +44948,8 @@
                 "new_manager": "Anthony"
             },
             "$3 FAAB": {
-                "old_manager": "Christian",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Christian"
             }
         }
     },
@@ -45302,7 +45302,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Tommy",
                 "new_manager": "Cody"
             },
             "Ty Johnson": {
@@ -48910,8 +48910,8 @@
                 "new_manager": "Anthony"
             },
             "$7 FAAB": {
-                "old_manager": "Christian",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Christian"
             }
         }
     },
@@ -49754,7 +49754,7 @@
                 "new_manager": "Owen"
             },
             "$6 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Ty",
                 "new_manager": "Owen"
             },
             "Jalen Tolbert": {
@@ -49858,7 +49858,7 @@
                 "new_manager": "Luke"
             },
             "$10 FAAB": {
-                "old_manager": "Luke",
+                "old_manager": "Tommy",
                 "new_manager": "Luke"
             },
             "Jahan Dotson": {
@@ -49879,19 +49879,19 @@
         ],
         "players_involved": [
             "Jalen Tolbert",
-            "$10 FAAB",
-            "Zamir White"
+            "Zamir White",
+            "$10 FAAB"
         ],
         "trade_details": {
             "Jalen Tolbert": {
                 "old_manager": "Tommy",
                 "new_manager": "Owen"
             },
-            "$10 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
-            },
             "Zamir White": {
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
+            },
+            "$10 FAAB": {
                 "old_manager": "Owen",
                 "new_manager": "Tommy"
             }
@@ -50455,8 +50455,8 @@
                 "new_manager": "Owen"
             },
             "$2 FAAB": {
-                "old_manager": "Luke",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Luke"
             }
         }
     },
@@ -50923,7 +50923,7 @@
                 "new_manager": "Owen"
             },
             "$1 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Ty",
                 "new_manager": "Owen"
             },
             "Tom Brady": {
@@ -51200,7 +51200,7 @@
                 "new_manager": "Cody"
             },
             "$20 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Christian",
                 "new_manager": "Cody"
             },
             "Antonio Gibson": {
@@ -51335,7 +51335,7 @@
         ],
         "trade_details": {
             "$15 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Tommy",
                 "new_manager": "Davey"
             },
             "Treylon Burks": {
@@ -51830,7 +51830,7 @@
         ],
         "trade_details": {
             "$26 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Dheeraj",
                 "new_manager": "Owen"
             },
             "Jahan Dotson": {
@@ -51997,19 +51997,19 @@
         ],
         "players_involved": [
             "Tom Brady",
-            "$1 FAAB",
-            "Skyy Moore"
+            "Skyy Moore",
+            "$1 FAAB"
         ],
         "trade_details": {
             "Tom Brady": {
                 "old_manager": "Ty",
                 "new_manager": "Owen"
             },
-            "$1 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
             "Skyy Moore": {
+                "old_manager": "Owen",
+                "new_manager": "Ty"
+            },
+            "$1 FAAB": {
                 "old_manager": "Owen",
                 "new_manager": "Ty"
             }
@@ -52099,7 +52099,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Christian",
                 "new_manager": "Anthony"
             },
             "Kirk Cousins": {
@@ -52138,7 +52138,7 @@
         ],
         "trade_details": {
             "$3 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Owen",
                 "new_manager": "Cody"
             },
             "Harrison Butker": {
@@ -52451,8 +52451,8 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Anthony",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Anthony"
             }
         }
     },
@@ -52477,7 +52477,7 @@
                 "new_manager": "Owen"
             },
             "$6 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Anthony",
                 "new_manager": "Owen"
             },
             "Brandon Aiyuk": {
@@ -52775,7 +52775,7 @@
                 "new_manager": "Owen"
             },
             "$10 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Anthony",
                 "new_manager": "Owen"
             },
             "George Pickens": {
@@ -53213,7 +53213,7 @@
                 "new_manager": "Davey"
             },
             "$5 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Luke",
                 "new_manager": "Davey"
             },
             "Tua Tagovailoa": {
@@ -53271,12 +53271,12 @@
                 "new_manager": "Owen"
             },
             "$1 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Dheeraj"
             },
             "$2 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -53494,7 +53494,7 @@
         ],
         "trade_details": {
             "$8 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Davey",
                 "new_manager": "Owen"
             },
             "Allen Robinson": {
@@ -53755,9 +53755,9 @@
         "players_involved": [
             "Tyler Higbee",
             "Zay Jones",
-            "$21 FAAB",
             "DJ Moore",
-            "Will Dissly"
+            "Will Dissly",
+            "$21 FAAB"
         ],
         "trade_details": {
             "Tyler Higbee": {
@@ -53768,15 +53768,15 @@
                 "old_manager": "Luke",
                 "new_manager": "Cody"
             },
-            "$21 FAAB": {
-                "old_manager": "Luke",
-                "new_manager": "Cody"
-            },
             "DJ Moore": {
                 "old_manager": "Cody",
                 "new_manager": "Luke"
             },
             "Will Dissly": {
+                "old_manager": "Cody",
+                "new_manager": "Luke"
+            },
+            "$21 FAAB": {
                 "old_manager": "Cody",
                 "new_manager": "Luke"
             }
@@ -53875,8 +53875,8 @@
                 "new_manager": "Anthony"
             },
             "$4 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Ty"
             }
         }
     },
@@ -54995,8 +54995,8 @@
                 "new_manager": "Owen"
             },
             "$15 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -55972,7 +55972,7 @@
                 "new_manager": "Owen"
             },
             "$8 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Mitch",
                 "new_manager": "Owen"
             },
             "Drake London": {
@@ -56209,8 +56209,8 @@
                 "new_manager": "Anthony"
             },
             "$7 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -56523,7 +56523,7 @@
         ],
         "trade_details": {
             "$8 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Soup",
                 "new_manager": "Davey"
             },
             "Darnell Mooney": {
@@ -56918,8 +56918,8 @@
                 "new_manager": "Cody"
             },
             "$8 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
+                "old_manager": "Cody",
+                "new_manager": "Mitch"
             }
         }
     },
@@ -57602,7 +57602,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Christian",
                 "new_manager": "Owen"
             },
             "Daniel Jones": {
@@ -57731,8 +57731,8 @@
                 "new_manager": "Owen"
             },
             "$8 FAAB": {
-                "old_manager": "Luke",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Luke"
             }
         }
     },
@@ -58394,19 +58394,19 @@
         ],
         "players_involved": [
             "Chase Claypool",
-            "$10 FAAB",
-            "Tyler Boyd"
+            "Tyler Boyd",
+            "$10 FAAB"
         ],
         "trade_details": {
             "Chase Claypool": {
                 "old_manager": "Luke",
                 "new_manager": "Owen"
             },
-            "$10 FAAB": {
-                "old_manager": "Luke",
-                "new_manager": "Owen"
-            },
             "Tyler Boyd": {
+                "old_manager": "Owen",
+                "new_manager": "Luke"
+            },
+            "$10 FAAB": {
                 "old_manager": "Owen",
                 "new_manager": "Luke"
             }
@@ -58462,7 +58462,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Soup",
                 "new_manager": "Mitch"
             },
             "Drake London": {
@@ -58653,7 +58653,7 @@
         ],
         "trade_details": {
             "$3 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Dheeraj",
                 "new_manager": "Owen"
             },
             "DeAndre Carter": {
@@ -58683,7 +58683,7 @@
                 "new_manager": "Owen"
             },
             "$7 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Dheeraj",
                 "new_manager": "Owen"
             },
             "Curtis Samuel": {
@@ -58756,7 +58756,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Owen",
                 "new_manager": "Cody"
             },
             "Curtis Samuel": {
@@ -58905,7 +58905,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Soup",
+                "old_manager": "Dheeraj",
                 "new_manager": "Soup"
             },
             "Gerald Everett": {
@@ -58938,8 +58938,8 @@
                 "new_manager": "Tommy"
             },
             "$6 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
+                "old_manager": "Tommy",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -59005,7 +59005,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Dheeraj",
                 "new_manager": "Tommy"
             },
             "Hayden Hurst": {
@@ -59771,8 +59771,8 @@
                 "new_manager": "Owen"
             },
             "$4 FAAB": {
-                "old_manager": "Anthony",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Anthony"
             }
         }
     },
@@ -59898,7 +59898,7 @@
         ],
         "trade_details": {
             "$7 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Soup",
                 "new_manager": "Mitch"
             },
             "Darren Waller": {
@@ -60687,8 +60687,8 @@
                 "new_manager": "Owen"
             },
             "$5 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Mitch"
             }
         }
     },
@@ -61633,8 +61633,8 @@
         "players_involved": [
             "Kenyan Drake",
             "J.K. Dobbins",
-            "$10 FAAB",
-            "Adam Thielen"
+            "Adam Thielen",
+            "$10 FAAB"
         ],
         "trade_details": {
             "Kenyan Drake": {
@@ -61645,11 +61645,11 @@
                 "old_manager": "Christian",
                 "new_manager": "Soup"
             },
-            "$10 FAAB": {
-                "old_manager": "Christian",
-                "new_manager": "Soup"
-            },
             "Adam Thielen": {
+                "old_manager": "Soup",
+                "new_manager": "Christian"
+            },
+            "$10 FAAB": {
                 "old_manager": "Soup",
                 "new_manager": "Christian"
             }
@@ -62397,12 +62397,12 @@
                 "new_manager": "Cody"
             },
             "$1 FAAB": {
-                "old_manager": "Anthony",
-                "new_manager": "Cody"
+                "old_manager": "Cody",
+                "new_manager": "Anthony"
             },
             "$3 FAAB": {
-                "old_manager": "Anthony",
-                "new_manager": "Cody"
+                "old_manager": "Cody",
+                "new_manager": "Anthony"
             }
         }
     },
@@ -65549,7 +65549,7 @@
         ],
         "trade_details": {
             "$20 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Ty",
                 "new_manager": "Owen"
             },
             "Gus Edwards": {
@@ -66077,7 +66077,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Tommy",
                 "new_manager": "Owen"
             },
             "Kendre Miller": {
@@ -66494,12 +66494,12 @@
                 "new_manager": "Mitch"
             },
             "$1 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Mitch"
+                "old_manager": "Mitch",
+                "new_manager": "Dheeraj"
             },
             "$5 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Mitch"
+                "old_manager": "Mitch",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -66912,7 +66912,7 @@
         ],
         "trade_details": {
             "$13 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Sam",
                 "new_manager": "Mitch"
             },
             "Sam LaPorta": {
@@ -67215,8 +67215,8 @@
                 "new_manager": "Owen"
             },
             "$6 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -67492,7 +67492,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Sach",
                 "new_manager": "Cody"
             },
             "A.J. Dillon": {
@@ -67712,8 +67712,8 @@
                 "new_manager": "Tommy"
             },
             "$1 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Tommy"
+                "old_manager": "Tommy",
+                "new_manager": "Ty"
             }
         }
     },
@@ -67755,8 +67755,8 @@
                 "new_manager": "Cody"
             },
             "$15 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Cody"
+                "old_manager": "Cody",
+                "new_manager": "Ty"
             }
         }
     },
@@ -68293,8 +68293,8 @@
                 "new_manager": "Anthony"
             },
             "$12 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Mitch"
             }
         }
     },
@@ -68538,8 +68538,8 @@
                 "new_manager": "Sam"
             },
             "$2 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Sam"
+                "old_manager": "Sam",
+                "new_manager": "Ty"
             }
         }
     },
@@ -68918,7 +68918,7 @@
                 "new_manager": "Ty"
             },
             "$30 FAAB": {
-                "old_manager": "Ty",
+                "old_manager": "Dheeraj",
                 "new_manager": "Ty"
             },
             "Isiah Pacheco": {
@@ -69073,7 +69073,7 @@
                 "new_manager": "Cody"
             },
             "$1 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Tommy",
                 "new_manager": "Cody"
             },
             "Tutu Atwell": {
@@ -69859,7 +69859,7 @@
         ],
         "trade_details": {
             "$2 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Benz",
                 "new_manager": "Owen"
             },
             "Matt Breida": {
@@ -69931,8 +69931,8 @@
                 "new_manager": "Anthony"
             },
             "$2 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -69996,8 +69996,8 @@
                 "new_manager": "Sam"
             },
             "$1 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Sam"
+                "old_manager": "Sam",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -70688,7 +70688,7 @@
         ],
         "trade_details": {
             "$25 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Ty",
                 "new_manager": "Tommy"
             },
             "Kenneth Gainwell": {
@@ -70881,24 +70881,24 @@
         ],
         "players_involved": [
             "Tutu Atwell",
-            "$21 FAAB",
             "$24 FAAB",
-            "Rashee Rice"
+            "Rashee Rice",
+            "$21 FAAB"
         ],
         "trade_details": {
             "Tutu Atwell": {
                 "old_manager": "Tommy",
                 "new_manager": "Sam"
             },
-            "$21 FAAB": {
+            "$24 FAAB": {
                 "old_manager": "Tommy",
                 "new_manager": "Sam"
             },
-            "$24 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Sam"
-            },
             "Rashee Rice": {
+                "old_manager": "Sam",
+                "new_manager": "Tommy"
+            },
+            "$21 FAAB": {
                 "old_manager": "Sam",
                 "new_manager": "Tommy"
             }
@@ -71176,10 +71176,10 @@
             "Alvin Kamara",
             "Jamaal Williams",
             "Michael Pittman",
-            "$15 FAAB",
             "Jakobi Meyers",
             "Tyler Allgeier",
-            "Bijan Robinson"
+            "Bijan Robinson",
+            "$15 FAAB"
         ],
         "trade_details": {
             "Alvin Kamara": {
@@ -71194,10 +71194,6 @@
                 "old_manager": "Anthony",
                 "new_manager": "Cody"
             },
-            "$15 FAAB": {
-                "old_manager": "Anthony",
-                "new_manager": "Cody"
-            },
             "Jakobi Meyers": {
                 "old_manager": "Cody",
                 "new_manager": "Anthony"
@@ -71207,6 +71203,10 @@
                 "new_manager": "Anthony"
             },
             "Bijan Robinson": {
+                "old_manager": "Cody",
+                "new_manager": "Anthony"
+            },
+            "$15 FAAB": {
                 "old_manager": "Cody",
                 "new_manager": "Anthony"
             }
@@ -71455,7 +71455,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Anthony",
                 "new_manager": "Owen"
             },
             "Geno Smith": {
@@ -71713,7 +71713,7 @@
         ],
         "trade_details": {
             "$11 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Davey",
                 "new_manager": "Owen"
             },
             "Diontae Johnson": {
@@ -71743,7 +71743,7 @@
                 "new_manager": "Cody"
             },
             "$3 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Anthony",
                 "new_manager": "Cody"
             },
             "Jordan Love": {
@@ -71830,7 +71830,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Tommy",
                 "new_manager": "Mitch"
             },
             "Jerry Jeudy": {
@@ -71957,7 +71957,7 @@
                 "new_manager": "Anthony"
             },
             "$14 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Benz",
                 "new_manager": "Anthony"
             },
             "Dak Prescott": {
@@ -72045,7 +72045,7 @@
                 "new_manager": "Anthony"
             },
             "$1 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Davey",
                 "new_manager": "Anthony"
             },
             "Harrison Butker": {
@@ -72883,7 +72883,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Dheeraj",
                 "new_manager": "Cody"
             },
             "Jacksonville Jaguars": {
@@ -73039,7 +73039,7 @@
                 "new_manager": "Owen"
             },
             "$15 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Tommy",
                 "new_manager": "Owen"
             },
             "Gabe Davis": {
@@ -73374,8 +73374,8 @@
                 "new_manager": "Mitch"
             },
             "$1 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Mitch"
+                "old_manager": "Mitch",
+                "new_manager": "Sam"
             }
         }
     },
@@ -73605,7 +73605,7 @@
         ],
         "trade_details": {
             "$15 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Dheeraj",
                 "new_manager": "Mitch"
             },
             "Romeo Doubs": {
@@ -73792,11 +73792,11 @@
             "Calvin Ridley",
             "Tyler Allgeier",
             "Bijan Robinson",
-            "$5 FAAB",
             "Josh Jacobs",
             "Trey McBride",
             "Garrett Wilson",
-            "Tennessee Titans"
+            "Tennessee Titans",
+            "$5 FAAB"
         ],
         "trade_details": {
             "Josh Reynolds": {
@@ -73815,10 +73815,6 @@
                 "old_manager": "Anthony",
                 "new_manager": "Owen"
             },
-            "$5 FAAB": {
-                "old_manager": "Anthony",
-                "new_manager": "Owen"
-            },
             "Josh Jacobs": {
                 "old_manager": "Owen",
                 "new_manager": "Anthony"
@@ -73832,6 +73828,10 @@
                 "new_manager": "Anthony"
             },
             "Tennessee Titans": {
+                "old_manager": "Owen",
+                "new_manager": "Anthony"
+            },
+            "$5 FAAB": {
                 "old_manager": "Owen",
                 "new_manager": "Anthony"
             }
@@ -74199,7 +74199,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Anthony",
                 "new_manager": "Owen"
             },
             "Justin Fields": {
@@ -74564,8 +74564,8 @@
                 "new_manager": "Mitch"
             },
             "$12 FAAB": {
-                "old_manager": "Benz",
-                "new_manager": "Mitch"
+                "old_manager": "Mitch",
+                "new_manager": "Benz"
             }
         }
     },
@@ -74614,7 +74614,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Ty",
+                "old_manager": "Dheeraj",
                 "new_manager": "Ty"
             },
             "Roschon Johnson": {
@@ -74882,11 +74882,11 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Sam",
+                "old_manager": "Ty",
                 "new_manager": "Sam"
             },
             "$2 FAAB": {
-                "old_manager": "Sam",
+                "old_manager": "Ty",
                 "new_manager": "Sam"
             },
             "Jahan Dotson": {
@@ -75313,7 +75313,7 @@
         ],
         "trade_details": {
             "$2 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Dheeraj",
                 "new_manager": "Owen"
             },
             "Jaxon Smith-Njigba": {
@@ -75356,8 +75356,8 @@
                 "new_manager": "Owen"
             },
             "$6 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Mitch"
             }
         }
     },
@@ -75410,7 +75410,7 @@
         ],
         "trade_details": {
             "$4 FAAB": {
-                "old_manager": "Davey",
+                "old_manager": "Sam",
                 "new_manager": "Davey"
             },
             "Quentin Johnston": {
@@ -75753,7 +75753,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Tommy",
                 "new_manager": "Cody"
             },
             "Rico Dowdle": {
@@ -75797,8 +75797,8 @@
                 "new_manager": "Owen"
             },
             "$2 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Ty"
             }
         }
     },
@@ -75836,7 +75836,7 @@
                 "new_manager": "Cody"
             },
             "$10 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Sach",
                 "new_manager": "Cody"
             },
             "Ezekiel Elliott": {
@@ -76023,7 +76023,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Sam",
                 "new_manager": "Owen"
             },
             "Los Angeles Rams": {
@@ -80341,7 +80341,7 @@
         ],
         "trade_details": {
             "$35 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Dheeraj",
                 "new_manager": "Tommy"
             },
             "Justin Herbert": {
@@ -80416,7 +80416,7 @@
         ],
         "trade_details": {
             "$3 FAAB": {
-                "old_manager": "Benz",
+                "old_manager": "Christian",
                 "new_manager": "Benz"
             },
             "DeMario Douglas": {
@@ -81092,10 +81092,10 @@
         "players_involved": [
             "Josh Allen",
             "Allen Lazard",
-            "$3 FAAB",
-            "$5 FAAB",
             "Jaylen Waddle",
-            "Najee Harris"
+            "Najee Harris",
+            "$3 FAAB",
+            "$5 FAAB"
         ],
         "trade_details": {
             "Josh Allen": {
@@ -81106,19 +81106,19 @@
                 "old_manager": "Ty",
                 "new_manager": "Anthony"
             },
-            "$3 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Anthony"
-            },
-            "$5 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Anthony"
-            },
             "Jaylen Waddle": {
                 "old_manager": "Anthony",
                 "new_manager": "Ty"
             },
             "Najee Harris": {
+                "old_manager": "Anthony",
+                "new_manager": "Ty"
+            },
+            "$3 FAAB": {
+                "old_manager": "Anthony",
+                "new_manager": "Ty"
+            },
+            "$5 FAAB": {
                 "old_manager": "Anthony",
                 "new_manager": "Ty"
             }
@@ -81393,8 +81393,8 @@
                 "new_manager": "Anthony"
             },
             "$5 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Mitch"
             }
         }
     },
@@ -81414,7 +81414,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Sach",
                 "new_manager": "Owen"
             },
             "Courtland Sutton": {
@@ -81523,8 +81523,8 @@
                 "new_manager": "Anthony"
             },
             "$4 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -81697,8 +81697,8 @@
                 "new_manager": "Owen"
             },
             "$2 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Ty"
             }
         }
     },
@@ -81755,8 +81755,8 @@
                 "new_manager": "Mitch"
             },
             "$10 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
+                "old_manager": "Mitch",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -82422,8 +82422,8 @@
                 "new_manager": "Owen"
             },
             "$2 FAAB": {
-                "old_manager": "Davey",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Davey"
             }
         }
     },
@@ -82464,19 +82464,19 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Davey",
                 "new_manager": "Anthony"
             },
             "$2 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Davey",
                 "new_manager": "Anthony"
             },
             "$3 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Davey",
                 "new_manager": "Anthony"
             },
             "$4 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Davey",
                 "new_manager": "Anthony"
             },
             "Derek Carr": {
@@ -82663,19 +82663,19 @@
         ],
         "players_involved": [
             "Jameson Williams",
-            "$15 FAAB",
-            "Jaylen Waddle"
+            "Jaylen Waddle",
+            "$15 FAAB"
         ],
         "trade_details": {
             "Jameson Williams": {
                 "old_manager": "Sam",
                 "new_manager": "Owen"
             },
-            "$15 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Owen"
-            },
             "Jaylen Waddle": {
+                "old_manager": "Owen",
+                "new_manager": "Sam"
+            },
+            "$15 FAAB": {
                 "old_manager": "Owen",
                 "new_manager": "Sam"
             }
@@ -82793,8 +82793,8 @@
                 "new_manager": "Anthony"
             },
             "$2 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -83062,8 +83062,8 @@
                 "new_manager": "Tommy"
             },
             "$1 FAAB": {
-                "old_manager": "Christian",
-                "new_manager": "Tommy"
+                "old_manager": "Tommy",
+                "new_manager": "Christian"
             }
         }
     },
@@ -83170,7 +83170,7 @@
         ],
         "trade_details": {
             "$7 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Christian",
                 "new_manager": "Tommy"
             },
             "Cam Akers": {
@@ -83212,7 +83212,7 @@
         ],
         "trade_details": {
             "$10 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Dheeraj",
                 "new_manager": "Mitch"
             },
             "Samaje Perine": {
@@ -83425,8 +83425,8 @@
                 "new_manager": "Tommy"
             },
             "$4 FAAB": {
-                "old_manager": "Benz",
-                "new_manager": "Tommy"
+                "old_manager": "Tommy",
+                "new_manager": "Benz"
             }
         }
     },
@@ -83759,10 +83759,10 @@
             "Trey Benson",
             "James Conner",
             "Michael Pittman",
-            "$10 FAAB",
             "Joe Mixon",
             "Dare Ogunbowale",
-            "Darnell Mooney"
+            "Darnell Mooney",
+            "$10 FAAB"
         ],
         "trade_details": {
             "Trey Benson": {
@@ -83777,10 +83777,6 @@
                 "old_manager": "Owen",
                 "new_manager": "Cody"
             },
-            "$10 FAAB": {
-                "old_manager": "Owen",
-                "new_manager": "Cody"
-            },
             "Joe Mixon": {
                 "old_manager": "Cody",
                 "new_manager": "Owen"
@@ -83790,6 +83786,10 @@
                 "new_manager": "Owen"
             },
             "Darnell Mooney": {
+                "old_manager": "Cody",
+                "new_manager": "Owen"
+            },
+            "$10 FAAB": {
                 "old_manager": "Cody",
                 "new_manager": "Owen"
             }
@@ -83855,8 +83855,8 @@
                 "new_manager": "Christian"
             },
             "$8 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Christian"
+                "old_manager": "Christian",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -83876,7 +83876,7 @@
         ],
         "trade_details": {
             "$7 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Dheeraj",
                 "new_manager": "Owen"
             },
             "Tucker Kraft": {
@@ -84339,8 +84339,8 @@
                 "new_manager": "Tommy"
             },
             "$3 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
+                "old_manager": "Tommy",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -84484,7 +84484,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Sam",
+                "old_manager": "Ty",
                 "new_manager": "Sam"
             },
             "Sam Darnold": {
@@ -84586,8 +84586,8 @@
                 "new_manager": "Sach"
             },
             "$10 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Sach"
+                "old_manager": "Sach",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -84712,8 +84712,8 @@
                 "new_manager": "Owen"
             },
             "$15 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Sam"
             }
         }
     },
@@ -84967,7 +84967,7 @@
         ],
         "trade_details": {
             "$2 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Ty",
                 "new_manager": "Mitch"
             },
             "Roschon Johnson": {
@@ -85284,7 +85284,7 @@
         ],
         "trade_details": {
             "$7 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Dheeraj",
                 "new_manager": "Tommy"
             },
             "Jordan Whittington": {
@@ -85524,8 +85524,8 @@
                 "new_manager": "Sach"
             },
             "$2 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Sach"
+                "old_manager": "Sach",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -85625,7 +85625,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Tommy",
                 "new_manager": "Owen"
             },
             "Christian Kirk": {
@@ -86084,7 +86084,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Sach",
                 "new_manager": "Mitch"
             },
             "Trey Sermon": {
@@ -86329,7 +86329,7 @@
         ],
         "trade_details": {
             "$3 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Dheeraj",
                 "new_manager": "Anthony"
             },
             "Jaylen Wright": {
@@ -86354,7 +86354,7 @@
         ],
         "trade_details": {
             "$7 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Sam",
                 "new_manager": "Owen"
             },
             "Jerome Ford": {
@@ -86397,7 +86397,7 @@
         ],
         "trade_details": {
             "$4 FAAB": {
-                "old_manager": "Ty",
+                "old_manager": "Dheeraj",
                 "new_manager": "Ty"
             },
             "Roschon Johnson": {
@@ -87362,7 +87362,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Sach",
+                "old_manager": "Tommy",
                 "new_manager": "Sach"
             },
             "Mike Gesicki": {
@@ -87489,7 +87489,7 @@
                 "new_manager": "Sam"
             },
             "$1 FAAB": {
-                "old_manager": "Sam",
+                "old_manager": "Tommy",
                 "new_manager": "Sam"
             },
             "Matthew Stafford": {
@@ -88148,8 +88148,8 @@
                 "new_manager": "Owen"
             },
             "$5 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Sam"
             }
         }
     },
@@ -88449,8 +88449,8 @@
                 "new_manager": "Cody"
             },
             "$5 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
+                "old_manager": "Cody",
+                "new_manager": "Mitch"
             }
         }
     },
@@ -89495,7 +89495,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Dheeraj",
                 "new_manager": "Mitch"
             },
             "Ricky Pearsall": {
@@ -89846,7 +89846,7 @@
         ],
         "trade_details": {
             "$2 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Sam",
                 "new_manager": "Owen"
             },
             "Xavier Worthy": {
@@ -89871,7 +89871,7 @@
         ],
         "trade_details": {
             "$4 FAAB": {
-                "old_manager": "Benz",
+                "old_manager": "Dheeraj",
                 "new_manager": "Benz"
             },
             "Devin Singletary": {
@@ -90507,7 +90507,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Anthony",
                 "new_manager": "Owen"
             },
             "C.J. Stroud": {
@@ -93029,19 +93029,19 @@
         ],
         "players_involved": [
             "Dont'e Thornton",
-            "$1 FAAB",
-            "Will Shipley"
+            "Will Shipley",
+            "$1 FAAB"
         ],
         "trade_details": {
             "Dont'e Thornton": {
                 "old_manager": "Sam",
                 "new_manager": "Jay"
             },
-            "$1 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Jay"
-            },
             "Will Shipley": {
+                "old_manager": "Jay",
+                "new_manager": "Sam"
+            },
+            "$1 FAAB": {
                 "old_manager": "Jay",
                 "new_manager": "Sam"
             }
@@ -93095,7 +93095,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Anthony",
                 "new_manager": "Cody"
             },
             "Elic Ayomanor": {
@@ -93848,8 +93848,8 @@
                 "new_manager": "Jay"
             },
             "$3 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Jay"
+                "old_manager": "Jay",
+                "new_manager": "Ty"
             }
         }
     },
@@ -93904,7 +93904,7 @@
                 "new_manager": "Owen"
             },
             "$5 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Ty",
                 "new_manager": "Owen"
             },
             "Travis Etienne": {
@@ -94036,19 +94036,19 @@
         ],
         "players_involved": [
             "Romeo Doubs",
-            "$4 FAAB",
-            "Rashod Bateman"
+            "Rashod Bateman",
+            "$4 FAAB"
         ],
         "trade_details": {
             "Romeo Doubs": {
                 "old_manager": "Sam",
                 "new_manager": "Jay"
             },
-            "$4 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Jay"
-            },
             "Rashod Bateman": {
+                "old_manager": "Jay",
+                "new_manager": "Sam"
+            },
+            "$4 FAAB": {
                 "old_manager": "Jay",
                 "new_manager": "Sam"
             }
@@ -94694,8 +94694,8 @@
         "players_involved": [
             "Tre' Harris",
             "Jordan Addison",
-            "$5 FAAB",
-            "Keenan Allen"
+            "Keenan Allen",
+            "$5 FAAB"
         ],
         "trade_details": {
             "Tre' Harris": {
@@ -94706,11 +94706,11 @@
                 "old_manager": "Jay",
                 "new_manager": "Cody"
             },
-            "$5 FAAB": {
-                "old_manager": "Jay",
-                "new_manager": "Cody"
-            },
             "Keenan Allen": {
+                "old_manager": "Cody",
+                "new_manager": "Jay"
+            },
+            "$5 FAAB": {
                 "old_manager": "Cody",
                 "new_manager": "Jay"
             }
@@ -95049,7 +95049,7 @@
                 "new_manager": "Cody"
             },
             "$6 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Jay",
                 "new_manager": "Cody"
             },
             "Blake Corum": {
@@ -95079,7 +95079,7 @@
                 "new_manager": "Cody"
             },
             "$2 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Benz",
                 "new_manager": "Cody"
             },
             "Miles Sanders": {
@@ -95158,20 +95158,20 @@
             "trade"
         ],
         "players_involved": [
-            "$2 FAAB",
             "$4 FAAB",
-            "Josh Downs"
+            "Josh Downs",
+            "$2 FAAB"
         ],
         "trade_details": {
-            "$2 FAAB": {
+            "$4 FAAB": {
                 "old_manager": "Tommy",
                 "new_manager": "Mitch"
             },
-            "$4 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Mitch"
-            },
             "Josh Downs": {
+                "old_manager": "Mitch",
+                "new_manager": "Tommy"
+            },
+            "$2 FAAB": {
                 "old_manager": "Mitch",
                 "new_manager": "Tommy"
             }
@@ -95294,7 +95294,7 @@
         ],
         "trade_details": {
             "$9 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Sam",
                 "new_manager": "Mitch"
             },
             "Daniel Jones": {
@@ -95343,17 +95343,17 @@
             "trade"
         ],
         "players_involved": [
-            "$1 FAAB",
-            "$2 FAAB"
+            "$2 FAAB",
+            "$1 FAAB"
         ],
         "trade_details": {
-            "$1 FAAB": {
+            "$2 FAAB": {
                 "old_manager": "Tommy",
                 "new_manager": "Jay"
             },
-            "$2 FAAB": {
+            "$1 FAAB": {
                 "old_manager": "Jay",
-                "new_manager": "Jay"
+                "new_manager": "Tommy"
             }
         }
     },
@@ -95368,20 +95368,20 @@
             "trade"
         ],
         "players_involved": [
-            "$2 FAAB",
             "$1 FAAB",
-            "Jayden Higgins"
+            "Jayden Higgins",
+            "$2 FAAB"
         ],
         "trade_details": {
-            "$2 FAAB": {
+            "$1 FAAB": {
                 "old_manager": "Tommy",
                 "new_manager": "Jay"
             },
-            "$1 FAAB": {
-                "old_manager": "Jay",
-                "new_manager": "Jay"
-            },
             "Jayden Higgins": {
+                "old_manager": "Jay",
+                "new_manager": "Tommy"
+            },
+            "$2 FAAB": {
                 "old_manager": "Jay",
                 "new_manager": "Tommy"
             }
@@ -95435,7 +95435,7 @@
         ],
         "trade_details": {
             "$2 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Tommy",
                 "new_manager": "Mitch"
             },
             "Kayshon Boutte": {
@@ -95464,8 +95464,8 @@
                 "new_manager": "Sach"
             },
             "$3 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Sach"
+                "old_manager": "Sach",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -95886,7 +95886,7 @@
         ],
         "trade_details": {
             "$60 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Dheeraj",
                 "new_manager": "Tommy"
             },
             "Harold Fannin": {
@@ -95929,8 +95929,8 @@
                 "new_manager": "Mitch"
             },
             "$2 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
+                "old_manager": "Mitch",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -96000,7 +96000,7 @@
                 "new_manager": "Jay"
             },
             "$1 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Ty",
                 "new_manager": "Jay"
             },
             "Dallas Goedert": {
@@ -96096,7 +96096,7 @@
         ],
         "trade_details": {
             "$14 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Sach",
                 "new_manager": "Anthony"
             },
             "Ray Davis": {
@@ -96144,7 +96144,7 @@
                 "new_manager": "Jay"
             },
             "$2 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Ty",
                 "new_manager": "Jay"
             },
             "Darnell Mooney": {
@@ -96384,7 +96384,7 @@
                 "new_manager": "Cody"
             },
             "$5 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Jay",
                 "new_manager": "Cody"
             },
             "Brian Thomas": {
@@ -96658,21 +96658,21 @@
         ],
         "players_involved": [
             "Dylan Sampson",
-            "$3 FAAB",
-            "$1 FAAB"
+            "$1 FAAB",
+            "$3 FAAB"
         ],
         "trade_details": {
             "Dylan Sampson": {
                 "old_manager": "Dheeraj",
                 "new_manager": "Ty"
             },
-            "$3 FAAB": {
+            "$1 FAAB": {
                 "old_manager": "Dheeraj",
                 "new_manager": "Ty"
             },
-            "$1 FAAB": {
+            "$3 FAAB": {
                 "old_manager": "Ty",
-                "new_manager": "Ty"
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -96714,7 +96714,7 @@
                 "new_manager": "Jay"
             },
             "$7 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Ty",
                 "new_manager": "Jay"
             },
             "Blake Corum": {
@@ -96802,8 +96802,8 @@
                 "new_manager": "Tommy"
             },
             "$3 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
+                "old_manager": "Tommy",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -96917,7 +96917,7 @@
         ],
         "trade_details": {
             "$10 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Ty",
                 "new_manager": "Owen"
             },
             "Joe Mixon": {
@@ -97224,8 +97224,8 @@
                 "new_manager": "Jay"
             },
             "$10 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Jay"
+                "old_manager": "Jay",
+                "new_manager": "Mitch"
             }
         }
     },
@@ -97263,8 +97263,8 @@
                 "new_manager": "Jay"
             },
             "$1 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Jay"
+                "old_manager": "Jay",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -97561,8 +97561,8 @@
                 "new_manager": "Owen"
             },
             "$5 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -97618,8 +97618,8 @@
                 "new_manager": "Anthony"
             },
             "$10 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Sam"
             }
         }
     },
@@ -97650,7 +97650,7 @@
                 "new_manager": "Tommy"
             },
             "$15 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Ty",
                 "new_manager": "Tommy"
             },
             "Tre Tucker": {
@@ -97765,7 +97765,7 @@
         ],
         "trade_details": {
             "$2 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Mitch",
                 "new_manager": "Jay"
             },
             "Alec Pierce": {
@@ -97951,7 +97951,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Mitch",
+                "old_manager": "Tommy",
                 "new_manager": "Mitch"
             },
             "Isaiah Bond": {
@@ -98095,11 +98095,11 @@
             "Mike Evans",
             "Josh Jacobs",
             "Jake Ferguson",
-            "$25 FAAB",
             "Cooper Kupp",
             "Saquon Barkley",
             "A.J. Dillon",
-            "Zay Flowers"
+            "Zay Flowers",
+            "$25 FAAB"
         ],
         "trade_details": {
             "Emanuel Wilson": {
@@ -98118,10 +98118,6 @@
                 "old_manager": "Anthony",
                 "new_manager": "Cody"
             },
-            "$25 FAAB": {
-                "old_manager": "Anthony",
-                "new_manager": "Cody"
-            },
             "Cooper Kupp": {
                 "old_manager": "Cody",
                 "new_manager": "Anthony"
@@ -98135,6 +98131,10 @@
                 "new_manager": "Anthony"
             },
             "Zay Flowers": {
+                "old_manager": "Cody",
+                "new_manager": "Anthony"
+            },
+            "$25 FAAB": {
                 "old_manager": "Cody",
                 "new_manager": "Anthony"
             }
@@ -98569,8 +98569,8 @@
                 "new_manager": "Owen"
             },
             "$3 FAAB": {
-                "old_manager": "Jay",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Jay"
             }
         }
     },
@@ -98718,8 +98718,8 @@
                 "new_manager": "Owen"
             },
             "$4 FAAB": {
-                "old_manager": "Jay",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Jay"
             }
         }
     },
@@ -98809,10 +98809,10 @@
             "Isaiah Davis",
             "Jordan Mason",
             "Jordan Addison",
-            "$3 FAAB",
             "David Montgomery",
             "Romeo Doubs",
-            "Kayshon Boutte"
+            "Kayshon Boutte",
+            "$3 FAAB"
         ],
         "trade_details": {
             "Isaiah Davis": {
@@ -98827,10 +98827,6 @@
                 "old_manager": "Jay",
                 "new_manager": "Cody"
             },
-            "$3 FAAB": {
-                "old_manager": "Jay",
-                "new_manager": "Cody"
-            },
             "David Montgomery": {
                 "old_manager": "Cody",
                 "new_manager": "Jay"
@@ -98840,6 +98836,10 @@
                 "new_manager": "Jay"
             },
             "Kayshon Boutte": {
+                "old_manager": "Cody",
+                "new_manager": "Jay"
+            },
+            "$3 FAAB": {
                 "old_manager": "Cody",
                 "new_manager": "Jay"
             }
@@ -98991,7 +98991,7 @@
         ],
         "trade_details": {
             "$10 FAAB": {
-                "old_manager": "Sam",
+                "old_manager": "Tommy",
                 "new_manager": "Sam"
             },
             "Travis Hunter": {
@@ -99198,8 +99198,8 @@
                 "new_manager": "Mitch"
             },
             "$2 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Mitch"
+                "old_manager": "Mitch",
+                "new_manager": "Ty"
             }
         }
     },
@@ -99890,7 +99890,7 @@
         ],
         "trade_details": {
             "$2 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Tommy",
                 "new_manager": "Jay"
             },
             "Kyler Murray": {
@@ -100096,11 +100096,11 @@
                 "new_manager": "Owen"
             },
             "$6 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Jay",
                 "new_manager": "Owen"
             },
             "$1 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Tommy",
                 "new_manager": "Owen"
             },
             "Mason Taylor": {
@@ -100170,8 +100170,8 @@
                 "new_manager": "Ty"
             },
             "$2 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
+                "old_manager": "Ty",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -100291,8 +100291,8 @@
                 "new_manager": "Mitch"
             },
             "$5 FAAB": {
-                "old_manager": "Sam",
-                "new_manager": "Mitch"
+                "old_manager": "Mitch",
+                "new_manager": "Sam"
             }
         }
     },
@@ -100473,24 +100473,24 @@
         ],
         "players_involved": [
             "Jaxson Dart",
+            "Kyler Murray",
             "$1 FAAB",
-            "$2 FAAB",
-            "Kyler Murray"
+            "$2 FAAB"
         ],
         "trade_details": {
             "Jaxson Dart": {
                 "old_manager": "Jay",
                 "new_manager": "Anthony"
             },
+            "Kyler Murray": {
+                "old_manager": "Anthony",
+                "new_manager": "Jay"
+            },
             "$1 FAAB": {
-                "old_manager": "Jay",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Jay"
             },
             "$2 FAAB": {
-                "old_manager": "Jay",
-                "new_manager": "Anthony"
-            },
-            "Kyler Murray": {
                 "old_manager": "Anthony",
                 "new_manager": "Jay"
             }
@@ -100512,7 +100512,7 @@
         ],
         "trade_details": {
             "$10 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Benz",
                 "new_manager": "Jay"
             },
             "Hunter Henry": {
@@ -100611,11 +100611,11 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Ty",
                 "new_manager": "Anthony"
             },
             "$3 FAAB": {
-                "old_manager": "Anthony",
+                "old_manager": "Ty",
                 "new_manager": "Anthony"
             },
             "Green Bay Packers": {
@@ -100670,7 +100670,7 @@
         ],
         "trade_details": {
             "$4 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Dheeraj",
                 "new_manager": "Tommy"
             },
             "Zonovan Knight": {
@@ -100695,7 +100695,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Benz",
                 "new_manager": "Owen"
             },
             "Tyrone Tracy": {
@@ -100786,8 +100786,8 @@
                 "new_manager": "Owen"
             },
             "$4 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -100825,8 +100825,8 @@
                 "new_manager": "Anthony"
             },
             "$1 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -101009,7 +101009,7 @@
                 "new_manager": "Owen"
             },
             "$3 FAAB": {
-                "old_manager": "Owen",
+                "old_manager": "Tommy",
                 "new_manager": "Owen"
             },
             "Kyle Monangai": {
@@ -101039,7 +101039,7 @@
                 "new_manager": "Jay"
             },
             "$1 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Ty",
                 "new_manager": "Jay"
             },
             "Justin Fields": {
@@ -101083,8 +101083,8 @@
                 "new_manager": "Owen"
             },
             "$2 FAAB": {
-                "old_manager": "Jay",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Jay"
             }
         }
     },
@@ -101140,8 +101140,8 @@
                 "new_manager": "Jay"
             },
             "$6 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Jay"
+                "old_manager": "Jay",
+                "new_manager": "Dheeraj"
             }
         }
     },
@@ -101720,9 +101720,9 @@
             "Bucky Irving",
             "Darnell Mooney",
             "Brian Robinson",
-            "$10 FAAB",
             "Blake Corum",
-            "Kyren Williams"
+            "Kyren Williams",
+            "$10 FAAB"
         ],
         "trade_details": {
             "Bucky Irving": {
@@ -101737,15 +101737,15 @@
                 "old_manager": "Tommy",
                 "new_manager": "Owen"
             },
-            "$10 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
-            },
             "Blake Corum": {
                 "old_manager": "Owen",
                 "new_manager": "Tommy"
             },
             "Kyren Williams": {
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
+            },
+            "$10 FAAB": {
                 "old_manager": "Owen",
                 "new_manager": "Tommy"
             }
@@ -101864,8 +101864,8 @@
                 "new_manager": "Owen"
             },
             "$2 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
+                "old_manager": "Owen",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -101994,8 +101994,8 @@
                 "new_manager": "Anthony"
             },
             "$1 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Ty"
             }
         }
     },
@@ -102058,7 +102058,7 @@
         ],
         "trade_details": {
             "$5 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Ty",
                 "new_manager": "Jay"
             },
             "Jerry Jeudy": {
@@ -102094,19 +102094,19 @@
         ],
         "players_involved": [
             "Alec Pierce",
-            "$7 FAAB",
-            "Elic Ayomanor"
+            "Elic Ayomanor",
+            "$7 FAAB"
         ],
         "trade_details": {
             "Alec Pierce": {
                 "old_manager": "Mitch",
                 "new_manager": "Jay"
             },
-            "$7 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Jay"
-            },
             "Elic Ayomanor": {
+                "old_manager": "Jay",
+                "new_manager": "Mitch"
+            },
+            "$7 FAAB": {
                 "old_manager": "Jay",
                 "new_manager": "Mitch"
             }
@@ -102227,8 +102227,8 @@
                 "new_manager": "Anthony"
             },
             "$2 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Anthony"
+                "old_manager": "Anthony",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -102274,7 +102274,7 @@
                 "new_manager": "Jay"
             },
             "$5 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Dheeraj",
                 "new_manager": "Jay"
             },
             "Romeo Doubs": {
@@ -102431,7 +102431,7 @@
         ],
         "trade_details": {
             "$3 FAAB": {
-                "old_manager": "Tommy",
+                "old_manager": "Dheeraj",
                 "new_manager": "Tommy"
             },
             "Joe Flacco": {
@@ -103114,7 +103114,7 @@
         ],
         "trade_details": {
             "$6 FAAB": {
-                "old_manager": "Benz",
+                "old_manager": "Dheeraj",
                 "new_manager": "Benz"
             },
             "Hunter Henry": {
@@ -103673,8 +103673,8 @@
                 "new_manager": "Jay"
             },
             "$10 FAAB": {
-                "old_manager": "Ty",
-                "new_manager": "Jay"
+                "old_manager": "Jay",
+                "new_manager": "Ty"
             }
         }
     },
@@ -103960,8 +103960,8 @@
                 "new_manager": "Sach"
             },
             "$2 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Sach"
+                "old_manager": "Sach",
+                "new_manager": "Tommy"
             }
         }
     },
@@ -104234,10 +104234,10 @@
         "players_involved": [
             "Rashee Rice",
             "Chris Godwin",
-            "$10 FAAB",
             "Tetairoa McMillan",
             "Joe Mixon",
-            "George Pickens"
+            "George Pickens",
+            "$10 FAAB"
         ],
         "trade_details": {
             "Rashee Rice": {
@@ -104245,10 +104245,6 @@
                 "new_manager": "Mitch"
             },
             "Chris Godwin": {
-                "old_manager": "Sam",
-                "new_manager": "Mitch"
-            },
-            "$10 FAAB": {
                 "old_manager": "Sam",
                 "new_manager": "Mitch"
             },
@@ -104261,6 +104257,10 @@
                 "new_manager": "Sam"
             },
             "George Pickens": {
+                "old_manager": "Mitch",
+                "new_manager": "Sam"
+            },
+            "$10 FAAB": {
                 "old_manager": "Mitch",
                 "new_manager": "Sam"
             }
@@ -104279,9 +104279,9 @@
         "players_involved": [
             "Omarion Hampton",
             "Romeo Doubs",
-            "$5 FAAB",
             "Keon Coleman",
-            "TreVeyon Henderson"
+            "TreVeyon Henderson",
+            "$5 FAAB"
         ],
         "trade_details": {
             "Omarion Hampton": {
@@ -104292,15 +104292,15 @@
                 "old_manager": "Dheeraj",
                 "new_manager": "Mitch"
             },
-            "$5 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Mitch"
-            },
             "Keon Coleman": {
                 "old_manager": "Mitch",
                 "new_manager": "Dheeraj"
             },
             "TreVeyon Henderson": {
+                "old_manager": "Mitch",
+                "new_manager": "Dheeraj"
+            },
+            "$5 FAAB": {
                 "old_manager": "Mitch",
                 "new_manager": "Dheeraj"
             }
@@ -104881,7 +104881,7 @@
         ],
         "trade_details": {
             "$4 FAAB": {
-                "old_manager": "Cody",
+                "old_manager": "Jay",
                 "new_manager": "Cody"
             },
             "Kansas City Chiefs": {
@@ -104941,7 +104941,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Tommy",
                 "new_manager": "Jay"
             },
             "Los Angeles Chargers": {
@@ -105034,7 +105034,7 @@
         ],
         "trade_details": {
             "$3 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Tommy",
                 "new_manager": "Jay"
             },
             "Jordan Mason": {
@@ -105537,7 +105537,7 @@
         ],
         "trade_details": {
             "$1 FAAB": {
-                "old_manager": "Sach",
+                "old_manager": "Ty",
                 "new_manager": "Sach"
             },
             "Jordan Love": {
@@ -105652,7 +105652,7 @@
                 "new_manager": "Jay"
             },
             "$4 FAAB": {
-                "old_manager": "Jay",
+                "old_manager": "Dheeraj",
                 "new_manager": "Jay"
             },
             "Jacoby Brissett": {

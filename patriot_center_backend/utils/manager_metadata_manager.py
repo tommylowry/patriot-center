@@ -1018,35 +1018,57 @@ class ManagerMetadataManager:
         return copy.deepcopy(head_to_head_overall)
 
     def _get_trade_history_between_two_managers(self, manager_1: str, manager_2: str, year: str = None) -> list:
+        
+        
+
+        years = list(self._cache[manager_1].get("years", {}).keys())
+        if year:
+            years = [year]
+        
+        # Gather all transaction IDs for manager_1
+        transaction_ids = []
+        for y in years:
+            weeks = copy.deepcopy(self._cache[manager_1]["years"][y]["weeks"])
+            for w in weeks:
+                weekly_trade_transaction_ids = copy.deepcopy(self._cache.get(manager_1, {}).get("years", {}).get(y, {}).get("weeks", {}).get(w, {}).get("transactions", {}).get("trades", {}).get("transaction_ids", []))
+                transaction_ids.extend(weekly_trade_transaction_ids)
+
+
+        transactions_cache = load_cache(TRANSACTION_IDS_FILE)
+
+        # Filter to only those involving both managers
+        for tid in copy.deepcopy(transaction_ids):
+            if manager_2 not in transactions_cache.get(tid, {}).get("managers_involved", []):
+                transaction_ids.remove(tid)
+
+
         trades_between = []
+        
 
-        transactions = load_cache(TRANSACTION_IDS_FILE)
+        for t in transaction_ids:
+            trans =  transactions_cache[t]
+            trade_item = {
+                "year": trans["year"],
+                "week": trans["week"],
+                f"{manager_1.lower().replace(' ', '_')}_received": [],
+                f"{manager_1.lower().replace(' ', '_')}_sent": [],
+                f"{manager_2.lower().replace(' ', '_')}_received": [],
+                f"{manager_2.lower().replace(' ', '_')}_sent": [],
+            }
 
-        for trans in transactions.values():
-            if "trade" in trans["types"]:
-                if manager_1 in trans["managers_involved"] and manager_2 in trans["managers_involved"]:
-                    trade_item = {
-                        "year": trans["year"],
-                        "week": trans["week"],
-                        f"{manager_1.lower().replace(' ', '_')}_received": [],
-                        f"{manager_1.lower().replace(' ', '_')}_sent": [],
-                        f"{manager_2.lower().replace(' ', '_')}_received": [],
-                        f"{manager_2.lower().replace(' ', '_')}_sent": [],
-                    }
+            for m in trans["managers_involved"]:
+                if m not in [manager_1, manager_2]:
+                    trade_item[f"{m.lower().replace(' ', '_')}_received"] = []
+                    trade_item[f"{m.lower().replace(' ', '_')}_sent"] = []
+            
+            for player in trans['trade_details']:
+                old_manager = trans['trade_details'][player]['old_manager'].lower().replace(' ', '_')
+                new_manager = trans['trade_details'][player]['new_manager'].lower().replace(' ', '_')
 
-                    for m in trans["managers_involved"]:
-                        if m not in [manager_1, manager_2]:
-                            trade_item[f"{m.lower().replace(' ', '_')}_received"] = []
-                            trade_item[f"{m.lower().replace(' ', '_')}_sent"] = []
-                    
-                    for player in trans['trade_details']:
-                        old_manager = trans['trade_details'][player]['old_manager'].lower().replace(' ', '_')
-                        new_manager = trans['trade_details'][player]['new_manager'].lower().replace(' ', '_')
+                trade_item[f"{old_manager}_sent"].append(player)
+                trade_item[f"{new_manager}_received"].append(player)
 
-                        trade_item[f"{old_manager}_sent"].append(player)
-                        trade_item[f"{new_manager}_received"].append(player)
-
-                    trades_between.append(copy.deepcopy(trade_item))
+            trades_between.append(copy.deepcopy(trade_item))
         
         return trades_between
 

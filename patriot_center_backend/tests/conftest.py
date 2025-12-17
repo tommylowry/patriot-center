@@ -8,7 +8,38 @@ import pytest
 import tempfile
 import os
 from decimal import Decimal
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, patch, MagicMock
+
+# CRITICAL: Patch save_cache functions at module import level to prevent
+# cache file modifications. These patches must be applied BEFORE any service
+# modules are imported, as they call load_or_update_* functions at import time.
+# This prevents test execution from modifying production cache files.
+# We patch save_cache in cache_utils (where it's defined) to catch all usages.
+_save_cache_patcher = patch('patriot_center_backend.utils.cache_utils.save_cache', MagicMock())
+
+# Start the patcher immediately at module import time
+_save_cache_patcher.start()
+
+# Register cleanup to stop patcher when pytest exits
+def pytest_unconfigure():
+    """Stop cache patcher when pytest session ends."""
+    _save_cache_patcher.stop()
+
+
+@pytest.fixture
+def use_real_save_cache():
+    """
+    Temporarily unpatch save_cache for tests that need to test the real function.
+
+    Use this fixture in tests that specifically test save_cache functionality.
+    """
+    # Stop the global patcher temporarily
+    _save_cache_patcher.stop()
+
+    yield
+
+    # Restart the patcher after the test
+    _save_cache_patcher.start()
 
 
 @pytest.fixture

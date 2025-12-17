@@ -55,8 +55,17 @@ def load_or_update_starters_cache():
                 cache['Last_Updated_Week'] = 0  # Reset for new season
 
         # Early exit if fully up to date (prevents unnecessary API calls).
-        if last_updated_season == int(current_season) and last_updated_week == current_week:
-            break
+        if last_updated_season == int(current_season):
+            if last_updated_week == current_week:
+                break
+            # Week 17 is the final playoff week; assign final placements if reached.
+            if current_week == 17:
+                retroactively_assign_team_placement_for_player(year, cache)
+
+        # For completed seasons, retroactively assign placements if not already done.
+        # Skip the first season in LEAGUE_IDS since it may not have prior data.
+        elif year != list(LEAGUE_IDS.keys())[0]:
+                retroactively_assign_team_placement_for_player(year-1, cache)
 
         year = int(year)
         max_weeks = _get_max_weeks(year, current_season, current_week)
@@ -119,10 +128,22 @@ def load_or_update_starters_cache():
 
 def _update_players_cache(player_meta, players_cache):
     """
-    Update player cache with new player if missing.
+    Add a new player to the players cache if not already present.
+
+    Creates a cache entry with player metadata and URL-safe slug.
+    Automatically persists changes to PLAYERS_CACHE_FILE.
 
     Args:
-        player (str): Player identifier.
+        player_meta (dict): Player metadata from PLAYER_IDS.
+                           Expected keys: full_name, first_name, last_name,
+                           position, team.
+        players_cache (dict): Existing players cache to update.
+
+    Returns:
+        dict: Updated players_cache with new player added (if applicable).
+
+    Side effects:
+        Saves the updated cache to disk if a new player was added.
     """
 
     if player_meta.get("full_name") not in players_cache:
@@ -159,6 +180,30 @@ def _get_max_weeks(season, current_season, current_week):
     return 17
 
 def _get_relevant_playoff_roster_ids(season, week, league_id):
+    """
+    Determine which rosters are participating in playoffs for a given week.
+
+    Filters out regular season weeks and consolation bracket teams,
+    returning only the roster IDs competing in the winners bracket.
+
+    Rules:
+    - 2019/2020: Playoffs start week 14 (rounds 1-3 for weeks 14-16).
+    - 2021+: Playoffs start week 15 (rounds 1-3 for weeks 15-17).
+    - Week 17 in 2019/2020 (round 4) is unsupported and raises an error.
+    - Consolation bracket matchups (p=5) are excluded.
+
+    Args:
+        season (int): Target season year.
+        week (int): Target week number.
+        league_id (str): Sleeper league identifier.
+
+    Returns:
+        dict: {"round_roster_ids": [int]} or {} if regular season week.
+              Empty dict signals no playoff filtering needed.
+
+    Raises:
+        ValueError: If week 17 in 2019/2020 or no rosters found for the round.
+    """
     if int(season) <= 2020 and week <= 13:
         return {}
     if int(season) >= 2021 and week <= 14:
@@ -185,29 +230,86 @@ def _get_relevant_playoff_roster_ids(season, week, league_id):
     
     relevant_roster_ids = {
         "round_roster_ids": [],
-        "first_place_id": None,
-        "second_place_id": None,
-        "third_place_id": None
     }
     for matchup in sleeper_response_playoff_bracket:
         if matchup['r'] == round:
             if "p" in matchup and matchup['p'] == 5:
                 continue  # Skip consolation match
-            relevant_roster_ids['round_roster_ids'].append(matchup['w'])
-            relevant_roster_ids['round_roster_ids'].append(matchup['l'])
-        if "p" in matchup and matchup['p'] == 1:
-            relevant_roster_ids['first_place_id'] = matchup['w']
-            relevant_roster_ids['second_place_id'] = matchup['l']
-        if "p" in matchup and matchup['p'] == 3:
-            relevant_roster_ids['third_place_id'] = matchup['w']
-    
+            relevant_roster_ids['round_roster_ids'].append(matchup['t1'])
+            relevant_roster_ids['round_roster_ids'].append(matchup['t2'])
+
     if len(relevant_roster_ids['round_roster_ids']) == 0:
         raise ValueError("Cannot get playoff roster IDs for the given week")
-    if relevant_roster_ids['first_place_id'] is None or relevant_roster_ids['second_place_id'] is None or relevant_roster_ids['third_place_id'] is None:
-        raise ValueError("Cannot get first/second/third place roster IDs for the given week")
     
     return relevant_roster_ids
-        
+
+def _get_playoff_placement(season):
+    """
+    Retrieve final playoff placements (1st, 2nd, 3rd) for a completed season.
+
+    Fetches the winners bracket from Sleeper API and determines:
+    - 1st place: Winner of championship match (last-1 matchup winner)
+    - 2nd place: Loser of championship match
+    - 3rd place: Winner of 3rd place match (last matchup winner)
+
+    Args:
+        season (int): Target season year (must be completed).
+
+    Returns:
+        dict: {manager_real_name: placement_int}
+              Example: {"Tommy": 1, "Mike": 2, "Davey": 3}
+              Empty dict on API failure.
+
+    API calls:
+        - league/{league_id}/winners_bracket
+        - league/{league_id}/rosters
+        - league/{league_id}/users
+    """
+    league_id = LEAGUE_IDS[int(season)]
+
+    sleeper_response_playoff_bracket = fetch_sleeper_data(f"league/{league_id}/winners_bracket")
+    if sleeper_response_playoff_bracket[1] == 200:
+        sleeper_response_playoff_bracket = sleeper_response_playoff_bracket[0]
+    else:
+        print("Failed to fetch playoff bracket data")
+        return {}
+
+    sleeper_response_rosters = fetch_sleeper_data(f"league/{league_id}/rosters")
+    if sleeper_response_rosters[1] == 200:
+        sleeper_response_rosters = sleeper_response_rosters[0]
+    else:
+        print("Failed to fetch rosters data")
+        return {}
+    
+    sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
+    if sleeper_response_users[1] == 200:
+        sleeper_response_users = sleeper_response_users[0]
+    else:
+        print("Failed to fetch users data")
+        return {}
+    
+    
+    championship = sleeper_response_playoff_bracket[-2]
+    third_place = sleeper_response_playoff_bracket[-1]
+    
+    placement = {}
+
+    
+    for manager in sleeper_response_users:
+        for roster in sleeper_response_rosters:
+            if manager['user_id'] == roster['owner_id']:
+                if roster['roster_id'] == championship['w']:
+                    placement[USERNAME_TO_REAL_NAME[manager['display_name']]] = 1
+                if roster['roster_id'] == championship['l']:
+                    placement[USERNAME_TO_REAL_NAME[manager['display_name']]] = 2
+                if roster['roster_id'] == third_place['w']:
+                   placement[USERNAME_TO_REAL_NAME[manager['display_name']]] = 3
+
+    return placement
+    
+
+    
+
 
 def fetch_starters_for_week(season, week):
     """
@@ -249,25 +351,28 @@ def fetch_starters_for_week(season, week):
         positions_summary_array_per_manager = []
         real_name = USERNAME_TO_REAL_NAME.get(manager['display_name'], "Unknown Manager")
 
-        # 2019 early-week reassignment (historical manual correction).
+        # Historical correction: In 2019 weeks 1-3, Tommy played under Cody's roster.
+        # Reassign those weeks from Cody to Tommy for accurate records.
         if int(season) == 2019 and week < 4 and real_name == "Cody":
             real_name = "Tommy"
 
         roster_id = get_roster_id(sleeper_response_rosters, manager['user_id'])
         if roster_id is None:
-            # Hard-coded correction for a known roster mismatch (2024 Davey).
+            # Fallback: In 2024, Davey's user_id doesn't match their roster owner_id.
+            # Hardcode roster_id=4 as a known correction for this mismatch.
             if int(season) == 2024 and real_name == "Davey":
                 roster_id = 4
 
         if not roster_id:
             continue  # Skip unresolved roster
 
+        # During playoff weeks, only include rosters actively competing in that round.
+        # This filters out teams eliminated or in consolation bracket.
         if playoff_roster_ids != {} and roster_id not in playoff_roster_ids['round_roster_ids']:
             continue  # Skip non-playoff rosters in playoff weeks
 
         starters_data, players_summary_array_per_manager, positions_summary_array_per_manager = get_starters_data(sleeper_response_matchups,
-                                                                                                                  roster_id, 
-                                                                                                                  playoff_roster_ids, 
+                                                                                                                  roster_id,
                                                                                                                   players_summary_array_per_manager, 
                                                                                                                   positions_summary_array_per_manager)
         if starters_data:
@@ -307,7 +412,6 @@ def get_roster_id(sleeper_response_rosters, user_id):
 
 def get_starters_data(sleeper_response_matchups,
                       roster_id,
-                      playoff_roster_ids,
                       players_summary_array,
                       positions_summary_array):
     """
@@ -357,14 +461,6 @@ def get_starters_data(sleeper_response_matchups,
                     "player_id": player_id
                 }
 
-                if playoff_roster_ids != {}:
-                    if roster_id == playoff_roster_ids['first_place_id']:
-                        manager_data[player_name]["placement"] = 1
-                    elif roster_id == playoff_roster_ids['second_place_id']:
-                        manager_data[player_name]["placement"] = 2
-                    elif roster_id == playoff_roster_ids['third_place_id']:
-                        manager_data[player_name]["placement"] = 3
-
                 manager_data["Total_Points"] += player_score
 
             manager_data["Total_Points"] = float(
@@ -373,4 +469,38 @@ def get_starters_data(sleeper_response_matchups,
             return manager_data, players_summary_array, positions_summary_array
     return {}, players_summary_array, positions_summary_array
 
-load_or_update_starters_cache()
+
+def retroactively_assign_team_placement_for_player(season, starters_cache):
+    """
+    Retroactively assign team placement for players in playoff weeks.
+
+    Args:
+        season (int): Target season.
+        week (int): Target week.
+        starters_cache (dict): Loaded starters cache.
+
+    Returns:
+        dict: Updated starters cache with placements assigned.
+    """
+    placements = _get_playoff_placement(season)
+    if not placements:
+        return starters_cache
+    
+    weeks = ['15', '16', '17']
+    if season <= 2020:
+        weeks = ['14', '15', '16']
+
+    season_str = str(season)
+    for week in weeks:
+        for manager in starters_cache.get(season_str, {}).get(week, {}):
+            if manager in placements:
+                for player in starters_cache[season_str][week][manager]:
+                    if player != "Total_Points":
+                        
+                        # placement already assigned
+                        if "placement" in starters_cache[season_str][week][manager][player]:
+                            return starters_cache
+                        
+                        starters_cache[season_str][week][manager][player]['placement'] = placements[manager]
+    
+    return starters_cache

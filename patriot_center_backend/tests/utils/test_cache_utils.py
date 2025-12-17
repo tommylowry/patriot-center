@@ -100,6 +100,7 @@ class TestLoadCache:
         assert result["2023"] == {}
 
 
+@pytest.mark.usefixtures("use_real_save_cache")
 class TestSaveCache:
     """Test save_cache function."""
 

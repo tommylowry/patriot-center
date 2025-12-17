@@ -63,11 +63,11 @@ class TestGetRelevantPlayoffRosterIds:
         from patriot_center_backend.utils.starters_loader import _get_relevant_playoff_roster_ids
 
         playoff_bracket = [
-            {"r": 1, "w": 1, "l": 2},
-            {"r": 1, "w": 3, "l": 4},
-            {"r": 2, "w": 1, "l": 3},
-            {"r": 3, "w": 1, "l": 3, "p": 1},  # Championship
-            {"r": 3, "w": 4, "l": 5, "p": 3}   # 3rd place
+            {"r": 1, "t1": 1, "t2": 2},
+            {"r": 1, "t1": 3, "t2": 4},
+            {"r": 2, "t1": 1, "t2": 3},
+            {"r": 3, "t1": 1, "t2": 3, "p": 1},  # Championship
+            {"r": 3, "t1": 4, "t2": 5, "p": 3}   # 3rd place
         ]
         mock_fetch.return_value = (playoff_bracket, 200)
 
@@ -83,20 +83,17 @@ class TestGetRelevantPlayoffRosterIds:
         from patriot_center_backend.utils.starters_loader import _get_relevant_playoff_roster_ids
 
         playoff_bracket = [
-            {"r": 1, "w": 1, "l": 2},
-            {"r": 1, "w": 3, "l": 4},
-            {"r": 2, "w": 1, "l": 3},
-            {"r": 3, "w": 1, "l": 3, "p": 1},
-            {"r": 3, "w": 4, "l": 5, "p": 3}
+            {"r": 1, "t1": 1, "t2": 2},
+            {"r": 1, "t1": 3, "t2": 4},
+            {"r": 2, "t1": 1, "t2": 3},
+            {"r": 3, "t1": 1, "t2": 3, "p": 1},
+            {"r": 3, "t1": 4, "t2": 5, "p": 3}
         ]
         mock_fetch.return_value = (playoff_bracket, 200)
 
         result = _get_relevant_playoff_roster_ids(2019, 14, "league_123")
 
         assert set(result['round_roster_ids']) == {1, 2, 3, 4}
-        assert result['first_place_id'] == 1
-        assert result['second_place_id'] == 3
-        assert result['third_place_id'] == 4
 
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
     def test_extracts_round_1_rosters_for_week_15_in_2021_plus(self, mock_fetch):
@@ -104,11 +101,11 @@ class TestGetRelevantPlayoffRosterIds:
         from patriot_center_backend.utils.starters_loader import _get_relevant_playoff_roster_ids
 
         playoff_bracket = [
-            {"r": 1, "w": 1, "l": 2},
-            {"r": 1, "w": 3, "l": 4},
-            {"r": 2, "w": 1, "l": 3},
-            {"r": 3, "w": 1, "l": 3, "p": 1},
-            {"r": 3, "w": 4, "l": 5, "p": 3}
+            {"r": 1, "t1": 1, "t2": 2},
+            {"r": 1, "t1": 3, "t2": 4},
+            {"r": 2, "t1": 1, "t2": 3},
+            {"r": 3, "t1": 1, "t2": 3, "p": 1},
+            {"r": 3, "t1": 4, "t2": 5, "p": 3}
         ]
         mock_fetch.return_value = (playoff_bracket, 200)
 
@@ -122,12 +119,12 @@ class TestGetRelevantPlayoffRosterIds:
         from patriot_center_backend.utils.starters_loader import _get_relevant_playoff_roster_ids
 
         playoff_bracket = [
-            {"r": 1, "w": 1, "l": 2},
-            {"r": 1, "w": 3, "l": 4},
-            {"r": 1, "w": 7, "l": 8, "p": 5},  # Consolation - should skip
-            {"r": 2, "w": 1, "l": 3},
-            {"r": 3, "w": 1, "l": 3, "p": 1},
-            {"r": 3, "w": 4, "l": 5, "p": 3}
+            {"r": 1, "t1": 1, "t2": 2},
+            {"r": 1, "t1": 3, "t2": 4},
+            {"r": 1, "t1": 7, "t2": 8, "p": 5},  # Consolation - should skip
+            {"r": 2, "t1": 1, "t2": 3},
+            {"r": 3, "t1": 1, "t2": 3, "p": 1},
+            {"r": 3, "t1": 4, "t2": 5, "p": 3}
         ]
         mock_fetch.return_value = (playoff_bracket, 200)
 
@@ -159,20 +156,107 @@ class TestGetRelevantPlayoffRosterIds:
         with pytest.raises(ValueError, match="Cannot get playoff roster IDs for the given week"):
             _get_relevant_playoff_roster_ids(2024, 15, "league_123")
 
-    @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_raises_error_when_placement_info_missing(self, mock_fetch):
-        """Test raises ValueError when first/second/third place info missing."""
-        from patriot_center_backend.utils.starters_loader import _get_relevant_playoff_roster_ids
 
-        # Bracket without placement info (p field)
+class TestGetPlayoffPlacement:
+    """Test _get_playoff_placement final placement retrieval."""
+
+    @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
+    @patch('patriot_center_backend.utils.starters_loader.USERNAME_TO_REAL_NAME', {
+        "tommy_sleeper": "Tommy",
+        "mike_sleeper": "Mike",
+        "davey_sleeper": "Davey"
+    })
+    @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
+    def test_retrieves_first_second_third_place(self, mock_fetch):
+        """Test retrieves 1st, 2nd, 3rd place from playoff bracket."""
+        from patriot_center_backend.utils.starters_loader import _get_playoff_placement
+
         playoff_bracket = [
             {"r": 1, "w": 1, "l": 2},
-            {"r": 1, "w": 3, "l": 4}
+            {"r": 1, "w": 3, "l": 4},
+            {"r": 2, "w": 1, "l": 3},
+            {"r": 3, "w": 1, "l": 3},  # Championship: 1 wins (1st), 3 loses (2nd)
+            {"r": 3, "w": 4, "l": 5}   # 3rd place: 4 wins (3rd)
         ]
-        mock_fetch.return_value = (playoff_bracket, 200)
+        rosters = [
+            {"owner_id": "user_tommy", "roster_id": 1},
+            {"owner_id": "user_mike", "roster_id": 3},
+            {"owner_id": "user_davey", "roster_id": 4}
+        ]
+        users = [
+            {"user_id": "user_tommy", "display_name": "tommy_sleeper"},
+            {"user_id": "user_mike", "display_name": "mike_sleeper"},
+            {"user_id": "user_davey", "display_name": "davey_sleeper"}
+        ]
 
-        with pytest.raises(ValueError, match="Cannot get first/second/third place roster IDs"):
-            _get_relevant_playoff_roster_ids(2024, 15, "league_123")
+        def fetch_side_effect(endpoint):
+            if "winners_bracket" in endpoint:
+                return (playoff_bracket, 200)
+            elif "rosters" in endpoint:
+                return (rosters, 200)
+            elif "users" in endpoint:
+                return (users, 200)
+            return ({}, 404)
+
+        mock_fetch.side_effect = fetch_side_effect
+
+        result = _get_playoff_placement(2024)
+
+        assert result["Tommy"] == 1  # Championship winner
+        assert result["Mike"] == 2   # Championship loser
+        assert result["Davey"] == 3  # 3rd place winner
+
+    @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
+    @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
+    def test_returns_empty_dict_on_bracket_api_failure(self, mock_fetch):
+        """Test returns empty dict when playoff bracket API fails."""
+        from patriot_center_backend.utils.starters_loader import _get_playoff_placement
+
+        mock_fetch.return_value = ({"error": "Not found"}, 404)
+
+        result = _get_playoff_placement(2024)
+
+        assert result == {}
+
+    @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
+    @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
+    def test_returns_empty_dict_on_rosters_api_failure(self, mock_fetch):
+        """Test returns empty dict when rosters API fails."""
+        from patriot_center_backend.utils.starters_loader import _get_playoff_placement
+
+        def fetch_side_effect(endpoint):
+            if "winners_bracket" in endpoint:
+                return ([{"r": 3, "w": 1, "l": 3}], 200)
+            elif "rosters" in endpoint:
+                return ({"error": "Not found"}, 404)
+            return ({}, 404)
+
+        mock_fetch.side_effect = fetch_side_effect
+
+        result = _get_playoff_placement(2024)
+
+        assert result == {}
+
+    @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
+    @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
+    def test_returns_empty_dict_on_users_api_failure(self, mock_fetch):
+        """Test returns empty dict when users API fails."""
+        from patriot_center_backend.utils.starters_loader import _get_playoff_placement
+
+        def fetch_side_effect(endpoint):
+            if "winners_bracket" in endpoint:
+                return ([{"r": 3, "w": 1, "l": 3}], 200)
+            elif "rosters" in endpoint:
+                return ([{"owner_id": "user_123", "roster_id": 1}], 200)
+            elif "users" in endpoint:
+                return ({"error": "Not found"}, 404)
+            return ({}, 404)
+
+        mock_fetch.side_effect = fetch_side_effect
+
+        result = _get_playoff_placement(2024)
+
+        assert result == {}
 
 
 class TestGetRosterId:
@@ -217,6 +301,122 @@ class TestGetRosterId:
         assert get_roster_id(rosters_response, "user_123") is None
 
 
+class TestUpdatePlayersCache:
+    """Test _update_players_cache player metadata caching."""
+
+    @patch('patriot_center_backend.utils.starters_loader.save_cache')
+    @patch('patriot_center_backend.utils.starters_loader.load_cache')
+    def test_adds_new_player_to_cache(self, mock_load, mock_save):
+        """Test adds new player with metadata when not in cache."""
+        from patriot_center_backend.utils.starters_loader import _update_players_cache
+
+        mock_load.return_value = {}
+
+        player_meta = {
+            "full_name": "Josh Allen",
+            "first_name": "Josh",
+            "last_name": "Allen",
+            "position": "QB",
+            "team": "BUF"
+        }
+        players_cache = {}
+
+        result = _update_players_cache(player_meta, players_cache)
+
+        # Should add player to cache
+        assert "Josh Allen" in result
+        assert result["Josh Allen"]["full_name"] == "Josh Allen"
+        assert result["Josh Allen"]["first_name"] == "Josh"
+        assert result["Josh Allen"]["last_name"] == "Allen"
+        assert result["Josh Allen"]["position"] == "QB"
+        assert result["Josh Allen"]["team"] == "BUF"
+        assert result["Josh Allen"]["slug"] == "Josh_Allen"
+
+        # Should save cache
+        assert mock_save.called
+
+    @patch('patriot_center_backend.utils.starters_loader.save_cache')
+    @patch('patriot_center_backend.utils.starters_loader.load_cache')
+    def test_creates_url_safe_slug_with_apostrophe(self, mock_load, mock_save):
+        """Test converts apostrophes to %27 in slug for URL safety."""
+        from patriot_center_backend.utils.starters_loader import _update_players_cache
+
+        mock_load.return_value = {}
+
+        player_meta = {
+            "full_name": "D'Andre Swift",
+            "first_name": "D'Andre",
+            "last_name": "Swift",
+            "position": "RB",
+            "team": "PHI"
+        }
+        players_cache = {}
+
+        result = _update_players_cache(player_meta, players_cache)
+
+        # Apostrophe should be URL-encoded
+        assert result["D'Andre Swift"]["slug"] == "D%27Andre_Swift"
+
+    @patch('patriot_center_backend.utils.starters_loader.save_cache')
+    @patch('patriot_center_backend.utils.starters_loader.load_cache')
+    def test_does_not_add_duplicate_player(self, mock_load, mock_save):
+        """Test does not add player if already in cache."""
+        from patriot_center_backend.utils.starters_loader import _update_players_cache
+
+        mock_load.return_value = {}
+
+        existing_cache = {
+            "Josh Allen": {
+                "full_name": "Josh Allen",
+                "first_name": "Josh",
+                "last_name": "Allen",
+                "position": "QB",
+                "team": "BUF",
+                "slug": "Josh_Allen"
+            }
+        }
+
+        player_meta = {
+            "full_name": "Josh Allen",
+            "first_name": "Josh",
+            "last_name": "Allen",
+            "position": "QB",
+            "team": "BUF"
+        }
+
+        result = _update_players_cache(player_meta, existing_cache)
+
+        # Should not modify cache
+        assert result == existing_cache
+        # Should not save cache
+        assert not mock_save.called
+
+    @patch('patriot_center_backend.utils.starters_loader.save_cache')
+    @patch('patriot_center_backend.utils.starters_loader.load_cache')
+    def test_handles_missing_metadata_fields(self, mock_load, mock_save):
+        """Test handles missing metadata fields gracefully with empty strings."""
+        from patriot_center_backend.utils.starters_loader import _update_players_cache
+
+        mock_load.return_value = {}
+
+        player_meta = {
+            "full_name": "Unknown Player"
+            # Missing first_name, last_name, position, team
+        }
+        players_cache = {}
+
+        result = _update_players_cache(player_meta, players_cache)
+
+        # Should add player with empty strings for missing fields
+        assert "Unknown Player" in result
+        assert result["Unknown Player"]["full_name"] == "Unknown Player"
+        assert result["Unknown Player"]["first_name"] == ""
+        assert result["Unknown Player"]["last_name"] == ""
+        assert result["Unknown Player"]["position"] == ""
+        assert result["Unknown Player"]["team"] == ""
+
+
+@patch('patriot_center_backend.utils.starters_loader.save_cache')
 class TestGetStartersData:
     """Test get_starters_data starter extraction."""
 
@@ -225,7 +425,7 @@ class TestGetStartersData:
         "4034": {"full_name": "Christian McCaffrey", "position": "RB"},
         "NE": {"full_name": "New England Patriots", "position": "DEF"}
     })
-    def test_extracts_starters_and_points(self):
+    def test_extracts_starters_and_points(self, mock_save):
         """Test extracts starter data with points and positions."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -244,7 +444,7 @@ class TestGetStartersData:
             200
         )
 
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, {}, [], [])
+        result, players_array, positions_array = get_starters_data(matchups_response, 1, [], [])
 
         # Should have all three players
         assert "Amon-Ra St. Brown" in result
@@ -278,7 +478,7 @@ class TestGetStartersData:
         "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"},
         "4034": {"full_name": "Christian McCaffrey", "position": "RB"}
     })
-    def test_calculates_total_points_correctly(self):
+    def test_calculates_total_points_correctly(self, mock_save):
         """Test sums all player points into Total_Points."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -296,7 +496,7 @@ class TestGetStartersData:
             200
         )
 
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, {}, [], [])
+        result, players_array, positions_array = get_starters_data(matchups_response, 1, [], [])
 
         # Total: 15.6 + 28.3 = 43.9
         assert result["Total_Points"] == 43.9
@@ -304,7 +504,7 @@ class TestGetStartersData:
     @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
         "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
     })
-    def test_rounds_total_points_to_2_decimals(self):
+    def test_rounds_total_points_to_2_decimals(self, mock_save):
         """Test rounds Total_Points to 2 decimal places using Decimal."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -321,14 +521,14 @@ class TestGetStartersData:
             200
         )
 
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, {}, [], [])
+        result, players_array, positions_array = get_starters_data(matchups_response, 1, [], [])
 
         # Decimal rounding should give us exactly 2 decimals
         # 15.666666 rounds to 15.67
         assert result["Total_Points"] == 15.67
 
     @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {})
-    def test_skips_players_not_in_player_ids(self):
+    def test_skips_players_not_in_player_ids(self, mock_save):
         """Test skips players without metadata (not in PLAYER_IDS)."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -345,7 +545,7 @@ class TestGetStartersData:
             200
         )
 
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, {}, [], [])
+        result, players_array, positions_array = get_starters_data(matchups_response, 1, [], [])
 
         # Should only have Total_Points (0.0 since no valid players)
         assert result["Total_Points"] == 0.0
@@ -354,7 +554,7 @@ class TestGetStartersData:
     @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
         "7547": {"full_name": "Amon-Ra St. Brown"}  # Missing position
     })
-    def test_skips_players_without_position(self):
+    def test_skips_players_without_position(self, mock_save):
         """Test skips players missing position field."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -371,7 +571,7 @@ class TestGetStartersData:
             200
         )
 
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, {}, [], [])
+        result, players_array, positions_array = get_starters_data(matchups_response, 1, [], [])
 
         # Should skip player without position
         assert "Amon-Ra St. Brown" not in result
@@ -380,7 +580,7 @@ class TestGetStartersData:
     @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
         "7547": {"position": "WR"}  # Missing full_name
     })
-    def test_skips_players_without_full_name(self):
+    def test_skips_players_without_full_name(self, mock_save):
         """Test skips players missing full_name field."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -397,12 +597,12 @@ class TestGetStartersData:
             200
         )
 
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, {}, [], [])
+        result, players_array, positions_array = get_starters_data(matchups_response, 1, [], [])
 
         # Should skip player without full_name
         assert result["Total_Points"] == 0.0
 
-    def test_returns_empty_dict_when_roster_not_found(self):
+    def test_returns_empty_dict_when_roster_not_found(self, mock_save):
         """Test returns empty dict when roster_id doesn't exist in matchups."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -414,7 +614,7 @@ class TestGetStartersData:
             200
         )
 
-        result, players_array, positions_array = get_starters_data(matchups_response, 999, {}, [], [])
+        result, players_array, positions_array = get_starters_data(matchups_response, 999, [], [])
         assert result == {}
         assert players_array == []
         assert positions_array == []
@@ -422,7 +622,7 @@ class TestGetStartersData:
     @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
         "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
     })
-    def test_handles_zero_points_correctly(self):
+    def test_handles_zero_points_correctly(self, mock_save):
         """Test handles players with 0 points."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -439,155 +639,13 @@ class TestGetStartersData:
             200
         )
 
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, {}, [], [])
+        result, players_array, positions_array = get_starters_data(matchups_response, 1, [], [])
 
         assert result["Amon-Ra St. Brown"]["points"] == 0.0
         assert result["Total_Points"] == 0.0
 
-    @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
-        "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"},
-        "4034": {"full_name": "Christian McCaffrey", "position": "RB"}
-    })
-    def test_adds_first_place_playoff_placement(self):
-        """Test adds placement=1 for first place playoff roster."""
-        from patriot_center_backend.utils.starters_loader import get_starters_data
 
-        matchups_response = (
-            [
-                {
-                    "roster_id": 1,
-                    "starters": ["7547", "4034"],
-                    "players_points": {
-                        "7547": 15.6,
-                        "4034": 28.3
-                    }
-                }
-            ],
-            200
-        )
-
-        playoff_roster_ids = {
-            "round_roster_ids": [1, 2, 3, 4],
-            "first_place_id": 1,
-            "second_place_id": 2,
-            "third_place_id": 3
-        }
-
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, playoff_roster_ids, [], [])
-
-        assert result["Amon-Ra St. Brown"]["placement"] == 1
-        assert result["Christian McCaffrey"]["placement"] == 1
-
-    @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
-        "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
-    })
-    def test_adds_second_place_playoff_placement(self):
-        """Test adds placement=2 for second place playoff roster."""
-        from patriot_center_backend.utils.starters_loader import get_starters_data
-
-        matchups_response = (
-            [
-                {
-                    "roster_id": 2,
-                    "starters": ["7547"],
-                    "players_points": {"7547": 15.6}
-                }
-            ],
-            200
-        )
-
-        playoff_roster_ids = {
-            "round_roster_ids": [1, 2, 3, 4],
-            "first_place_id": 1,
-            "second_place_id": 2,
-            "third_place_id": 3
-        }
-
-        result, players_array, positions_array = get_starters_data(matchups_response, 2, playoff_roster_ids, [], [])
-
-        assert result["Amon-Ra St. Brown"]["placement"] == 2
-
-    @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
-        "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
-    })
-    def test_adds_third_place_playoff_placement(self):
-        """Test adds placement=3 for third place playoff roster."""
-        from patriot_center_backend.utils.starters_loader import get_starters_data
-
-        matchups_response = (
-            [
-                {
-                    "roster_id": 3,
-                    "starters": ["7547"],
-                    "players_points": {"7547": 15.6}
-                }
-            ],
-            200
-        )
-
-        playoff_roster_ids = {
-            "round_roster_ids": [1, 2, 3, 4],
-            "first_place_id": 1,
-            "second_place_id": 2,
-            "third_place_id": 3
-        }
-
-        result, players_array, positions_array = get_starters_data(matchups_response, 3, playoff_roster_ids, [], [])
-
-        assert result["Amon-Ra St. Brown"]["placement"] == 3
-
-    @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
-        "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
-    })
-    def test_no_placement_for_non_top_three_playoff_roster(self):
-        """Test does not add placement for playoff rosters not in top 3."""
-        from patriot_center_backend.utils.starters_loader import get_starters_data
-
-        matchups_response = (
-            [
-                {
-                    "roster_id": 4,
-                    "starters": ["7547"],
-                    "players_points": {"7547": 15.6}
-                }
-            ],
-            200
-        )
-
-        playoff_roster_ids = {
-            "round_roster_ids": [1, 2, 3, 4],
-            "first_place_id": 1,
-            "second_place_id": 2,
-            "third_place_id": 3
-        }
-
-        result, players_array, positions_array = get_starters_data(matchups_response, 4, playoff_roster_ids, [], [])
-
-        assert "placement" not in result["Amon-Ra St. Brown"]
-
-    @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
-        "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"}
-    })
-    def test_no_placement_for_regular_season(self):
-        """Test does not add placement when playoff_roster_ids is empty dict."""
-        from patriot_center_backend.utils.starters_loader import get_starters_data
-
-        matchups_response = (
-            [
-                {
-                    "roster_id": 1,
-                    "starters": ["7547"],
-                    "players_points": {"7547": 15.6}
-                }
-            ],
-            200
-        )
-
-        result, players_array, positions_array = get_starters_data(matchups_response, 1, {}, [], [])
-
-        assert "placement" not in result["Amon-Ra St. Brown"]
-
-
+@patch('patriot_center_backend.utils.starters_loader.save_cache')
 class TestFetchStartersForWeek:
     """Test fetch_starters_for_week API integration and data mapping."""
 
@@ -598,7 +656,7 @@ class TestFetchStartersForWeek:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_fetches_from_sleeper_api_successfully(self, mock_fetch, mock_playoff_ids):
+    def test_fetches_from_sleeper_api_successfully(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test fetches users, rosters, and matchups from Sleeper API."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -639,7 +697,7 @@ class TestFetchStartersForWeek:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_returns_empty_dict_on_users_api_failure(self, mock_fetch, mock_playoff_ids):
+    def test_returns_empty_dict_on_users_api_failure(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test returns empty dict when users API fails."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -652,7 +710,7 @@ class TestFetchStartersForWeek:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_returns_empty_dict_on_rosters_api_failure(self, mock_fetch, mock_playoff_ids):
+    def test_returns_empty_dict_on_rosters_api_failure(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test returns empty dict when rosters API fails."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -673,7 +731,7 @@ class TestFetchStartersForWeek:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_returns_empty_dict_on_matchups_api_failure(self, mock_fetch, mock_playoff_ids):
+    def test_returns_empty_dict_on_matchups_api_failure(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test returns empty dict when matchups API fails."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -700,7 +758,7 @@ class TestFetchStartersForWeek:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_applies_2019_early_week_cody_to_tommy_correction(self, mock_fetch, mock_playoff_ids):
+    def test_applies_2019_early_week_cody_to_tommy_correction(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test converts Cody to Tommy for 2019 weeks < 4."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -743,7 +801,7 @@ class TestFetchStartersForWeek:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_applies_2024_davey_roster_id_hardcode(self, mock_fetch, mock_playoff_ids):
+    def test_applies_2024_davey_roster_id_hardcode(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test hardcodes roster_id=4 for Davey in 2024 when roster lookup fails."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -783,7 +841,7 @@ class TestFetchStartersForWeek:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_uses_unknown_manager_for_unmapped_display_names(self, mock_fetch, mock_playoff_ids):
+    def test_uses_unknown_manager_for_unmapped_display_names(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test uses 'Unknown Manager' for display names not in USERNAME_TO_REAL_NAME."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -813,6 +871,168 @@ class TestFetchStartersForWeek:
 
         # Should use "Unknown Manager" as fallback
         assert "Unknown Manager" in week_data
+
+
+class TestRetroactivelyAssignTeamPlacement:
+    """Test retroactively_assign_team_placement_for_player placement assignment."""
+
+    @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
+    def test_assigns_placements_to_playoff_weeks_2021_plus(self, mock_placement):
+        """Test assigns placements to weeks 15-17 for 2021+ seasons."""
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
+
+        mock_placement.return_value = {"Tommy": 1, "Mike": 2, "Davey": 3}
+
+        starters_cache = {
+            "2024": {
+                "15": {
+                    "Tommy": {
+                        "Josh Allen": {"points": 25.0, "position": "QB", "player_id": "4881"},
+                        "Total_Points": 100.0
+                    },
+                    "Mike": {
+                        "Patrick Mahomes": {"points": 22.0, "position": "QB", "player_id": "4046"},
+                        "Total_Points": 95.0
+                    }
+                },
+                "16": {
+                    "Tommy": {
+                        "Josh Allen": {"points": 28.0, "position": "QB", "player_id": "4881"},
+                        "Total_Points": 110.0
+                    }
+                },
+                "17": {
+                    "Davey": {
+                        "Christian McCaffrey": {"points": 20.0, "position": "RB", "player_id": "1234"},
+                        "Total_Points": 85.0
+                    }
+                }
+            }
+        }
+
+        result = retroactively_assign_team_placement_for_player(2024, starters_cache)
+
+        # Verify Tommy (1st place) has placement assigned
+        assert result["2024"]["15"]["Tommy"]["Josh Allen"]["placement"] == 1
+        assert result["2024"]["16"]["Tommy"]["Josh Allen"]["placement"] == 1
+
+        # Verify Mike (2nd place) has placement assigned
+        assert result["2024"]["15"]["Mike"]["Patrick Mahomes"]["placement"] == 2
+
+        # Verify Davey (3rd place) has placement assigned
+        assert result["2024"]["17"]["Davey"]["Christian McCaffrey"]["placement"] == 3
+
+        # Verify Total_Points is still a float, not a dict (doesn't get placement field)
+        assert isinstance(result["2024"]["15"]["Tommy"]["Total_Points"], float)
+
+    @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
+    def test_assigns_placements_to_playoff_weeks_2019_2020(self, mock_placement):
+        """Test assigns placements to weeks 14-16 for 2019/2020 seasons."""
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
+
+        mock_placement.return_value = {"Tommy": 1}
+
+        starters_cache = {
+            "2020": {
+                "14": {
+                    "Tommy": {
+                        "Derrick Henry": {"points": 30.0, "position": "RB", "player_id": "9999"},
+                        "Total_Points": 120.0
+                    }
+                },
+                "15": {
+                    "Tommy": {
+                        "Derrick Henry": {"points": 28.0, "position": "RB", "player_id": "9999"},
+                        "Total_Points": 115.0
+                    }
+                }
+            }
+        }
+
+        result = retroactively_assign_team_placement_for_player(2020, starters_cache)
+
+        # Verify weeks 14-15 get placements for 2020
+        assert result["2020"]["14"]["Tommy"]["Derrick Henry"]["placement"] == 1
+        assert result["2020"]["15"]["Tommy"]["Derrick Henry"]["placement"] == 1
+
+    @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
+    def test_returns_unchanged_cache_when_placement_api_fails(self, mock_placement):
+        """Test returns cache unchanged when _get_playoff_placement returns empty dict."""
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
+
+        mock_placement.return_value = {}  # API failure
+
+        starters_cache = {
+            "2024": {
+                "15": {
+                    "Tommy": {
+                        "Josh Allen": {"points": 25.0, "position": "QB", "player_id": "4881"},
+                        "Total_Points": 100.0
+                    }
+                }
+            }
+        }
+
+        result = retroactively_assign_team_placement_for_player(2024, starters_cache)
+
+        # Cache should be unchanged
+        assert result == starters_cache
+        assert "placement" not in result["2024"]["15"]["Tommy"]["Josh Allen"]
+
+    @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
+    def test_returns_immediately_if_placement_already_assigned(self, mock_placement):
+        """Test returns immediately without calling API if placement already exists."""
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
+
+        mock_placement.return_value = {"Tommy": 1}
+
+        starters_cache = {
+            "2024": {
+                "15": {
+                    "Tommy": {
+                        "Josh Allen": {"points": 25.0, "position": "QB", "player_id": "4881", "placement": 1},
+                        "Total_Points": 100.0
+                    }
+                }
+            }
+        }
+
+        result = retroactively_assign_team_placement_for_player(2024, starters_cache)
+
+        # Should return immediately without modification
+        assert result == starters_cache
+        # _get_playoff_placement should still be called
+        assert mock_placement.called
+
+    @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
+    def test_skips_managers_not_in_placement_dict(self, mock_placement):
+        """Test skips managers who didn't place in top 3."""
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
+
+        mock_placement.return_value = {"Tommy": 1}  # Only Tommy placed
+
+        starters_cache = {
+            "2024": {
+                "15": {
+                    "Tommy": {
+                        "Josh Allen": {"points": 25.0, "position": "QB", "player_id": "4881"},
+                        "Total_Points": 100.0
+                    },
+                    "Other Manager": {
+                        "Patrick Mahomes": {"points": 22.0, "position": "QB", "player_id": "4046"},
+                        "Total_Points": 95.0
+                    }
+                }
+            }
+        }
+
+        result = retroactively_assign_team_placement_for_player(2024, starters_cache)
+
+        # Tommy should have placement
+        assert result["2024"]["15"]["Tommy"]["Josh Allen"]["placement"] == 1
+
+        # Other Manager should NOT have placement
+        assert "placement" not in result["2024"]["15"]["Other Manager"]["Patrick Mahomes"]
 
 
 class TestLoadOrUpdateStartersCache:
@@ -952,6 +1172,7 @@ class TestLoadOrUpdateStartersCache:
         assert mock_fetch.call_count == 32
 
 
+@patch('patriot_center_backend.utils.starters_loader.save_cache')
 class TestRefactoredReturnValues:
     """Comprehensive tests for refactored methods with new multi-value return signatures."""
 
@@ -963,7 +1184,7 @@ class TestRefactoredReturnValues:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_fetch_starters_for_week_returns_all_five_values_success(self, mock_fetch, mock_playoff_ids):
+    def test_fetch_starters_for_week_returns_all_five_values_success(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test that fetch_starters_for_week returns all 5 values correctly on success."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -1026,7 +1247,7 @@ class TestRefactoredReturnValues:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_fetch_starters_for_week_returns_all_empty_values_on_users_failure(self, mock_fetch, mock_playoff_ids):
+    def test_fetch_starters_for_week_returns_all_empty_values_on_users_failure(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test that fetch_starters_for_week returns tuple of 5 empty values on users API failure."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -1045,7 +1266,7 @@ class TestRefactoredReturnValues:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_fetch_starters_for_week_returns_all_empty_values_on_rosters_failure(self, mock_fetch, mock_playoff_ids):
+    def test_fetch_starters_for_week_returns_all_empty_values_on_rosters_failure(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test that fetch_starters_for_week returns tuple of 5 empty values on rosters API failure."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -1072,7 +1293,7 @@ class TestRefactoredReturnValues:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_fetch_starters_for_week_returns_all_empty_values_on_matchups_failure(self, mock_fetch, mock_playoff_ids):
+    def test_fetch_starters_for_week_returns_all_empty_values_on_matchups_failure(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test that fetch_starters_for_week returns tuple of 5 empty values on matchups API failure."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -1103,7 +1324,7 @@ class TestRefactoredReturnValues:
         "7547": {"full_name": "Amon-Ra St. Brown", "position": "WR"},
         "1234": {"full_name": "Christian McCaffrey", "position": "RB"}
     })
-    def test_get_starters_data_returns_all_three_values_success(self):
+    def test_get_starters_data_returns_all_three_values_success(self, mock_save):
         """Test that get_starters_data returns all 3 values correctly on success."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -1116,7 +1337,7 @@ class TestRefactoredReturnValues:
         ], 200)
 
         manager_data, players_array, positions_array = get_starters_data(
-            matchups, 5, {}, [], []
+            matchups, 5, [], []
         )
 
         # Verify return value 1: manager_data (dict)
@@ -1143,7 +1364,7 @@ class TestRefactoredReturnValues:
         assert len(positions_array) == 3
 
     @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {})
-    def test_get_starters_data_returns_empty_tuple_when_roster_not_found(self):
+    def test_get_starters_data_returns_empty_tuple_when_roster_not_found(self, mock_save):
         """Test that get_starters_data returns tuple of 3 values when roster not found."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -1153,7 +1374,7 @@ class TestRefactoredReturnValues:
 
         # Request roster_id 99 which doesn't exist
         manager_data, players_array, positions_array = get_starters_data(
-            matchups, 99, {}, [], []
+            matchups, 99, [], []
         )
 
         # Should return empty dict and preserve input arrays
@@ -1164,7 +1385,7 @@ class TestRefactoredReturnValues:
     @patch('patriot_center_backend.utils.starters_loader.PLAYER_IDS', {
         "4881": {"full_name": "Josh Allen", "position": "QB"}
     })
-    def test_get_starters_data_accumulates_arrays_across_calls(self):
+    def test_get_starters_data_accumulates_arrays_across_calls(self, mock_save):
         """Test that get_starters_data properly accumulates players and positions arrays."""
         from patriot_center_backend.utils.starters_loader import get_starters_data
 
@@ -1174,7 +1395,7 @@ class TestRefactoredReturnValues:
 
         # First call with empty arrays
         manager_data1, players_array1, positions_array1 = get_starters_data(
-            matchups, 1, {}, [], []
+            matchups, 1, [], []
         )
 
         assert "Josh Allen" in players_array1
@@ -1182,7 +1403,7 @@ class TestRefactoredReturnValues:
 
         # Second call reusing the arrays (simulating accumulation)
         manager_data2, players_array2, positions_array2 = get_starters_data(
-            matchups, 1, {}, players_array1, positions_array1
+            matchups, 1, players_array1, positions_array1
         )
 
         # Arrays should not have duplicates (players are added only if not present)
@@ -1201,7 +1422,7 @@ class TestRefactoredReturnValues:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_fetch_starters_for_week_aggregates_multiple_managers(self, mock_fetch, mock_playoff_ids):
+    def test_fetch_starters_for_week_aggregates_multiple_managers(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test that fetch_starters_for_week correctly aggregates data from multiple managers."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 

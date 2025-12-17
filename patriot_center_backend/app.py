@@ -196,6 +196,171 @@ def valid_options(arg1, arg2, arg3, arg4):
         return jsonify({"error": str(e)}), 400
     return jsonify(data), 200
 
+
+@app.route('/get/managers/list', methods=['GET'])
+def list_managers():
+    """
+    Endpoint to list all managers in the system and their top-level info.
+    """
+
+    from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+
+    manager_metadata_manager = ManagerMetadataManager()
+
+    try:
+        data = manager_metadata_manager.get_managers_list()
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    return jsonify(data), 200
+
+
+@app.route('/api/managers/<string:manager_name>/summary', defaults={'year': None}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/summary/<string:year>', methods=['GET'])
+def manager_summary(manager_name, year):
+    """
+    Endpoint to get a summary of a specific manager's performance.
+
+    Args:
+        manager_name (str): The name of the manager.
+        year (str | None): Optional year to filter the summary.
+
+    Returns:
+        Flask Response: JSON payload (manager summary or error).
+    """
+
+    from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+
+    manager_metadata_manager = ManagerMetadataManager()
+
+    try:
+        data = manager_metadata_manager.get_manager_summary(manager_name, year)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify(data), 200
+
+
+@app.route('/api/managers/<string:manager_name>/yearly/<string:year>', methods=['GET'])
+def manager_yearly_data(manager_name, year):
+    """
+    Endpoint to get detailed yearly data for a specific manager.
+
+    Args:
+        manager_name (str): The name of the manager.
+        year (str): The year to filter the details.
+
+    Returns:
+        Flask Response: JSON payload (manager yearly details or error).
+    """
+
+    from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+
+    manager_metadata_manager = ManagerMetadataManager()
+
+    try:
+        data = manager_metadata_manager.get_manager_yearly_data(manager_name, year)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify(data), 200
+
+
+@app.route('/api/managers/<string:manager_name>/head-to-head/<string:opponent_name>', defaults={'year': None}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/head-to-head/<string:opponent_name>/<string:year>', methods=['GET'])
+def manager_head_to_head(manager_name, opponent_name, year):
+    """
+    Endpoint to get head-to-head statistics between two managers.
+
+    Args:
+        manager_name (str): The name of the first manager.
+        opponent_name (str): The name of the opponent manager.
+        year (str | None): Optional year to filter the head-to-head stats.
+
+    Returns:
+        Flask Response: JSON payload (head-to-head stats or error).
+    """
+
+    from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+
+    manager_metadata_manager = ManagerMetadataManager()
+
+    try:
+        data = manager_metadata_manager.get_head_to_head(manager_name, opponent_name, year)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify(data), 200
+
+
+@app.route('/api/managers/<string:manager_name>/transactions', defaults={'year': None, 'type': None, 'limit': 50, 'offset': 0}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>', defaults={'type': None, 'limit': 50, 'offset': 0}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>', defaults={'limit': 50, 'offset': 0}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>/<int:limit>', defaults={'offset': 0}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>/<int:limit>/<int:offset>', methods=['GET'])
+def manager_transactions(manager_name, year, type, limit, offset):
+    """
+    Endpoint to get transaction history for a specific manager.
+
+    Args:
+        manager_name (str): The name of the manager.
+        year (str | None): Optional year to filter transactions.
+        type (str | None): Optional transaction type to filter.
+        limit (int): Number of records to return.
+        offset (int): Offset for pagination.
+
+    Returns:
+        Flask Response: JSON payload (transaction history or error).
+    """
+
+    from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+
+    manager_metadata_manager = ManagerMetadataManager()
+
+    try:
+        data = manager_metadata_manager.get_manager_transactions(manager_name, year, type, limit, offset)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify(data), 200
+
+
+@app.route('/api/managers/<string:manager_name>/awards', methods=['GET'])
+def manager_awards(manager_name):
+    """
+    Endpoint to get awards and recognitions for a specific manager.
+
+    Args:
+        manager_name (str): The name of the manager.
+
+    Returns:
+        Flask Response: JSON payload (manager awards or error).
+    """
+
+    from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+
+    manager_metadata_manager = ManagerMetadataManager()
+
+    try:
+        data = manager_metadata_manager.get_manager_awards(manager_name)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    return jsonify(data), 200
+
+    
 # /update_caches endpoint removed - cache updates now handled by GitHub Actions
 # See .github/workflows/update-cache.yml
 

@@ -109,7 +109,26 @@ class ManagerMetadataManager:
 
     # ---------- Public Methods for Exporting Data ----------
     def get_managers_list(self) -> dict:
-        """Returns list of all managers with basic info."""
+        """Returns list of all managers with basic info.
+        
+        EXAMPLE:
+        {
+            "managers": [
+                {
+                    "name": "Tommy",
+                    "avatar_urls": {
+                        "full_size": "https://sleepercdn.com/avatars/avatar_url",
+                        "thumbnail": "https://sleepercdn.com/avatars/thumbs/avatar_url"
+                    },
+                    "years_active": ["2019", "2020", "2021", "2022", "2023", "2024", "2025"],
+                    "total_trades": 27,
+                    "overall_record": "11-6-0"
+                },
+                ...
+            ]
+        }
+        
+        """
         managers_list = []
         
         for manager in self._cache:
@@ -762,7 +781,8 @@ class ManagerMetadataManager:
         transaction_history["transactions"] = copy.deepcopy(paginated_transactions)
         
         return copy.deepcopy(transaction_history)
-                    
+
+
     def get_manager_awards(self, manager_name: str) -> dict:
         """
         Returns awards and achievements for a manager.
@@ -795,10 +815,13 @@ class ManagerMetadataManager:
                     "week": "1",
                     "year": "2019",
                     "opponent": "Luke"
-                    "top_3_scorers": [
+                    "tommy_top_3_scorers": [
                         {"name": "Indianapolis Colts", "score": 28.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
                         {"name": "James Conner", "score": 27.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
                         {"name": "Kyler Murray", "score": 26.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                    ],
+                    "luke_top_3_scorers": [
+                        ... (same structure as "tommy_top_3_scorers" above)
                     ]
                 },
                 "lowest_weekly_score": {
@@ -806,10 +829,11 @@ class ManagerMetadataManager:
                     "week": "8",
                     "year": "2020",
                     "opponent": "Davey"
-                    "top_3_scorers": [
-                        {"name": "Indianapolis Colts", "score": 8.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
-                        {"name": "James Conner", "score": 7.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
-                        {"name": "Kyler Murray", "score": 6.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                    "tommy_top_3_scorers": [
+                        ... (same structure as "tommy_top_3_scorers" above)
+                    ],
+                    "davey_top_3_scorers": [
+                        ... (same structure as "tommy_top_3_scorers" above)
                     ]
                 },
                 "biggest_blowout_win": {
@@ -817,10 +841,11 @@ class ManagerMetadataManager:
                     "week": "3",
                     "year": "2021",
                     "opponent": "Parker"
-                    "top_3_scorers": [
-                        {"name": "Indianapolis Colts", "score": 30.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
-                        {"name": "James Conner", "score": 28.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
-                        {"name": "Kyler Murray", "score": 27.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                    "tommy_top_3_scorers": [
+                        ... (same structure as "tommy_top_3_scorers" above)
+                    ],
+                    "parker_top_3_scorers": [
+                        ... (same structure as "tommy_top_3_scorers" above)
                     ]
                 },
                 "biggest_blowout_loss": {
@@ -828,10 +853,11 @@ class ManagerMetadataManager:
                     "week": "8",
                     "year": "2020",
                     "opponent": "Christian"
-                    "top_3_scorers": [
-                        {"name": "Indianapolis Colts", "score": 10.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
-                        {"name": "James Conner", "score": 9.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
-                        {"name": "Kyler Murray", "score": 8.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                    "tommy_top_3_scorers": [
+                        ... (same structure as "tommy_top_3_scorers" above)
+                    ],
+                    "christian_top_3_scorers": [
+                        ... (same structure as "tommy_top_3_scorers" above)
                     ]
                 }
             }
@@ -847,8 +873,12 @@ class ManagerMetadataManager:
             "avatar_urls":  self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {}),
             "awards":       self._get_manager_awards_from_cache(manager_name)
         }
+        
 
-        return copy.deepcopy(awards_data)
+        score_awards = self._get_manager_score_awards_from_cache(manager_name)
+
+        awards_data["awards"].update(copy.deepcopy(score_awards))
+
         
 
     
@@ -1410,9 +1440,110 @@ class ManagerMetadataManager:
                 if self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"][player] == faab_spent:
                     biggest_faab_bid["year"] = year
                     break
+        awards["biggest_faab_bid"] = copy.deepcopy(biggest_faab_bid)
 
-
+        
         return copy.deepcopy(awards)
+
+    def _get_manager_score_awards_from_cache(self, manager_name: str) -> dict:
+        """Helper to extract score-related awards from cache for a manager."""
+        from decimal import Decimal
+
+        score_awards = {}
+
+
+        highest_weekly_score = {
+            "score": 0.0,
+            "week":  "",
+            "year":  "",
+            "opponent": "",
+            "top_3_scorers": []
+        }
+        lowest_weekly_score = {
+            "score": float('inf'),
+            "week":  "",
+            "year":  "",
+            "opponent": "",
+            "top_3_scorers": []
+        }
+        biggest_blowout_win = {
+            "differential": 0.0,
+            "week":  "",
+            "year":  "",
+            "opponent": "",
+            "top_3_scorers": []
+        }
+        biggest_blowout_loss = {
+            "differential": 0.0,
+            "week":  "",
+            "year":  "",
+            "opponent": "",
+            "top_3_scorers": []
+        }
+
+
+        for year in self._cache[manager_name].get("years", {}):
+            weeks = copy.deepcopy(self._cache[manager_name]["years"][year]["weeks"])
+            for week in weeks:
+                matchup_data = copy.deepcopy(weeks.get(week, {}).get("matchup_data", {}))
+
+                # Manager didn't play that week but had transactions
+                if "matchup_data" == {}:
+                    continue
+
+                validation = self._validate_matchup_data(matchup_data)
+                if "Warning" in validation:
+                    print(f"{validation} {manager_name}, year {year}, week {week}")
+                    continue
+
+                points_for     = matchup_data.get("points_for", 0.0)
+                points_against = matchup_data.get("points_against", 0.0)
+                point_differential = float(Decimal((points_for - points_against)).quantize(Decimal('0.01')))
+
+                # Highest Weekly Score
+                if points_for > highest_weekly_score["score"]:
+                    highest_weekly_score             = {} # reset
+                    highest_weekly_score["score"]    = points_for
+                    highest_weekly_score["week"]     = week
+                    highest_weekly_score["year"]     = year
+                    highest_weekly_score["opponent"] = matchup_data.get("opponent_manager", "")
+                    self._get_top_3_scorers_from_matchup_data(highest_weekly_score, manager_name, matchup_data.get("opponent_manager", ""))
+
+                # Lowest Weekly Score
+                if points_for < lowest_weekly_score["score"]:
+                    lowest_weekly_score             = {} # reset
+                    lowest_weekly_score["score"]    = points_for
+                    lowest_weekly_score["week"]     = week
+                    lowest_weekly_score["year"]     = year
+                    lowest_weekly_score["opponent"] = matchup_data.get("opponent_manager", "")
+                    self._get_top_3_scorers_from_matchup_data(lowest_weekly_score, manager_name, matchup_data.get("opponent_manager", ""))
+
+                # Biggest Blowout Win
+                if matchup_data.get("result", "") == "win" and point_differential > biggest_blowout_win["differential"]:
+                    biggest_blowout_win                 = {} # reset
+                    biggest_blowout_win["differential"] = point_differential
+                    biggest_blowout_win["week"]         = week
+                    biggest_blowout_win["year"]         = year
+                    biggest_blowout_win["opponent"]     = matchup_data.get("opponent_manager", "")
+                    self._get_top_3_scorers_from_matchup_data(biggest_blowout_win, manager_name, matchup_data.get("opponent_manager", ""))
+
+                # Biggest Blowout Loss
+                if matchup_data.get("result", "") == "loss" and point_differential < biggest_blowout_loss["differential"]:
+                    biggest_blowout_loss                 = {} # reset
+                    biggest_blowout_loss["differential"] = point_differential
+                    biggest_blowout_loss["week"]         = week
+                    biggest_blowout_loss["year"]         = year
+                    biggest_blowout_loss["opponent"]     = matchup_data.get("opponent_manager", "")
+                    self._get_top_3_scorers_from_matchup_data(biggest_blowout_loss, manager_name, matchup_data.get("opponent_manager", ""))
+
+        score_awards["highest_weekly_score"] = copy.deepcopy(highest_weekly_score)
+        score_awards["lowest_weekly_score"]  = copy.deepcopy(lowest_weekly_score)
+        score_awards["biggest_blowout_win"]  = copy.deepcopy(biggest_blowout_win)
+        score_awards["biggest_blowout_loss"] = copy.deepcopy(biggest_blowout_loss)
+
+        return copy.deepcopy(score_awards)
+
+
 
 
     # ---------- Internal Save/Load Methods ----------
@@ -1724,7 +1855,38 @@ class ManagerMetadataManager:
         
         return True
 
+    def _validate_matchup_data(self, matchup_data: dict) -> str:
+        if not matchup_data:
+            return "Warning, no matchup_data"
+        
+        opponent_manager = matchup_data.get("opponent_manager", "")
+        result           = matchup_data.get("result", "")
+        points_for       = matchup_data.get("points_for", 0.0)
+        points_against   = matchup_data.get("points_against", 0.0)
+        
+        if opponent_manager == "":
+            return "Warning, no opponent_data in matchup_data"
+        if opponent_manager not in list(self._cache.keys()):
+            return f"Warning, {opponent_manager} is an invalid manager"
+        
+        if points_for <= 0.0:
+            return f"Warning, invalid points_for {points_for} in matchup_data"
+        if points_against <= 0.0:
+            return f"Warning, invalid points_against {points_against} in matchup_data"
 
+        if result == "":
+            return "Warning, no result in matchup_data"
+        if result not in ["win", "loss", "tie"]:
+            return f"Warning, {result} is an invalid result in matchup_data"
+        
+        if result == "win" and points_for < points_against:
+            return f"Warning, result is win but points_against {points_against} is more than points_for {points_for} in matchup_data"
+        if result == "loss" and points_for > points_against:
+            return f"Warning, result is loss but points_for {points_for} is more than points_against {points_against} in matchup_data"
+        if result == "tie" and points_for != points_against:
+            return f"Warning, result is tie but points_for {points_for} is not the same as points_against {points_against} in matchup_data"
+        
+        return ""
 
 
 
@@ -2533,7 +2695,7 @@ class ManagerMetadataManager:
 
 
 man = ManagerMetadataManager()
-d = man.get_manager_transactions("Tommy", "2025")
+d = man._get_manager_score_awards_from_cache("Tommy")
 import json
 pretty_json_string = json.dumps(d, indent=4)
 print(pretty_json_string)

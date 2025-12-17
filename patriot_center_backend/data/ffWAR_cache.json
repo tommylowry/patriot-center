@@ -1,6 +1,6 @@
 {
     "Last_Updated_Season": "2025",
-    "Last_Updated_Week": 14,
+    "Last_Updated_Week": 15,
     "2019": {
         "1": {
             "Jameis Winston": {
@@ -56084,6 +56084,208 @@
             "Green Bay Packers": {
                 "ffWAR": -0.053,
                 "manager": "Sam",
+                "position": "DEF"
+            }
+        },
+        "15": {
+            "Drake Maye": {
+                "ffWAR": 0.0,
+                "manager": "Mitch",
+                "position": "QB"
+            },
+            "Patrick Mahomes": {
+                "ffWAR": 0.0,
+                "manager": "Christian",
+                "position": "QB"
+            },
+            "Baker Mayfield": {
+                "ffWAR": 0.0,
+                "manager": "Cody",
+                "position": "QB"
+            },
+            "Matthew Stafford": {
+                "ffWAR": 0.0,
+                "manager": "Benz",
+                "position": "QB"
+            },
+            "Christian McCaffrey": {
+                "ffWAR": 0.028,
+                "manager": "Mitch",
+                "position": "RB"
+            },
+            "Omarion Hampton": {
+                "ffWAR": 0.0,
+                "manager": "Mitch",
+                "position": "RB"
+            },
+            "Jordan Mason": {
+                "ffWAR": 0.0,
+                "manager": "Mitch",
+                "position": "RB"
+            },
+            "Breece Hall": {
+                "ffWAR": 0.0,
+                "manager": "Christian",
+                "position": "RB"
+            },
+            "Jaylen Warren": {
+                "ffWAR": 0.0,
+                "manager": "Christian",
+                "position": "RB"
+            },
+            "Aaron Jones": {
+                "ffWAR": 0.0,
+                "manager": "Christian",
+                "position": "RB"
+            },
+            "De'Von Achane": {
+                "ffWAR": 0.028,
+                "manager": "Cody",
+                "position": "RB"
+            },
+            "Kyren Williams": {
+                "ffWAR": 0.056,
+                "manager": "Cody",
+                "position": "RB"
+            },
+            "Blake Corum": {
+                "ffWAR": 0.028,
+                "manager": "Cody",
+                "position": "RB"
+            },
+            "Bijan Robinson": {
+                "ffWAR": 0.056,
+                "manager": "Benz",
+                "position": "RB"
+            },
+            "Javonte Williams": {
+                "ffWAR": 0.028,
+                "manager": "Benz",
+                "position": "RB"
+            },
+            "Tyrone Tracy": {
+                "ffWAR": 0.056,
+                "manager": "Benz",
+                "position": "RB"
+            },
+            "Rashee Rice": {
+                "ffWAR": -0.028,
+                "manager": "Mitch",
+                "position": "WR"
+            },
+            "Chris Godwin": {
+                "ffWAR": 0.0,
+                "manager": "Mitch",
+                "position": "WR"
+            },
+            "Kayshon Boutte": {
+                "ffWAR": -0.028,
+                "manager": "Mitch",
+                "position": "WR"
+            },
+            "Puka Nacua": {
+                "ffWAR": 0.028,
+                "manager": "Christian",
+                "position": "WR"
+            },
+            "Amon-Ra St. Brown": {
+                "ffWAR": 0.056,
+                "manager": "Christian",
+                "position": "WR"
+            },
+            "Wan'Dale Robinson": {
+                "ffWAR": 0.0,
+                "manager": "Christian",
+                "position": "WR"
+            },
+            "Jaxon Smith-Njigba": {
+                "ffWAR": 0.0,
+                "manager": "Cody",
+                "position": "WR"
+            },
+            "Mike Evans": {
+                "ffWAR": 0.0,
+                "manager": "Cody",
+                "position": "WR"
+            },
+            "Michael Wilson": {
+                "ffWAR": 0.0,
+                "manager": "Cody",
+                "position": "WR"
+            },
+            "Davante Adams": {
+                "ffWAR": -0.028,
+                "manager": "Benz",
+                "position": "WR"
+            },
+            "Jaylen Waddle": {
+                "ffWAR": -0.028,
+                "manager": "Benz",
+                "position": "WR"
+            },
+            "Tyler Warren": {
+                "ffWAR": -0.028,
+                "manager": "Mitch",
+                "position": "TE"
+            },
+            "Kyle Pitts": {
+                "ffWAR": 0.111,
+                "manager": "Christian",
+                "position": "TE"
+            },
+            "Jake Ferguson": {
+                "ffWAR": -0.028,
+                "manager": "Cody",
+                "position": "TE"
+            },
+            "Brock Bowers": {
+                "ffWAR": -0.028,
+                "manager": "Benz",
+                "position": "TE"
+            },
+            "Mike Gesicki": {
+                "ffWAR": -0.028,
+                "manager": "Benz",
+                "position": "TE"
+            },
+            "Ka'imi Fairbairn": {
+                "ffWAR": 0.0,
+                "manager": "Mitch",
+                "position": "K"
+            },
+            "Jason Myers": {
+                "ffWAR": 0.0,
+                "manager": "Christian",
+                "position": "K"
+            },
+            "Jake Bates": {
+                "ffWAR": 0.0,
+                "manager": "Cody",
+                "position": "K"
+            },
+            "Cam Little": {
+                "ffWAR": 0.0,
+                "manager": "Benz",
+                "position": "K"
+            },
+            "Seattle Seahawks": {
+                "ffWAR": 0.0,
+                "manager": "Mitch",
+                "position": "DEF"
+            },
+            "New England Patriots": {
+                "ffWAR": 0.0,
+                "manager": "Christian",
+                "position": "DEF"
+            },
+            "Dallas Cowboys": {
+                "ffWAR": 0.0,
+                "manager": "Cody",
+                "position": "DEF"
+            },
+            "San Francisco 49ers": {
+                "ffWAR": 0.0,
+                "manager": "Benz",
                 "position": "DEF"
             }
         }

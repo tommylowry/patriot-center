@@ -18,12 +18,14 @@ class TestManagerMetadataManagerInit:
         """Test manager initializes with empty cache structure."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        # load_cache is called twice: once for manager cache, once for transaction_id cache
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
 
         assert manager._cache == {}
+        assert manager._transaction_id_cache == {}
         assert manager._use_faab is None
         assert manager._playoff_week_start is None
         assert manager._weekly_roster_ids == {}
@@ -43,12 +45,14 @@ class TestManagerMetadataManagerInit:
                 "years": {}
             }
         }
-        mock_load_cache.return_value = existing_cache
+        existing_transaction_cache = {"tx123": {"year": "2024"}}
+        mock_load_cache.side_effect = [existing_cache, existing_transaction_cache]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
 
         assert manager._cache == existing_cache
+        assert manager._transaction_id_cache == existing_transaction_cache
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
@@ -57,7 +61,7 @@ class TestManagerMetadataManagerInit:
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
         player_ids = {"7547": {"full_name": "Amon-Ra St. Brown"}}
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = player_ids
 
         manager = ManagerMetadataManager()
@@ -77,7 +81,7 @@ class TestSetRosterId:
         """Test sets roster ID for a new manager not in cache."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         # Mock league settings fetch
@@ -103,7 +107,7 @@ class TestSetRosterId:
         """Test skips processing when roster_id is None (co-manager scenario)."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
@@ -122,7 +126,7 @@ class TestSetRosterId:
         """Test fetches league settings on week 1."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         mock_fetch.side_effect = [
@@ -145,7 +149,7 @@ class TestSetRosterId:
         """Test raises error when manager username mapping is missing."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         mock_fetch.return_value = ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200)
@@ -164,7 +168,7 @@ class TestSetRosterId:
         """Test raises error when user data fetch fails."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         mock_fetch.side_effect = [
@@ -189,7 +193,7 @@ class TestCacheWeekData:
         """Test raises error when trying to cache with no roster IDs set."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
@@ -208,7 +212,7 @@ class TestCacheWeekData:
         """Test raises error when odd number of roster IDs cached."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         mock_fetch.side_effect = [
@@ -231,7 +235,7 @@ class TestCacheWeekData:
         """Test successfully caches week data with transactions and matchups."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {
             "7547": {"full_name": "Amon-Ra St. Brown"}
         }
@@ -280,7 +284,7 @@ class TestTransactionProcessing:
         """Test processes add transaction correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {
             "7547": {"full_name": "Amon-Ra St. Brown"}
         }
@@ -324,7 +328,7 @@ class TestTransactionProcessing:
         """Test processes drop transaction correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {
             "7547": {"full_name": "Amon-Ra St. Brown"}
         }
@@ -363,7 +367,7 @@ class TestTransactionProcessing:
         """Test processes trade transaction correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {
             "7547": {"full_name": "Amon-Ra St. Brown"},
             "4866": {"full_name": "Travis Kelce"}
@@ -409,7 +413,7 @@ class TestTransactionProcessing:
         """Test skips transactions with failed status."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
@@ -441,7 +445,7 @@ class TestMatchupProcessing:
         """Test processes tie matchup correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         mock_fetch.side_effect = [
@@ -479,7 +483,7 @@ class TestPlayoffProcessing:
         """Test processes playoff appearances correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         mock_fetch.side_effect = [
@@ -521,7 +525,7 @@ class TestPlayoffProcessing:
         """Test processes playoff placements correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         mock_fetch.side_effect = [
@@ -593,7 +597,7 @@ class TestHelperMethods:
         """Test _get_season_state returns regular_season for weeks before playoffs."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         mock_fetch.return_value = ({"settings": {"playoff_week_start": 15}}, 200)
@@ -613,7 +617,7 @@ class TestHelperMethods:
         """Test _get_season_state returns playoffs for weeks during playoffs."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
@@ -629,7 +633,7 @@ class TestHelperMethods:
         """Test _draft_pick_decipher formats draft pick strings correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.return_value = {}
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()

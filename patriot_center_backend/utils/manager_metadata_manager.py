@@ -583,7 +583,7 @@ class ManagerMetadataManager:
             "trade_history": trades_between
         }
 
-        return copy.deepcopy(trades_between)
+        return copy.deepcopy(return_dict)
 
         
     def get_manager_transactions(self, 
@@ -700,11 +700,15 @@ class ManagerMetadataManager:
                                 elif trade_details["trade_details"][player].get("old_manager", None) == manager_name:
                                     sent.append(player)
 
+                            partners = trade_details.get("managers_involved", []).copy()
+                            if manager_name in partners:
+                                partners.remove(manager_name)
+
                             transaction_item = {
                                 "year":          yr,
                                 "week":          week,
                                 "type":          "trade",
-                                "partners":      trade_details.get("managers_involved", []).remove(manager_name),
+                                "partners":      partners,
                                 "acquired":      acquired,
                                 "sent":          sent,
                                 "transaction_id": transaction_id
@@ -879,16 +883,32 @@ class ManagerMetadataManager:
 
         awards_data["awards"].update(copy.deepcopy(score_awards))
 
-        
+        return copy.deepcopy(awards_data)
 
-    
-    
-    
-    
-    
+
+
+
+
+
     # ---------- Internal Public Helper Methods ----------
     def _get_matchup_details_from_cache(self, manager_name: str, year: str = None) -> dict:
-        """Helper to extract matchup details from cache for a manager."""
+        """
+        Helper to extract and format matchup details from cache for a manager.
+
+        Processes raw matchup data from cache into a formatted structure with:
+        - Win-loss-tie records
+        - Win percentages
+        - Total and average points for/against
+        - Point differentials
+
+        Args:
+            manager_name: Name of the manager to get matchup data for
+            year: Optional year filter. If None, returns all-time data. If specified, returns year-specific data.
+
+        Returns:
+            dict: Formatted matchup data with keys 'overall', 'regular_season', and 'playoffs'.
+                  Each contains record, win_percentage, points stats, and averages.
+        """
         from decimal import Decimal
 
         matchup_data = {
@@ -967,7 +987,22 @@ class ManagerMetadataManager:
         return copy.deepcopy(matchup_data)
 
     def _get_trasaction_details_from_cache(self, manager_name: str, year: str = None) -> dict:
-        """Helper to extract transaction summary from cache for a manager."""
+        """
+        Helper to extract and format transaction summary from cache for a manager.
+
+        Processes and aggregates transaction data including:
+        - Trade partners and most traded players (top 3)
+        - Most added/dropped players (top 3)
+        - FAAB spending details including biggest acquisitions and traded FAAB
+
+        Args:
+            manager_name: Name of the manager to get transaction data for
+            year: Optional year filter. If None, returns all-time data. If specified, returns year-specific data.
+
+        Returns:
+            dict: Transaction summary with keys 'trades', 'adds', 'drops', and 'faab'.
+                  Includes totals and top players/partners for each category.
+        """
         transaction_summary = {
             "trades":      {},
             "adds":        {},
@@ -1044,7 +1079,21 @@ class ManagerMetadataManager:
         return copy.deepcopy(transaction_summary)
 
     def _get_overall_data_details_from_cache(self, manager_name: str) -> dict:
-        """Helper to extract overall data details from cache for a manager."""
+        """
+        Helper to extract and format overall career data from cache for a manager.
+
+        Processes career accomplishments including:
+        - Playoff appearances count
+        - Championship wins
+        - Season placements
+        - Best finish
+
+        Args:
+            manager_name: Name of the manager to get overall data for
+
+        Returns:
+            dict: Overall data with playoff_appearances, placements list, best_finish, and championships count
+        """
         cached_overall_data = copy.deepcopy(self._cache[manager_name]["summary"]["overall_data"])
 
         
@@ -1074,7 +1123,20 @@ class ManagerMetadataManager:
         return copy.deepcopy(overall_data)
 
     def _get_head_to_head_details_from_cache(self, manager_name: str, year: str = None, opponent: str = None) -> dict:
-        """Helper to extract head-to-head details from cache for a manager."""
+        """
+        Helper to extract head-to-head matchup data from cache for a manager.
+
+        Returns stats for a manager against either all opponents or a specific opponent.
+
+        Args:
+            manager_name: Name of the manager to get head-to-head data for
+            year: Optional year filter. If None, returns all-time data.
+            opponent: Optional opponent filter. If specified, returns data only for that opponent.
+
+        Returns:
+            dict: Head-to-head data. If opponent specified, returns single opponent's data.
+                  Otherwise returns dict of all opponents with wins, losses, ties, points_for, points_against.
+        """
         head_to_head_data = {}
         
         cached_head_to_head_data = copy.deepcopy(self._cache[manager_name]["summary"]["matchup_data"]["overall"])
@@ -1105,6 +1167,19 @@ class ManagerMetadataManager:
         return copy.deepcopy(head_to_head_data)
 
     def _get_weekly_trade_details_from_cache(self, manager_name: str, year: str, week: str) -> list:
+        """
+        Helper to extract trade details for a specific week from cache.
+
+        Retrieves all trades for a manager in a given week, including partners and players acquired/sent.
+
+        Args:
+            manager_name: Name of the manager to get trade data for
+            year: Year of the trades
+            week: Week number of the trades
+
+        Returns:
+            list: List of trade dicts, each containing 'partners', 'acquired', and 'sent' keys
+        """
         weekly_trade_transaction_ids = copy.deepcopy(self._cache.get(manager_name, {}).get("years", {}).get(year, {}).get("weeks", {}).get(week, {}).get("transactions", {}).get("trades", {}).get("transaction_ids", []))
 
         trades = []
@@ -1131,6 +1206,21 @@ class ManagerMetadataManager:
         return trades
 
     def _get_head_to_head_overall_from_cache(self, manager_1: str, manager_2: str, year: str = None, list_all_matchups: bool = False) -> dict | list:
+        """
+        Helper to extract comprehensive head-to-head stats between two managers.
+
+        Can return either summary stats or detailed matchup history based on list_all_matchups flag.
+
+        Args:
+            manager_1: Name of the first manager
+            manager_2: Name of the second manager
+            year: Optional year filter. If None, returns all-time data.
+            list_all_matchups: If True, returns list of all matchup details. If False, returns summary stats.
+
+        Returns:
+            dict or list: If list_all_matchups is False, returns dict with summary stats (wins, points, etc).
+                         If list_all_matchups is True, returns list of individual matchup details with top scorers.
+        """
         from decimal import Decimal
         if list_all_matchups:
             years = list(self._cache[manager_1].get("years", {}).keys())
@@ -1333,9 +1423,19 @@ class ManagerMetadataManager:
         return copy.deepcopy(head_to_head_overall)
 
     def _get_trade_history_between_two_managers(self, manager_1: str, manager_2: str, year: str = None) -> list:
-        
-        
+        """
+        Helper to extract trade history between two specific managers.
 
+        Finds all trades involving both managers, including multi-team trades.
+
+        Args:
+            manager_1: Name of the first manager
+            manager_2: Name of the second manager
+            year: Optional year filter. If None, returns all-time trade history.
+
+        Returns:
+            list: List of trade dicts with year, week, and what each manager received/sent
+        """
         years = list(self._cache[manager_1].get("years", {}).keys())
         if year:
             years = [year]
@@ -1386,7 +1486,21 @@ class ManagerMetadataManager:
         return trades_between
 
     def _get_manager_awards_from_cache(self, manager_name: str) -> dict:
-        """Helper to extract awards/achievements from cache for a manager."""
+        """
+        Helper to extract career awards and achievements from cache for a manager.
+
+        Calculates awards including:
+        - Placement counts (1st, 2nd, 3rd place finishes)
+        - Most trades in a single year
+        - Biggest FAAB bid
+
+        Args:
+            manager_name: Name of the manager to get awards for
+
+        Returns:
+            dict: Awards data including first_place, second_place, third_place counts,
+                  most_trades_in_year, and biggest_faab_bid details
+        """
         from decimal import Decimal
 
         awards = {}
@@ -1446,7 +1560,22 @@ class ManagerMetadataManager:
         return copy.deepcopy(awards)
 
     def _get_manager_score_awards_from_cache(self, manager_name: str) -> dict:
-        """Helper to extract score-related awards from cache for a manager."""
+        """
+        Helper to extract scoring awards from cache for a manager.
+
+        Calculates score-related achievements including:
+        - Highest weekly score (with opponent and top scorers)
+        - Lowest weekly score (with opponent and top scorers)
+        - Biggest blowout win (with opponent and top scorers)
+        - Biggest blowout loss (with opponent and top scorers)
+
+        Args:
+            manager_name: Name of the manager to get score awards for
+
+        Returns:
+            dict: Score awards including highest_weekly_score, lowest_weekly_score,
+                  biggest_blowout_win, and biggest_blowout_loss, each with matchup details
+        """
         from decimal import Decimal
 
         score_awards = {}
@@ -1635,8 +1764,20 @@ class ManagerMetadataManager:
         return "regular_season"
 
     def _get_top_three_of_dict(self, data_dict: dict, key_name = "count") -> dict:
-        """Helper to get top three entries of a dictionary based on values."""
-        
+        """
+        Helper to extract top three entries from a dictionary based on values.
+
+        Handles ties by including all entries tied for 3rd place.
+        Formats the output as a list of dicts with name and specified key name.
+
+        Args:
+            data_dict: Dictionary to extract top entries from
+            key_name: Name to use for the value key in output (default: "count")
+
+        Returns:
+            list: List of dicts with 'name' and key_name keys, sorted by value descending
+        """
+
         for key in data_dict:
             if not isinstance(data_dict[key], dict):
                 break
@@ -1644,11 +1785,14 @@ class ManagerMetadataManager:
         
         
         sorted_items = sorted(data_dict.items(), key=lambda item: item[1], reverse=True)
-        
+
         # Handle ties for third place
-        for i in range(2, len(sorted_items)):
-            if sorted_items[i][1] != sorted_items[i+1][1]:
+        i = min(2, len(sorted_items) - 1)  # Start at index 2 or last index, whichever is smaller
+        for j in range(i, len(sorted_items) - 1):
+            if sorted_items[j][1] != sorted_items[j+1][1]:
+                i = j
                 break
+            i = j + 1
         top_three = dict(sorted_items[:i+1])
 
         items = []
@@ -1696,6 +1840,20 @@ class ManagerMetadataManager:
         return ""
 
     def _get_top_3_scorers_from_matchup_data(self, matchup_data: dict, manager_1: str, manager_2: str):
+        """
+        Helper to extract top 3 scorers from both teams in a matchup and add to matchup_data.
+
+        Retrieves starter data for both managers and identifies their top 3 scoring players,
+        adding them to the matchup_data dict as {manager}_top_3_scorers keys.
+
+        Args:
+            matchup_data: Dict containing year, week, and will be modified to include top scorers
+            manager_1: Name of the first manager
+            manager_2: Name of the second manager
+
+        Side Effects:
+            Modifies matchup_data in-place to add {manager}_top_3_scorers keys with player details
+        """
         manager_1_starters = copy.deepcopy(STARTERS_CACHE[matchup_data["year"]][matchup_data["week"]][manager_1])
         manager_2_starters = copy.deepcopy(STARTERS_CACHE[matchup_data["year"]][matchup_data["week"]][manager_2])
         manager_1_starters.pop("Total_Points")

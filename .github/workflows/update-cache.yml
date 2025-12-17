@@ -1,16 +1,16 @@
 name: Update Cache Data
 
-# ONLY runs on schedule - no manual trigger option
 on:
   schedule:
     # Runs every Tuesday at 1:00 AM EST (08:00 UTC)
     - cron: '0 1 * * 2'
-  # DEBUG: Added manual trigger for testing purposes
   workflow_dispatch:
 
 jobs:
   update-caches:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code

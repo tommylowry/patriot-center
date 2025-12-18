@@ -57,17 +57,13 @@ def load_or_update_starters_cache():
                 cache['Last_Updated_Week'] = 0  # Reset for new season
 
         # Early exit if fully up to date (prevents unnecessary API calls).
-        if last_updated_season == int(current_season):
-            if last_updated_week == current_week:
-                break
-            # Week 17 is the final playoff week; assign final placements if reached.
-            if current_week == 17:
-                retroactively_assign_team_placement_for_player(year, cache)
-
-        # For completed seasons, retroactively assign placements if not already done.
-        # Skip the first season in LEAGUE_IDS since it may not have prior data.
-        elif year != list(LEAGUE_IDS.keys())[0]:
-                retroactively_assign_team_placement_for_player(year-1, cache)
+        if last_updated_season == int(current_season) and last_updated_week == current_week:
+                # Week 17 is the final playoff week; assign final placements if reached.
+                if current_week == 17:
+                    retroactively_assign_team_placement_for_player_and_manager_metadata(year, cache)
+                else:
+                    break
+    
 
         year = int(year)
         max_weeks = _get_max_weeks(year, current_season, current_week)
@@ -84,6 +80,11 @@ def load_or_update_starters_cache():
         print(f"Updating starters cache for season {year}, weeks: {list(weeks_to_update)}")
 
         for week in weeks_to_update:
+
+            # Final week; assign final placements if reached.
+            if week == max_weeks:
+                retroactively_assign_team_placement_for_player_and_manager_metadata(year, cache)
+
             cache.setdefault(str(year), {})
             valid_options_cache.setdefault(str(year), {})
 
@@ -486,7 +487,7 @@ def get_starters_data(sleeper_response_matchups,
     return {}, players_summary_array, positions_summary_array
 
 
-def retroactively_assign_team_placement_for_player(season, starters_cache):
+def retroactively_assign_team_placement_for_player_and_manager_metadata(season, starters_cache):
     """
     Retroactively assign team placement for players in playoff weeks.
 
@@ -502,6 +503,8 @@ def retroactively_assign_team_placement_for_player(season, starters_cache):
     if not placements:
         return starters_cache
     
+    MANAGER_METADATA.set_playoff_placements(placements, str(season))
+
     weeks = ['15', '16', '17']
     if season <= 2020:
         weeks = ['14', '15', '16']
@@ -520,3 +523,5 @@ def retroactively_assign_team_placement_for_player(season, starters_cache):
                         starters_cache[season_str][week][manager][player]['placement'] = placements[manager]
     
     return starters_cache
+
+load_or_update_starters_cache()

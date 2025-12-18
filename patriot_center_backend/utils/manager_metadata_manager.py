@@ -94,14 +94,21 @@ class ManagerMetadataManager:
 
         # Scrub playoff data for the week if applicable
         if self._get_season_state() == "playoffs":
-            self._scrub_playoff_data(year, week)
+            self._scrub_playoff_data()
 
         # Clear weekly metadata
         self._year = None
         self._week = None    
 
 
-
+    def set_playoff_placements(self, placements: dict, year: str):
+        
+        for manager in placements:
+            if manager not in self._cache:
+                continue
+            
+            if year not in self._cache[manager]["summary"]["overall_data"]["placement"]:
+                self._cache[manager]["summary"]["overall_data"]["placement"][year] = placements[manager]
 
 
 
@@ -1271,6 +1278,8 @@ class ManagerMetadataManager:
                 if "Warning" in validation:
                     print(f"{validation} {manager_1}, year {y}, week {w}")
                     continue
+                if validation == "Empty":
+                    continue
 
                 # we got our matchup
                 if manager_2 == matchup_data.get("opponent_manager", ""):
@@ -1616,13 +1625,11 @@ class ManagerMetadataManager:
             for week in weeks:
                 matchup_data = copy.deepcopy(weeks.get(week, {}).get("matchup_data", {}))
 
-                # Manager didn't play that week but had transactions
-                if "matchup_data" == {}:
-                    continue
-
                 validation = self._validate_matchup_data(matchup_data)
                 if "Warning" in validation:
                     print(f"{validation} {manager_name}, year {year}, week {week}")
+                    continue
+                if validation == "Empty":
                     continue
 
                 points_for     = matchup_data.get("points_for", 0.0)
@@ -1807,8 +1814,8 @@ class ManagerMetadataManager:
 
     def _validate_matchup_data(self, matchup_data: dict) -> str:
 
-        if not matchup_data:
-            return "Warning, no matchup_data"
+        if not matchup_data: # No data, Manager didn't play that week
+            return "Empty"
         
         opponent_manager = matchup_data.get("opponent_manager", "")
         result           = matchup_data.get("result", "")
@@ -2012,39 +2019,6 @@ class ManagerMetadataManager:
                 return False
         
         return True
-
-    def _validate_matchup_data(self, matchup_data: dict) -> str:
-        if not matchup_data:
-            return "Warning, no matchup_data"
-        
-        opponent_manager = matchup_data.get("opponent_manager", "")
-        result           = matchup_data.get("result", "")
-        points_for       = matchup_data.get("points_for", 0.0)
-        points_against   = matchup_data.get("points_against", 0.0)
-        
-        if opponent_manager == "":
-            return "Warning, no opponent_data in matchup_data"
-        if opponent_manager not in list(self._cache.keys()):
-            return f"Warning, {opponent_manager} is an invalid manager"
-        
-        if points_for <= 0.0:
-            return f"Warning, invalid points_for {points_for} in matchup_data"
-        if points_against <= 0.0:
-            return f"Warning, invalid points_against {points_against} in matchup_data"
-
-        if result == "":
-            return "Warning, no result in matchup_data"
-        if result not in ["win", "loss", "tie"]:
-            return f"Warning, {result} is an invalid result in matchup_data"
-        
-        if result == "win" and points_for < points_against:
-            return f"Warning, result is win but points_against {points_against} is more than points_for {points_for} in matchup_data"
-        if result == "loss" and points_for > points_against:
-            return f"Warning, result is loss but points_for {points_for} is more than points_against {points_against} in matchup_data"
-        if result == "tie" and points_for != points_against:
-            return f"Warning, result is tie but points_for {points_for} is not the same as points_against {points_against} in matchup_data"
-        
-        return ""
 
 
 
@@ -2644,7 +2618,7 @@ class ManagerMetadataManager:
 
 
     # ---------- Internal Playoff Data Scrubbing ----------
-    def _scrub_playoff_data(self, year: str, week: str):
+    def _scrub_playoff_data(self):
         """Scrub playoff data for all cached roster IDs for a given week."""
 
         for roster_ids in self._playoff_roster_ids.get("round_roster_ids", []):
@@ -2657,28 +2631,9 @@ class ManagerMetadataManager:
             # Mark week as playoff week in the weekly summary
             if self._year not in manager_overall_data["playoff_appearances"]:
                 manager_overall_data["playoff_appearances"].append(self._year)
-        
-        first_place_roster_id = self._playoff_roster_ids.get("first_place_id", None)
-        second_place_roster_id = self._playoff_roster_ids.get("second_place_id", None)
-        third_place_roster_id = self._playoff_roster_ids.get("third_place_id", None)
-
-        if first_place_roster_id is None or second_place_roster_id is None or third_place_roster_id is None:
-            print("Incomplete playoff roster IDs for caching playoff data:", self._playoff_roster_ids)
-            return
-
-        first_place_manager = self._weekly_roster_ids.get(first_place_roster_id, None)
-        second_place_manager = self._weekly_roster_ids.get(second_place_roster_id, None)
-        third_place_manager = self._weekly_roster_ids.get(third_place_roster_id, None)
-
-        if year not in self._cache[first_place_manager]["summary"]["overall_data"]["placement"]:
-            self._cache[first_place_manager]["summary"]["overall_data"]["placement"][year] = 1
-        if year not in self._cache[second_place_manager]["summary"]["overall_data"]["placement"]:
-            self._cache[second_place_manager]["summary"]["overall_data"]["placement"][year] = 2
-        if year not in self._cache[third_place_manager]["summary"]["overall_data"]["placement"]:
-            self._cache[third_place_manager]["summary"]["overall_data"]["placement"][year] = 3
 
     
-    
+
 
 
     # ---------- Internal Template Initialization Methods ----------
@@ -2852,9 +2807,9 @@ class ManagerMetadataManager:
 
 
 
-man = ManagerMetadataManager()
-d = man._get_manager_score_awards_from_cache("Tommy")
-import json
-pretty_json_string = json.dumps(d, indent=4)
-print(pretty_json_string)
-print("")
+# man = ManagerMetadataManager()
+# d = man.cache_week_data("2025", "15")
+# import json
+# pretty_json_string = json.dumps(d, indent=4)
+# print(pretty_json_string)
+# print("")

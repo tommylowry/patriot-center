@@ -645,6 +645,7 @@ class TestGetStartersData:
         assert result["Total_Points"] == 0.0
 
 
+@pytest.mark.usefixtures("use_real_load_or_update_starters")
 @patch('patriot_center_backend.utils.starters_loader.save_cache')
 class TestFetchStartersForWeek:
     """Test fetch_starters_for_week API integration and data mapping."""
@@ -841,7 +842,8 @@ class TestFetchStartersForWeek:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_uses_unknown_manager_for_unmapped_display_names(self, mock_fetch, mock_playoff_ids, mock_save):
+    @patch('patriot_center_backend.utils.starters_loader.MANAGER_METADATA')
+    def test_uses_unknown_manager_for_unmapped_display_names(self, mock_manager_metadata, mock_fetch, mock_playoff_ids, mock_save):
         """Test uses 'Unknown Manager' for display names not in USERNAME_TO_REAL_NAME."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -1036,6 +1038,7 @@ class TestRetroactivelyAssignTeamPlacement:
 
 
 @pytest.mark.usefixtures("use_real_load_or_update_starters")
+@patch('patriot_center_backend.utils.starters_loader.MANAGER_METADATA')
 class TestLoadOrUpdateStartersCache:
     """Test load_or_update_starters_cache main orchestration."""
 
@@ -1044,7 +1047,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.fetch_starters_for_week')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
-    def test_creates_new_cache_with_baseline_structure(self, mock_fetch, mock_save, mock_load, mock_current):
+    def test_creates_new_cache_with_baseline_structure(self, mock_fetch, mock_save, mock_load, mock_current, mock_manager_metadata):
         """Test initializes new cache with Last_Updated markers."""
         from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 
@@ -1076,7 +1079,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.fetch_starters_for_week')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
-    def test_resumes_from_last_updated_markers(self, mock_fetch, mock_save, mock_load, mock_current):
+    def test_resumes_from_last_updated_markers(self, mock_fetch, mock_save, mock_load, mock_current, mock_manager_metadata):
         """Test resumes processing from Last_Updated_Season and Last_Updated_Week."""
         from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 
@@ -1108,7 +1111,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.load_cache')
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
-    def test_skips_when_fully_up_to_date(self, mock_save, mock_load, mock_current):
+    def test_skips_when_fully_up_to_date(self, mock_save, mock_load, mock_current, mock_manager_metadata):
         """Test skips processing when cache is already current."""
         from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 
@@ -1136,7 +1139,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.fetch_starters_for_week')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
-    def test_caps_current_week_at_17(self, mock_fetch, mock_save, mock_load, mock_current):
+    def test_caps_current_week_at_17(self, mock_fetch, mock_save, mock_load, mock_current, mock_manager_metadata):
         """Test caps current_week at 17 (regular season) even if API returns higher."""
         from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 
@@ -1155,7 +1158,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.fetch_starters_for_week')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2019: "id1", 2020: "id2"})
-    def test_processes_2019_and_2020_with_16_week_cap(self, mock_fetch, mock_save, mock_load, mock_current):
+    def test_processes_2019_and_2020_with_16_week_cap(self, mock_fetch, mock_save, mock_load, mock_current, mock_manager_metadata):
         """Test processes 2019 and 2020 with 16-week cap (includes playoffs)."""
         from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 
@@ -1173,6 +1176,7 @@ class TestLoadOrUpdateStartersCache:
         assert mock_fetch.call_count == 32
 
 
+@pytest.mark.usefixtures("use_real_load_or_update_starters")
 @patch('patriot_center_backend.utils.starters_loader.save_cache')
 class TestRefactoredReturnValues:
     """Comprehensive tests for refactored methods with new multi-value return signatures."""
@@ -1423,7 +1427,8 @@ class TestRefactoredReturnValues:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    def test_fetch_starters_for_week_aggregates_multiple_managers(self, mock_fetch, mock_playoff_ids, mock_save):
+    @patch('patriot_center_backend.utils.starters_loader.MANAGER_METADATA')
+    def test_fetch_starters_for_week_aggregates_multiple_managers(self, mock_manager_metadata, mock_fetch, mock_playoff_ids, mock_save):
         """Test that fetch_starters_for_week correctly aggregates data from multiple managers."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 

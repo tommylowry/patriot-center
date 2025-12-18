@@ -78,10 +78,26 @@ def use_real_load_or_update_starters():
     Temporarily unpatch load_or_update_starters_cache for tests that need to test the real function.
 
     Use this fixture in tests that specifically test load_or_update_starters_cache functionality.
+    Also reloads the starters_loader module to get a fresh MANAGER_METADATA instance.
     """
+    import importlib
+    import sys
+
+    # Stop the patcher
     _load_or_update_starters_patcher.stop()
+
+    # Reload starters_loader module to re-execute module-level initialization with real cache
+    if 'patriot_center_backend.utils.starters_loader' in sys.modules:
+        importlib.reload(sys.modules['patriot_center_backend.utils.starters_loader'])
+
     yield
+
+    # Restart the patcher
     _load_or_update_starters_patcher.start()
+
+    # Reload module again to reset to empty cache state
+    if 'patriot_center_backend.utils.starters_loader' in sys.modules:
+        importlib.reload(sys.modules['patriot_center_backend.utils.starters_loader'])
 
 
 @pytest.fixture
@@ -109,18 +125,38 @@ def use_real_load_or_update_ffwar():
 
 
 @pytest.fixture
-def use_real_cache_for_integration_tests():
+def use_real_cache_for_integration_tests(request):
     """
     Temporarily unpatch ALL cache functions for integration tests that need real cache data.
 
     Use this fixture for integration tests that validate against actual cache data,
     such as valid_options integration tests.
+
+    This fixture also reloads the valid_options module to re-execute module-level
+    cache loading with real cache data, and updates the test module's namespace.
     """
+    import importlib
+    import sys
+
     # Stop all the patchers
     _load_cache_patcher.stop()
     _load_or_update_starters_patcher.stop()
     _load_or_update_replacement_patcher.stop()
     _load_or_update_ffwar_patcher.stop()
+
+    # Reload the service modules to re-execute module-level cache loading with real data
+    if 'patriot_center_backend.services.players' in sys.modules:
+        players_module = importlib.reload(sys.modules['patriot_center_backend.services.players'])
+    if 'patriot_center_backend.services.valid_options' in sys.modules:
+        valid_options_module = importlib.reload(sys.modules['patriot_center_backend.services.valid_options'])
+
+        # Update the test module's namespace with the reloaded cache data
+        # This ensures tests that directly import VALID_OPTIONS_CACHE and PLAYERS_DATA get real data
+        test_module = sys.modules[request.module.__name__]
+        if hasattr(test_module, 'VALID_OPTIONS_CACHE'):
+            test_module.VALID_OPTIONS_CACHE = valid_options_module.VALID_OPTIONS_CACHE
+        if hasattr(test_module, 'PLAYERS_DATA'):
+            test_module.PLAYERS_DATA = valid_options_module.PLAYERS_DATA
 
     yield
 
@@ -129,6 +165,19 @@ def use_real_cache_for_integration_tests():
     _load_or_update_starters_patcher.start()
     _load_or_update_replacement_patcher.start()
     _load_or_update_ffwar_patcher.start()
+
+    # Reload modules again to reset them to empty cache state for other tests
+    if 'patriot_center_backend.services.players' in sys.modules:
+        importlib.reload(sys.modules['patriot_center_backend.services.players'])
+    if 'patriot_center_backend.services.valid_options' in sys.modules:
+        valid_options_module = importlib.reload(sys.modules['patriot_center_backend.services.valid_options'])
+
+        # Reset test module's namespace back to empty caches
+        test_module = sys.modules[request.module.__name__]
+        if hasattr(test_module, 'VALID_OPTIONS_CACHE'):
+            test_module.VALID_OPTIONS_CACHE = valid_options_module.VALID_OPTIONS_CACHE
+        if hasattr(test_module, 'PLAYERS_DATA'):
+            test_module.PLAYERS_DATA = valid_options_module.PLAYERS_DATA
 
 
 @pytest.fixture

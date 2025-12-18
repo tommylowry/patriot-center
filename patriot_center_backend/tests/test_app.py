@@ -864,3 +864,277 @@ class TestPlayerManagerAggregationEndpoint:
         """Test that response content type is JSON."""
         response = flask_client.get('/get_player_manager_aggregation/Player/Manager')
         assert 'application/json' in response.content_type
+
+
+class TestManagerEndpoints:
+    """Test manager-related API endpoints."""
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_list_managers_success(self, mock_manager_class, flask_client):
+        """Test /get/managers/list endpoint returns manager list."""
+        mock_instance = MagicMock()
+        mock_instance.get_managers_list.return_value = {
+            "managers": [
+                {
+                    "name": "Tommy",
+                    "user_id": "123",
+                    "years_active": ["2024"],
+                    "total_trades": 10,
+                    "overall_record": "8-6-0"
+                },
+                {
+                    "name": "Mike",
+                    "user_id": "456",
+                    "years_active": ["2024"],
+                    "total_trades": 5,
+                    "overall_record": "6-8-0"
+                }
+            ]
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/get/managers/list')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert "managers" in data
+        assert len(data["managers"]) == 2
+        assert data["managers"][0]["name"] == "Tommy"
+        mock_instance.get_managers_list.assert_called_once()
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_list_managers_error(self, mock_manager_class, flask_client):
+        """Test /get/managers/list handles errors."""
+        mock_instance = MagicMock()
+        mock_instance.get_managers_list.side_effect = ValueError("Cache error")
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/get/managers/list')
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert "error" in data
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_summary_no_year(self, mock_manager_class, flask_client):
+        """Test /api/managers/<name>/summary endpoint without year filter."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_summary.return_value = {
+            "manager_name": "Tommy",
+            "user_id": "123",
+            "matchup_data": {"overall": {"record": "8-6-0"}},
+            "transactions": {"trades": {"total": 10}},
+            "overall_data": {"playoff_appearances": 5},
+            "head_to_head": {}
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/summary')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["manager_name"] == "Tommy"
+        assert "matchup_data" in data
+        mock_instance.get_manager_summary.assert_called_once_with("Tommy", None)
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_summary_with_year(self, mock_manager_class, flask_client):
+        """Test /api/managers/<name>/summary/<year> endpoint with year filter."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_summary.return_value = {
+            "manager_name": "Tommy",
+            "matchup_data": {"overall": {"record": "8-6-0"}}
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/summary/2024')
+        assert response.status_code == 200
+        mock_instance.get_manager_summary.assert_called_once_with("Tommy", "2024")
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_summary_invalid_manager(self, mock_manager_class, flask_client):
+        """Test manager summary returns 400 for invalid manager."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_summary.side_effect = ValueError("Manager not found")
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/InvalidManager/summary')
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert "error" in data
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_yearly_data_success(self, mock_manager_class, flask_client):
+        """Test /api/managers/<name>/yearly/<year> endpoint."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_yearly_data.return_value = {
+            "manager_name": "Tommy",
+            "year": "2024",
+            "matchup_data": {
+                "overall": {
+                    "weekly_scores": [
+                        {"week": "1", "points_for": 120.5, "opponent": "Mike"}
+                    ]
+                }
+            },
+            "transactions": {"trades": {"by_week": []}}
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/yearly/2024')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["manager_name"] == "Tommy"
+        assert data["year"] == "2024"
+        mock_instance.get_manager_yearly_data.assert_called_once_with("Tommy", "2024")
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_yearly_data_invalid_year(self, mock_manager_class, flask_client):
+        """Test yearly data returns 400 for invalid year."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_yearly_data.side_effect = ValueError("Year not found")
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/yearly/2099')
+        assert response.status_code == 400
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_head_to_head_no_year(self, mock_manager_class, flask_client):
+        """Test head-to-head endpoint without year filter."""
+        mock_instance = MagicMock()
+        mock_instance.get_head_to_head.return_value = {
+            "manager_1": {"name": "Tommy", "wins": 5},
+            "manager_2": {"name": "Mike", "wins": 3},
+            "matchup_history": [],
+            "trades_between": {"total": 2}
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/head-to-head/Mike')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["manager_1"]["name"] == "Tommy"
+        assert data["manager_2"]["name"] == "Mike"
+        mock_instance.get_head_to_head.assert_called_once_with("Tommy", "Mike", None)
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_head_to_head_with_year(self, mock_manager_class, flask_client):
+        """Test head-to-head endpoint with year filter."""
+        mock_instance = MagicMock()
+        mock_instance.get_head_to_head.return_value = {
+            "manager_1": {"name": "Tommy"},
+            "manager_2": {"name": "Mike"}
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/head-to-head/Mike/2024')
+        assert response.status_code == 200
+        mock_instance.get_head_to_head.assert_called_once_with("Tommy", "Mike", "2024")
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_head_to_head_invalid_manager(self, mock_manager_class, flask_client):
+        """Test head-to-head returns 400 for invalid manager."""
+        mock_instance = MagicMock()
+        mock_instance.get_head_to_head.side_effect = ValueError("Manager not found")
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/head-to-head/Invalid')
+        assert response.status_code == 400
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_transactions_default_params(self, mock_manager_class, flask_client):
+        """Test transactions endpoint with default parameters."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_transactions.return_value = {
+            "manager_name": "Tommy",
+            "total_count": 50,
+            "transactions": [
+                {"type": "trade", "year": "2024", "week": "1"}
+            ]
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/transactions')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["manager_name"] == "Tommy"
+        assert "transactions" in data
+        # Check default parameters: year=None, type=None, limit=50, offset=0
+        mock_instance.get_manager_transactions.assert_called_once_with("Tommy", None, None, 50, 0)
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_transactions_with_filters(self, mock_manager_class, flask_client):
+        """Test transactions endpoint with year and type filters."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_transactions.return_value = {
+            "manager_name": "Tommy",
+            "total_count": 10,
+            "transactions": []
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/transactions/2024/trade/20/5')
+        assert response.status_code == 200
+        mock_instance.get_manager_transactions.assert_called_once_with("Tommy", "2024", "trade", 20, 5)
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_transactions_invalid_manager(self, mock_manager_class, flask_client):
+        """Test transactions returns 400 for invalid manager."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_transactions.side_effect = ValueError("Manager not found")
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/InvalidManager/transactions')
+        assert response.status_code == 400
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_awards_success(self, mock_manager_class, flask_client):
+        """Test /api/managers/<name>/awards endpoint."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_awards.return_value = {
+            "manager_name": "Tommy",
+            "awards": {
+                "championships": 1,
+                "runner_ups": 2,
+                "playoff_appearances": 5,
+                "highest_weekly_score": {"score": 163.5, "week": "1", "year": "2024"}
+            },
+            "avatar_urls": {
+                "full_size": "https://example.com/avatar.jpg",
+                "thumbnail": "https://example.com/thumb.jpg"
+            }
+        }
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/Tommy/awards')
+        assert response.status_code == 200
+        data = json.loads(response.data)
+
+        assert data["manager_name"] == "Tommy"
+        assert "awards" in data
+        assert data["awards"]["championships"] == 1
+        mock_instance.get_manager_awards.assert_called_once_with("Tommy")
+
+    @patch('patriot_center_backend.utils.manager_metadata_manager.ManagerMetadataManager')
+    def test_manager_awards_invalid_manager(self, mock_manager_class, flask_client):
+        """Test awards returns 400 for invalid manager."""
+        mock_instance = MagicMock()
+        mock_instance.get_manager_awards.side_effect = ValueError("Manager not found")
+        mock_manager_class.return_value = mock_instance
+
+        response = flask_client.get('/api/managers/InvalidManager/awards')
+        assert response.status_code == 400
+        data = json.loads(response.data)
+        assert "error" in data
+
+    def test_manager_endpoints_cors_headers(self, flask_client):
+        """Test that CORS headers are set for all manager endpoints."""
+        response = flask_client.get('/get/managers/list')
+        assert 'Access-Control-Allow-Origin' in response.headers
+
+    def test_manager_endpoints_content_type(self, flask_client):
+        """Test that response content type is JSON for manager endpoints."""
+        response = flask_client.get('/get/managers/list')
+        assert 'application/json' in response.content_type

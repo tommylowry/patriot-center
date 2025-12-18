@@ -3,9 +3,7 @@ Unit tests for manager_metadata_manager.py internal helper methods.
 Tests all private helper methods used by the public get_ methods.
 """
 import pytest
-import json
-from unittest.mock import patch, MagicMock
-from decimal import Decimal
+from unittest.mock import patch
 import copy
 
 
@@ -356,10 +354,13 @@ class TestGetMatchupDetailsFromCache:
         """Test returns properly formatted matchup data for all-time stats."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        # Inject the cache data directly since these are internal methods
+        manager._cache = mock_full_manager_cache
+
         result = manager._get_matchup_details_from_cache("Tommy")
 
         # Check structure
@@ -380,10 +381,12 @@ class TestGetMatchupDetailsFromCache:
         """Test returns properly formatted matchup data for specific year."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
+
         result = manager._get_matchup_details_from_cache("Tommy", year="2024")
 
         # Should use yearly data
@@ -396,11 +399,12 @@ class TestGetMatchupDetailsFromCache:
         """Test handles managers with no playoff appearances correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        # Mike has no playoff appearances
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
+
         result = manager._get_matchup_details_from_cache("Mike")
 
         # Playoffs should have all zeros
@@ -419,10 +423,11 @@ class TestGetTransactionDetailsFromCache:
         """Test returns properly formatted transaction summary."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
         result = manager._get_trasaction_details_from_cache("Tommy")
 
         # Check structure
@@ -451,10 +456,11 @@ class TestGetOverallDataDetailsFromCache:
         """Test returns career accomplishments correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
         result = manager._get_overall_data_details_from_cache("Tommy")
 
         # Check playoff appearances
@@ -475,10 +481,11 @@ class TestGetHeadToHeadDetailsFromCache:
         """Test returns all opponents when no opponent filter specified."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
         result = manager._get_head_to_head_details_from_cache("Tommy")
 
         # Should have multiple opponents
@@ -493,10 +500,11 @@ class TestGetHeadToHeadDetailsFromCache:
         """Test returns single opponent data when opponent filter specified."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
         result = manager._get_head_to_head_details_from_cache("Tommy", opponent="Mike")
 
         # Should be single opponent dict
@@ -515,10 +523,13 @@ class TestGetWeeklyTradeDetailsFromCache:
         """Test returns trade details for a specific week."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, mock_transaction_cache]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
+        manager._transaction_id_cache = mock_transaction_cache
+
         result = manager._get_weekly_trade_details_from_cache("Tommy", "2024", "1")
 
         # Should have one trade
@@ -663,10 +674,11 @@ class TestGetManagerAwardsFromCache:
         """Test calculates first/second/third place counts correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
         result = manager._get_manager_awards_from_cache("Tommy")
 
         assert result["first_place"] == 1
@@ -679,10 +691,11 @@ class TestGetManagerAwardsFromCache:
         """Test finds year with most trades."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
         result = manager._get_manager_awards_from_cache("Tommy")
 
         assert "most_trades_in_year" in result
@@ -695,10 +708,11 @@ class TestGetManagerAwardsFromCache:
         """Test finds biggest FAAB bid."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
         result = manager._get_manager_awards_from_cache("Tommy")
 
         assert "biggest_faab_bid" in result
@@ -715,10 +729,11 @@ class TestValidateMatchupData:
         """Test returns empty string when matchup data is valid."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
 
         valid_matchup = {
             "opponent_manager": "Mike",
@@ -756,10 +771,11 @@ class TestValidateMatchupData:
         """Test detects when result is win but points don't match."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_full_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_full_manager_cache
 
         invalid_matchup = {
             "opponent_manager": "Mike",

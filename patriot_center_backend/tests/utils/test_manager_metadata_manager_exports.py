@@ -131,7 +131,8 @@ def mock_manager_cache():
                         "transactions": {
                             "trades": {"total": 5, "trade_partners": {}, "trade_players_acquired": {}, "trade_players_sent": {}},
                             "adds": {"total": 10, "players": {}},
-                            "drops": {"total": 8, "players": {}}
+                            "drops": {"total": 8, "players": {}},
+                            "faab": {"total_lost_or_gained": -50, "players": {"Isaiah Likely": 46}, "traded_away": {"total": 0, "trade_partners": {}}, "acquired_from": {"total": 0, "trade_partners": {}}}
                         }
                     },
                     "weeks": {
@@ -205,7 +206,8 @@ def mock_manager_cache():
                 "transactions": {
                     "trades": {"total": 5, "trade_partners": {"Tommy": 3}, "trade_players_acquired": {}, "trade_players_sent": {}},
                     "adds": {"total": 15, "players": {}},
-                    "drops": {"total": 12, "players": {}}
+                    "drops": {"total": 12, "players": {}},
+                    "faab": {"total_lost_or_gained": 0, "players": {}, "traded_away": {"total": 0, "trade_partners": {}}, "acquired_from": {"total": 0, "trade_partners": {}}}
                 }
             },
             "years": {
@@ -241,7 +243,8 @@ def mock_manager_cache():
                         "transactions": {
                             "trades": {"total": 3, "trade_partners": {}, "trade_players_acquired": {}, "trade_players_sent": {}},
                             "adds": {"total": 8, "players": {}},
-                            "drops": {"total": 6, "players": {}}
+                            "drops": {"total": 6, "players": {}},
+                            "faab": {"total_lost_or_gained": 0, "players": {}, "traded_away": {"total": 0, "trade_partners": {}}, "acquired_from": {"total": 0, "trade_partners": {}}}
                         }
                     },
                     "weeks": {}
@@ -301,10 +304,13 @@ class TestGetManagersList:
         """Test returns list of all managers with basic info."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]  # Manager cache, then transaction cache
+        mock_load_cache.side_effect = [{}, {}]  # Empty initial load
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        # Inject the cache data directly
+        manager._cache = mock_manager_cache
+
         result = manager.get_managers_list()
 
         assert "managers" in result
@@ -341,10 +347,12 @@ class TestGetManagerSummary:
         """Test returns complete summary data for a manager."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+
         result = manager.get_manager_summary("Tommy")
 
         assert result["manager_name"] == "Tommy"
@@ -360,10 +368,11 @@ class TestGetManagerSummary:
         """Test raises ValueError for manager not in cache."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
 
         with pytest.raises(ValueError, match="Manager Unknown not found in cache"):
             manager.get_manager_summary("Unknown")
@@ -374,10 +383,12 @@ class TestGetManagerSummary:
         """Test filters data by year when year parameter provided."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+
         result = manager.get_manager_summary("Tommy", year="2024")
 
         # Should use yearly data instead of all-time
@@ -389,10 +400,11 @@ class TestGetManagerSummary:
         """Test raises ValueError for year not in cache."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
 
         with pytest.raises(ValueError, match="Year 2099 not found"):
             manager.get_manager_summary("Tommy", year="2099")
@@ -407,10 +419,12 @@ class TestGetManagerYearlyData:
         """Test returns yearly data including weekly scores."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+
         result = manager.get_manager_yearly_data("Tommy", "2024")
 
         assert result["manager_name"] == "Tommy"
@@ -425,10 +439,12 @@ class TestGetManagerYearlyData:
         """Test includes transaction data organized by week."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+
         result = manager.get_manager_yearly_data("Tommy", "2024")
 
         assert "transactions" in result
@@ -442,10 +458,11 @@ class TestGetManagerYearlyData:
         """Test raises ValueError for invalid manager or year."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
 
         with pytest.raises(ValueError, match="Manager Unknown not found"):
             manager.get_manager_yearly_data("Unknown", "2024")
@@ -463,10 +480,12 @@ class TestGetHeadToHead:
         """Test returns head-to-head stats between two managers."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+
         result = manager.get_head_to_head("Tommy", "Mike")
 
         assert "manager_1" in result
@@ -480,10 +499,11 @@ class TestGetHeadToHead:
         """Test raises ValueError for managers not in cache."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
 
         with pytest.raises(ValueError, match="Manager Unknown not found"):
             manager.get_head_to_head("Tommy", "Unknown")
@@ -499,10 +519,13 @@ class TestGetManagerTransactions:
         """Test returns all transaction types when no filter specified."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, mock_transaction_id_cache]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+        manager._transaction_id_cache = mock_transaction_id_cache
+
         result = manager.get_manager_transactions("Tommy")
 
         assert result["manager_name"] == "Tommy"
@@ -516,10 +539,13 @@ class TestGetManagerTransactions:
         """Test filters transactions by type when specified."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, mock_transaction_id_cache]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+        manager._transaction_id_cache = mock_transaction_id_cache
+
         result = manager.get_manager_transactions("Tommy", transaction_type="trade")
 
         # All transactions should be trades
@@ -533,10 +559,13 @@ class TestGetManagerTransactions:
         """Test applies limit and offset for pagination."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, mock_transaction_id_cache]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+        manager._transaction_id_cache = mock_transaction_id_cache
+
         result = manager.get_manager_transactions("Tommy", limit=1, offset=0)
 
         # Should return at most 1 transaction
@@ -548,10 +577,11 @@ class TestGetManagerTransactions:
         """Test raises ValueError for manager not in cache."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
 
         with pytest.raises(ValueError, match="Manager Unknown not found"):
             manager.get_manager_transactions("Unknown")
@@ -566,10 +596,12 @@ class TestGetManagerAwards:
         """Test returns awards and achievements for a manager."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
+
         result = manager.get_manager_awards("Tommy")
 
         assert result["manager_name"] == "Tommy"
@@ -582,10 +614,11 @@ class TestGetManagerAwards:
         """Test raises ValueError for manager not in cache."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        mock_load_cache.side_effect = [mock_manager_cache, {}]
+        mock_load_cache.side_effect = [{}, {}]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
+        manager._cache = mock_manager_cache
 
         with pytest.raises(ValueError, match="Manager Unknown not found"):
             manager.get_manager_awards("Unknown")

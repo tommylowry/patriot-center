@@ -9,6 +9,7 @@ from unittest.mock import patch, mock_open, MagicMock
 from datetime import datetime
 
 
+@pytest.mark.usefixtures("use_real_load_cache")
 class TestLoadCache:
     """Test load_cache function."""
 

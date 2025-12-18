@@ -57,7 +57,7 @@ class ManagerMetadataManager:
 
         if week == "1" or self._use_faab == None or self._playoff_week_start == None:
             # Fetch league settings to determine FAAB usage at start of season
-            league_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year), '')}")[0]
+            league_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year))}")[0]
             self._use_faab = True if league_settings.get("settings", {}).get("waiver_type", 1)==2 else False
             self._playoff_week_start = league_settings.get("settings", {}).get("playoff_week_start", None)
 
@@ -1196,12 +1196,19 @@ class ManagerMetadataManager:
                 "acquired": [],
                 "sent":     []
             }
-            trade_details = copy.deepcopy(self._transaction_id_cache.get(transaction_id, {})).get("trade_details")
+            trade_details = copy.deepcopy(self._transaction_id_cache.get(transaction_id, {})).get("trade_details", {})
             if trade_details == {}:
                 print(f"WARNING: trade details empty for transaction_id: {transaction_id}")
             
-            trade_dict["partners"] = copy.deepcopy(self._transaction_id_cache.get(transaction_id, {}).get("managers_involved"))
-            trade_dict["partners"].remove(manager_name)
+            trade_dict["partners"] = copy.deepcopy(self._transaction_id_cache.get(transaction_id, {}).get("managers_involved", []))
+            
+            # Remove self from partners and populate acquired/sent lists
+            if manager_name not in trade_dict["partners"]:
+                print(f"WARNING: manager {manager_name} not found in trade partners for transaction_id: {transaction_id}")
+            else:
+                trade_dict["partners"].remove(manager_name)
+
+            
             for player in trade_details:
                 if manager_name == trade_details[player]["old_manager"]:
                     trade_dict["sent"].append(player)
@@ -1405,10 +1412,20 @@ class ManagerMetadataManager:
             return copy.deepcopy(matchup_history)
 
 
-                    
-        # average margin of victory
-        manager_1_average_margin_of_victory =  float(Decimal(sum(manager_1_victory_margins) / len(manager_1_victory_margins)).quantize(Decimal('0.01')))
-        manager_2_average_margin_of_victory =  float(Decimal(sum(manager_2_victory_margins) / len(manager_2_victory_margins)).quantize(Decimal('0.01')))
+        if len(manager_1_victory_margins) == 0:
+            print(f"WARNING: No victories found for {manager_1} against {manager_2}. Cannot compute average margin of victory.")
+            manager_1_average_margin_of_victory = None
+        else:
+            manager_1_average_margin_of_victory =  float(Decimal(sum(manager_1_victory_margins) / len(manager_1_victory_margins)).quantize(Decimal('0.01')))
+        
+        
+        if len(manager_2_victory_margins) == 0:
+            print(f"WARNING: No victories found for {manager_2} against {manager_1}. Cannot compute average margin of victory.")
+            manager_2_average_margin_of_victory = None
+        else:
+            manager_2_average_margin_of_victory =  float(Decimal(sum(manager_2_victory_margins) / len(manager_2_victory_margins)).quantize(Decimal('0.01')))
+
+
         
         # import the top 3 scorers of each manager for these games
         self._get_top_3_scorers_from_matchup_data(manager_1_last_win,        manager_1, manager_2)
@@ -1763,7 +1780,7 @@ class ManagerMetadataManager:
             raise ValueError("Week or Year not set. Cannot determine season state.")
         
         if not self._playoff_week_start:
-            league_info = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(self._year), '')}")[0]
+            league_info = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(self._year))}")[0]
             self._playoff_week_start = league_info.get("settings", {}).get("playoff_week_start", None)
         
         if int(self._week) >= self._playoff_week_start:
@@ -1861,6 +1878,21 @@ class ManagerMetadataManager:
         Side Effects:
             Modifies matchup_data in-place to add {manager}_top_3_scorers keys with player details
         """
+        if "year" not in matchup_data or "week" not in matchup_data:
+            print("WARNING: matchup_data missing year or week. Cannot get top 3 scorers.")
+            
+            matchup_data[f"{manager_1.lower().replace(' ', '_')}_top_3_scorers"] = []
+            matchup_data[f"{manager_2.lower().replace(' ', '_')}_top_3_scorers"] = []
+            return
+        
+        if manager_1 not in STARTERS_CACHE.get(matchup_data["year"], {}).get(matchup_data["week"], {}) or manager_2 not in STARTERS_CACHE.get(matchup_data["year"], {}).get(matchup_data["week"], {}):
+            print(f"WARNING: Starter data missing for week {matchup_data['week']}, year {matchup_data['year']}. Cannot get top 3 scorers for {manager_1} vs {manager_2}.")
+            
+            matchup_data[f"{manager_1.lower().replace(' ', '_')}_top_3_scorers"] = []
+            matchup_data[f"{manager_2.lower().replace(' ', '_')}_top_3_scorers"] = []
+            return
+
+
         manager_1_starters = copy.deepcopy(STARTERS_CACHE[matchup_data["year"]][matchup_data["week"]][manager_1])
         manager_2_starters = copy.deepcopy(STARTERS_CACHE[matchup_data["year"]][matchup_data["week"]][manager_2])
         manager_1_starters.pop("Total_Points")

@@ -259,6 +259,7 @@ class TestFetchFfwar:
         assert "Josh Allen" in result
 
 
+@pytest.mark.usefixtures("use_real_load_or_update_ffwar")
 class TestLoadOrUpdateFfwarCache:
     """Test load_or_update_ffWAR_cache main orchestration function."""
 

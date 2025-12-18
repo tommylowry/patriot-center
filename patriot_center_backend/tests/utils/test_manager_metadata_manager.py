@@ -39,19 +39,20 @@ class TestManagerMetadataManagerInit:
         """Test manager loads existing cache from disk on initialization."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        existing_cache = {
+        existing_manager_cache = {
             "Tommy": {
                 "summary": {"matchup_data": {}},
                 "years": {}
             }
         }
         existing_transaction_cache = {"tx123": {"year": "2024"}}
-        mock_load_cache.side_effect = [existing_cache, existing_transaction_cache]
+        # First call loads transaction cache, second loads manager cache (order in __init__)
+        mock_load_cache.side_effect = [existing_transaction_cache, existing_manager_cache]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
 
-        assert manager._cache == existing_cache
+        assert manager._cache == existing_manager_cache
         assert manager._transaction_id_cache == existing_transaction_cache
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
@@ -240,12 +241,13 @@ class TestCacheWeekData:
             "7547": {"full_name": "Amon-Ra St. Brown"}
         }
 
-        # Mock responses: league settings, user1, user2, transactions, matchups
+        # Mock responses: league settings (x2 because week==1 always fetches), users, transactions, matchups
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Tommy)
             ({"user_id": "user_123"}, 200),  # Tommy user
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Mike, week==1 always fetches)
             ({"user_id": "user_456"}, 200),  # Mike user
-            ([], 200),  # Transactions (empty)
+            ([], 200),  # Transactions (empty list is correct for transactions endpoint)
             ([  # Matchups
                 {"roster_id": 1, "matchup_id": 1, "points": 120.5},
                 {"roster_id": 2, "matchup_id": 1, "points": 115.3}
@@ -299,11 +301,12 @@ class TestTransactionProcessing:
         }
 
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user_123"}, 200),
-            ({"user_id": "user_456"}, 200),
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Tommy)
+            ({"user_id": "user_123"}, 200),  # Tommy user
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Mike, week==1 always fetches)
+            ({"user_id": "user_456"}, 200),  # Mike user
             ([add_transaction], 200),  # Transactions
-            ([{"roster_id": 1, "matchup_id": 1, "points": 120.5}, {"roster_id": 2, "matchup_id": 1, "points": 115.3}], 200)
+            ([{"roster_id": 1, "matchup_id": 1, "points": 120.5}, {"roster_id": 2, "matchup_id": 1, "points": 115.3}], 200)  # Matchups
         ]
 
         manager = ManagerMetadataManager()
@@ -342,11 +345,12 @@ class TestTransactionProcessing:
         }
 
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user_123"}, 200),
-            ({"user_id": "user_456"}, 200),
-            ([drop_transaction], 200),
-            ([{"roster_id": 1, "matchup_id": 1, "points": 120.5}, {"roster_id": 2, "matchup_id": 1, "points": 115.3}], 200)
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Tommy)
+            ({"user_id": "user_123"}, 200),  # Tommy user
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Mike, week==1 always fetches)
+            ({"user_id": "user_456"}, 200),  # Mike user
+            ([drop_transaction], 200),  # Transactions
+            ([{"roster_id": 1, "matchup_id": 1, "points": 120.5}, {"roster_id": 2, "matchup_id": 1, "points": 115.3}], 200)  # Matchups
         ]
 
         manager = ManagerMetadataManager()
@@ -384,11 +388,12 @@ class TestTransactionProcessing:
         }
 
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user_123"}, 200),
-            ({"user_id": "user_456"}, 200),
-            ([trade_transaction], 200),
-            ([{"roster_id": 1, "matchup_id": 1, "points": 120.5}, {"roster_id": 2, "matchup_id": 1, "points": 115.3}], 200)
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Tommy)
+            ({"user_id": "user_123"}, 200),  # Tommy user
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Mike, week==1 always fetches)
+            ({"user_id": "user_456"}, 200),  # Mike user
+            ([trade_transaction], 200),  # Transactions
+            ([{"roster_id": 1, "matchup_id": 1, "points": 120.5}, {"roster_id": 2, "matchup_id": 1, "points": 115.3}], 200)  # Matchups
         ]
 
         manager = ManagerMetadataManager()
@@ -449,10 +454,11 @@ class TestMatchupProcessing:
         mock_load_player_ids.return_value = {}
 
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user_123"}, 200),
-            ({"user_id": "user_456"}, 200),
-            ([], 200),  # Transactions
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Tommy)
+            ({"user_id": "user_123"}, 200),  # Tommy user
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings (Mike, week==1 always fetches)
+            ({"user_id": "user_456"}, 200),  # Mike user
+            ([], 200),  # Transactions (empty list is correct)
             ([  # Matchups with tie
                 {"roster_id": 1, "matchup_id": 1, "points": 120.5},
                 {"roster_id": 2, "matchup_id": 1, "points": 120.5}
@@ -487,9 +493,9 @@ class TestPlayoffProcessing:
         mock_load_player_ids.return_value = {}
 
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user_123"}, 200),
-            ({"user_id": "user_456"}, 200),
+            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),  # League settings
+            ({"user_id": "user_123"}, 200),  # Tommy user
+            ({"user_id": "user_456"}, 200),  # Mike user
             ([], 200),  # Transactions
             ([  # Matchups
                 {"roster_id": 1, "matchup_id": 1, "points": 120.5},
@@ -498,17 +504,17 @@ class TestPlayoffProcessing:
         ]
 
         manager = ManagerMetadataManager()
-        manager.set_roster_id("Tommy", "2024", "15", 1)  # Week 15 (playoff week)
-        manager.set_roster_id("Mike", "2024", "15", 2)
 
-        # Set playoff roster IDs
+        # Set playoff roster IDs before setting roster IDs
         playoff_roster_ids = {
             "round_roster_ids": [1, 2],
             "first_place_id": 1,
             "second_place_id": 2,
             "third_place_id": None
         }
-        manager._playoff_roster_ids = playoff_roster_ids
+
+        manager.set_roster_id("Tommy", "2024", "15", 1, playoff_roster_ids)  # Week 15 (playoff week)
+        manager.set_roster_id("Mike", "2024", "15", 2, playoff_roster_ids)
 
         manager.cache_week_data("2024", "15")
 
@@ -520,7 +526,7 @@ class TestPlayoffProcessing:
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
     @patch('patriot_center_backend.utils.manager_metadata_manager.LEAGUE_IDS', {2024: "league_123"})
-    @patch('patriot_center_backend.utils.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user", "Mike": "mike_user", "Jake": "jake_user"})
+    @patch('patriot_center_backend.utils.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Tommy": "tommy_user", "Mike": "mike_user", "Jake": "jake_user", "Owen": "owen_user"})
     def test_processes_playoff_placements(self, mock_load_cache, mock_load_player_ids, mock_fetch):
         """Test processes playoff placements correctly."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
@@ -533,11 +539,13 @@ class TestPlayoffProcessing:
             ({"user_id": "user_123"}, 200),
             ({"user_id": "user_456"}, 200),
             ({"user_id": "user_789"}, 200),
+            ({"user_id": "user_999"}, 200),
             ([], 200),  # Transactions
-            ([  # Matchups
+            ([  # Matchups - need even number of rosters
                 {"roster_id": 1, "matchup_id": 1, "points": 130.5},
                 {"roster_id": 2, "matchup_id": 1, "points": 115.3},
-                {"roster_id": 3, "matchup_id": 2, "points": 110.0}
+                {"roster_id": 3, "matchup_id": 2, "points": 110.0},
+                {"roster_id": 4, "matchup_id": 2, "points": 105.0}
             ], 200)
         ]
 
@@ -545,17 +553,15 @@ class TestPlayoffProcessing:
         manager.set_roster_id("Tommy", "2024", "17", 1)  # Championship week
         manager.set_roster_id("Mike", "2024", "17", 2)
         manager.set_roster_id("Jake", "2024", "17", 3)
+        manager.set_roster_id("Owen", "2024", "17", 4)
 
-        # Set playoff results
-        playoff_roster_ids = {
-            "round_roster_ids": [1, 2, 3],
-            "first_place_id": 1,  # Tommy
-            "second_place_id": 2,  # Mike
-            "third_place_id": 3   # Jake
+        # Set playoff results using the new method
+        placements = {
+            "Tommy": 1,
+            "Mike": 2,
+            "Jake": 3
         }
-        manager._playoff_roster_ids = playoff_roster_ids
-
-        manager.cache_week_data("2024", "17")
+        manager.set_playoff_placements(placements, "2024")
 
         # Verify placements recorded
         assert manager._cache["Tommy"]["summary"]["overall_data"]["placement"]["2024"] == 1
@@ -570,20 +576,26 @@ class TestSaveAndLoad:
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
     def test_save_calls_save_cache_with_cache_data(self, mock_load_cache, mock_load_player_ids, mock_save_cache):
-        """Test save method calls save_cache with manager cache data."""
+        """Test save method calls save_cache with both manager and transaction cache data."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
-        cache_data = {"Tommy": {"summary": {}, "years": {}}}
-        mock_load_cache.return_value = cache_data
+        manager_cache = {"Tommy": {"summary": {}, "years": {}}}
+        transaction_cache = {"tx123": {"year": "2024"}}
+        # First call loads transaction cache, second loads manager cache (order in __init__)
+        mock_load_cache.side_effect = [transaction_cache, manager_cache]
         mock_load_player_ids.return_value = {}
 
         manager = ManagerMetadataManager()
         manager.save()
 
-        mock_save_cache.assert_called_once()
-        # Verify correct file path and data
-        call_args = mock_save_cache.call_args
-        assert call_args[0][1] == cache_data
+        # Should save both caches
+        assert mock_save_cache.call_count == 2
+        # Verify both caches are saved (manager._cache and manager._transaction_id_cache)
+        call_args_list = mock_save_cache.call_args_list
+        # First call should be manager cache
+        assert call_args_list[0][0][1] == manager_cache
+        # Second call should be transaction cache
+        assert call_args_list[1][0][1] == transaction_cache
 
 
 class TestHelperMethods:

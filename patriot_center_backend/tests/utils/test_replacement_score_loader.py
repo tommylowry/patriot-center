@@ -491,6 +491,7 @@ class TestGetThreeYrAvg:
         assert result["2024_scoring"]["RB"] == 9.8
 
 
+@pytest.mark.usefixtures("use_real_load_or_update_replacement")
 class TestLoadOrUpdateReplacementScoreCache:
     """Test load_or_update_replacement_score_cache main orchestration."""
 

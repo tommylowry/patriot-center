@@ -271,6 +271,3 @@ def _calculate_ffWAR_position(scores, season, week, position):
             }
     
     return ffWAR_position
-
-
-load_or_update_ffWAR_cache()

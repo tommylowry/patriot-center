@@ -333,6 +333,3 @@ def _get_three_yr_avg(season, week, cache):
 
     # Return the updated current week's scores with three-year averages added
     return current_week_scores
-
-# Warm the cache on import so downstream consumers can immediately read from disk/in-memory.
-load_or_update_replacement_score_cache()

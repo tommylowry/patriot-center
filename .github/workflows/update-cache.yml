@@ -1,14 +1,16 @@
 name: Update Cache Data
 
-# ONLY runs on schedule - no manual trigger option
 on:
   schedule:
-    # Runs every Monday at 1:00 AM EST (08:00 UTC)
-    - cron: '0 6 * * 1'
+    # Runs every Tuesday at 1:00 AM EST (08:00 UTC)
+    - cron: '0 1 * * 2'
+  workflow_dispatch:
 
 jobs:
   update-caches:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout code
@@ -37,8 +39,40 @@ jobs:
           "
 
       - name: Commit and push if changes
+        id: commit
         run: |
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
           git add -A
-          git diff --quiet && git diff --staged --quiet || (git commit -m "Update cache data ($(date +'%Y-%m-%d %H:%M:%S'))" && git push)
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "changes=false" >> $GITHUB_OUTPUT
+          else
+            git commit -m "Update cache data ($(date +'%Y-%m-%d %H:%M:%S'))"
+            git push
+            echo "changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy to Oracle Cloud
+        if: steps.commit.outputs.changes == 'true'
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 129.80.188.14
+          username: ubuntu
+          key: ${{ secrets.ORACLE_SSH_KEY }}
+          script: |
+            set -e
+            echo "📦 Pulling latest cache updates from GitHub..."
+            cd /opt/patriot-center
+            git fetch origin main
+            git reset --hard origin/main
+            echo "✅ Cache files updated"
+
+            echo "🔄 Restarting backend service..."
+            sudo systemctl restart patriot-center
+
+            echo "✅ Verifying service is running..."
+            sudo systemctl is-active --quiet patriot-center || exit 1
+            sudo systemctl status patriot-center --no-pager
+
+            echo "✅ Deployment complete!"
+

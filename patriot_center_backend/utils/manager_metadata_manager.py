@@ -1065,20 +1065,33 @@ class ManagerMetadataManager:
 
 
         # ---- FAAB Summary ----
-        faab = {
-            "total_spent": abs(cached_transaction_data["faab"]["total_lost_or_gained"]),
-            "biggest_acquisitions": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["faab"]["players"]), key_name = "amount")
-        }
+        # Handle cases where FAAB doesn't exist (e.g., older years before FAAB was implemented)
+        if "faab" in cached_transaction_data and cached_transaction_data["faab"]:
+            faab = {
+                "total_spent": abs(cached_transaction_data["faab"]["total_lost_or_gained"]),
+                "biggest_acquisitions": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["faab"]["players"]), key_name = "amount")
+            }
 
-        # FAAB Traded
-        sent = cached_transaction_data["faab"]["traded_away"]["total"]
-        received = cached_transaction_data["faab"]["acquired_from"]["total"]
-        net = received - sent
-        faab["faab_traded"] = {
-            "sent":     sent,
-            "received": received,
-            "net":      net
-        }
+            # FAAB Traded
+            sent = cached_transaction_data["faab"]["traded_away"]["total"]
+            received = cached_transaction_data["faab"]["acquired_from"]["total"]
+            net = received - sent
+            faab["faab_traded"] = {
+                "sent":     sent,
+                "received": received,
+                "net":      net
+            }
+        else:
+            # FAAB not available for this year/manager
+            faab = {
+                "total_spent": 0,
+                "biggest_acquisitions": [],
+                "faab_traded": {
+                    "sent": 0,
+                    "received": 0,
+                    "net": 0
+                }
+            }
         transaction_summary["faab"] = faab
 
 

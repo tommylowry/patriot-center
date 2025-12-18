@@ -5,6 +5,8 @@ import { PlayerRow } from './components/PlayerRow';
 import { useValidOptions } from './hooks/useValidOptions';
 import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import PlayerPage from './pages/PlayerPage';
+import ManagersPage from './pages/ManagersPage';
+import ManagerPage from './pages/ManagerPage';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -284,6 +286,8 @@ function App() {
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/player/:playerSlug" element={<PlayerPage />} />
+          <Route path="/managers" element={<ManagersPage />} />
+          <Route path="/manager/:managerName" element={<ManagerPage />} />
         </Routes>
       </Layout>
     </Router>

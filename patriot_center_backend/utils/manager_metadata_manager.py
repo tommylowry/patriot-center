@@ -1928,9 +1928,9 @@ class ManagerMetadataManager:
         # FAAB
         if "$" in item:
             if dictionary:
-                returning_dict["image_url"] = "https://toppng.com/uploads/preview/coin-2d-super-mario-coin-2d-11563191115sspsxa9g5b.png"
+                returning_dict["image_url"] = "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
                 return copy.deepcopy(returning_dict)
-            return "https://toppng.com/uploads/preview/coin-2d-super-mario-coin-2d-11563191115sspsxa9g5b.png"
+            return "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
         
         
         if item in self._image_urls_cache:

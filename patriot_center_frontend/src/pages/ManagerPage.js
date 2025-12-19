@@ -569,6 +569,81 @@ function StatCard({ title, value, color }) {
   );
 }
 
+// PlayerLink Component - Displays player with image and clickable link
+function PlayerLink({ player, showImage = true }) {
+  const playerName = typeof player === 'string' ? player : player?.name || 'Unknown';
+  const imageUrl = typeof player === 'object' ? player?.image_url : null;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      {showImage && imageUrl && (
+        <img
+          src={imageUrl}
+          alt={playerName}
+          style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '4px',
+            objectFit: 'cover',
+            flexShrink: 0
+          }}
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
+        />
+      )}
+      <Link
+        to={`/player/${encodeURIComponent(playerName)}`}
+        style={{
+          color: 'var(--accent)',
+          textDecoration: 'none',
+          fontWeight: 500
+        }}
+      >
+        {playerName}
+      </Link>
+    </div>
+  );
+}
+
+// ManagerLink Component - Displays manager with image and clickable link
+function ManagerLink({ manager, showImage = true }) {
+  const managerName = typeof manager === 'string' ? manager : manager?.name || 'Unknown';
+  const imageUrl = typeof manager === 'object' ? manager?.image_url : null;
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      {showImage && imageUrl && (
+        <img
+          src={imageUrl}
+          alt={managerName}
+          style={{
+            width: '24px',
+            height: '24px',
+            borderRadius: '50%',
+            objectFit: 'cover',
+            border: '2px solid var(--border)',
+            flexShrink: 0
+          }}
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
+        />
+      )}
+      <Link
+        to={`/manager/${encodeURIComponent(managerName)}`}
+        style={{
+          color: 'var(--accent)',
+          textDecoration: 'none',
+          fontWeight: 500
+        }}
+      >
+        {managerName}
+      </Link>
+    </div>
+  );
+}
+
 // Overview Tab
 function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead }) {
   return (
@@ -617,7 +692,10 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {trades.top_trade_partners && trades.top_trade_partners.length > 0 && (
         <Section title="🤝 Top Trade Partners">
           {trades.top_trade_partners.slice(0, 5).map((partner, i) => (
-            <StatRow key={i} label={typeof partner.name === 'string' ? partner.name : partner.name?.name || 'Unknown'} value={`${partner.count} trades`} />
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
+              <ManagerLink manager={partner} />
+              <span style={{ fontWeight: 600, color: 'var(--text)' }}>{partner.count} trades</span>
+            </div>
           ))}
         </Section>
       )}
@@ -626,7 +704,10 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {adds.top_players_added && adds.top_players_added.length > 0 && (
         <Section title="➕ Most Added Players">
           {adds.top_players_added.slice(0, 5).map((player, i) => (
-            <StatRow key={i} label={typeof player.name === 'string' ? player.name : player.name?.name || 'Unknown'} value={`×${player.count}`} />
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
+              <PlayerLink player={player} />
+              <span style={{ fontWeight: 600, color: 'var(--text)' }}>×{player.count}</span>
+            </div>
           ))}
         </Section>
       )}
@@ -635,7 +716,10 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {drops.top_players_dropped && drops.top_players_dropped.length > 0 && (
         <Section title="➖ Most Dropped Players">
           {drops.top_players_dropped.slice(0, 5).map((player, i) => (
-            <StatRow key={i} label={typeof player.name === 'string' ? player.name : player.name?.name || 'Unknown'} value={`×${player.count}`} />
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
+              <PlayerLink player={player} />
+              <span style={{ fontWeight: 600, color: 'var(--text)' }}>×{player.count}</span>
+            </div>
           ))}
         </Section>
       )}
@@ -645,10 +729,20 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         <Section title="📈 Most Acquired (Trade)">
           {trades.most_aquired_players.slice(0, 3).map((player, i) => (
             <div key={i} style={{ marginBottom: '0.75rem' }}>
-              <StatRow label={typeof player.name === 'string' ? player.name : player.name?.name || 'Unknown'} value={`×${player.count}`} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
+                <PlayerLink player={player} />
+                <span style={{ fontWeight: 600, color: 'var(--text)' }}>×{player.count}</span>
+              </div>
               {player.from && player.from.length > 0 && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
-                  From: {player.from.map(m => `${m.name} (${m.count})`).join(', ')}
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                  <span>From:</span>
+                  {player.from.map((m, j) => (
+                    <span key={j} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <ManagerLink manager={m} showImage={false} />
+                      <span>({m.count})</span>
+                      {j < player.from.length - 1 && <span>,</span>}
+                    </span>
+                  ))}
                 </div>
               )}
             </div>
@@ -661,10 +755,20 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         <Section title="📉 Most Sent (Trade)">
           {trades.most_sent_players.slice(0, 3).map((player, i) => (
             <div key={i} style={{ marginBottom: '0.75rem' }}>
-              <StatRow label={typeof player.name === 'string' ? player.name : player.name?.name || 'Unknown'} value={`×${player.count}`} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
+                <PlayerLink player={player} />
+                <span style={{ fontWeight: 600, color: 'var(--text)' }}>×{player.count}</span>
+              </div>
               {player.to && player.to.length > 0 && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
-                  To: {player.to.map(m => `${m.name} (${m.count})`).join(', ')}
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                  <span>To:</span>
+                  {player.to.map((m, j) => (
+                    <span key={j} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <ManagerLink manager={m} showImage={false} />
+                      <span>({m.count})</span>
+                      {j < player.to.length - 1 && <span>,</span>}
+                    </span>
+                  ))}
                 </div>
               )}
             </div>
@@ -676,7 +780,10 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {faab.biggest_acquisitions && faab.biggest_acquisitions.length > 0 && (
         <Section title="💰 Biggest FAAB Bids">
           {faab.biggest_acquisitions.map((bid, i) => (
-            <StatRow key={i} label={typeof bid.name === 'string' ? bid.name : bid.name?.name || 'Unknown'} value={`$${bid.amount}`} />
+            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
+              <PlayerLink player={bid} />
+              <span style={{ fontWeight: 600, color: 'var(--text)' }}>${bid.amount}</span>
+            </div>
           ))}
         </Section>
       )}
@@ -721,7 +828,16 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                           }}
                         />
                       )}
-                      <div style={{ fontWeight: 700 }}>{opponent.name}</div>
+                      <Link
+                        to={`/manager/${encodeURIComponent(opponent.name)}`}
+                        style={{
+                          fontWeight: 700,
+                          color: 'var(--accent)',
+                          textDecoration: 'none'
+                        }}
+                      >
+                        {opponent.name}
+                      </Link>
                     </div>
                     <StatRow label="Record" value={`${data.wins}-${data.losses}-${data.ties}`} small />
                     <StatRow label="Win%" value={`${((data.wins / (data.wins + data.losses + data.ties || 1)) * 100).toFixed(1)}%`} small />

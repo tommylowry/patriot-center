@@ -36,6 +36,9 @@ class ManagerMetadataManager:
 
         # Playoff roster IDs
         self._playoff_roster_ids = {}
+
+        # Cache image urls for quick access
+        self._image_urls_cache = {}
         
         # Load existing cache from disk
         self._load()
@@ -71,9 +74,6 @@ class ManagerMetadataManager:
                 user_payload, status_code = fetch_sleeper_data(f"user/{username}")
                 if status_code == 200 and "user_id" in user_payload:
                     self._cache[manager]["summary"]["user_id"] = user_payload["user_id"]
-                    self._cache[manager]["summary"]["overall_data"]["avatar_urls"]["full_size"] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
-                    self._cache[manager]["summary"]["overall_data"]["avatar_urls"]["thumbnail"] = f"https://sleepercdn.com/avatars/thumbs/{user_payload.get('avatar','')}"
-
                 else:
                     raise ValueError(f"Failed to fetch user data for manager {manager} with username {username}.")
             else:
@@ -123,10 +123,7 @@ class ManagerMetadataManager:
             "managers": [
                 {
                     "name": "Tommy",
-                    "avatar_urls": {
-                        "full_size": "https://sleepercdn.com/avatars/avatar_url",
-                        "thumbnail": "https://sleepercdn.com/avatars/thumbs/avatar_url"
-                    },
+                    "image_url": "https://sleepercdn.com/avatars/avatar_url",
                     "years_active": ["2019", "2020", "2021", "2022", "2023", "2024", "2025"],
                     "total_trades": 27,
                     "overall_record": "11-6-0"
@@ -144,7 +141,7 @@ class ManagerMetadataManager:
             ties   = self._cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
             manager_item = {
                 "name":           manager,
-                "avatar_urls":    self._cache[manager]["summary"]["overall_data"].get("avatar_urls", {}),
+                "image_url":      self._get_current_manager_image_url(manager),
                 "years_active":   list(self._cache[manager].get("years", {}).keys()),
                 "total_trades":   self._cache[manager]["summary"]["transactions"]["trades"]["total"],
                 "overall_record": f"{wins}-{losses}-{ties}"
@@ -167,10 +164,7 @@ class ManagerMetadataManager:
         {
             "manager_name": "Tommy",
             "user_id": "399258572535365632",
-            "avatar_urls": {
-                "full_size": "https://sleepercdn.com/avatars/avatar_url",
-                "thumbnail": "https://sleepercdn.com/avatars/thumbs/avatar_url"
-            },
+            "image_url": "https://sleepercdn.com/avatars/avatar_url",
             "years_active": ["2019", "2020", "2021", "2022", "2023", "2024", "2025"],
             "matchup_data": {
                 "overall": {
@@ -198,38 +192,58 @@ class ManagerMetadataManager:
                 "trades": {
                     "total": 27,
                     "top_trade_partners": [
-                        {"name": "Owen", "count": 7},
-                        {"name": "Dheeraj", "count": 7},
-                        {"name": "Cody", "count": 4},
+                        {
+                            "name": "Owen",
+                            "count": 7,
+                            "image_url": "https://sleepercdn.com/avatars/avatar_url"
+                        },
+                        ...
                     ],
                     "most_aquired_players": [
-                        {"name": "Ezekiel Elliott", "count": 2, "from": {"Sach": 1, "Dheeraj": 1}},
-                        {"name": "Tank Dell", "count": 2, "from": {"Davey": 1, "Cody": 1}},
-                        {"name": "$2 FAAB", "count": 2, "from": {"Dheeraj": 2}},
-                        {"name": "Chris Olave", "count": 2, "from": {"Sach": 1, "Dheeraj": 1}}
+                        {
+                            "name": "$2 FAAB",
+                            "count": 4,
+                            "from": {
+                                [
+                                    "name": "Sach",
+                                    "count": 2,
+                                    "image_url": "https://sleepercdn.com/avatars/avatar_url"
+                                ],
+                                [
+                                    "name": "Owen",
+                                    "count": 1,
+                                    "image_url": "https://sleepercdn.com/avatars/avatar_url"
+                                ],
+                                ...
+                            }
+                        },
+                        ...
                     ],
                     "most_sent_players": [
-                        ... (same structure as most_acquired_players)
+                        ... (same structure as most_acquired_players but with Player instead of Manager)
                     ]
                 },
                 "adds": {
                     "total": 86,
                     "top_players_added": [
-                        ... (same structure as top_trade_partners)
+                        ... (same structure as top_trade_partners but with Player instead of Manager)
                     ]
                 },
                 "drops": {
                     "total": 82,
                     "top_players_dropped": [
-                        ... (same structure as top_trade_partners)
+                        ... (same structure as top_trade_partners but with Player instead of Manager)
                     ]
                 },
                 "faab": {
                     "total_spent": 120,
                     "biggest_acquisitions": [
-                        {"name": "Ty Chandler", "amount": 23},
-                        {"name": "Jahan Dotson", "amount": 23},
-                        {"name": "Jaxon Smith-Njigba", "amount": 23}
+                        {
+                            "name": "Ty Chandler",
+                            "amount": 23,
+                            "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"
+                        },
+                        ...
                     ],
                     "faab_traded": {
                         "sent": 55,
@@ -249,12 +263,15 @@ class ManagerMetadataManager:
                 "championships": 2
             },
             "head_to_head": {
-                "Dheeraj": {
-                    "wins": 1,
-                    "losses": 0,
-                    "ties": 0,
-                    "points_for": 76.15,
-                    "points_against": 72.29
+                "opponent": {
+                    "name": "Tommy",
+                    "image_url": "https://sleepercdn.com/avatars/avatar_url"
+                },
+                "wins": 1,
+                "losses": 0,
+                "ties": 0,
+                "points_for": 76.15,
+                "points_against": 72.29
                 },
                 ...
             }
@@ -273,11 +290,11 @@ class ManagerMetadataManager:
         return_dict = {}
         return_dict["manager_name"] = manager_name
         return_dict["user_id"]      = self._cache[manager_name]["summary"].get("user_id", "")
-        return_dict["avatar_urls"]  = self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {})
+        return_dict["image_url"]    = self._get_current_manager_image_url(manager_name)
         return_dict["years_active"] = list(self._cache[manager_name].get("years", {}).keys())
 
         return_dict["matchup_data"] = self._get_matchup_details_from_cache(manager_name, year)
-        return_dict["transactions"] = self._get_trasaction_details_from_cache(manager_name, year)
+        return_dict["transactions"] = self._get_transaction_details_from_cache(manager_name, year)
         return_dict["overall_data"] = self._get_overall_data_details_from_cache(manager_name)
         return_dict["head_to_head"] = self._get_head_to_head_details_from_cache(manager_name, year)
 
@@ -291,10 +308,7 @@ class ManagerMetadataManager:
         {
             "manager_name": "Tommy",
             "year": "2023",
-            "avatar_urls": {
-                "full_size" = "https://sleepercdn.com/avatars/avatar_link",
-                "thumbnail" = "https://sleepercdn.com/avatars/thumbs/avatar_link"
-            },
+            "image_url": "https://sleepercdn.com/avatars/avatar_link",
             
             "matchup_data": {
                 "overall": {
@@ -309,15 +323,29 @@ class ManagerMetadataManager:
                     "weekly_scores": [
                         ...
                         {
+                            "year": "2023",
                             "week": "2",
-                            "opponent": "Sam",
-                            "points_for": 126.92,
-                            "points_against": 91.89,
-                            "result": "win"
-                        },
+                            "manager_1": {         # Note: manager_1 is always the inputted manager
+                                "name": "Tommy",
+                                "image_url": "https://sleepercdn.com/avatars/avatar_link1"
+                            },
+                            "manager_2": {
+                                "name": "Sam",
+                                "image_url": "https://sleepercdn.com/avatars/avatar_link2"
+                            },
+                            "manager_1_score": 126.92,
+                            "manager_2_score": 91.89,
+                            "winner": "Tommy"
+                            "manager_1_top_3_scorers": [
+                                {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
+                                {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                                {"name": "Kyler Murray", "score": 17.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                            ]
+                            "manager_2_top_3_scorers:": [
+                                ... (same structure as "manager_1_top_3_scorers")
+                            },
                         ...
-                    ]
-                    },
+                    ],
                     "regular_season": {
                         "record": "8-6-0",
                         "win_percentage": 57.1,
@@ -351,9 +379,45 @@ class ManagerMetadataManager:
                             "trades": [
                                 ...
                                 {
-                                    "partners": ["Sach", "Owen"],
-                                    "acquired": ["Ezekiel Elliott", "Josh Jacobs", "$5 FAAB"],
-                                    "sent": ["Raheem Mostert", "Jeff Wilson", "Antonio Gibson"]
+                                    "year": "2019",
+                                    "week": "3",
+                                    "managers_involved": [
+                                        {"name": "Tommy", "image_url": "https://sleepercdn.com/avatars/avatar_link1"},
+                                        {"name": "Soup", "image_url": "https://sleepercdn.com/avatars/avatar_link2"}
+                                    ],
+                                    "tommy_received": [
+                                        {"name": "Tyler Lockett", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                                    ],
+                                    "tommy_sent": [
+                                        {"name": "Damien Williams", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                                        {"name": "$5 FAAB", "image_url": "https://sleepercdn.com/images/faab_icon.png"}
+                                    ],
+                                    "soup_received": [
+                                        {"name": "Damien Williams", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                                        {"name": "$5 FAAB", "image_url": "https://sleepercdn.com/images/faab_icon.png"}
+                                    ],
+                                    "soup_sent": [
+                                        {"name": "Tyler Lockett", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                                    ],
+                                    "transaction_id": "abc123xyz"
+                                },
+                                {
+                                    # (note there are scenarios where there was a multiple team trade, they would be shown like below)
+                                    "year": "2019",
+                                    "week": "3",
+                                    "managers_involved": [
+                                        {"name": "Tommy", "image_url": "https://sleepercdn.com/avatars/avatar_link1"},
+                                        {"name": "Soup", "image_url": "https://sleepercdn.com/avatars/avatar_link2"},
+                                        {"name": "Jay", "image_url": "https://sleepercdn.com/avatars/avatar_link3"}
+                                    ],
+                                    ... (same structure as above with the addition of Jay's received and sent fields)
+                                    "jay_received": [
+                                        {"name": "Player X", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                                    ],
+                                    "jay_sent": [
+                                        {"name": "Player Y", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                                    ],
+                                    "transaction_id": "abc123xyz"
                                 },
                                 ...
                             ]
@@ -364,16 +428,19 @@ class ManagerMetadataManager:
                     "total": 25,
                     "by_week": [
                         ...
-                        {"week": "2", "players": ["Amon-Ra St. Brown", "Travis Kelce"]},
-                        ...
+                        {
+                            "week": "2", 
+                            "players": [
+                                {"name": "Isaiah Likely", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                                {"name": "D'Onta Foreman", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                            ]
+                        }
                     ]
                 },
                 "drops": {
                     "total": 20,
                     "by_week": [
-                        ...
-                        {"week": "2", "players": ["Gus Edwards"]}
-                        ...
+                        ... (same structure as adds)
                     ]
                 }
             }
@@ -392,7 +459,7 @@ class ManagerMetadataManager:
         yearly_data = {
             "manager_name": manager_name,
             "year":         year,
-            "avatar_urls":  copy.deepcopy(self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {})),
+            "image_url":    self._get_current_manager_image_url(manager_name),
             "matchup_data": self._get_matchup_details_from_cache(manager_name, year)
         }
 
@@ -401,14 +468,12 @@ class ManagerMetadataManager:
         weekly_scores = []
         for week in cached_yearly_data.get("weeks", {}):
             week_data = copy.deepcopy(cached_yearly_data["weeks"][week]["matchup_data"])
-            weekly_score_item = {
-                "week":              week,
-                "opponent":          week_data.get("opponent_manager", "N/A"),
-                "points_for":        week_data.get("points_for", 0.0),
-                "points_against":    week_data.get("points_against", 0.0),
-                "result":            week_data.get("result", "N/A"),
-            }
-            weekly_scores.append(copy.deepcopy(weekly_score_item))
+            
+            opponent = week_data.get("opponent_manager", "N/A")
+            if opponent == "N/A":
+                continue
+
+            weekly_scores.append(self._get_matchup_card(manager_name, opponent, year, week))
         
         yearly_data["matchup_data"]["overall"]["weekly_scores"] = weekly_scores
 
@@ -443,15 +508,21 @@ class ManagerMetadataManager:
             # Adds
             add_item = {
                 "week": week,
-                "players": list(weekly_transactions.get("adds", {}).get("players", {}).keys())
+                "players": []
             }
+            players = list(weekly_transactions.get("adds", {}).get("players", {}).keys())
+            for player in players:
+                add_item["players"].append(copy.deepcopy(self._get_image_url(player, dictionary=True)))
             transaction_data["adds"]["by_week"].append(copy.deepcopy(add_item))
 
             # Drops
             drop_item = {
                 "week": week,
-                "players": list(weekly_transactions.get("drops", {}).get("players", {}).keys())
+                "players": []
             }
+            players = list(weekly_transactions.get("drops", {}).get("players", {}).keys())
+            for player in players:
+                drop_item["players"].append(copy.deepcopy(self._get_image_url(player, dictionary=True)))
             transaction_data["drops"]["by_week"].append(copy.deepcopy(drop_item))
         
         yearly_data["transactions"] = copy.deepcopy(transaction_data)
@@ -467,18 +538,11 @@ class ManagerMetadataManager:
         {
             "manager_1": {
                 "name": "Tommy",
-                "avatar_urls": {
-                    "full_size" = "https://sleepercdn.com/avatars/avatar_link1",
-                    "thumbnail" = "https://sleepercdn.com/avatars/thumbs/avatar_link1"
-                }
+                "image_url": "https://sleepercdn.com/avatars/avatar_link1"
             },
-                }
             "manager_2": {
                 "name": "Soup",
-                "avatar_urls": {
-                    "full_size" = "https://sleepercdn.com/avatars/avatar_link2",
-                    "thumbnail" = "https://sleepercdn.com/avatars/thumbs/avatar_link2"
-                }
+                "image_url": "https://sleepercdn.com/avatars/avatar_link1"
             },
             "overall": {
                 "tommy_wins": 6,
@@ -491,18 +555,29 @@ class ManagerMetadataManager:
                 "soup_average_margin_of_victory": 7.83,
                 
                 "tommy_last_win": { # Returns {} if no last win under inputted paramaters
-                    "year": "2024",
-                    "week": "12",
-                    "tommy_score": 131.16,
-                    "soup_score": 104.82,
-                    "tommy_top_3_scorers": [
-                        {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
-                        {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
-                        {"name": "Kyler Murray", "score": 17.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
-                    ]
-                    "soup_top_3_scorers:": [
-                        ... (same structure as "tommy_top_3_scorers")
-                    ]
+                    {
+                        "year": "2023",
+                        "week": "2",
+                        "manager_1": {         # Note: manager_1 is always the inputted manager
+                            "name": "Tommy",
+                            "image_url": "https://sleepercdn.com/avatars/avatar_link1"
+                        },
+                        "manager_2": {
+                            "name": "Sam",
+                            "image_url": "https://sleepercdn.com/avatars/avatar_link2"
+                        },
+                        "manager_1_score": 126.92,
+                        "manager_2_score": 91.89,
+                        "winner": "Tommy"
+                        "manager_1_top_3_scorers": [
+                            {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
+                            {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                            {"name": "Kyler Murray", "score": 17.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                        ]
+                        "manager_2_top_3_scorers:": [
+                            ... (same structure as "manager_1_top_3_scorers")
+                        },
+                    }
                 },
                 "soup_last_win"{
                     ... (same structure as "tommy_last_win")
@@ -517,17 +592,7 @@ class ManagerMetadataManager:
 
                 "matchup_history": [
                     {
-                        "year": "2024",
-                        "week": "1",
-                        "tommy_score": 131.16,
-                        "soup_score": 104.82,
-                        "winner": "Tommy"
-                        "tommy_top_3_scorers": [
-                            (same structure as "tommy_top_3_scorers above")
-                        ]
-                        "soup_top_3_scorers:": [
-                            ... (same structure as "tommy_top_3_scorers")
-                        ]
+                        ... (same structure as "tommy_last_win")
                     },
                     ...
                 ]
@@ -539,20 +604,45 @@ class ManagerMetadataManager:
                     {
                         "year": "2019",
                         "week": "3",
-                        "tommy_received": ["Tyler Lockett"],
-                        "soup_received": ["Sammy Watkins", "Damien Williams"]
+                        "managers_involved": [
+                            {"name": "Tommy", "image_url": "https://sleepercdn.com/avatars/avatar_link1"},
+                            {"name": "Soup", "image_url": "https://sleepercdn.com/avatars/avatar_link2"}
+                        ],
+                        "tommy_received": [
+                            {"name": "Tyler Lockett", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                        ],
+                        "tommy_sent": [
+                            {"name": "Damien Williams", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                            {"name": "$5 FAAB", "image_url": "https://sleepercdn.com/images/faab_icon.png"}
+                        ],
+                        "soup_received": [
+                            {"name": "Damien Williams", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                            {"name": "$5 FAAB", "image_url": "https://sleepercdn.com/images/faab_icon.png"}
+                        ],
+                        "soup_sent": [
+                            {"name": "Tyler Lockett", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                        ],
+                        "transaction_id": "abc123xyz"
                     },
                     {
-                        (note there are scenarios where there was a multiple team trade, they would be shown like below)
+                        # (note there are scenarios where there was a multiple team trade, they would be shown like below)
                         "year": "2019",
                         "week": "3",
-                        "tommy_received": ["Tyler Lockett"],
-                        "tommy_sent": ["Sammy Watkins],
-                        "soup_received": ["Damien Williams"],
-                        "soup_sent": ["$5 FAAB", "Tyler Lockett"],
-                        "jay_received": ["$5 FAAB", "Sammy Watkins"],
-                        "jay_sent": ["Damien Williams"]
-                    }
+                        "managers_involved": [
+                            {"name": "Tommy", "image_url": "https://sleepercdn.com/avatars/avatar_link1"},
+                            {"name": "Soup", "image_url": "https://sleepercdn.com/avatars/avatar_link2"},
+                            {"name": "Jay", "image_url": "https://sleepercdn.com/avatars/avatar_link3"}
+                        ],
+                        ... (same structure as above with the addition of Jay's received and sent fields)
+                        "jay_received": [
+                            {"name": "Player X", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                        ],
+                        "jay_sent": [
+                            {"name": "Player Y", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                        ],
+                        "transaction_id": "abc123xyz"
+                    },
+                    ...
                 ]
             }
         }
@@ -569,8 +659,8 @@ class ManagerMetadataManager:
                     raise ValueError(f"Year {year} not found for manager {manager} in cache.")
 
             manager = {
-                "name":         manager,
-                "avatar_urls": self._cache[manager]["summary"]["overall_data"].get("avatar_urls", {})
+                "name":      manager,
+                "image_url": self._get_current_manager_image_url(manager)
             }
 
             if "manager_1" not in return_dict:
@@ -614,36 +704,22 @@ class ManagerMetadataManager:
         
         EXAMPLE:
         {
-            "manager_name": "Tommy",
-            "avatar_urls": {
-                "full_size" = "https://sleepercdn.com/avatars/avatar_link",
-                "thumbnail" = "https://sleepercdn.com/avatars/thumbs/avatar_link"
-            },
+            "manager": {"name": "Tommy", "image_url": "https://sleepercdn.com/avatars/avatar_link1"},
             "total_count": 264,
             "transactions": [
                 {
-                    "year": "2019",
-                    "week": "1",
                     "type": "trade",
-                    "partners": ["Jay"],
-                    "acquired": ["Aaron Rodgers", "Billiam's 2019 Round 9 Draft Pick"],
-                    "sent": ["Anthony's 2019 Round 10 Draft Pick", "$5 FAAB"],
-                    "transaction_id" = "abc123xyz"
+                    ... (same as get_manager_yearly_data trade structure above)
                 },
                 {
-                    "year": "2019",
-                    "week": "1",
                     "type": "trade",
-                    "partners": ["Jay", "Owen"],
-                    "acquired": ["Aaron Rodgers", "Billiam's 2019 Round 9 Draft Pick"],
-                    "sent": ["Anthony's 2019 Round 10 Draft Pick", "$5 FAAB"],
-                    "transaction_id" = "abc123xyz"
+                    ... (same as get_manager_yearly_data trade structure above)
                 },
                 {
                     "year": "2024",
                     "week": "2",
                     "type": "add",
-                    "player": "Isaiah Likely",
+                    "player": {"name": "Isaiah Likely", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
                     "faab_spent": 46,
                     "transaction_id" = "abc123xyz"
                 },
@@ -651,15 +727,15 @@ class ManagerMetadataManager:
                     "year": "2024",
                     "week": "2",
                     "type": "drop",
-                    "player": "Gus Edwards",
+                    "player": "{name": "D'Onta Foreman", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},",
                     "transaction_id" = "abc123xyz"
                 },
                 {
                     "year": "2019",
                     "week": "3",
                     "type": "add_and_drop",
-                    "added_player": "Travis Kelce",
-                    "dropped_player": "Tyler Higbee",
+                    "added_player": "{"name": "Tyler Higbee", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                    "dropped_player": {"name": "Ezekiel Elliott", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
                     "faab_spent": null,
                     "transaction_id" = "abc123xyz"
                 }
@@ -677,8 +753,7 @@ class ManagerMetadataManager:
         
         
         transaction_history = {
-            "manager_name": manager_name,
-            "avatar_urls":  self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {}),
+            "name": self._get_image_url(manager_name, dictionary=True),
             "total_count":  0,
             "transactions": []
         }
@@ -696,31 +771,9 @@ class ManagerMetadataManager:
                 if transaction_type in [None, "trade"]:
                     for transaction_id in weekly_transactions.get("trades", []).get("transaction_ids", []):
                         trade_details = self._transaction_id_cache.get(transaction_id, {})
-                        if trade_details:
-                            
-                            acquired = []
-                            sent     = []
 
-                            for player in trade_details.get("trade_details", {}):
-                                if trade_details["trade_details"][player].get("new_manager", None) == manager_name:
-                                    acquired.append(player)
-                                elif trade_details["trade_details"][player].get("old_manager", None) == manager_name:
-                                    sent.append(player)
-
-                            partners = trade_details.get("managers_involved", []).copy()
-                            if manager_name in partners:
-                                partners.remove(manager_name)
-
-                            transaction_item = {
-                                "year":          yr,
-                                "week":          week,
-                                "type":          "trade",
-                                "partners":      partners,
-                                "acquired":      acquired,
-                                "sent":          sent,
-                                "transaction_id": transaction_id
-                            }
-                            filtered_transactions.append(copy.deepcopy(transaction_item))
+                        trade_details["type"] = "trade"
+                        filtered_transactions.append(copy.deepcopy(trade_details))
                         
                 
                 # Adds
@@ -736,7 +789,7 @@ class ManagerMetadataManager:
                                     "year":          yr,
                                     "week":          week,
                                     "type":          "add",
-                                    "player":        add_details.get("add", ""),
+                                    "player":        self._get_image_url(add_details.get("add", "")),
                                     "faab_spent":    add_details.get("faab_spent", None), # None if FAAB not implemented yet or a free agent add
                                     "transaction_id": transaction_id
                                 }
@@ -756,7 +809,7 @@ class ManagerMetadataManager:
                                     "year":          yr,
                                     "week":          week,
                                     "type":          "drop",
-                                    "player":        drop_details.get("drop", ""),
+                                    "player":        self._get_image_url(drop_details.get("drop", ""), dictionary=True),
                                     "transaction_id": transaction_id
                                 }
                                 filtered_transactions.append(copy.deepcopy(transaction_item))
@@ -772,12 +825,12 @@ class ManagerMetadataManager:
                             # Only include add_and_drop transactions
                             if "add" in add_drop_details.get("types", []) and "drop" in add_drop_details.get("types", []):
                                 transaction_item = {
-                                    "year":          yr,
-                                    "week":          week,
-                                    "type":          "add_and_drop",
-                                    "added_player":  add_drop_details.get("add", ""),
-                                    "dropped_player":add_drop_details.get("drop", ""),
-                                    "faab_spent":    add_drop_details.get("faab_spent", None), # None if FAAB not implemented yet or a free agent add/drop
+                                    "year":           yr,
+                                    "week":           week,
+                                    "type":           "add_and_drop",
+                                    "added_player":   self._get_image_url(add_drop_details.get("add", ""), dictionary=True),
+                                    "dropped_player": self._get_image_url(add_drop_details.get("drop", ""), dictionary=True),
+                                    "faab_spent":     add_drop_details.get("faab_spent", None), # None if FAAB not implemented yet or a free agent add/drop
                                     "transaction_id": transaction_id
                                 }
                                 filtered_transactions.append(copy.deepcopy(transaction_item))
@@ -802,11 +855,7 @@ class ManagerMetadataManager:
 
         EXAMPLE:
         {
-            "manager_name": "Tommy",
-            "avatar_urls": {
-                "full_size" = "https://sleepercdn.com/avatars/avatar_link",
-                "thumbnail" = "https://sleepercdn.com/avatars/thumbs/avatar_link"
-            },
+            "manager": {"name": "Tommy", "image_url": "https://sleepercdn.com/avatars/avatar_link1"},
             "awards": {
                 "first_place": 0,
                 "second_place": 1,
@@ -817,59 +866,45 @@ class ManagerMetadataManager:
                     "year": "2022"
                 },
                     "biggest_faab_bid": {
-                    "player": "Isaiah Likely",
-                    "amount": 46,
-                    "year": "2023"
+                        "player": {"name": "Ty Chandler", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                        "amount": 46,
+                        "year": "2023"
+                    }
                 },
                 "highest_weekly_score": {
-                    "score": 163.56,
-                    "week": "1",
-                    "year": "2019",
-                    "opponent": "Luke"
-                    "tommy_top_3_scorers": [
-                        {"name": "Indianapolis Colts", "score": 28.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
-                        {"name": "James Conner", "score": 27.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
-                        {"name": "Kyler Murray", "score": 26.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
-                    ],
-                    "luke_top_3_scorers": [
-                        ... (same structure as "tommy_top_3_scorers" above)
-                    ]
+                    {
+                        "year": "2023",
+                        "week": "2",
+                        "manager_1": {         # Note: manager_1 is always the inputted manager
+                            "name": "Tommy",
+                            "image_url": "https://sleepercdn.com/avatars/avatar_link1"
+                        },
+                        "manager_2": {
+                            "name": "Sam",
+                            "image_url": "https://sleepercdn.com/avatars/avatar_link2"
+                        },
+                        "manager_1_score": 126.92,
+                        "manager_2_score": 91.89,
+                        "winner": "Tommy"
+                        "manager_1_top_3_scorers": [
+                            {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
+                            {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
+                            {"name": "Kyler Murray", "score": 17.36, "position": "QB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"}
+                        ]
+                        "manager_2_top_3_scorers:": [
+                            ... (same structure as "manager_1_top_3_scorers")
+                        },
                 },
                 "lowest_weekly_score": {
-                    "score": 43.23,
-                    "week": "8",
-                    "year": "2020",
-                    "opponent": "Davey"
-                    "tommy_top_3_scorers": [
-                        ... (same structure as "tommy_top_3_scorers" above)
-                    ],
-                    "davey_top_3_scorers": [
-                        ... (same structure as "tommy_top_3_scorers" above)
-                    ]
+                    ... (same structure as "highest_weekly_score" above)
                 },
                 "biggest_blowout_win": {
                     "differential": 45.5,
-                    "week": "3",
-                    "year": "2021",
-                    "opponent": "Parker"
-                    "tommy_top_3_scorers": [
-                        ... (same structure as "tommy_top_3_scorers" above)
-                    ],
-                    "parker_top_3_scorers": [
-                        ... (same structure as "tommy_top_3_scorers" above)
-                    ]
+                    ... (same structure as "highest_weekly_score" above)
                 },
                 "biggest_blowout_loss": {
                     "differential": -52.3,
-                    "week": "8",
-                    "year": "2020",
-                    "opponent": "Christian"
-                    "tommy_top_3_scorers": [
-                        ... (same structure as "tommy_top_3_scorers" above)
-                    ],
-                    "christian_top_3_scorers": [
-                        ... (same structure as "tommy_top_3_scorers" above)
-                    ]
+                    ... (same structure as "highest_weekly_score" above)
                 }
             }
         }
@@ -880,9 +915,9 @@ class ManagerMetadataManager:
             raise ValueError(f"Manager {manager_name} not found in cache.")
         
         awards_data = {
-            "manager_name": manager_name,
-            "avatar_urls":  self._cache[manager_name]["summary"]["overall_data"].get("avatar_urls", {}),
-            "awards":       self._get_manager_awards_from_cache(manager_name)
+            "manager":   self._get_image_url(manager_name, dictionary=True),
+            "image_url": self._get_current_manager_image_url(manager_name),
+            "awards":    self._get_manager_awards_from_cache(manager_name)
         }
         
 
@@ -993,7 +1028,7 @@ class ManagerMetadataManager:
 
         return copy.deepcopy(matchup_data)
 
-    def _get_trasaction_details_from_cache(self, manager_name: str, year: str = None) -> dict:
+    def _get_transaction_details_from_cache(self, manager_name: str, year: str = None) -> dict:
         """
         Helper to extract and format transaction summary from cache for a manager.
 
@@ -1024,25 +1059,25 @@ class ManagerMetadataManager:
         
         trades = {
             "total":              cached_transaction_data["trades"]["total"],
-            "top_trade_partners": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["trades"]["trade_partners"]))
+            "top_trade_partners": self._extract_dict_data(copy.deepcopy(cached_transaction_data["trades"]["trade_partners"]))
         }
 
         # ---- Trades Summary ----
         
         # Most Aquired Players
         trade_players_acquired = cached_transaction_data["trades"]["trade_players_acquired"]
-        most_acquired_players = self._get_top_three_of_dict(copy.deepcopy(trade_players_acquired))
+        most_acquired_players = self._extract_dict_data(copy.deepcopy(trade_players_acquired))
         for player in most_acquired_players:
             player_details = copy.deepcopy(trade_players_acquired[player["name"]])
-            player["from"] = player_details.get("trade_partners", {})
+            player["from"] = self._extract_dict_data(copy.deepcopy(player_details.get("trade_partners", {})), cutoff=0)
         trades["most_acquired_players"] = most_acquired_players
 
         # Most Sent Players
         trade_players_sent = cached_transaction_data["trades"]["trade_players_sent"]
-        most_sent_players = self._get_top_three_of_dict(copy.deepcopy(trade_players_sent))
+        most_sent_players = self._extract_dict_data(copy.deepcopy(trade_players_sent))
         for player in most_sent_players:
-            player_details = copy.deepcopy(trade_players_sent[player["name"]])
-            player["to"] = player_details.get("trade_partners", {})
+            player_details = copy.deepcopy(trade_players_sent.get(player["name"], {}))
+            player["to"] = self._extract_dict_data(player_details.get("trade_partners", {}), cutoff=0)
         trades["most_sent_players"] = most_sent_players
 
         transaction_summary["trades"] = trades
@@ -1051,15 +1086,15 @@ class ManagerMetadataManager:
         # ---- Adds Summary ----
         adds = {
             "total":             cached_transaction_data["adds"]["total"],
-            "top_players_added": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["adds"]["players"]))
+            "top_players_added": self._extract_dict_data(copy.deepcopy(cached_transaction_data["adds"]["players"]))
         }
-        transaction_summary["adds"] = adds 
+        transaction_summary["adds"] = adds
        
 
         # ---- Drops Summary ----
         drops = {
                 "total":               cached_transaction_data["drops"]["total"],
-                "top_players_dropped": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["drops"]["players"]))
+                "top_players_dropped": self._extract_dict_data(copy.deepcopy(cached_transaction_data["drops"]["players"]))
         }
         transaction_summary["drops"] = drops
 
@@ -1069,7 +1104,7 @@ class ManagerMetadataManager:
         if "faab" in cached_transaction_data and cached_transaction_data["faab"]:
             faab = {
                 "total_spent": abs(cached_transaction_data["faab"]["total_lost_or_gained"]),
-                "biggest_acquisitions": self._get_top_three_of_dict(copy.deepcopy(cached_transaction_data["faab"]["players"]), key_name = "amount")
+                "biggest_acquisitions": self._extract_dict_data(copy.deepcopy(cached_transaction_data["faab"]["players"]), value_name = "amount")
             }
 
             # FAAB Traded
@@ -1157,32 +1192,29 @@ class ManagerMetadataManager:
             dict: Head-to-head data. If opponent specified, returns single opponent's data.
                   Otherwise returns dict of all opponents with wins, losses, ties, points_for, points_against.
         """
-        head_to_head_data = {}
+        head_to_head_data = []
         
         cached_head_to_head_data = copy.deepcopy(self._cache[manager_name]["summary"]["matchup_data"]["overall"])
         if year:
             cached_head_to_head_data = copy.deepcopy(self._cache[manager_name]["years"][year]["summary"]["matchup_data"]["overall"])
         
-        if opponent:
-            head_to_head_data = {
-                "wins":           cached_head_to_head_data["wins"]["opponents"].get(opponent, 0),
-                "losses":         cached_head_to_head_data["losses"]["opponents"].get(opponent, 0),
-                "ties":           cached_head_to_head_data["ties"]["opponents"].get(opponent, 0),
-                "points_for":     cached_head_to_head_data["points_for"]["opponents"].get(opponent, 0.0),
-                "points_against": cached_head_to_head_data["points_against"]["opponents"].get(opponent, 0.0)
-            }
-            return copy.deepcopy(head_to_head_data)
+        opponents = [opponent] if opponent else list(copy.deepcopy(cached_head_to_head_data.get("points_for", {}).get("opponents", {})).keys())
         
         
-        for opponent in cached_head_to_head_data.get("points_for", {}).get("opponents", {}):
+        for opponent in opponents:
 
-            head_to_head_data[opponent] = {
+            opponent_data = {
+                "opponent":       self._get_image_url(opponent, dictionary=True),
                 "wins":           cached_head_to_head_data["wins"]["opponents"].get(opponent, 0),
                 "losses":         cached_head_to_head_data["losses"]["opponents"].get(opponent, 0),
                 "ties":           cached_head_to_head_data["ties"]["opponents"].get(opponent, 0),
                 "points_for":     cached_head_to_head_data["points_for"]["opponents"].get(opponent, 0.0),
                 "points_against": cached_head_to_head_data["points_against"]["opponents"].get(opponent, 0.0)
             }
+            head_to_head_data.append(copy.deepcopy(opponent_data))
+        
+        if len(head_to_head_data) == 1:
+            return copy.deepcopy(head_to_head_data[0])
         
         return copy.deepcopy(head_to_head_data)
 
@@ -1204,31 +1236,7 @@ class ManagerMetadataManager:
 
         trades = []
         for transaction_id in weekly_trade_transaction_ids:
-            trade_dict = {
-                "partners": [],
-                "acquired": [],
-                "sent":     []
-            }
-            trade_details = copy.deepcopy(self._transaction_id_cache.get(transaction_id, {})).get("trade_details", {})
-            if trade_details == {}:
-                print(f"WARNING: trade details empty for transaction_id: {transaction_id}")
-            
-            trade_dict["partners"] = copy.deepcopy(self._transaction_id_cache.get(transaction_id, {}).get("managers_involved", []))
-            
-            # Remove self from partners and populate acquired/sent lists
-            if manager_name not in trade_dict["partners"]:
-                print(f"WARNING: manager {manager_name} not found in trade partners for transaction_id: {transaction_id}")
-            else:
-                trade_dict["partners"].remove(manager_name)
-
-            
-            for player in trade_details:
-                if manager_name == trade_details[player]["old_manager"]:
-                    trade_dict["sent"].append(player)
-                elif manager_name == trade_details[player]["new_manager"]:
-                    trade_dict["acquired"].append(player)
-            
-            trades.append(trade_dict)
+            trades.append(self._get_trade_card(transaction_id))
         
         return trades
 
@@ -1311,15 +1319,7 @@ class ManagerMetadataManager:
                     if matchup_data.get("result", "") == "win":
 
                         if list_all_matchups:
-                            matchup_for_list = {
-                                "year": y,
-                                "week": w,
-                                f"{manager_1.lower().replace(' ', '_')}_score": manager_1_score,
-                                f"{manager_2.lower().replace(' ', '_')}_score": manager_2_score,
-                                "winner": manager_1
-                            }
-                            self._get_top_3_scorers_from_matchup_data(matchup_for_list, manager_1, manager_2)
-                            matchup_history.append(matchup_for_list)
+                            matchup_history.append(self._get_matchup_card(manager_1, manager_2, y, w))
                             continue
 
 
@@ -1337,10 +1337,7 @@ class ManagerMetadataManager:
                             apply = True
                         
                         if apply:
-                            manager_1_last_win["year"] = y
-                            manager_1_last_win["week"] = w
-                            manager_1_last_win[f"{manager_1.lower().replace(' ', '_')}_score"] = manager_1_score
-                            manager_1_last_win[f"{manager_2.lower().replace(' ', '_')}_score"] = manager_2_score
+                            manager_1_last_win = self._get_matchup_card(manager_1, manager_2, y, w)
 
                         
                         
@@ -1352,24 +1349,13 @@ class ManagerMetadataManager:
                             apply = True
                         
                         if apply:
-                            manager_1_biggest_blowout["year"] = y
-                            manager_1_biggest_blowout["week"] = w
-                            manager_1_biggest_blowout[f"{manager_1.lower().replace(' ', '_')}_score"] = manager_1_score
-                            manager_1_biggest_blowout[f"{manager_2.lower().replace(' ', '_')}_score"] = manager_2_score
+                            manager_1_biggest_blowout = self._get_matchup_card(manager_1, manager_2, y, w)
                     
                     # manager_2 won
                     if matchup_data.get("result", "") == "loss":
                         
                         if list_all_matchups:
-                            matchup_for_list = {
-                                "year": y,
-                                "week": w,
-                                f"{manager_1.lower().replace(' ', '_')}_score": manager_1_score,
-                                f"{manager_2.lower().replace(' ', '_')}_score": manager_2_score,
-                                "winner": manager_2
-                            }
-                            self._get_top_3_scorers_from_matchup_data(matchup_for_list, manager_1, manager_2)
-                            matchup_history.append(matchup_for_list)
+                            matchup_history.append(self._get_matchup_card(manager_1, manager_2, y, w))
                             continue
 
 
@@ -1387,10 +1373,7 @@ class ManagerMetadataManager:
                             apply = True
                         
                         if apply:
-                            manager_2_last_win["year"] = y
-                            manager_2_last_win["week"] = w
-                            manager_2_last_win[f"{manager_2.lower().replace(' ', '_')}_score"] = manager_2_score
-                            manager_2_last_win[f"{manager_1.lower().replace(' ', '_')}_score"] = manager_1_score
+                            manager_2_last_win = self._get_matchup_card(manager_1, manager_2, y, w)
 
                         
                         
@@ -1402,23 +1385,12 @@ class ManagerMetadataManager:
                             apply = True
                         
                         if apply:
-                            manager_2_biggest_blowout["year"] = y
-                            manager_2_biggest_blowout["week"] = w
-                            manager_2_biggest_blowout[f"{manager_2.lower().replace(' ', '_')}_score"] = manager_2_score
-                            manager_2_biggest_blowout[f"{manager_1.lower().replace(' ', '_')}_score"] = manager_1_score
+                            manager_2_biggest_blowout = self._get_matchup_card(manager_1, manager_2, y, w)
                     
                     else: # Tie
                         
                         if list_all_matchups:
-                            matchup_for_list = {
-                                "year": y,
-                                "week": w,
-                                f"{manager_1.lower().replace(' ', '_')}_score": manager_1_score,
-                                f"{manager_2.lower().replace(' ', '_')}_score": manager_2_score,
-                                "winner": "Tie"
-                            }
-                            self._get_top_3_scorers_from_matchup_data(matchup_for_list, manager_1, manager_2)
-                            matchup_history.append(matchup_for_list)
+                            matchup_history.append(self._get_matchup_card(manager_1, manager_2, y, w))
                             continue
         
         if list_all_matchups:
@@ -1437,14 +1409,6 @@ class ManagerMetadataManager:
             manager_2_average_margin_of_victory = None
         else:
             manager_2_average_margin_of_victory =  float(Decimal(sum(manager_2_victory_margins) / len(manager_2_victory_margins)).quantize(Decimal('0.01')))
-
-
-        
-        # import the top 3 scorers of each manager for these games
-        self._get_top_3_scorers_from_matchup_data(manager_1_last_win,        manager_1, manager_2)
-        self._get_top_3_scorers_from_matchup_data(manager_2_last_win,        manager_1, manager_2)
-        self._get_top_3_scorers_from_matchup_data(manager_1_biggest_blowout, manager_1, manager_2)
-        self._get_top_3_scorers_from_matchup_data(manager_2_biggest_blowout, manager_1, manager_2)
 
         
         # put all the data in
@@ -1498,29 +1462,9 @@ class ManagerMetadataManager:
         
 
         for t in transaction_ids:
-            trans =  self._transaction_id_cache[t]
-            trade_item = {
-                "year": trans["year"],
-                "week": trans["week"],
-                f"{manager_1.lower().replace(' ', '_')}_received": [],
-                f"{manager_1.lower().replace(' ', '_')}_sent": [],
-                f"{manager_2.lower().replace(' ', '_')}_received": [],
-                f"{manager_2.lower().replace(' ', '_')}_sent": [],
-            }
+            trade_details = copy.deepcopy(self._transaction_id_cache.get(t, {}))
 
-            for m in trans["managers_involved"]:
-                if m not in [manager_1, manager_2]:
-                    trade_item[f"{m.lower().replace(' ', '_')}_received"] = []
-                    trade_item[f"{m.lower().replace(' ', '_')}_sent"] = []
-            
-            for player in trans['trade_details']:
-                old_manager = trans['trade_details'][player]['old_manager'].lower().replace(' ', '_')
-                new_manager = trans['trade_details'][player]['new_manager'].lower().replace(' ', '_')
-
-                trade_item[f"{old_manager}_sent"].append(player)
-                trade_item[f"{new_manager}_received"].append(player)
-
-            trades_between.append(copy.deepcopy(trade_item))
+            trades_between.append(copy.deepcopy(trade_details))
         
         return trades_between
 
@@ -1562,6 +1506,9 @@ class ManagerMetadataManager:
                 placement_counts["third_place"] += 1
         awards.update(copy.deepcopy(placement_counts))
 
+        # Playoff Appearances
+        awards["playoff_appearances"] = len(cached_overall_data.get("playoff_appearances", []))
+
 
         # Most Trades in a Year
         most_trades_in_year = {
@@ -1582,17 +1529,21 @@ class ManagerMetadataManager:
             "amount": 0,
             "year":   ""
         }
-        for player in self._cache[manager_name].get("summary", {}).get("transactions", {}).get("faab", {}).get("players", {}):
-            faab_spent = self._cache[manager_name]["summary"]["transactions"]["faab"]["players"][player]
-            if faab_spent > biggest_faab_bid["amount"]:
-                biggest_faab_bid["player"] = player
-                biggest_faab_bid["amount"] = faab_spent
-        # Find year of biggest bid
-        for year in self._cache[manager_name].get("years", {}):
-            if player in self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"]:
-                if self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"][player] == faab_spent:
-                    biggest_faab_bid["year"] = year
-                    break
+        # Check if FAAB data exists in summary before accessing
+        if "faab" in self._cache[manager_name].get("summary", {}).get("transactions", {}) and self._cache[manager_name]["summary"]["transactions"]["faab"]:
+            for player in self._cache[manager_name]["summary"]["transactions"]["faab"].get("players", {}):
+                faab_spent = self._cache[manager_name]["summary"]["transactions"]["faab"]["players"][player]
+                if faab_spent > biggest_faab_bid["amount"]:
+                    biggest_faab_bid["player"] = self._get_image_url(player, dictionary=True)
+                    biggest_faab_bid["amount"] = faab_spent
+            # Find year of biggest bid
+            for year in self._cache[manager_name].get("years", {}):
+                # Check if FAAB exists in this year before accessing
+                if "faab" in self._cache[manager_name]["years"][year]["summary"]["transactions"] and self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]:
+                    if player in self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"].get("players", {}):
+                        if self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"][player] == faab_spent:
+                            biggest_faab_bid["year"] = year
+                            break
         awards["biggest_faab_bid"] = copy.deepcopy(biggest_faab_bid)
 
         
@@ -1668,39 +1619,22 @@ class ManagerMetadataManager:
 
                 # Highest Weekly Score
                 if points_for > highest_weekly_score["score"]:
-                    highest_weekly_score             = {} # reset
-                    highest_weekly_score["score"]    = points_for
-                    highest_weekly_score["week"]     = week
-                    highest_weekly_score["year"]     = year
-                    highest_weekly_score["opponent"] = matchup_data.get("opponent_manager", "")
-                    self._get_top_3_scorers_from_matchup_data(highest_weekly_score, manager_name, matchup_data.get("opponent_manager", ""))
+                    highest_weekly_score = self._get_matchup_card(manager_name, matchup_data.get("opponent_manager", ""), year, week)
 
                 # Lowest Weekly Score
                 if points_for < lowest_weekly_score["score"]:
-                    lowest_weekly_score             = {} # reset
-                    lowest_weekly_score["score"]    = points_for
-                    lowest_weekly_score["week"]     = week
-                    lowest_weekly_score["year"]     = year
-                    lowest_weekly_score["opponent"] = matchup_data.get("opponent_manager", "")
-                    self._get_top_3_scorers_from_matchup_data(lowest_weekly_score, manager_name, matchup_data.get("opponent_manager", ""))
+                    lowest_weekly_score = self._get_matchup_card(manager_name, matchup_data.get("opponent_manager", ""), year, week)
 
                 # Biggest Blowout Win
                 if matchup_data.get("result", "") == "win" and point_differential > biggest_blowout_win["differential"]:
-                    biggest_blowout_win                 = {} # reset
+                    biggest_blowout_win = self._get_matchup_card(manager_name, matchup_data.get("opponent_manager", ""), year, week)
                     biggest_blowout_win["differential"] = point_differential
-                    biggest_blowout_win["week"]         = week
-                    biggest_blowout_win["year"]         = year
-                    biggest_blowout_win["opponent"]     = matchup_data.get("opponent_manager", "")
-                    self._get_top_3_scorers_from_matchup_data(biggest_blowout_win, manager_name, matchup_data.get("opponent_manager", ""))
+                    
 
                 # Biggest Blowout Loss
                 if matchup_data.get("result", "") == "loss" and point_differential < biggest_blowout_loss["differential"]:
-                    biggest_blowout_loss                 = {} # reset
+                    biggest_blowout_loss = self._get_matchup_card(manager_name, matchup_data.get("opponent_manager", ""), year, week)
                     biggest_blowout_loss["differential"] = point_differential
-                    biggest_blowout_loss["week"]         = week
-                    biggest_blowout_loss["year"]         = year
-                    biggest_blowout_loss["opponent"]     = matchup_data.get("opponent_manager", "")
-                    self._get_top_3_scorers_from_matchup_data(biggest_blowout_loss, manager_name, matchup_data.get("opponent_manager", ""))
 
         score_awards["highest_weekly_score"] = copy.deepcopy(highest_weekly_score)
         score_awards["lowest_weekly_score"]  = copy.deepcopy(lowest_weekly_score)
@@ -1741,7 +1675,7 @@ class ManagerMetadataManager:
 
         if manager not in self._cache:
             self._cache[manager] = {"summary": copy.deepcopy(self._top_level_summary_template), "years": {}}
-        #######
+        
         if self._year not in self._cache[manager]["years"]:
             self._cache[manager]["years"][self._year] = {
                 "summary": copy.deepcopy(self._yearly_summary_template),
@@ -1800,7 +1734,7 @@ class ManagerMetadataManager:
             return "playoffs"
         return "regular_season"
 
-    def _get_top_three_of_dict(self, data_dict: dict, key_name = "count") -> dict:
+    def _extract_dict_data(self, data_dict: dict, key_name: str = "name", value_name: str = "count", cutoff: int = 3) -> dict:
         """
         Helper to extract top three entries from a dictionary based on values.
 
@@ -1809,10 +1743,10 @@ class ManagerMetadataManager:
 
         Args:
             data_dict: Dictionary to extract top entries from
-            key_name: Name to use for the value key in output (default: "count")
+            value_name: Name to use for the value key in output (default: "count")
 
         Returns:
-            list: List of dicts with 'name' and key_name keys, sorted by value descending
+            list: List of dicts with 'name' and value_name keys, sorted by value descending
         """
 
         for key in data_dict:
@@ -1823,22 +1757,26 @@ class ManagerMetadataManager:
         
         sorted_items = sorted(data_dict.items(), key=lambda item: item[1], reverse=True)
 
-        # Handle ties for third place
-        i = min(2, len(sorted_items) - 1)  # Start at index 2 or last index, whichever is smaller
-        for j in range(i, len(sorted_items) - 1):
-            if sorted_items[j][1] != sorted_items[j+1][1]:
-                i = j
-                break
-            i = j + 1
-        top_three = dict(sorted_items[:i+1])
+        # not cutoff means include all
+        if not cutoff:
+            top_three = dict(sorted_items)
+        else:
+            # Handle ties for third place
+            i = min(cutoff-1, len(sorted_items) - 1)  # Start at index 2 or last index, whichever is smaller
+            for j in range(i, len(sorted_items) - 1):
+                if sorted_items[j][1] != sorted_items[j+1][1]:
+                    i = j
+                    break
+                i = j + 1
+            top_three = dict(sorted_items[:i+1])
 
         items = []
         for item in top_three:
             long_dict = {}
-            long_dict["name"] = item
-            long_dict[key_name] = top_three[item]
+            long_dict[key_name] = item
+            long_dict[value_name] = top_three[item]
+            long_dict["image_url"] = self._get_image_url(item)
             items.append(copy.deepcopy(long_dict))
-
 
         return copy.deepcopy(items)
 
@@ -1894,15 +1832,15 @@ class ManagerMetadataManager:
         if "year" not in matchup_data or "week" not in matchup_data:
             print("WARNING: matchup_data missing year or week. Cannot get top 3 scorers.")
             
-            matchup_data[f"{manager_1.lower().replace(' ', '_')}_top_3_scorers"] = []
-            matchup_data[f"{manager_2.lower().replace(' ', '_')}_top_3_scorers"] = []
+            matchup_data["manager_1_top_3_scorers"] = []
+            matchup_data["manager_2_top_3_scorers"] = []
             return
         
         if manager_1 not in STARTERS_CACHE.get(matchup_data["year"], {}).get(matchup_data["week"], {}) or manager_2 not in STARTERS_CACHE.get(matchup_data["year"], {}).get(matchup_data["week"], {}):
             print(f"WARNING: Starter data missing for week {matchup_data['week']}, year {matchup_data['year']}. Cannot get top 3 scorers for {manager_1} vs {manager_2}.")
             
-            matchup_data[f"{manager_1.lower().replace(' ', '_')}_top_3_scorers"] = []
-            matchup_data[f"{manager_2.lower().replace(' ', '_')}_top_3_scorers"] = []
+            matchup_data["manager_1_top_3_scorers"] = []
+            matchup_data["manager_2_top_3_scorers"] = []
             return
 
 
@@ -1913,16 +1851,11 @@ class ManagerMetadataManager:
         
         manager_1_top_scorers = []
         for player in manager_1_starters:
-
-            player_dict = {
-                "name": player,
+            player_dict = self._get_image_url(player, dictionary=True)
+            player_dict.update({
                 "score": manager_1_starters[player]["points"],
                 "position": manager_1_starters[player]["position"]
-            }
-            if manager_1_starters[player]["player_id"].isnumeric():
-                player_dict["player_url"] = f"https://sleepercdn.com/content/nfl/players/{manager_1_starters[player]['player_id']}.jpg"
-            else:
-                player_dict["player_url"] = f"https://sleepercdn.com/images/team_logos/nfl/{manager_1_starters[player]['player_id']}.png"
+            })
 
 
             if len(manager_1_top_scorers) == 0:
@@ -1944,16 +1877,11 @@ class ManagerMetadataManager:
 
         manager_2_top_scorers = []
         for player in manager_2_starters:
-
-            player_dict = {
-                "name": player,
+            player_dict = self._get_image_url(player, dictionary=True)
+            player_dict.update({
                 "score": manager_2_starters[player]["points"],
                 "position": manager_2_starters[player]["position"]
-            }
-            if manager_2_starters[player]["player_id"].isnumeric():
-                player_dict["player_url"] = f"https://sleepercdn.com/content/nfl/players/{manager_2_starters[player]['player_id']}.jpg"
-            else:
-                player_dict["player_url"] = f"https://sleepercdn.com/images/team_logos/nfl/{manager_2_starters[player]['player_id']}.png"
+            })
 
 
             if len(manager_2_top_scorers) == 0:
@@ -1973,9 +1901,131 @@ class ManagerMetadataManager:
                     manager_2_top_scorers.append(player_dict)
             
 
-        matchup_data[f"{manager_1.lower().replace(' ', '_')}_top_3_scorers"] = manager_1_top_scorers
-        matchup_data[f"{manager_2.lower().replace(' ', '_')}_top_3_scorers"] = manager_2_top_scorers
+        matchup_data["manager_1_top_3_scorers"] = manager_1_top_scorers
+        matchup_data["manager_2_top_3_scorers"] = manager_2_top_scorers
+    
+
+    def _get_matchup_card(self, manager_1: str, manager_2: str, year: str, week: str) -> dict:
+        """Fetch and return the matchup card data for two managers in a given week."""
+        matchup_data = self._cache[manager_1]["years"].get(year, {}).get("weeks", {}).get(week, {}).get("matchup_data", {})
+        manager_1_score = matchup_data.get("points_for", 0.0)
+        manager_2_score = matchup_data.get("points_against", 0.0)
+
+        if manager_1_score == 0.0 or manager_2_score == 0.0:
+            print(f"WARNING: Incomplete matchup data for {manager_1} vs {manager_2} in year {year}, week {week}.")
+            return {}
         
+        if manager_1_score > manager_2_score:
+            winner = manager_1
+        elif manager_2_score > manager_1_score:
+            winner = manager_2
+        else:
+            winner = "Tie"
+        
+
+        matchup = {
+            "year": year,
+            "week": week,
+            "manager_1": {"name": manager_1, "image_url": self._get_image_url(manager_1)},
+            "manager_2": {"name": manager_2, "image_url": self._get_image_url(manager_2)},
+            "manager_1_score": manager_1_score,
+            "manager_2_score": manager_2_score,
+            "winner": winner
+        }
+
+        self._get_top_3_scorers_from_matchup_data(matchup, manager_1, manager_2)
+
+        return copy.deepcopy(matchup)
+    
+        
+    def _get_image_url(self, item: str, dictionary: bool = False) -> str:
+        if dictionary:
+            returning_dict = {"name": item, "image_url": ""}
+        # Draft Pick
+        if "Draft Pick" in item:
+            if dictionary:
+                returning_dict["image_url"] = "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
+                return copy.deepcopy(returning_dict)
+            return "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
+        
+        # FAAB
+        if "$" in item:
+            if dictionary:
+                returning_dict["image_url"] = "https://toppng.com/uploads/preview/coin-2d-super-mario-coin-2d-11563191115sspsxa9g5b.png"
+                return copy.deepcopy(returning_dict)
+            return "https://toppng.com/uploads/preview/coin-2d-super-mario-coin-2d-11563191115sspsxa9g5b.png"
+        
+        
+        if item in self._image_urls_cache:
+            if dictionary:
+                returning_dict["image_url"] = self._image_urls_cache[item]
+                return copy.deepcopy(returning_dict)
+            return self._image_urls_cache[item]
+        
+
+        # Manager
+        if item in NAME_TO_MANAGER_USERNAME:
+            if dictionary:
+                returning_dict["image_url"] = self._get_current_manager_image_url(item, check_cache=False)
+                return copy.deepcopy(returning_dict)
+            return self._get_current_manager_image_url(item, check_cache=False)
+       
+       # Player
+        for player, player_data in self._player_ids.items():
+            if item == player_data.get("full_name", ""):
+                if player.isnumeric():
+                    url = f"https://sleepercdn.com/content/nfl/players/{player}.jpg"
+                    self._image_urls_cache[item] = url
+                    if dictionary:
+                        returning_dict["image_url"] = url
+                        return copy.deepcopy(returning_dict)
+                    return url
+                else:
+                    url = f"https://sleepercdn.com/images/team_logos/nfl/{player}.png"
+                    self._image_urls_cache[item] = url
+                    if dictionary:
+                        returning_dict["image_url"] = url
+                        return copy.deepcopy(returning_dict)
+                    return url
+
+        print("WARNING: Could not find image URL for item:", item)
+        return ""
+    
+    def _get_current_manager_image_url(self, manager_name: str, check_cache: bool = True) -> str:
+        """Fetch and return the current image URL for a manager."""
+        if check_cache and manager_name in self._image_urls_cache:
+            return self._image_urls_cache[manager_name]
+        
+        user_id = self._cache.get(manager_name, {}).get("summary", {}).get("user_id", "")
+
+        user_payload, status_code = fetch_sleeper_data(f"user/{user_id}")
+        if status_code == 200 and "user_id" in user_payload:
+            self._image_urls_cache[manager_name] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+            return f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+        
+    def _get_trade_card(self, transaction_id: str) -> dict:
+        trans =  self._transaction_id_cache[transaction_id]
+        trade_item = {
+            "year": trans["year"],
+            "week": trans["week"],
+            "managers_involved": []
+        }
+
+        for m in trans["managers_involved"]:
+            trade_item[f"{m.lower().replace(' ', '_')}_received"] = []
+            trade_item[f"{m.lower().replace(' ', '_')}_sent"] = []
+            trade_item["managers_involved"].append(self._get_image_url(m, dictionary=True))
+        
+        for player in trans['trade_details']:
+            old_manager = trans['trade_details'][player]['old_manager'].lower().replace(' ', '_')
+            new_manager = trans['trade_details'][player]['new_manager'].lower().replace(' ', '_')
+
+            trade_item[f"{old_manager}_sent"].append(self._get_image_url(player, dictionary=True))
+            trade_item[f"{new_manager}_received"].append(self._get_image_url(player, dictionary=True))
+        
+        trade_item["transaction_id"] = transaction_id
+
+        return copy.deepcopy(trade_item)
 
 
 
@@ -2843,18 +2893,15 @@ class ManagerMetadataManager:
             "playoff_appearances": [ 
                 # list of years with playoff appearances    
             ],
-            "avatar_urls": {
-                "full_size": "",
-                "thumbnail": ""
-            }
+            "image_url": ""
         }
 
 
 
 
-# man = ManagerMetadataManager()
-# d = man.cache_week_data("2025", "15")
-# import json
-# pretty_json_string = json.dumps(d, indent=4)
-# print(pretty_json_string)
-# print("")
+man = ManagerMetadataManager()
+d = man.get_head_to_head("Tommy", "Soup", "2022")
+import json
+pretty_json_string = json.dumps(d, indent=4)
+print(pretty_json_string)
+print("")

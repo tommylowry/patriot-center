@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { displayFromSlug } from '../components/player/PlayerNameFormatter';
 import { usePlayerManagers } from '../hooks/usePlayerManagers';
 import { useValidOptions } from '../hooks/useValidOptions';
@@ -459,7 +459,20 @@ export default function PlayerPage() {
                                     <tr key={i}>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                                                <span>{m.manager || '—'}</span>
+                                                {m.manager ? (
+                                                    <Link
+                                                        to={`/manager/${encodeURIComponent(m.manager)}`}
+                                                        style={{
+                                                            color: 'var(--accent)',
+                                                            textDecoration: 'none',
+                                                            fontWeight: 500
+                                                        }}
+                                                    >
+                                                        {m.manager}
+                                                    </Link>
+                                                ) : (
+                                                    <span>—</span>
+                                                )}
                                                 {hasPlacements && (
                                                     <div style={{ display: 'flex', gap: '0.15rem' }}>
                                                         {/* Show one ribbon per year for 1st place */}

@@ -333,6 +333,12 @@ def manager_transactions(manager_name, year, type, limit, offset):
 
     manager_metadata_manager = ManagerMetadataManager()
 
+    # Convert 'all' strings to None for proper filtering
+    if year == 'all':
+        year = None
+    if type == 'all':
+        type = None
+
     try:
         data = manager_metadata_manager.get_manager_transactions(manager_name, year, type, limit, offset)
     except ValueError as e:

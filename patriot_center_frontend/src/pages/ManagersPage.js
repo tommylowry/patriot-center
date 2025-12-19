@@ -6,15 +6,13 @@ import { useManagersList } from '../hooks/useManagersList';
  * ManagerRow component - displays a single manager in the table
  */
 function ManagerRow({ manager }) {
-  const avatarUrl = manager.avatar_urls?.thumbnail || manager.avatar_urls?.full_size;
-
   return (
     <tr>
       <td>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {avatarUrl && (
+          {manager.image_url && (
             <img
-              src={avatarUrl}
+              src={manager.image_url}
               alt={manager.name}
               style={{
                 width: '32px',
@@ -22,6 +20,9 @@ function ManagerRow({ manager }) {
                 borderRadius: '50%',
                 objectFit: 'cover',
                 border: '2px solid var(--border)'
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
               }}
             />
           )}

@@ -1,14 +1,12 @@
 import React, { useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
-import { displayFromSlug } from '../components/player/PlayerNameFormatter';
 import { usePlayerManagers } from '../hooks/usePlayerManagers';
 import { useValidOptions } from '../hooks/useValidOptions';
 
 export default function PlayerPage() {
     const { playerSlug } = useParams();
     const navigate = useNavigate();
-    const slug = playerSlug || 'Amon-Ra_St._Brown'; // default capitalized
-    const displayName = displayFromSlug(slug);
+    const slug = playerSlug || 'amon-ra%20st.%20brown';
 
     const [year, setYear] = useState(null);    // default: ALL years
     const [week, setWeek] = useState(null);      // default: ALL weeks
@@ -27,8 +25,9 @@ export default function PlayerPage() {
     // Fetch filtered data for the table
     const { managers, loading, error } = usePlayerManagers(slug, { year, week, manager });
 
-    // Extract player image URL from first manager object
+    // Extract player data from first manager object
     const playerImageUrl = managers?.[0]?.player_image_endpoint;
+    const displayName = managers?.[0]?.player || allTimeManagers?.[0]?.player || decodeURIComponent(slug);
 
     // Reset image error when player changes
     React.useEffect(() => {

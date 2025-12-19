@@ -1,6 +1,6 @@
 """
-Unit tests for manager metadata player_url requirements.
-Tests that player_url is included in all top_3_scorers data and new score fields are present.
+Unit tests for manager metadata image_url requirements.
+Tests that image_url is included in all managers, players, and matchup data.
 """
 import pytest
 from unittest.mock import patch
@@ -38,45 +38,45 @@ def mock_cache_with_matchup_data():
                                 "points_for": 145.6,
                                 "points_against": 120.3,
                                 "result": "win",
-                                # NEW: Top 3 scorers with player_url
-                                "tommy_top_3_scorers": [
+                                # NEW: Top 3 scorers with image_url
+                                "manager_1_top_3_scorers": [
                                     {
                                         "name": "Amon-Ra St. Brown",
                                         "position": "WR",
                                         "score": 28.5,
-                                        "player_url": "https://sleepercdn.com/content/nfl/players/7547.jpg"
+                                        "image_url": "https://sleepercdn.com/content/nfl/players/7547.jpg"
                                     },
                                     {
                                         "name": "Travis Kelce",
                                         "position": "TE",
                                         "score": 22.3,
-                                        "player_url": "https://sleepercdn.com/content/nfl/players/4866.jpg"
+                                        "image_url": "https://sleepercdn.com/content/nfl/players/4866.jpg"
                                     },
                                     {
                                         "name": "49ers",
                                         "position": "DEF",
                                         "score": 18.0,
-                                        "player_url": "https://sleepercdn.com/images/team_logos/nfl/sf.png"
+                                        "image_url": "https://sleepercdn.com/images/team_logos/nfl/sf.png"
                                     }
                                 ],
-                                "mike_top_3_scorers": [
+                                "manager_2_top_3_scorers": [
                                     {
                                         "name": "Justin Jefferson",
                                         "position": "WR",
                                         "score": 25.1,
-                                        "player_url": "https://sleepercdn.com/content/nfl/players/6797.jpg"
+                                        "image_url": "https://sleepercdn.com/content/nfl/players/6797.jpg"
                                     },
                                     {
                                         "name": "Josh Allen",
                                         "position": "QB",
                                         "score": 23.4,
-                                        "player_url": "https://sleepercdn.com/content/nfl/players/4881.jpg"
+                                        "image_url": "https://sleepercdn.com/content/nfl/players/4881.jpg"
                                     },
                                     {
                                         "name": "Eagles",
                                         "position": "DEF",
                                         "score": 16.2,
-                                        "player_url": "https://sleepercdn.com/images/team_logos/nfl/phi.png"
+                                        "image_url": "https://sleepercdn.com/images/team_logos/nfl/phi.png"
                                     }
                                 ]
                             },
@@ -88,8 +88,8 @@ def mock_cache_with_matchup_data():
                                 "points_for": 110.0,
                                 "points_against": 125.0,
                                 "result": "loss",
-                                "tommy_top_3_scorers": [],
-                                "owen_top_3_scorers": []
+                                "manager_1_top_3_scorers": [],
+                                "manager_2_top_3_scorers": []
                             },
                             "transactions": {}
                         }
@@ -100,15 +100,15 @@ def mock_cache_with_matchup_data():
     }
 
 
-class TestManagerAwardsPlayerUrls:
-    """Test that get_manager_awards includes player_url in all top_3_scorers arrays."""
+class TestManagerAwardsImageUrls:
+    """Test that get_manager_awards includes image_url in all matchup data."""
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
-    def test_highest_weekly_score_includes_player_urls_and_opponent_score(
+    def test_highest_weekly_score_includes_image_urls_and_matchup_structure(
         self, mock_load_cache, mock_load_player_ids, mock_cache_with_matchup_data
     ):
-        """Test highest_weekly_score includes player_url for all top_3_scorers and opponent_score."""
+        """Test highest_weekly_score includes image_url for all players and proper matchup structure."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
         mock_load_cache.side_effect = [{}, {}]
@@ -122,35 +122,41 @@ class TestManagerAwardsPlayerUrls:
         assert "awards" in result
         highest_score = result["awards"]["highest_weekly_score"]
 
-        # Verify opponent_score is present
-        assert "opponent_score" in highest_score, "opponent_score must be present in highest_weekly_score"
-        assert highest_score["opponent_score"] is not None
+        # Verify matchup structure with manager_1 and manager_2
+        assert "manager_1" in highest_score, "manager_1 must be present"
+        assert "manager_2" in highest_score, "manager_2 must be present"
+        assert "manager_1_score" in highest_score, "manager_1_score must be present"
+        assert "manager_2_score" in highest_score, "manager_2_score must be present"
 
-        # Verify manager's top_3_scorers all have player_url
-        manager_scorers = highest_score.get("tommy_top_3_scorers", [])
-        for i, player in enumerate(manager_scorers):
-            assert "player_url" in player, f"player_url missing for manager's top scorer #{i+1}: {player.get('name')}"
-            assert player["player_url"] is not None and player["player_url"] != "", \
-                f"player_url is empty for manager's top scorer #{i+1}: {player.get('name')}"
+        # Verify managers have image_url
+        assert "image_url" in highest_score["manager_1"], "manager_1 must have image_url"
+        assert "image_url" in highest_score["manager_2"], "manager_2 must have image_url"
+
+        # Verify manager_1 top_3_scorers all have image_url
+        manager1_scorers = highest_score.get("manager_1_top_3_scorers", [])
+        for i, player in enumerate(manager1_scorers):
+            assert "image_url" in player, f"image_url missing for manager_1 top scorer #{i+1}: {player.get('name')}"
+            assert player["image_url"] is not None and player["image_url"] != "", \
+                f"image_url is empty for manager_1 top scorer #{i+1}: {player.get('name')}"
 
             # Verify all required fields are present
-            assert "name" in player, f"name missing for manager's top scorer #{i+1}"
-            assert "position" in player, f"position missing for manager's top scorer #{i+1}"
-            assert "score" in player, f"score missing for manager's top scorer #{i+1}"
+            assert "name" in player, f"name missing for manager_1 top scorer #{i+1}"
+            assert "position" in player, f"position missing for manager_1 top scorer #{i+1}"
+            assert "score" in player, f"score missing for manager_1 top scorer #{i+1}"
 
-        # Verify opponent's top_3_scorers all have player_url
-        opponent_scorers = highest_score.get("mike_top_3_scorers", [])
-        for i, player in enumerate(opponent_scorers):
-            assert "player_url" in player, f"player_url missing for opponent's top scorer #{i+1}: {player.get('name')}"
-            assert player["player_url"] is not None and player["player_url"] != "", \
-                f"player_url is empty for opponent's top scorer #{i+1}: {player.get('name')}"
+        # Verify manager_2 top_3_scorers all have image_url
+        manager2_scorers = highest_score.get("manager_2_top_3_scorers", [])
+        for i, player in enumerate(manager2_scorers):
+            assert "image_url" in player, f"image_url missing for manager_2 top scorer #{i+1}: {player.get('name')}"
+            assert player["image_url"] is not None and player["image_url"] != "", \
+                f"image_url is empty for manager_2 top scorer #{i+1}: {player.get('name')}"
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
-    def test_lowest_weekly_score_includes_player_urls_and_opponent_score(
+    def test_lowest_weekly_score_includes_image_urls_and_matchup_structure(
         self, mock_load_cache, mock_load_player_ids, mock_cache_with_matchup_data
     ):
-        """Test lowest_weekly_score includes player_url for all top_3_scorers and opponent_score."""
+        """Test lowest_weekly_score includes image_url for all players and proper matchup structure."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
         mock_load_cache.side_effect = [{}, {}]
@@ -163,21 +169,22 @@ class TestManagerAwardsPlayerUrls:
 
         lowest_score = result["awards"]["lowest_weekly_score"]
 
-        # Verify opponent_score is present
-        assert "opponent_score" in lowest_score, "opponent_score must be present in lowest_weekly_score"
+        # Verify matchup structure
+        assert "manager_1_score" in lowest_score, "manager_1_score must be present in lowest_weekly_score"
+        assert "manager_2_score" in lowest_score, "manager_2_score must be present in lowest_weekly_score"
 
-        # Verify both manager and opponent top_3_scorers have player_url
-        for key in ["tommy_top_3_scorers", "mike_top_3_scorers", "owen_top_3_scorers"]:
+        # Verify top_3_scorers have image_url
+        for key in ["manager_1_top_3_scorers", "manager_2_top_3_scorers"]:
             scorers = lowest_score.get(key, [])
             for i, player in enumerate(scorers):
-                assert "player_url" in player, f"player_url missing in {key} scorer #{i+1}"
+                assert "image_url" in player, f"image_url missing in {key} scorer #{i+1}"
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
-    def test_biggest_blowout_win_includes_player_urls_and_scores(
+    def test_biggest_blowout_win_includes_image_urls_and_scores(
         self, mock_load_cache, mock_load_player_ids, mock_cache_with_matchup_data
     ):
-        """Test biggest_blowout_win includes player_url, manager_score, and opponent_score."""
+        """Test biggest_blowout_win includes image_url, manager_1_score, and manager_2_score."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
         mock_load_cache.side_effect = [{}, {}]
@@ -190,28 +197,28 @@ class TestManagerAwardsPlayerUrls:
 
         blowout_win = result["awards"]["biggest_blowout_win"]
 
-        # Verify NEW score fields are present
-        assert "manager_score" in blowout_win, "manager_score must be present in biggest_blowout_win"
-        assert "opponent_score" in blowout_win, "opponent_score must be present in biggest_blowout_win"
-        assert blowout_win["manager_score"] is not None
-        assert blowout_win["opponent_score"] is not None
+        # Verify matchup structure with score fields
+        assert "manager_1_score" in blowout_win, "manager_1_score must be present in biggest_blowout_win"
+        assert "manager_2_score" in blowout_win, "manager_2_score must be present in biggest_blowout_win"
+        assert blowout_win["manager_1_score"] is not None
+        assert blowout_win["manager_2_score"] is not None
 
         # Verify differential is still present
         assert "differential" in blowout_win, "differential must still be present"
 
-        # Verify player_urls in top_3_scorers
+        # Verify image_urls in top_3_scorers
         for key in blowout_win.keys():
             if key.endswith("_top_3_scorers"):
                 scorers = blowout_win[key]
                 for i, player in enumerate(scorers):
-                    assert "player_url" in player, f"player_url missing in {key} scorer #{i+1}"
+                    assert "image_url" in player, f"image_url missing in {key} scorer #{i+1}"
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
-    def test_biggest_blowout_loss_includes_player_urls_and_scores(
+    def test_biggest_blowout_loss_includes_image_urls_and_scores(
         self, mock_load_cache, mock_load_player_ids, mock_cache_with_matchup_data
     ):
-        """Test biggest_blowout_loss includes player_url, manager_score, and opponent_score."""
+        """Test biggest_blowout_loss includes image_url, manager_1_score, and manager_2_score."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
         mock_load_cache.side_effect = [{}, {}]
@@ -224,16 +231,16 @@ class TestManagerAwardsPlayerUrls:
 
         blowout_loss = result["awards"]["biggest_blowout_loss"]
 
-        # Verify NEW score fields are present
-        assert "manager_score" in blowout_loss, "manager_score must be present in biggest_blowout_loss"
-        assert "opponent_score" in blowout_loss, "opponent_score must be present in biggest_blowout_loss"
+        # Verify matchup structure with score fields
+        assert "manager_1_score" in blowout_loss, "manager_1_score must be present in biggest_blowout_loss"
+        assert "manager_2_score" in blowout_loss, "manager_2_score must be present in biggest_blowout_loss"
 
-        # Verify player_urls in top_3_scorers
+        # Verify image_urls in top_3_scorers
         for key in blowout_loss.keys():
             if key.endswith("_top_3_scorers"):
                 scorers = blowout_loss[key]
                 for player in scorers:
-                    assert "player_url" in player, f"player_url missing in {key}"
+                    assert "image_url" in player, f"image_url missing in {key}"
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
@@ -254,26 +261,26 @@ class TestManagerAwardsPlayerUrls:
         highest_score = result["awards"]["highest_weekly_score"]
 
         # Find defense players
-        all_scorers = highest_score.get("tommy_top_3_scorers", []) + highest_score.get("mike_top_3_scorers", [])
+        all_scorers = highest_score.get("manager_1_top_3_scorers", []) + highest_score.get("manager_2_top_3_scorers", [])
         defense_players = [p for p in all_scorers if p.get("position") == "DEF"]
 
         assert len(defense_players) > 0, "Test should include at least one DEF player"
 
         for def_player in defense_players:
-            assert "player_url" in def_player, f"DEF player {def_player.get('name')} missing player_url"
-            assert "team_logos" in def_player["player_url"] or ".png" in def_player["player_url"], \
-                f"DEF player {def_player.get('name')} should have team logo URL, got: {def_player['player_url']}"
+            assert "image_url" in def_player, f"DEF player {def_player.get('name')} missing image_url"
+            assert "team_logos" in def_player["image_url"] or ".png" in def_player["image_url"], \
+                f"DEF player {def_player.get('name')} should have team logo URL, got: {def_player['image_url']}"
 
 
-class TestManagerYearlyDataPlayerUrls:
-    """Test that get_manager_yearly_data includes player_url in weekly matchup top_3_scorers."""
+class TestManagerYearlyDataImageUrls:
+    """Test that get_manager_yearly_data includes image_url in weekly matchup data."""
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
-    def test_weekly_scores_include_player_urls(
+    def test_weekly_scores_include_image_urls(
         self, mock_load_cache, mock_load_player_ids, mock_cache_with_matchup_data
     ):
-        """Test weekly_scores include player_url for all top_3_scorers."""
+        """Test weekly_scores include image_url for all players and proper matchup structure."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
         mock_load_cache.side_effect = [{}, {}]
@@ -291,32 +298,32 @@ class TestManagerYearlyDataPlayerUrls:
         # Check first week's matchup
         week1 = weekly_scores[0]
 
-        # Verify manager's top_3_scorers all have player_url
-        manager_scorers = week1.get("tommy_top_3_scorers", [])
-        assert len(manager_scorers) > 0, "Week 1 should have manager top scorers"
+        # Verify manager_1 top_3_scorers all have image_url
+        manager1_scorers = week1.get("manager_1_top_3_scorers", [])
+        assert len(manager1_scorers) > 0, "Week 1 should have manager_1 top scorers"
 
-        for i, player in enumerate(manager_scorers):
-            assert "player_url" in player, f"Week 1 - player_url missing for manager's scorer #{i+1}: {player.get('name')}"
-            assert player["player_url"] is not None and player["player_url"] != "", \
-                f"Week 1 - player_url is empty for manager's scorer #{i+1}: {player.get('name')}"
+        for i, player in enumerate(manager1_scorers):
+            assert "image_url" in player, f"Week 1 - image_url missing for manager_1 scorer #{i+1}: {player.get('name')}"
+            assert player["image_url"] is not None and player["image_url"] != "", \
+                f"Week 1 - image_url is empty for manager_1 scorer #{i+1}: {player.get('name')}"
 
             # Verify all required fields
             assert "name" in player
             assert "position" in player
             assert "score" in player
 
-        # Verify opponent's top_3_scorers all have player_url
-        opponent_scorers = week1.get("mike_top_3_scorers", [])
-        for i, player in enumerate(opponent_scorers):
-            assert "player_url" in player, f"Week 1 - player_url missing for opponent's scorer #{i+1}: {player.get('name')}"
-            assert player["player_url"] is not None and player["player_url"] != ""
+        # Verify manager_2 top_3_scorers all have image_url
+        manager2_scorers = week1.get("manager_2_top_3_scorers", [])
+        for i, player in enumerate(manager2_scorers):
+            assert "image_url" in player, f"Week 1 - image_url missing for manager_2 scorer #{i+1}: {player.get('name')}"
+            assert player["image_url"] is not None and player["image_url"] != ""
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
-    def test_all_weekly_matchups_have_player_urls(
+    def test_all_weekly_matchups_have_image_urls(
         self, mock_load_cache, mock_load_player_ids, mock_cache_with_matchup_data
     ):
-        """Test all weekly matchups include player_url for all players."""
+        """Test all weekly matchups include image_url for all players."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
         mock_load_cache.side_effect = [{}, {}]
@@ -337,23 +344,23 @@ class TestManagerYearlyDataPlayerUrls:
             for key in scorer_keys:
                 scorers = week_data[key]
                 for i, player in enumerate(scorers):
-                    assert "player_url" in player, \
-                        f"Week {week_num} - player_url missing in {key} scorer #{i+1}: {player.get('name')}"
+                    assert "image_url" in player, \
+                        f"Week {week_num} - image_url missing in {key} scorer #{i+1}: {player.get('name')}"
 
-                    # Ensure player_url is not None or empty
-                    assert player["player_url"], \
-                        f"Week {week_num} - player_url is empty in {key} scorer #{i+1}: {player.get('name')}"
+                    # Ensure image_url is not None or empty
+                    assert player["image_url"], \
+                        f"Week {week_num} - image_url is empty in {key} scorer #{i+1}: {player.get('name')}"
 
 
-class TestPlayerUrlFormat:
-    """Test player_url format validation."""
+class TestImageUrlFormat:
+    """Test image_url format validation."""
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')
-    def test_player_urls_are_valid_urls(
+    def test_image_urls_are_valid_urls(
         self, mock_load_cache, mock_load_player_ids, mock_cache_with_matchup_data
     ):
-        """Test that player_url values are valid URL strings."""
+        """Test that image_url values are valid URL strings."""
         from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
         mock_load_cache.side_effect = [{}, {}]
@@ -365,13 +372,13 @@ class TestPlayerUrlFormat:
         result = manager.get_manager_awards("Tommy")
 
         highest_score = result["awards"]["highest_weekly_score"]
-        all_scorers = highest_score.get("tommy_top_3_scorers", []) + highest_score.get("mike_top_3_scorers", [])
+        all_scorers = highest_score.get("manager_1_top_3_scorers", []) + highest_score.get("manager_2_top_3_scorers", [])
 
         for player in all_scorers:
-            player_url = player.get("player_url", "")
-            assert player_url.startswith("http://") or player_url.startswith("https://"), \
-                f"player_url should be a valid HTTP(S) URL, got: {player_url}"
+            image_url = player.get("image_url", "")
+            assert image_url.startswith("http://") or image_url.startswith("https://"), \
+                f"image_url should be a valid HTTP(S) URL, got: {image_url}"
 
             # Should contain image extension or be from sleepercdn
-            assert any(ext in player_url for ext in [".jpg", ".png", ".jpeg", ".gif", "sleepercdn.com"]), \
-                f"player_url should be an image URL, got: {player_url}"
+            assert any(ext in image_url for ext in [".jpg", ".png", ".jpeg", ".gif", "sleepercdn.com"]), \
+                f"image_url should be an image URL, got: {image_url}"

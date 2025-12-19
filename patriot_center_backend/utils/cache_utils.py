@@ -20,7 +20,7 @@ from datetime import datetime
 from pathlib import Path
 
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.constants import LEAGUE_IDS, PLAYERS_CACHE_FILE
 
 
 def load_cache(file_path, initialize_with_last_updated_info=True):
@@ -123,3 +123,24 @@ def get_current_season_and_week():
     current_week = league_info.get("settings", {}).get("last_scored_leg", 0)  # Latest scored week (0 if preseason)
 
     return current_season, current_week
+
+def slug_to_player_name(slug: str) -> str:
+    """Convert a slug string to a player name.
+
+    Args:
+        slug (str): The slug string (e.g., "john%20doe").
+
+    Returns:
+        str: The player name (e.g., "John Doe").
+    """
+    if not slug:
+        return slug
+    players_cache = load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
+    if "%20" in slug or " " in slug:
+        # ensure consistent encoding for lookup
+        slug = slug.replace(" ", "%20").replace("'", "%27").lower()
+        for p in players_cache:
+            if players_cache[p]["slug"] == slug:
+                return p
+    
+    return slug  # Fallback to returning the original string if no match found

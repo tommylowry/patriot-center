@@ -19,6 +19,8 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 
+from patriot_center_backend.utils.cache_utils import slug_to_player_name
+
 app = Flask(__name__)
 
 # Configure CORS for production (Netlify frontend)
@@ -31,6 +33,7 @@ CORS(app, resources={
     r"/get_player_manager_aggregation*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get/managers/list": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/api/managers/*": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/slug_to_player_name/*": {"origins": ["https://patriotcenter.netlify.app"]},
 })
 CORS(app)  # Enable CORS for all routes during development
 
@@ -52,6 +55,7 @@ def index():
             "/api/managers/<manager_name>/head-to-head/<opponent_name>",
             "/api/managers/<manager_name>/transactions",
             "/api/managers/<manager_name>/awards",
+            "/slug_to_player_name/<slug>",
             "/ping",
             "/health"
         ]
@@ -141,17 +145,17 @@ def get_aggregated_managers(player, arg2, arg3):
     """
     from patriot_center_backend.services.aggregated_data import fetch_aggregated_managers
 
+    player = slug_to_player_name(player)  # Convert slug to player name
+
     try:
         year, week, _ = parse_arguments(arg2, arg3, None)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    player = player.replace("_", " ").replace("%27", "'")
-
     data = fetch_aggregated_managers(player=player, season=year, week=week)
     if request.args.get("format") == "json":
         return jsonify(data), 200
-    return jsonify(_to_records(data, key_name="player")), 200
+    return jsonify(_to_records(data, key_name="manager")), 200
 
 @app.route('/get_player_manager_aggregation/<string:player>/<string:manager>', defaults={'year': None, 'week': None}, methods=['GET'])
 @app.route('/get_player_manager_aggregation/<string:player>/<string:manager>/<string:year>', defaults={'week': None}, methods=['GET'])
@@ -169,7 +173,7 @@ def get_player_manager_aggregation(player, manager, year, week):
     """
     from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
 
-    player = player.replace("_", " ").replace("%27", "'")
+    player = slug_to_player_name(player)  # Convert slug to player name
 
     data = fetch_player_manager_aggregation(player=player, manager=manager, season=year, week=week)
     if request.args.get("format") == "json":
@@ -197,6 +201,12 @@ def valid_options(arg1, arg2, arg3, arg4):
     Endpoint to validate provided season, week, manager, player, and position combinations.
     """
     from patriot_center_backend.services.valid_options import ValidOptionsService
+
+    arg1 = slug_to_player_name(arg1)
+    arg2 = slug_to_player_name(arg2)
+    arg3 = slug_to_player_name(arg3)
+    arg4 = slug_to_player_name(arg4)
+
     try:
         options = ValidOptionsService(arg1, arg2, arg3, arg4)
         data = options.get_valid_options()
@@ -373,6 +383,24 @@ def manager_awards(manager_name):
         return jsonify({"error": str(e)}), 500
 
     return jsonify(data), 200
+
+
+@app.route('/slug_to_player_name/<string:slug>', methods=['GET'])
+def slug_to_player_name_endpoint(slug):
+    """
+    Convert a slug string to a player name.
+
+    Args:
+        slug (str): The slug string (e.g., "john%20doe").
+
+    Returns:
+        Flask Response: JSON payload with player name or error.
+    """
+    try:
+        player_name = slug_to_player_name(slug)
+        return jsonify({"player_name": player_name}), 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
 
     
 # /update_caches endpoint removed - cache updates now handled by GitHub Actions

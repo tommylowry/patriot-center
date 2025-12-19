@@ -39,7 +39,7 @@ export default function ManagerPage() {
   if (!summary) return null;
 
   // Extract data
-  const avatarUrl = summary.avatar_urls?.full_size;
+  const avatarUrl = summary.image_url;
   const yearsActive = summary.years_active || [];
   const overall = summary.matchup_data?.overall || {};
   const regularSeason = summary.matchup_data?.regular_season || {};
@@ -64,7 +64,25 @@ export default function ManagerPage() {
   }, { gold: 0, silver: 0, bronze: 0 });
 
   // SportsCenter-Style Matchup Card Component
-  const MatchupCard = ({ managerScore, opponentName, opponentScore, managerTopScorers, opponentTopScorers, result, week, year: matchYear, showMargin = false }) => {
+  // Accepts matchup object with manager_1, manager_2, scores, and top_3_scorers
+  const MatchupCard = ({ matchup, showMargin = false }) => {
+    if (!matchup) return null;
+
+    const manager1 = matchup.manager_1 || {};
+    const manager2 = matchup.manager_2 || {};
+    const manager1Score = matchup.manager_1_score;
+    const manager2Score = matchup.manager_2_score;
+    const winner = matchup.winner;
+    const week = matchup.week;
+    const year = matchup.year;
+    const manager1TopScorers = matchup.manager_1_top_3_scorers || [];
+    const manager2TopScorers = matchup.manager_2_top_3_scorers || [];
+
+    // Determine result from perspective of manager_1
+    let result = 'tie';
+    if (winner === manager1.name) result = 'win';
+    else if (winner === manager2.name) result = 'loss';
+
     return (
       <div style={{
         background: 'linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%)',
@@ -85,76 +103,137 @@ export default function ManagerPage() {
           letterSpacing: '0.5px',
           textTransform: 'uppercase'
         }}>
-          {week && matchYear && `Week ${week} ${matchYear} • `}
+          {week && year && `Week ${week} ${year} • `}
           {result === 'win' ? 'WIN' : result === 'loss' ? 'LOSS' : result === 'tie' ? 'TIE' : 'FINAL'}
         </div>
 
-        {/* Score Display - Redesigned Layout */}
+        {/* Score Display with Manager Avatars */}
         <div style={{ padding: '1.5rem' }}>
-          {/* Score Box - 2 rows x 2 columns */}
-          <div style={{
-            background: 'var(--bg-alt)',
-            border: '2px solid var(--border)',
-            borderRadius: '8px',
-            overflow: 'hidden',
-            marginBottom: '1.5rem'
-          }}>
-            {/* Manager Row */}
+          {/* Manager Avatars + Score Box */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            {/* Manager 1 Avatar */}
+            <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{ flexShrink: 0 }}>
+              {manager1.image_url && (
+                <img
+                  src={manager1.image_url}
+                  alt={manager1.name}
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '3px solid var(--border)'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              )}
+            </Link>
+
+            {/* Score Box - 2 rows x 2 columns */}
             <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '1rem',
-              borderBottom: '1px solid var(--border)',
-              background: result === 'win' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'
+              flex: 1,
+              background: 'var(--bg-alt)',
+              border: '2px solid var(--border)',
+              borderRadius: '8px',
+              overflow: 'hidden'
             }}>
-              <div style={{ flex: 1, fontWeight: 600, fontSize: '1rem' }}>
-                {managerName}
-              </div>
+              {/* Manager 1 Row */}
               <div style={{
-                fontSize: '1.5rem',
-                fontWeight: 700,
-                color: result === 'win' ? 'var(--success)' : 'var(--text)',
-                minWidth: '80px',
-                textAlign: 'right'
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '1rem',
+                borderBottom: '1px solid var(--border)',
+                background: result === 'win' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'
               }}>
-                {managerScore?.toFixed(2)}
+                <Link
+                  to={`/manager/${encodeURIComponent(manager1.name)}`}
+                  style={{
+                    flex: 1,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    color: 'var(--text)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  {manager1.name}
+                </Link>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 700,
+                  color: result === 'win' ? 'var(--success)' : 'var(--text)',
+                  minWidth: '80px',
+                  textAlign: 'right'
+                }}>
+                  {manager1Score?.toFixed(2)}
+                </div>
+              </div>
+
+              {/* Manager 2 Row */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '1rem',
+                background: result === 'loss' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'
+              }}>
+                <Link
+                  to={`/manager/${encodeURIComponent(manager2.name)}`}
+                  style={{
+                    flex: 1,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    color: 'var(--text)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  {manager2.name}
+                </Link>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 700,
+                  color: result === 'loss' ? 'var(--success)' : 'var(--text)',
+                  minWidth: '80px',
+                  textAlign: 'right'
+                }}>
+                  {manager2Score?.toFixed(2)}
+                </div>
               </div>
             </div>
 
-            {/* Opponent Row */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '1rem',
-              background: result === 'loss' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'
-            }}>
-              <div style={{ flex: 1, fontWeight: 600, fontSize: '1rem' }}>
-                {opponentName}
-              </div>
-              <div style={{
-                fontSize: '1.5rem',
-                fontWeight: 700,
-                color: result === 'loss' ? 'var(--success)' : 'var(--text)',
-                minWidth: '80px',
-                textAlign: 'right'
-              }}>
-                {opponentScore?.toFixed(2)}
-              </div>
-            </div>
+            {/* Manager 2 Avatar */}
+            <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{ flexShrink: 0 }}>
+              {manager2.image_url && (
+                <img
+                  src={manager2.image_url}
+                  alt={manager2.name}
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '3px solid var(--border)'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              )}
+            </Link>
           </div>
 
           {/* Top 3 Scorers Side by Side */}
-          {(managerTopScorers?.length > 0 || opponentTopScorers?.length > 0) && (
+          {(manager1TopScorers?.length > 0 || manager2TopScorers?.length > 0) && (
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              {/* Manager's Top Scorers */}
+              {/* Manager 1 Top Scorers */}
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                  {managerName} Top 3
+                  {manager1.name} Top 3
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {managerTopScorers?.slice(0, 3).map((player, i) => (
+                  {manager1TopScorers?.slice(0, 3).map((player, i) => (
                     <div key={i} style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -165,9 +244,9 @@ export default function ManagerPage() {
                       border: '1px solid var(--border)',
                       fontSize: '0.8rem'
                     }}>
-                      {player.player_url && (
+                      {player.image_url && (
                         <img
-                          src={player.player_url}
+                          src={player.image_url}
                           alt={player.name}
                           style={{
                             width: '32px',
@@ -206,13 +285,13 @@ export default function ManagerPage() {
                 </div>
               </div>
 
-              {/* Opponent's Top Scorers */}
+              {/* Manager 2 Top Scorers */}
               <div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                  {opponentName} Top 3
+                  {manager2.name} Top 3
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  {opponentTopScorers?.slice(0, 3).map((player, i) => (
+                  {manager2TopScorers?.slice(0, 3).map((player, i) => (
                     <div key={i} style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -223,9 +302,9 @@ export default function ManagerPage() {
                       border: '1px solid var(--border)',
                       fontSize: '0.8rem'
                     }}>
-                      {player.player_url && (
+                      {player.image_url && (
                         <img
-                          src={player.player_url}
+                          src={player.image_url}
                           alt={player.name}
                           style={{
                             width: '32px',
@@ -267,7 +346,7 @@ export default function ManagerPage() {
           )}
 
           {/* Margin - Only show for blowouts */}
-          {showMargin && (
+          {showMargin && matchup.differential !== undefined && (
             <div style={{
               textAlign: 'center',
               fontSize: '0.85rem',
@@ -276,7 +355,7 @@ export default function ManagerPage() {
               marginTop: '0.75rem',
               borderTop: '1px solid var(--border)'
             }}>
-              Margin: {Math.abs((managerScore || 0) - (opponentScore || 0)).toFixed(2)}
+              Margin: {Math.abs(matchup.differential).toFixed(2)}
             </div>
           )}
         </div>
@@ -453,7 +532,6 @@ export default function ManagerPage() {
         {activeTab === 'awards' && <AwardsTab
           awardsData={awardsData}
           MatchupCard={MatchupCard}
-          managerName={managerName}
         />}
 
         {activeTab === 'transactions' && <TransactionsTab
@@ -468,7 +546,6 @@ export default function ManagerPage() {
           yearlyData={yearlyData}
           year={year}
           MatchupCard={MatchupCard}
-          managerName={managerName}
         />}
       </div>
     </div>
@@ -540,7 +617,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {trades.top_trade_partners && trades.top_trade_partners.length > 0 && (
         <Section title="🤝 Top Trade Partners">
           {trades.top_trade_partners.slice(0, 5).map((partner, i) => (
-            <StatRow key={i} label={partner.name} value={`${partner.count} trades`} />
+            <StatRow key={i} label={typeof partner.name === 'string' ? partner.name : partner.name?.name || 'Unknown'} value={`${partner.count} trades`} />
           ))}
         </Section>
       )}
@@ -549,7 +626,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {adds.top_players_added && adds.top_players_added.length > 0 && (
         <Section title="➕ Most Added Players">
           {adds.top_players_added.slice(0, 5).map((player, i) => (
-            <StatRow key={i} label={player.name} value={`×${player.count}`} />
+            <StatRow key={i} label={typeof player.name === 'string' ? player.name : player.name?.name || 'Unknown'} value={`×${player.count}`} />
           ))}
         </Section>
       )}
@@ -558,7 +635,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {drops.top_players_dropped && drops.top_players_dropped.length > 0 && (
         <Section title="➖ Most Dropped Players">
           {drops.top_players_dropped.slice(0, 5).map((player, i) => (
-            <StatRow key={i} label={player.name} value={`×${player.count}`} />
+            <StatRow key={i} label={typeof player.name === 'string' ? player.name : player.name?.name || 'Unknown'} value={`×${player.count}`} />
           ))}
         </Section>
       )}
@@ -568,10 +645,10 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         <Section title="📈 Most Acquired (Trade)">
           {trades.most_aquired_players.slice(0, 3).map((player, i) => (
             <div key={i} style={{ marginBottom: '0.75rem' }}>
-              <StatRow label={player.name} value={`×${player.count}`} />
-              {player.from && (
+              <StatRow label={typeof player.name === 'string' ? player.name : player.name?.name || 'Unknown'} value={`×${player.count}`} />
+              {player.from && player.from.length > 0 && (
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
-                  From: {Object.entries(player.from).map(([n, c]) => `${n} (${c})`).join(', ')}
+                  From: {player.from.map(m => `${m.name} (${m.count})`).join(', ')}
                 </div>
               )}
             </div>
@@ -584,10 +661,10 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         <Section title="📉 Most Sent (Trade)">
           {trades.most_sent_players.slice(0, 3).map((player, i) => (
             <div key={i} style={{ marginBottom: '0.75rem' }}>
-              <StatRow label={player.name} value={`×${player.count}`} />
-              {player.to && (
+              <StatRow label={typeof player.name === 'string' ? player.name : player.name?.name || 'Unknown'} value={`×${player.count}`} />
+              {player.to && player.to.length > 0 && (
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem' }}>
-                  To: {Object.entries(player.to).map(([n, c]) => `${n} (${c})`).join(', ')}
+                  To: {player.to.map(m => `${m.name} (${m.count})`).join(', ')}
                 </div>
               )}
             </div>
@@ -599,7 +676,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {faab.biggest_acquisitions && faab.biggest_acquisitions.length > 0 && (
         <Section title="💰 Biggest FAAB Bids">
           {faab.biggest_acquisitions.map((bid, i) => (
-            <StatRow key={i} label={bid.name} value={`$${bid.amount}`} />
+            <StatRow key={i} label={typeof bid.name === 'string' ? bid.name : bid.name?.name || 'Unknown'} value={`$${bid.amount}`} />
           ))}
         </Section>
       )}
@@ -618,20 +695,41 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         <div style={{ gridColumn: '1 / -1' }}>
           <Section title="⚔️ Head-to-Head Records">
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
-              {Object.entries(headToHead).sort((a, b) => b[1].wins - a[1].wins).map(([opponent, data]) => (
-                <div key={opponent} style={{
-                  padding: '1rem',
-                  background: 'var(--bg)',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border)'
-                }}>
-                  <div style={{ fontWeight: 700, marginBottom: '0.5rem' }}>{opponent}</div>
-                  <StatRow label="Record" value={`${data.wins}-${data.losses}-${data.ties}`} small />
-                  <StatRow label="Win%" value={`${((data.wins / (data.wins + data.losses + data.ties || 1)) * 100).toFixed(1)}%`} small />
-                  <StatRow label="PF" value={data.points_for?.toFixed(2) || 0} small />
-                  <StatRow label="PA" value={data.points_against?.toFixed(2) || 0} small />
-                </div>
-              ))}
+              {Object.entries(headToHead).sort((a, b) => b[1].wins - a[1].wins).map(([opponentKey, data]) => {
+                const opponent = data.opponent || { name: opponentKey };
+                return (
+                  <div key={opponentKey} style={{
+                    padding: '1rem',
+                    background: 'var(--bg)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                      {opponent.image_url && (
+                        <img
+                          src={opponent.image_url}
+                          alt={opponent.name}
+                          style={{
+                            width: '32px',
+                            height: '32px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '2px solid var(--border)'
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <div style={{ fontWeight: 700 }}>{opponent.name}</div>
+                    </div>
+                    <StatRow label="Record" value={`${data.wins}-${data.losses}-${data.ties}`} small />
+                    <StatRow label="Win%" value={`${((data.wins / (data.wins + data.losses + data.ties || 1)) * 100).toFixed(1)}%`} small />
+                    <StatRow label="PF" value={data.points_for?.toFixed(2) || 0} small />
+                    <StatRow label="PA" value={data.points_against?.toFixed(2) || 0} small />
+                  </div>
+                );
+              })}
             </div>
           </Section>
         </div>
@@ -641,40 +739,22 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 }
 
 // Awards Tab - Using MatchupCard for all matchup awards
-function AwardsTab({ awardsData, MatchupCard, managerName }) {
+function AwardsTab({ awardsData, MatchupCard }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
       {/* Highest Weekly Score */}
-      {awardsData.highest_weekly_score && awardsData.highest_weekly_score.score > 0 && (
+      {awardsData.highest_weekly_score && awardsData.highest_weekly_score.manager_1_score > 0 && (
         <div>
           <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--success)' }}>🎯 Highest Weekly Score</h3>
-          <MatchupCard
-            managerScore={awardsData.highest_weekly_score.score}
-            opponentName={awardsData.highest_weekly_score.opponent}
-            opponentScore={awardsData.highest_weekly_score.opponent_score}
-            managerTopScorers={awardsData.highest_weekly_score[`${managerName.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-            opponentTopScorers={awardsData.highest_weekly_score[`${awardsData.highest_weekly_score.opponent?.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-            result="win"
-            week={awardsData.highest_weekly_score.week}
-            year={awardsData.highest_weekly_score.year}
-          />
+          <MatchupCard matchup={awardsData.highest_weekly_score} />
         </div>
       )}
 
       {/* Lowest Weekly Score */}
-      {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.score < Infinity && (
+      {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.manager_1_score < Infinity && (
         <div>
           <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--danger)' }}>📉 Lowest Weekly Score</h3>
-          <MatchupCard
-            managerScore={awardsData.lowest_weekly_score.score}
-            opponentName={awardsData.lowest_weekly_score.opponent}
-            opponentScore={awardsData.lowest_weekly_score.opponent_score}
-            managerTopScorers={awardsData.lowest_weekly_score[`${managerName.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-            opponentTopScorers={awardsData.lowest_weekly_score[`${awardsData.lowest_weekly_score.opponent?.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-            result="loss"
-            week={awardsData.lowest_weekly_score.week}
-            year={awardsData.lowest_weekly_score.year}
-          />
+          <MatchupCard matchup={awardsData.lowest_weekly_score} />
         </div>
       )}
 
@@ -682,17 +762,7 @@ function AwardsTab({ awardsData, MatchupCard, managerName }) {
       {awardsData.biggest_blowout_win && awardsData.biggest_blowout_win.differential > 0 && (
         <div>
           <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--success)' }}>💥 Biggest Blowout Win</h3>
-          <MatchupCard
-            managerScore={awardsData.biggest_blowout_win.manager_score}
-            opponentName={awardsData.biggest_blowout_win.opponent}
-            opponentScore={awardsData.biggest_blowout_win.opponent_score}
-            managerTopScorers={awardsData.biggest_blowout_win[`${managerName.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-            opponentTopScorers={awardsData.biggest_blowout_win[`${awardsData.biggest_blowout_win.opponent?.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-            result="win"
-            week={awardsData.biggest_blowout_win.week}
-            year={awardsData.biggest_blowout_win.year}
-            showMargin={true}
-          />
+          <MatchupCard matchup={awardsData.biggest_blowout_win} showMargin={true} />
         </div>
       )}
 
@@ -700,17 +770,7 @@ function AwardsTab({ awardsData, MatchupCard, managerName }) {
       {awardsData.biggest_blowout_loss && awardsData.biggest_blowout_loss.differential < 0 && (
         <div>
           <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--danger)' }}>😭 Biggest Blowout Loss</h3>
-          <MatchupCard
-            managerScore={awardsData.biggest_blowout_loss.manager_score}
-            opponentName={awardsData.biggest_blowout_loss.opponent}
-            opponentScore={awardsData.biggest_blowout_loss.opponent_score}
-            managerTopScorers={awardsData.biggest_blowout_loss[`${managerName.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-            opponentTopScorers={awardsData.biggest_blowout_loss[`${awardsData.biggest_blowout_loss.opponent?.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-            result="loss"
-            week={awardsData.biggest_blowout_loss.week}
-            year={awardsData.biggest_blowout_loss.year}
-            showMargin={true}
-          />
+          <MatchupCard matchup={awardsData.biggest_blowout_loss} showMargin={true} />
         </div>
       )}
 
@@ -719,7 +779,7 @@ function AwardsTab({ awardsData, MatchupCard, managerName }) {
         <AwardCard
           title="💰 Biggest FAAB Bid"
           value={`$${awardsData.biggest_faab_bid.amount}`}
-          subtitle={`${awardsData.biggest_faab_bid.player} (${awardsData.biggest_faab_bid.year})`}
+          subtitle={`${awardsData.biggest_faab_bid.player?.name || awardsData.biggest_faab_bid.player} (${awardsData.biggest_faab_bid.year})`}
           color="var(--accent)"
         />
       )}
@@ -901,7 +961,9 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
               {txn.type === 'trade' && (
                 <div>
                   <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                    Trade Partners: <span style={{ color: 'var(--text)', fontWeight: 600 }}>{txn.partners?.join(', ')}</span>
+                    Trade Partners: <span style={{ color: 'var(--text)', fontWeight: 600 }}>
+                      {txn.partners?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}
+                    </span>
                   </div>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                     <div style={{ padding: '0.75rem', background: 'var(--bg-alt)', borderRadius: '8px', border: '1px solid rgba(76, 175, 80, 0.3)' }}>
@@ -909,7 +971,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
                         Acquired
                       </div>
                       <div style={{ fontSize: '0.9rem' }}>
-                        {txn.acquired?.join(', ')}
+                        {txn.acquired?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}
                       </div>
                     </div>
                     <div style={{ padding: '0.75rem', background: 'var(--bg-alt)', borderRadius: '8px', border: '1px solid rgba(244, 67, 54, 0.3)' }}>
@@ -917,7 +979,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
                         Sent
                       </div>
                       <div style={{ fontSize: '0.9rem' }}>
-                        {txn.sent?.join(', ')}
+                        {txn.sent?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}
                       </div>
                     </div>
                   </div>
@@ -925,7 +987,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
               )}
               {txn.type === 'add' && (
                 <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>
-                  {txn.player}
+                  {typeof txn.player === 'string' ? txn.player : txn.player?.name || 'Unknown Player'}
                   {txn.faab_spent !== null && txn.faab_spent !== undefined && (
                     <span style={{ marginLeft: '0.75rem', fontSize: '0.9rem', color: 'var(--success)', fontWeight: 700 }}>
                       ${txn.faab_spent} FAAB
@@ -935,7 +997,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
               )}
               {txn.type === 'drop' && (
                 <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--danger)' }}>
-                  {txn.player}
+                  {typeof txn.player === 'string' ? txn.player : txn.player?.name || 'Unknown Player'}
                 </div>
               )}
               {txn.type === 'add_and_drop' && (
@@ -945,7 +1007,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
                       Added
                     </div>
                     <div style={{ fontSize: '1rem', fontWeight: 600 }}>
-                      {txn.added_player}
+                      {typeof txn.added_player === 'string' ? txn.added_player : txn.added_player?.name || 'Unknown Player'}
                       {txn.faab_spent !== null && txn.faab_spent !== undefined && (
                         <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: 'var(--success)' }}>
                           (${txn.faab_spent})
@@ -958,7 +1020,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
                       Dropped
                     </div>
                     <div style={{ fontSize: '1rem', fontWeight: 600 }}>
-                      {txn.dropped_player}
+                      {typeof txn.dropped_player === 'string' ? txn.dropped_player : txn.dropped_player?.name || 'Unknown Player'}
                     </div>
                   </div>
                 </div>
@@ -972,7 +1034,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
 }
 
 // Weekly Stats Tab - Using MatchupCard and filtering out empty matchups
-function WeeklyTab({ yearlyData, year, MatchupCard, managerName }) {
+function WeeklyTab({ yearlyData, year, MatchupCard }) {
   if (!yearlyData) return null;
 
   const weeklyScores = yearlyData.matchup_data?.overall?.weekly_scores || [];
@@ -982,7 +1044,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard, managerName }) {
 
   // Filter out weeks where the manager didn't play (empty matchup_data)
   const validWeeklyScores = weeklyScores.filter(week =>
-    week.opponent && week.points_for !== undefined && week.points_against !== undefined
+    week.manager_1 && week.manager_2 && week.manager_1_score !== undefined && week.manager_2_score !== undefined
   );
 
   return (
@@ -992,17 +1054,10 @@ function WeeklyTab({ yearlyData, year, MatchupCard, managerName }) {
       {/* Weekly Scores - SportsCenter Style with MatchupCard */}
       <Section title="📅 Weekly Matchups">
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1rem' }}>
-          {validWeeklyScores.map((week, i) => (
+          {validWeeklyScores.map((matchup, i) => (
             <MatchupCard
               key={i}
-              managerScore={week.points_for}
-              opponentName={week.opponent}
-              opponentScore={week.points_against}
-              managerTopScorers={week[`${managerName.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-              opponentTopScorers={week[`${week.opponent?.toLowerCase().replace(' ', '_')}_top_3_scorers`]}
-              result={week.result}
-              week={week.week}
-              year={year}
+              matchup={matchup}
             />
           ))}
         </div>
@@ -1023,9 +1078,9 @@ function WeeklyTab({ yearlyData, year, MatchupCard, managerName }) {
                   border: '1px solid var(--border)',
                   fontSize: '0.9rem'
                 }}>
-                  <div><strong>With:</strong> {trade.partners?.join(', ')}</div>
-                  <div><strong>Got:</strong> {trade.acquired?.join(', ')}</div>
-                  <div><strong>Sent:</strong> {trade.sent?.join(', ')}</div>
+                  <div><strong>With:</strong> {trade.partners?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}</div>
+                  <div><strong>Got:</strong> {trade.acquired?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}</div>
+                  <div><strong>Sent:</strong> {trade.sent?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}</div>
                 </div>
               ))}
             </div>
@@ -1046,7 +1101,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard, managerName }) {
               }}>
                 <div style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '0.85rem' }}>Week {weekData.week}</div>
                 <div style={{ fontSize: '0.8rem' }}>
-                  {weekData.players.map((p, j) => <div key={j}>{p}</div>)}
+                  {weekData.players.map((p, j) => <div key={j}>{typeof p === 'string' ? p : p?.name || 'Unknown Player'}</div>)}
                 </div>
               </div>
             ))}
@@ -1067,7 +1122,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard, managerName }) {
               }}>
                 <div style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '0.85rem' }}>Week {weekData.week}</div>
                 <div style={{ fontSize: '0.8rem' }}>
-                  {weekData.players.map((p, j) => <div key={j}>{p}</div>)}
+                  {weekData.players.map((p, j) => <div key={j}>{typeof p === 'string' ? p : p?.name || 'Unknown Player'}</div>)}
                 </div>
               </div>
             ))}

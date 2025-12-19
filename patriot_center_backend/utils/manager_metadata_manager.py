@@ -4,6 +4,7 @@ from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, TRANSA
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
+from patriot_center_backend.services.players import fetch_players
 
 STARTERS_CACHE = load_cache(STARTERS_CACHE_FILE)
 
@@ -29,7 +30,8 @@ class ManagerMetadataManager:
         # Player ID mapping
         self._player_ids           = load_player_ids()
         self._transaction_id_cache = load_cache(TRANSACTION_IDS_FILE, initialize_with_last_updated_info = False)
-        
+        self._players_cache        = fetch_players()
+
         # Weekly metadata
         self._year = None
         self._week = None
@@ -335,7 +337,7 @@ class ManagerMetadataManager:
                             },
                             "manager_1_score": 126.92,
                             "manager_2_score": 91.89,
-                            "winner": "Tommy"
+                            "winner": "Tommy",
                             "manager_1_top_3_scorers": [
                                 {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
                                 {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
@@ -885,7 +887,7 @@ class ManagerMetadataManager:
                         },
                         "manager_1_score": 126.92,
                         "manager_2_score": 91.89,
-                        "winner": "Tommy"
+                        "winner": "Tommy",
                         "manager_1_top_3_scorers": [
                             {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
                             {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
@@ -1536,14 +1538,13 @@ class ManagerMetadataManager:
                 if faab_spent > biggest_faab_bid["amount"]:
                     biggest_faab_bid["player"] = self._get_image_url(player, dictionary=True)
                     biggest_faab_bid["amount"] = faab_spent
+            
             # Find year of biggest bid
             for year in self._cache[manager_name].get("years", {}):
-                # Check if FAAB exists in this year before accessing
-                if "faab" in self._cache[manager_name]["years"][year]["summary"]["transactions"] and self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]:
-                    if player in self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"].get("players", {}):
-                        if self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"][player] == faab_spent:
-                            biggest_faab_bid["year"] = year
-                            break
+                if biggest_faab_bid["player"]["name"] in self._cache[manager_name]["years"][year]["summary"]["transactions"].get("faab", {}).get("players", {}):
+                    if self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"][biggest_faab_bid["player"]["name"]] == biggest_faab_bid["amount"]:
+                        biggest_faab_bid["year"] = year
+                        break
         awards["biggest_faab_bid"] = copy.deepcopy(biggest_faab_bid)
 
         
@@ -1571,34 +1572,10 @@ class ManagerMetadataManager:
         score_awards = {}
 
 
-        highest_weekly_score = {
-            "score": 0.0,
-            "week":  "",
-            "year":  "",
-            "opponent": "",
-            "top_3_scorers": []
-        }
-        lowest_weekly_score = {
-            "score": float('inf'),
-            "week":  "",
-            "year":  "",
-            "opponent": "",
-            "top_3_scorers": []
-        }
-        biggest_blowout_win = {
-            "differential": 0.0,
-            "week":  "",
-            "year":  "",
-            "opponent": "",
-            "top_3_scorers": []
-        }
-        biggest_blowout_loss = {
-            "differential": 0.0,
-            "week":  "",
-            "year":  "",
-            "opponent": "",
-            "top_3_scorers": []
-        }
+        highest_weekly_score = {}
+        lowest_weekly_score = {}
+        biggest_blowout_win = {}
+        biggest_blowout_loss = {}
 
 
         for year in self._cache[manager_name].get("years", {}):
@@ -1618,21 +1595,21 @@ class ManagerMetadataManager:
                 point_differential = float(Decimal((points_for - points_against)).quantize(Decimal('0.01')))
 
                 # Highest Weekly Score
-                if points_for > highest_weekly_score["score"]:
+                if points_for > highest_weekly_score.get("manager_1_score", 0.0):
                     highest_weekly_score = self._get_matchup_card(manager_name, matchup_data.get("opponent_manager", ""), year, week)
 
                 # Lowest Weekly Score
-                if points_for < lowest_weekly_score["score"]:
+                if points_for < lowest_weekly_score.get("manager_1_score", float('inf')):
                     lowest_weekly_score = self._get_matchup_card(manager_name, matchup_data.get("opponent_manager", ""), year, week)
 
                 # Biggest Blowout Win
-                if matchup_data.get("result", "") == "win" and point_differential > biggest_blowout_win["differential"]:
+                if point_differential > biggest_blowout_win.get("differential", 0.0):
                     biggest_blowout_win = self._get_matchup_card(manager_name, matchup_data.get("opponent_manager", ""), year, week)
                     biggest_blowout_win["differential"] = point_differential
                     
 
                 # Biggest Blowout Loss
-                if matchup_data.get("result", "") == "loss" and point_differential < biggest_blowout_loss["differential"]:
+                if point_differential < biggest_blowout_loss.get("differential", 0.0):
                     biggest_blowout_loss = self._get_matchup_card(manager_name, matchup_data.get("opponent_manager", ""), year, week)
                     biggest_blowout_loss["differential"] = point_differential
 
@@ -1970,23 +1947,23 @@ class ManagerMetadataManager:
                 return copy.deepcopy(returning_dict)
             return self._get_current_manager_image_url(item, check_cache=False)
        
-       # Player
-        for player, player_data in self._player_ids.items():
-            if item == player_data.get("full_name", ""):
-                if player.isnumeric():
-                    url = f"https://sleepercdn.com/content/nfl/players/{player}.jpg"
-                    self._image_urls_cache[item] = url
-                    if dictionary:
-                        returning_dict["image_url"] = url
-                        return copy.deepcopy(returning_dict)
-                    return url
-                else:
-                    url = f"https://sleepercdn.com/images/team_logos/nfl/{player}.png"
-                    self._image_urls_cache[item] = url
-                    if dictionary:
-                        returning_dict["image_url"] = url
-                        return copy.deepcopy(returning_dict)
-                    return url
+        # Player
+        if item in self._players_cache:
+            player_id = self._players_cache[item]["player_id"]
+            if player_id.isnumeric():
+                url = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
+                self._image_urls_cache[item] = url
+                if dictionary:
+                    returning_dict["image_url"] = url
+                    return copy.deepcopy(returning_dict)
+                return url
+            else:
+                url = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
+                self._image_urls_cache[item] = url
+                if dictionary:
+                    returning_dict["image_url"] = url
+                    return copy.deepcopy(returning_dict)
+                return url
 
         print("WARNING: Could not find image URL for item:", item)
         return ""
@@ -1995,13 +1972,15 @@ class ManagerMetadataManager:
         """Fetch and return the current image URL for a manager."""
         if check_cache and manager_name in self._image_urls_cache:
             return self._image_urls_cache[manager_name]
-        
+
         user_id = self._cache.get(manager_name, {}).get("summary", {}).get("user_id", "")
 
         user_payload, status_code = fetch_sleeper_data(f"user/{user_id}")
-        if status_code == 200 and "user_id" in user_payload:
+        if status_code == 200 and user_payload and "user_id" in user_payload:
             self._image_urls_cache[manager_name] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
             return f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+
+        return ""
         
     def _get_trade_card(self, transaction_id: str) -> dict:
         trans =  self._transaction_id_cache[transaction_id]
@@ -2891,17 +2870,17 @@ class ManagerMetadataManager:
                 # "year": placement
             },
             "playoff_appearances": [ 
-                # list of years with playoff appearances    
-            ],
-            "image_url": ""
+                # list of years with playoff appearances 
+            ]
         }
 
 
 
 
-man = ManagerMetadataManager()
-d = man.get_head_to_head("Tommy", "Soup", "2022")
-import json
-pretty_json_string = json.dumps(d, indent=4)
-print(pretty_json_string)
-print("")
+# # Debug code - commented out
+# man = ManagerMetadataManager()
+# d = man._get_manager_awards_from_cache("Owen")
+# import json
+# pretty_json_string = json.dumps(d, indent=4)
+# print(pretty_json_string)
+# print("")

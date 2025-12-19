@@ -15,6 +15,7 @@ Notes:
 - Import-time execution at bottom warms the cache for downstream consumers.
 """
 from decimal import Decimal
+import copy
 
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
@@ -24,6 +25,7 @@ from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadat
 
 PLAYER_IDS = load_player_ids()
 MANAGER_METADATA = ManagerMetadataManager()
+PLAYERS_CACHE = load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
 
 def load_or_update_starters_cache():
     """
@@ -132,48 +134,41 @@ def load_or_update_starters_cache():
         # DEBUG
         save_cache(STARTERS_CACHE_FILE, cache)
         save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
+        save_cache(PLAYERS_CACHE_FILE, PLAYERS_CACHE)
     
 
     save_cache(STARTERS_CACHE_FILE, cache)
     save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
+    save_cache(PLAYERS_CACHE_FILE, PLAYERS_CACHE)
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
     return cache
 
-def _update_players_cache(player_meta, players_cache):
+def _update_players_cache(player_meta):
     """
     Add a new player to the players cache if not already present.
 
     Creates a cache entry with player metadata and URL-safe slug.
-    Automatically persists changes to PLAYERS_CACHE_FILE.
 
     Args:
         player_meta (dict): Player metadata from PLAYER_IDS.
                            Expected keys: full_name, first_name, last_name,
                            position, team.
-        players_cache (dict): Existing players cache to update.
-
-    Returns:
-        dict: Updated players_cache with new player added (if applicable).
-
-    Side effects:
-        Saves the updated cache to disk if a new player was added.
     """
 
-    if player_meta.get("full_name") not in players_cache:
-        slug = player_meta.get("full_name", "").replace(" ", "_")
+    if player_meta.get("full_name") not in PLAYERS_CACHE:
+        slug = player_meta.get("full_name", "").lower()
+        slug = slug.replace(" ", "%20")
         slug = slug.replace("'", "%27")
-        players_cache[player_meta["full_name"]] = {
+        PLAYERS_CACHE[player_meta["full_name"]] = {
             "full_name": player_meta.get("full_name", ""),
             "first_name": player_meta.get("first_name", ""),
             "last_name": player_meta.get("last_name", ""),
             "position": player_meta.get("position", ""),
             "team": player_meta.get("team", ""),
-            "slug": slug
+            "slug": slug,
+            "player_id": player_meta.get("player_id", ""),
         }
-        save_cache(PLAYERS_CACHE_FILE, players_cache)
-
-    return players_cache
 
 def _get_max_weeks(season, current_season, current_week):
     """
@@ -446,8 +441,6 @@ def get_starters_data(sleeper_response_matchups,
         dict | None: {player_name: {points, position}, Total_Points} or None if not found.
     """
 
-    players_cache = load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
-
     matchups = sleeper_response_matchups[0]
     for matchup in matchups:
         if matchup['roster_id'] == roster_id:
@@ -468,14 +461,16 @@ def get_starters_data(sleeper_response_matchups,
                 if player_position not in positions_summary_array:
                     positions_summary_array.append(player_position)
 
-                _update_players_cache(player_meta, players_cache)
+                player_meta = copy.deepcopy(player_meta)
+                player_meta["player_id"] = player_id
+
+                _update_players_cache(player_meta)
 
                 player_score = matchup['players_points'].get(player_id, 0)
 
                 manager_data[player_name] = {
                     "points": player_score,
-                    "position": player_position,
-                    "player_id": player_id
+                    "position": player_position
                 }
 
                 manager_data["Total_Points"] += player_score
@@ -523,3 +518,5 @@ def retroactively_assign_team_placement_for_player_and_manager_metadata(season, 
                         starters_cache[season_str][week][manager][player]['placement'] = placements[manager]
     
     return starters_cache
+
+load_or_update_starters_cache()

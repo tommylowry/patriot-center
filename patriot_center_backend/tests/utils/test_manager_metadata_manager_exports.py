@@ -604,9 +604,9 @@ class TestGetManagerAwards:
 
         result = manager.get_manager_awards("Tommy")
 
-        assert result["manager_name"] == "Tommy"
+        assert result["manager"]["name"] == "Tommy"
         assert "awards" in result
-        assert "avatar_urls" in result
+        assert "image_url" in result
 
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_player_ids')
     @patch('patriot_center_backend.utils.manager_metadata_manager.load_cache')

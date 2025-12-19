@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 import os
 
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.constants import TEAM_DEFENSE_NAMES, PLAYER_IDS_CACHE_FILE
+from patriot_center_backend.constants import TEAM_DEFENSE_NAMES, PLAYER_IDS_CACHE_FILE, PLAYERS_CACHE_FILE
 
 # Fields to keep from Sleeper's player payload; reduces storage and surface area
 FIELDS_TO_KEEP = [
@@ -82,6 +82,8 @@ def load_player_ids():
             "team": team_id,
             "position": "DEF"
         })
+    
+    _update_players_cache(new_data)
 
     with open(PLAYER_IDS_CACHE_FILE, "w") as file:
         json.dump(new_data, file, indent=4)
@@ -119,3 +121,44 @@ def fetch_updated_player_ids():
 
     # (Defense entries already ensured above)
     return filtered_data
+
+
+def _update_players_cache(updated_player_ids_data):
+    """
+    Internal utility to force-refresh player_ids.json cache.
+
+    Primarily for development/testing; not called in normal operation.
+    """
+    import copy
+
+    # Ensure all team defenses exist
+    with open(PLAYERS_CACHE_FILE, "r") as file:
+        players_cache = json.load(file)
+
+    players_cache_copy = copy.deepcopy(players_cache)
+    
+    for player in players_cache_copy.values():
+        player_id = players_cache_copy[player]["player_id"]
+        player_meta = updated_player_ids_data.get(player_id, {})
+
+        # In case players change their name, remove the old entry
+        if player_meta["full_name"] not in players_cache:
+            players_cache.pop(player)
+
+        slug = player_meta.get("full_name", "").lower()
+        slug = slug.replace(" ", "%20")
+        slug = slug.replace("'", "%27")
+        players_cache[player_meta["full_name"]] = {
+            "full_name": player_meta.get("full_name", ""),
+            "first_name": player_meta.get("first_name", ""),
+            "last_name": player_meta.get("last_name", ""),
+            "position": player_meta.get("position", ""),
+            "team": player_meta.get("team", ""),
+            "slug": slug,
+            "player_id": player_meta.get("player_id", "")
+        }
+
+
+
+    with open(PLAYERS_CACHE_FILE, "w") as file:
+        json.dump(players_cache, file, indent=4)

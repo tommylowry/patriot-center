@@ -127,19 +127,12 @@ def load_or_update_starters_cache():
             cache['Last_Updated_Week'] = week
             print(f"  Starters cache updated internally for season {year}, week {week}")
 
-        
-        # Persist manager metadata after each season update.
-        MANAGER_METADATA.save()
-        
-        # DEBUG
-        save_cache(STARTERS_CACHE_FILE, cache)
-        save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
-        save_cache(PLAYERS_CACHE_FILE, PLAYERS_CACHE)
-    
 
+    # Persist all updated caches to disk.
     save_cache(STARTERS_CACHE_FILE, cache)
     save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
     save_cache(PLAYERS_CACHE_FILE, PLAYERS_CACHE)
+    MANAGER_METADATA.save()
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
     return cache
@@ -167,7 +160,7 @@ def _update_players_cache(player_meta):
             "position": player_meta.get("position", ""),
             "team": player_meta.get("team", ""),
             "slug": slug,
-            "player_id": player_meta.get("player_id", ""),
+            "player_id": player_meta.get("player_id", "")
         }
 
 def _get_max_weeks(season, current_season, current_week):
@@ -346,6 +339,17 @@ def fetch_starters_for_week(season, week):
     if sleeper_response_matchups[1] != 200:
         return {}, [], [], [], {}
     
+    # Warm players cache with all players on rosters this week
+    for matchup in sleeper_response_matchups[0]:
+        for player_id in matchup['players']:
+            player_meta = PLAYER_IDS.get(player_id, {})
+
+            player_meta = copy.deepcopy(player_meta)
+            player_meta["player_id"] = player_id
+
+            _update_players_cache(player_meta)
+            
+    
     playoff_roster_ids = _get_relevant_playoff_roster_ids(season, week, league_id)
     
     managers_summary_array = []
@@ -460,11 +464,6 @@ def get_starters_data(sleeper_response_matchups,
                     players_summary_array.append(player_name)
                 if player_position not in positions_summary_array:
                     positions_summary_array.append(player_position)
-
-                player_meta = copy.deepcopy(player_meta)
-                player_meta["player_id"] = player_id
-
-                _update_players_cache(player_meta)
 
                 player_score = matchup['players_points'].get(player_id, 0)
 

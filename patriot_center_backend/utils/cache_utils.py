@@ -72,7 +72,7 @@ def load_cache(file_path, initialize_with_last_updated_info=True):
     return {}
 
 
-def save_cache(file_path, data):
+def save_cache(file_path, data, remove_refresh_keys=False):
     """
     Persist cache to disk using pretty formatting.
 
@@ -81,6 +81,12 @@ def save_cache(file_path, data):
         data (dict): Cache content.
     """
     # Persist cache atomically by writing the entire structure with 4-space indentation
+    
+    # Optionally remove refresh metadata before saving
+    if remove_refresh_keys:
+        for d in data:
+            data[d].pop("refreshed", None)
+
     path = Path(file_path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(file_path, "w") as file:

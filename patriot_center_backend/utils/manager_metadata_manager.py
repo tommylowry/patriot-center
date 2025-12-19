@@ -1,6 +1,6 @@
 import copy
 
-from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, TRANSACTION_IDS_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME, STARTERS_CACHE_FILE
+from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, TRANSACTION_IDS_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
@@ -50,11 +50,14 @@ class ManagerMetadataManager:
 
 
     # ---------- Public Methods For Importing Data ----------
-    def set_roster_id(self, manager: str, year: str, week: str, roster_id: int, playoff_roster_ids: dict = {}):
+    def set_roster_id(self, manager: str, year: str, week: str, roster_id: int, playoff_roster_ids: dict = {}, matchups: dict = {}):
         """Set the roster ID for a given manager and year."""
         if roster_id == None:
             # Co-manager scenario; skip
             return
+        
+        if matchups:
+            self._update_players_cache(matchups)
 
         self._year = year
         self._week = week
@@ -1632,6 +1635,7 @@ class ManagerMetadataManager:
         """Save the entire manager metadata cache."""
         save_cache(MANAGER_METADATA_CACHE_FILE, self._cache)
         save_cache(TRANSACTION_IDS_FILE, self._transaction_id_cache)
+        save_cache(PLAYERS_CACHE_FILE, self._players_cache)
 
 
 
@@ -2052,6 +2056,7 @@ class ManagerMetadataManager:
         # Run the transaction through the appropriate processor
         process_transaction_type(transaction)
 
+
     def _validate_transaction(self, transaction: dict, transaction_type: str, process_transaction_type) -> bool:
         
         # Skip failed transactions
@@ -2114,6 +2119,7 @@ class ManagerMetadataManager:
                     if transaction["adds"][player_id] == roster_id:
                         player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
                         acquired[player_name] = self._weekly_roster_ids.get(transaction["drops"][player_id], "unknown_manager")
+                        self._update_players_cache(player_id)
             
 
             sent = {}
@@ -2122,6 +2128,7 @@ class ManagerMetadataManager:
                     if transaction["drops"][player_id] == roster_id:
                         player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
                         sent[player_name] = self._weekly_roster_ids.get(transaction["adds"][player_id], "unknown_manager")
+                        self._update_players_cache(player_id)
             
 
             if "draft_picks" in transaction and transaction["draft_picks"] != None:
@@ -2292,6 +2299,7 @@ class ManagerMetadataManager:
                 if self._use_faab and transaction.get("settings", None) != None:
                     waiver_bid = transaction.get("settings", {}).get("waiver_bid", None)
                 self._add_add_or_drop_details_to_cache("add", manager, player_name, transaction_id, waiver_bid)
+                self._update_players_cache(player_id)
                 
                 # add FAAB details to the cache
                 if self._use_faab and transaction.get("settings", None) != None:
@@ -2310,6 +2318,7 @@ class ManagerMetadataManager:
 
                 # add drop details to the cache
                 self._add_add_or_drop_details_to_cache("drop", manager, player_name, transaction_id)
+                self._update_players_cache(player_id)
 
     def _add_add_or_drop_details_to_cache(self, free_agent_type: str, manager: str, player_name: str, transaction_id: str, waiver_bid: int|None = None):
         """
@@ -2429,7 +2438,76 @@ class ManagerMetadataManager:
 
 
 
+    def _update_players_cache(self, item: list|str):
+        """
+        Add a new player to the players cache if not already present.
 
+        Creates a cache entry with player metadata and URL-safe slug.
+
+        Args:
+            player_meta (dict): Player metadata from PLAYER_IDS.
+                            Expected keys: full_name, first_name, last_name,
+                            position, team.
+        """
+        
+        if not item:
+            raise ValueError("Item to update players cache cannot be None or empty.")
+        
+        if isinstance(item, str):
+            player_name = self._player_ids.get(item, {}).get("full_name", "")
+
+            # if player_name == "Kene Nwangwu":
+            #     print("Debugging Nwangwu")
+
+            if player_name not in self._players_cache:
+                player_meta = self._player_ids.get(item, {})
+                
+                slug = player_meta.get("full_name", "").lower()
+                slug = slug.replace(" ", "%20")
+                slug = slug.replace("'", "%27")
+                
+                self._players_cache[player_meta["full_name"]] = {
+                    "full_name": player_meta.get("full_name", ""),
+                    "first_name": player_meta.get("first_name", ""),
+                    "last_name": player_meta.get("last_name", ""),
+                    "position": player_meta.get("position", ""),
+                    "team": player_meta.get("team", ""),
+                    "slug": slug,
+                    "player_id": item
+                }
+            
+            return
+
+        elif isinstance(item, list):
+            for matchup in item:
+                for player_id in matchup['players']:
+                    player_meta = self._player_ids.get(player_id, {})
+
+                    player_meta = copy.deepcopy(player_meta)
+                    player_meta["player_id"] = player_id
+
+                    if player_meta.get("full_name") not in self._players_cache:
+
+                        # if player_meta.get("full_name") == "Kene Nwangwu":
+                        #     print("Debugging Nwangwu")
+                        
+                        slug = player_meta.get("full_name", "").lower()
+                        slug = slug.replace(" ", "%20")
+                        slug = slug.replace("'", "%27")
+                        
+                        self._players_cache[player_meta["full_name"]] = {
+                            "full_name": player_meta.get("full_name", ""),
+                            "first_name": player_meta.get("first_name", ""),
+                            "last_name": player_meta.get("last_name", ""),
+                            "position": player_meta.get("position", ""),
+                            "team": player_meta.get("team", ""),
+                            "slug": slug,
+                            "player_id": player_id
+                        }
+            return
+        
+        raise ValueError("Either matchups or player_id must be provided to update players cache.")
+    
 
     # ---------- Set Transaction Data to Transacion ID Cache ----------
     def _add_to_transaction_id_cache(self, transaction_info: dict):

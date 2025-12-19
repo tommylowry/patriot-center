@@ -18,14 +18,13 @@ from decimal import Decimal
 import copy
 
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
+from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME, STARTERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
 from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
 PLAYER_IDS = load_player_ids()
 MANAGER_METADATA = ManagerMetadataManager()
-PLAYERS_CACHE = load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
 
 def load_or_update_starters_cache():
     """
@@ -131,37 +130,11 @@ def load_or_update_starters_cache():
     # Persist all updated caches to disk.
     save_cache(STARTERS_CACHE_FILE, cache)
     save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
-    save_cache(PLAYERS_CACHE_FILE, PLAYERS_CACHE)
     MANAGER_METADATA.save()
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
     return cache
 
-def _update_players_cache(player_meta):
-    """
-    Add a new player to the players cache if not already present.
-
-    Creates a cache entry with player metadata and URL-safe slug.
-
-    Args:
-        player_meta (dict): Player metadata from PLAYER_IDS.
-                           Expected keys: full_name, first_name, last_name,
-                           position, team.
-    """
-
-    if player_meta.get("full_name") not in PLAYERS_CACHE:
-        slug = player_meta.get("full_name", "").lower()
-        slug = slug.replace(" ", "%20")
-        slug = slug.replace("'", "%27")
-        PLAYERS_CACHE[player_meta["full_name"]] = {
-            "full_name": player_meta.get("full_name", ""),
-            "first_name": player_meta.get("first_name", ""),
-            "last_name": player_meta.get("last_name", ""),
-            "position": player_meta.get("position", ""),
-            "team": player_meta.get("team", ""),
-            "slug": slug,
-            "player_id": player_meta.get("player_id", "")
-        }
 
 def _get_max_weeks(season, current_season, current_week):
     """
@@ -339,17 +312,6 @@ def fetch_starters_for_week(season, week):
     if sleeper_response_matchups[1] != 200:
         return {}, [], [], [], {}
     
-    # Warm players cache with all players on rosters this week
-    for matchup in sleeper_response_matchups[0]:
-        for player_id in matchup['players']:
-            player_meta = PLAYER_IDS.get(player_id, {})
-
-            player_meta = copy.deepcopy(player_meta)
-            player_meta["player_id"] = player_id
-
-            _update_players_cache(player_meta)
-            
-    
     playoff_roster_ids = _get_relevant_playoff_roster_ids(season, week, league_id)
     
     managers_summary_array = []
@@ -377,7 +339,7 @@ def fetch_starters_for_week(season, week):
                 roster_id = 4
         
         # Initialize manager metadata for this season/week before skipping playoff filtering.
-        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id, playoff_roster_ids)
+        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id, playoff_roster_ids, sleeper_response_matchups[0])
 
         if not roster_id:
             continue  # Skip unresolved roster

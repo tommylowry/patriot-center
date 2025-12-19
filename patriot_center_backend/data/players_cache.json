@@ -1646,6 +1646,339 @@
         "slug": "baltimore%20ravens",
         "player_id": "BAL"
     },
+    "Houston Texans": {
+        "full_name": "Houston Texans",
+        "first_name": "Houston",
+        "last_name": "Texans",
+        "position": "DEF",
+        "team": "HOU",
+        "slug": "houston%20texans",
+        "player_id": "HOU"
+    },
+    "Mason Crosby": {
+        "full_name": "Mason Crosby",
+        "first_name": "Mason",
+        "last_name": "Crosby",
+        "position": "K",
+        "team": null,
+        "slug": "mason%20crosby",
+        "player_id": "59"
+    },
+    "Ito Smith": {
+        "full_name": "Ito Smith",
+        "first_name": "Ito",
+        "last_name": "Smith",
+        "position": "RB",
+        "team": "DAL",
+        "slug": "ito%20smith",
+        "player_id": "5004"
+    },
+    "Alexander Mattison": {
+        "full_name": "Alexander Mattison",
+        "first_name": "Alexander",
+        "last_name": "Mattison",
+        "position": "RB",
+        "team": "MIA",
+        "slug": "alexander%20mattison",
+        "player_id": "5987"
+    },
+    "Ronald Jones": {
+        "full_name": "Ronald Jones",
+        "first_name": "Ronald",
+        "last_name": "Jones",
+        "position": "RB",
+        "team": null,
+        "slug": "ronald%20jones",
+        "player_id": "5052"
+    },
+    "John Ross": {
+        "full_name": "John Ross",
+        "first_name": "John",
+        "last_name": "Ross",
+        "position": "WR",
+        "team": null,
+        "slug": "john%20ross",
+        "player_id": "4038"
+    },
+    "Terry McLaurin": {
+        "full_name": "Terry McLaurin",
+        "first_name": "Terry",
+        "last_name": "McLaurin",
+        "position": "WR",
+        "team": "WAS",
+        "slug": "terry%20mclaurin",
+        "player_id": "5927"
+    },
+    "San Francisco 49ers": {
+        "full_name": "San Francisco 49ers",
+        "first_name": "San Francisco",
+        "last_name": "49ers",
+        "position": "DEF",
+        "team": "SF",
+        "slug": "san%20francisco%2049ers",
+        "player_id": "SF"
+    },
+    "Michael Gallup": {
+        "full_name": "Michael Gallup",
+        "first_name": "Michael",
+        "last_name": "Gallup",
+        "position": "WR",
+        "team": null,
+        "slug": "michael%20gallup",
+        "player_id": "5038"
+    },
+    "Chris Thompson": {
+        "full_name": "Chris Thompson",
+        "first_name": "Chris",
+        "last_name": "Thompson",
+        "position": "RB",
+        "team": null,
+        "slug": "chris%20thompson",
+        "player_id": "1502"
+    },
+    "Malcolm Brown": {
+        "full_name": "Malcolm Brown",
+        "first_name": "Malcolm",
+        "last_name": "Brown",
+        "position": "RB",
+        "team": null,
+        "slug": "malcolm%20brown",
+        "player_id": "2588"
+    },
+    "Tre'Quan Smith": {
+        "full_name": "Tre'Quan Smith",
+        "first_name": "Tre'Quan",
+        "last_name": "Smith",
+        "position": "WR",
+        "team": null,
+        "slug": "tre%27quan%20smith",
+        "player_id": "5026"
+    },
+    "Adrian Peterson": {
+        "full_name": "Adrian Peterson",
+        "first_name": "Adrian",
+        "last_name": "Peterson",
+        "position": "RB",
+        "team": null,
+        "slug": "adrian%20peterson",
+        "player_id": "184"
+    },
+    "Giovani Bernard": {
+        "full_name": "Giovani Bernard",
+        "first_name": "Giovani",
+        "last_name": "Bernard",
+        "position": "RB",
+        "team": null,
+        "slug": "giovani%20bernard",
+        "player_id": "1386"
+    },
+    "A.J. Brown": {
+        "full_name": "A.J. Brown",
+        "first_name": "A.J.",
+        "last_name": "Brown",
+        "position": "WR",
+        "team": "PHI",
+        "slug": "a.j.%20brown",
+        "player_id": "5859"
+    },
+    "Marquise Brown": {
+        "full_name": "Marquise Brown",
+        "first_name": "Marquise",
+        "last_name": "Brown",
+        "position": "WR",
+        "team": "KC",
+        "slug": "marquise%20brown",
+        "player_id": "5848"
+    },
+    "Kenny Stills": {
+        "full_name": "Kenny Stills",
+        "first_name": "Kenny",
+        "last_name": "Stills",
+        "position": "WR",
+        "team": null,
+        "slug": "kenny%20stills",
+        "player_id": "1555"
+    },
+    "Michael Badgley": {
+        "full_name": "Michael Badgley",
+        "first_name": "Michael",
+        "last_name": "Badgley",
+        "position": "K",
+        "team": null,
+        "slug": "michael%20badgley",
+        "player_id": "5230"
+    },
+    "Jimmy Garoppolo": {
+        "full_name": "Jimmy Garoppolo",
+        "first_name": "Jimmy",
+        "last_name": "Garoppolo",
+        "position": "QB",
+        "team": "LAR",
+        "slug": "jimmy%20garoppolo",
+        "player_id": "1837"
+    },
+    "Josh Allen": {
+        "full_name": "Josh Allen",
+        "first_name": "Josh",
+        "last_name": "Allen",
+        "position": "QB",
+        "team": "BUF",
+        "slug": "josh%20allen",
+        "player_id": "4984"
+    },
+    "Rob Gronkowski": {
+        "full_name": "Rob Gronkowski",
+        "first_name": "Rob",
+        "last_name": "Gronkowski",
+        "position": "TE",
+        "team": null,
+        "slug": "rob%20gronkowski",
+        "player_id": "515"
+    },
+    "Frank Gore": {
+        "full_name": "Frank Gore",
+        "first_name": "Frank",
+        "last_name": "Gore",
+        "position": "RB",
+        "team": null,
+        "slug": "frank%20gore",
+        "player_id": "232"
+    },
+    "Ted Ginn": {
+        "full_name": "Ted Ginn",
+        "first_name": "Ted",
+        "last_name": "Ginn",
+        "position": "WR",
+        "team": null,
+        "slug": "ted%20ginn",
+        "player_id": "695"
+    },
+    "Josh Doctson": {
+        "full_name": "Josh Doctson",
+        "first_name": "Josh",
+        "last_name": "Doctson",
+        "position": "WR",
+        "team": null,
+        "slug": "josh%20doctson",
+        "player_id": "3178"
+    },
+    "DeVante Parker": {
+        "full_name": "DeVante Parker",
+        "first_name": "DeVante",
+        "last_name": "Parker",
+        "position": "WR",
+        "team": null,
+        "slug": "devante%20parker",
+        "player_id": "2319"
+    },
+    "J.J. Arcega-Whiteside": {
+        "full_name": "J.J. Arcega-Whiteside",
+        "first_name": "J.J.",
+        "last_name": "Arcega-Whiteside",
+        "position": "WR",
+        "team": null,
+        "slug": "j.j.%20arcega-whiteside",
+        "player_id": "5863"
+    },
+    "Gus Edwards": {
+        "full_name": "Gus Edwards",
+        "first_name": "Gus",
+        "last_name": "Edwards",
+        "position": "RB",
+        "team": null,
+        "slug": "gus%20edwards",
+        "player_id": "5248"
+    },
+    "Las Vegas Raiders": {
+        "full_name": "Las Vegas Raiders",
+        "first_name": "Las Vegas",
+        "last_name": "Raiders",
+        "position": "DEF",
+        "team": "OAK",
+        "slug": "las%20vegas%20raiders",
+        "player_id": "OAK"
+    },
+    "Demaryius Thomas": {
+        "full_name": "Demaryius Thomas",
+        "first_name": "Demaryius",
+        "last_name": "Thomas",
+        "position": "WR",
+        "team": null,
+        "slug": "demaryius%20thomas",
+        "player_id": "560"
+    },
+    "Quincy Enunwa": {
+        "full_name": "Quincy Enunwa",
+        "first_name": "Quincy",
+        "last_name": "Enunwa",
+        "position": "WR",
+        "team": null,
+        "slug": "quincy%20enunwa",
+        "player_id": "1854"
+    },
+    "Ty Montgomery": {
+        "full_name": "Ty Montgomery",
+        "first_name": "Ty",
+        "last_name": "Montgomery",
+        "position": "RB",
+        "team": null,
+        "slug": "ty%20montgomery",
+        "player_id": "2399"
+    },
+    "Bilal Powell": {
+        "full_name": "Bilal Powell",
+        "first_name": "Bilal",
+        "last_name": "Powell",
+        "position": "RB",
+        "team": null,
+        "slug": "bilal%20powell",
+        "player_id": "818"
+    },
+    "Andy Isabella": {
+        "full_name": "Andy Isabella",
+        "first_name": "Andy",
+        "last_name": "Isabella",
+        "position": "WR",
+        "team": null,
+        "slug": "andy%20isabella",
+        "player_id": "5915"
+    },
+    "Dan Bailey": {
+        "full_name": "Dan Bailey",
+        "first_name": "Dan",
+        "last_name": "Bailey",
+        "position": "K",
+        "team": null,
+        "slug": "dan%20bailey",
+        "player_id": "899"
+    },
+    "Deebo Samuel": {
+        "full_name": "Deebo Samuel",
+        "first_name": "Deebo",
+        "last_name": "Samuel",
+        "position": "WR",
+        "team": "WAS",
+        "slug": "deebo%20samuel",
+        "player_id": "5872"
+    },
+    "Giorgio Tavecchio": {
+        "full_name": "Giorgio Tavecchio",
+        "first_name": "Giorgio",
+        "last_name": "Tavecchio",
+        "position": "K",
+        "team": null,
+        "slug": "giorgio%20tavecchio",
+        "player_id": "1750"
+    },
+    "Damien Harris": {
+        "full_name": "Damien Harris",
+        "first_name": "Damien",
+        "last_name": "Harris",
+        "position": "RB",
+        "team": null,
+        "slug": "damien%20harris",
+        "player_id": "5890"
+    },
     "Raheem Mostert": {
         "full_name": "Raheem Mostert",
         "first_name": "Raheem",
@@ -1664,15 +1997,6 @@
         "slug": "aldrick%20rosas",
         "player_id": "3827"
     },
-    "John Ross": {
-        "full_name": "John Ross",
-        "first_name": "John",
-        "last_name": "Ross",
-        "position": "WR",
-        "team": null,
-        "slug": "john%20ross",
-        "player_id": "4038"
-    },
     "DJ Chark": {
         "full_name": "DJ Chark",
         "first_name": "DJ",
@@ -1682,51 +2006,6 @@
         "slug": "dj%20chark",
         "player_id": "4951"
     },
-    "Ronald Jones": {
-        "full_name": "Ronald Jones",
-        "first_name": "Ronald",
-        "last_name": "Jones",
-        "position": "RB",
-        "team": null,
-        "slug": "ronald%20jones",
-        "player_id": "5052"
-    },
-    "Terry McLaurin": {
-        "full_name": "Terry McLaurin",
-        "first_name": "Terry",
-        "last_name": "McLaurin",
-        "position": "WR",
-        "team": "WAS",
-        "slug": "terry%20mclaurin",
-        "player_id": "5927"
-    },
-    "Adrian Peterson": {
-        "full_name": "Adrian Peterson",
-        "first_name": "Adrian",
-        "last_name": "Peterson",
-        "position": "RB",
-        "team": null,
-        "slug": "adrian%20peterson",
-        "player_id": "184"
-    },
-    "Ty Montgomery": {
-        "full_name": "Ty Montgomery",
-        "first_name": "Ty",
-        "last_name": "Montgomery",
-        "position": "RB",
-        "team": null,
-        "slug": "ty%20montgomery",
-        "player_id": "2399"
-    },
-    "Dan Bailey": {
-        "full_name": "Dan Bailey",
-        "first_name": "Dan",
-        "last_name": "Bailey",
-        "position": "K",
-        "team": null,
-        "slug": "dan%20bailey",
-        "player_id": "899"
-    },
     "Buffalo Bills": {
         "full_name": "Buffalo Bills",
         "first_name": "Buffalo",
@@ -1735,15 +2014,6 @@
         "team": "BUF",
         "slug": "buffalo%20bills",
         "player_id": "BUF"
-    },
-    "Michael Badgley": {
-        "full_name": "Michael Badgley",
-        "first_name": "Michael",
-        "last_name": "Badgley",
-        "position": "K",
-        "team": null,
-        "slug": "michael%20badgley",
-        "player_id": "5230"
     },
     "Jalen Hurd": {
         "full_name": "Jalen Hurd",
@@ -1763,60 +2033,6 @@
         "slug": "carolina%20panthers",
         "player_id": "CAR"
     },
-    "Michael Gallup": {
-        "full_name": "Michael Gallup",
-        "first_name": "Michael",
-        "last_name": "Gallup",
-        "position": "WR",
-        "team": null,
-        "slug": "michael%20gallup",
-        "player_id": "5038"
-    },
-    "San Francisco 49ers": {
-        "full_name": "San Francisco 49ers",
-        "first_name": "San Francisco",
-        "last_name": "49ers",
-        "position": "DEF",
-        "team": "SF",
-        "slug": "san%20francisco%2049ers",
-        "player_id": "SF"
-    },
-    "Giovani Bernard": {
-        "full_name": "Giovani Bernard",
-        "first_name": "Giovani",
-        "last_name": "Bernard",
-        "position": "RB",
-        "team": null,
-        "slug": "giovani%20bernard",
-        "player_id": "1386"
-    },
-    "Mason Crosby": {
-        "full_name": "Mason Crosby",
-        "first_name": "Mason",
-        "last_name": "Crosby",
-        "position": "K",
-        "team": null,
-        "slug": "mason%20crosby",
-        "player_id": "59"
-    },
-    "Houston Texans": {
-        "full_name": "Houston Texans",
-        "first_name": "Houston",
-        "last_name": "Texans",
-        "position": "DEF",
-        "team": "HOU",
-        "slug": "houston%20texans",
-        "player_id": "HOU"
-    },
-    "Chris Thompson": {
-        "full_name": "Chris Thompson",
-        "first_name": "Chris",
-        "last_name": "Thompson",
-        "position": "RB",
-        "team": null,
-        "slug": "chris%20thompson",
-        "player_id": "1502"
-    },
     "Matthew Stafford": {
         "full_name": "Matthew Stafford",
         "first_name": "Matthew",
@@ -1826,15 +2042,6 @@
         "slug": "matthew%20stafford",
         "player_id": "421"
     },
-    "A.J. Brown": {
-        "full_name": "A.J. Brown",
-        "first_name": "A.J.",
-        "last_name": "Brown",
-        "position": "WR",
-        "team": "PHI",
-        "slug": "a.j.%20brown",
-        "player_id": "5859"
-    },
     "Rex Burkhead": {
         "full_name": "Rex Burkhead",
         "first_name": "Rex",
@@ -1843,15 +2050,6 @@
         "team": null,
         "slug": "rex%20burkhead",
         "player_id": "1387"
-    },
-    "Alexander Mattison": {
-        "full_name": "Alexander Mattison",
-        "first_name": "Alexander",
-        "last_name": "Mattison",
-        "position": "RB",
-        "team": "MIA",
-        "slug": "alexander%20mattison",
-        "player_id": "5987"
     },
     "Virgil Green": {
         "full_name": "Virgil Green",
@@ -1871,15 +2069,6 @@
         "slug": "danny%20amendola",
         "player_id": "491"
     },
-    "Ted Ginn": {
-        "full_name": "Ted Ginn",
-        "first_name": "Ted",
-        "last_name": "Ginn",
-        "position": "WR",
-        "team": null,
-        "slug": "ted%20ginn",
-        "player_id": "695"
-    },
     "Tennessee Titans": {
         "full_name": "Tennessee Titans",
         "first_name": "Tennessee",
@@ -1888,15 +2077,6 @@
         "team": "TEN",
         "slug": "tennessee%20titans",
         "player_id": "TEN"
-    },
-    "Marquise Brown": {
-        "full_name": "Marquise Brown",
-        "first_name": "Marquise",
-        "last_name": "Brown",
-        "position": "WR",
-        "team": "KC",
-        "slug": "marquise%20brown",
-        "player_id": "5848"
     },
     "Phillip Dorsett": {
         "full_name": "Phillip Dorsett",
@@ -1907,41 +2087,86 @@
         "slug": "phillip%20dorsett",
         "player_id": "2334"
     },
-    "Malcolm Brown": {
-        "full_name": "Malcolm Brown",
-        "first_name": "Malcolm",
-        "last_name": "Brown",
-        "position": "RB",
-        "team": null,
-        "slug": "malcolm%20brown",
-        "player_id": "2588"
-    },
-    "Deebo Samuel": {
-        "full_name": "Deebo Samuel",
-        "first_name": "Deebo",
-        "last_name": "Samuel",
+    "Nelson Agholor": {
+        "full_name": "Nelson Agholor",
+        "first_name": "Nelson",
+        "last_name": "Agholor",
         "position": "WR",
-        "team": "WAS",
-        "slug": "deebo%20samuel",
-        "player_id": "5872"
-    },
-    "Tampa Bay Buccaneers": {
-        "full_name": "Tampa Bay Buccaneers",
-        "first_name": "Tampa Bay",
-        "last_name": "Buccaneers",
-        "position": "DEF",
-        "team": "TB",
-        "slug": "tampa%20bay%20buccaneers",
-        "player_id": "TB"
-    },
-    "Frank Gore": {
-        "full_name": "Frank Gore",
-        "first_name": "Frank",
-        "last_name": "Gore",
-        "position": "RB",
         "team": null,
-        "slug": "frank%20gore",
-        "player_id": "232"
+        "slug": "nelson%20agholor",
+        "player_id": "2325"
+    },
+    "Devin Smith": {
+        "full_name": "Devin Smith",
+        "first_name": "Devin",
+        "last_name": "Smith",
+        "position": "WR",
+        "team": null,
+        "slug": "devin%20smith",
+        "player_id": "2342"
+    },
+    "Jacoby Brissett": {
+        "full_name": "Jacoby Brissett",
+        "first_name": "Jacoby",
+        "last_name": "Brissett",
+        "position": "QB",
+        "team": "ARI",
+        "slug": "jacoby%20brissett",
+        "player_id": "3257"
+    },
+    "Will Dissly": {
+        "full_name": "Will Dissly",
+        "first_name": "Will",
+        "last_name": "Dissly",
+        "position": "TE",
+        "team": "LAC",
+        "slug": "will%20dissly",
+        "player_id": "5010"
+    },
+    "Joey Slye": {
+        "full_name": "Joey Slye",
+        "first_name": "Joey",
+        "last_name": "Slye",
+        "position": "K",
+        "team": "TEN",
+        "slug": "joey%20slye",
+        "player_id": "6528"
+    },
+    "Demarcus Robinson": {
+        "full_name": "Demarcus Robinson",
+        "first_name": "Demarcus",
+        "last_name": "Robinson",
+        "position": "WR",
+        "team": "SF",
+        "slug": "demarcus%20robinson",
+        "player_id": "3286"
+    },
+    "Green Bay Packers": {
+        "full_name": "Green Bay Packers",
+        "first_name": "Green Bay",
+        "last_name": "Packers",
+        "position": "DEF",
+        "team": "GB",
+        "slug": "green%20bay%20packers",
+        "player_id": "GB"
+    },
+    "Randall Cobb": {
+        "full_name": "Randall Cobb",
+        "first_name": "Randall",
+        "last_name": "Cobb",
+        "position": "WR",
+        "team": null,
+        "slug": "randall%20cobb",
+        "player_id": "928"
+    },
+    "Case Keenum": {
+        "full_name": "Case Keenum",
+        "first_name": "Case",
+        "last_name": "Keenum",
+        "position": "QB",
+        "team": "CHI",
+        "slug": "case%20keenum",
+        "player_id": "1737"
     },
     "Jamaal Williams": {
         "full_name": "Jamaal Williams",
@@ -1952,14 +2177,32 @@
         "slug": "jamaal%20williams",
         "player_id": "4149"
     },
-    "Josh Allen": {
-        "full_name": "Josh Allen",
-        "first_name": "Josh",
-        "last_name": "Allen",
+    "Gardner Minshew": {
+        "full_name": "Gardner Minshew",
+        "first_name": "Gardner",
+        "last_name": "Minshew",
         "position": "QB",
-        "team": "BUF",
-        "slug": "josh%20allen",
-        "player_id": "4984"
+        "team": "KC",
+        "slug": "gardner%20minshew",
+        "player_id": "6011"
+    },
+    "Derek Carr": {
+        "full_name": "Derek Carr",
+        "first_name": "Derek",
+        "last_name": "Carr",
+        "position": "QB",
+        "team": null,
+        "slug": "derek%20carr",
+        "player_id": "2028"
+    },
+    "Jimmy Graham": {
+        "full_name": "Jimmy Graham",
+        "first_name": "Jimmy",
+        "last_name": "Graham",
+        "position": "TE",
+        "team": null,
+        "slug": "jimmy%20graham",
+        "player_id": "616"
     },
     "Stephen Hauschka": {
         "full_name": "Stephen Hauschka",
@@ -1970,14 +2213,14 @@
         "slug": "stephen%20hauschka",
         "player_id": "775"
     },
-    "Will Dissly": {
-        "full_name": "Will Dissly",
-        "first_name": "Will",
-        "last_name": "Dissly",
-        "position": "TE",
-        "team": "LAC",
-        "slug": "will%20dissly",
-        "player_id": "5010"
+    "Tampa Bay Buccaneers": {
+        "full_name": "Tampa Bay Buccaneers",
+        "first_name": "Tampa Bay",
+        "last_name": "Buccaneers",
+        "position": "DEF",
+        "team": "TB",
+        "slug": "tampa%20bay%20buccaneers",
+        "player_id": "TB"
     },
     "Ty Johnson": {
         "full_name": "Ty Johnson",
@@ -2006,15 +2249,6 @@
         "slug": "chris%20conley",
         "player_id": "2381"
     },
-    "Demarcus Robinson": {
-        "full_name": "Demarcus Robinson",
-        "first_name": "Demarcus",
-        "last_name": "Robinson",
-        "position": "WR",
-        "team": "SF",
-        "slug": "demarcus%20robinson",
-        "player_id": "3286"
-    },
     "Diontae Johnson": {
         "full_name": "Diontae Johnson",
         "first_name": "Diontae",
@@ -2023,42 +2257,6 @@
         "team": null,
         "slug": "diontae%20johnson",
         "player_id": "5937"
-    },
-    "Joey Slye": {
-        "full_name": "Joey Slye",
-        "first_name": "Joey",
-        "last_name": "Slye",
-        "position": "K",
-        "team": "TEN",
-        "slug": "joey%20slye",
-        "player_id": "6528"
-    },
-    "Nelson Agholor": {
-        "full_name": "Nelson Agholor",
-        "first_name": "Nelson",
-        "last_name": "Agholor",
-        "position": "WR",
-        "team": null,
-        "slug": "nelson%20agholor",
-        "player_id": "2325"
-    },
-    "Ito Smith": {
-        "full_name": "Ito Smith",
-        "first_name": "Ito",
-        "last_name": "Smith",
-        "position": "RB",
-        "team": "DAL",
-        "slug": "ito%20smith",
-        "player_id": "5004"
-    },
-    "Jimmy Garoppolo": {
-        "full_name": "Jimmy Garoppolo",
-        "first_name": "Jimmy",
-        "last_name": "Garoppolo",
-        "position": "QB",
-        "team": "LAR",
-        "slug": "jimmy%20garoppolo",
-        "player_id": "1837"
     },
     "Jason Witten": {
         "full_name": "Jason Witten",
@@ -2105,24 +2303,6 @@
         "slug": "daniel%20jones",
         "player_id": "5870"
     },
-    "Green Bay Packers": {
-        "full_name": "Green Bay Packers",
-        "first_name": "Green Bay",
-        "last_name": "Packers",
-        "position": "DEF",
-        "team": "GB",
-        "slug": "green%20bay%20packers",
-        "player_id": "GB"
-    },
-    "Randall Cobb": {
-        "full_name": "Randall Cobb",
-        "first_name": "Randall",
-        "last_name": "Cobb",
-        "position": "WR",
-        "team": null,
-        "slug": "randall%20cobb",
-        "player_id": "928"
-    },
     "Washington Commanders": {
         "full_name": "Washington Commanders",
         "first_name": "Washington",
@@ -2132,6 +2312,69 @@
         "slug": "washington%20commanders",
         "player_id": "WAS"
     },
+    "Wayne Gallman": {
+        "full_name": "Wayne Gallman",
+        "first_name": "Wayne",
+        "last_name": "Gallman",
+        "position": "RB",
+        "team": null,
+        "slug": "wayne%20gallman",
+        "player_id": "4150"
+    },
+    "Indianapolis Colts": {
+        "full_name": "Indianapolis Colts",
+        "first_name": "Indianapolis",
+        "last_name": "Colts",
+        "position": "DEF",
+        "team": "IND",
+        "slug": "indianapolis%20colts",
+        "player_id": "IND"
+    },
+    "Taylor Gabriel": {
+        "full_name": "Taylor Gabriel",
+        "first_name": "Taylor",
+        "last_name": "Gabriel",
+        "position": "WR",
+        "team": null,
+        "slug": "taylor%20gabriel",
+        "player_id": "1903"
+    },
+    "Cole Beasley": {
+        "full_name": "Cole Beasley",
+        "first_name": "Cole",
+        "last_name": "Beasley",
+        "position": "WR",
+        "team": null,
+        "slug": "cole%20beasley",
+        "player_id": "1144"
+    },
+    "Dawson Knox": {
+        "full_name": "Dawson Knox",
+        "first_name": "Dawson",
+        "last_name": "Knox",
+        "position": "TE",
+        "team": "BUF",
+        "slug": "dawson%20knox",
+        "player_id": "5906"
+    },
+    "Teddy Bridgewater": {
+        "full_name": "Teddy Bridgewater",
+        "first_name": "Teddy",
+        "last_name": "Bridgewater",
+        "position": "QB",
+        "team": "TB",
+        "slug": "teddy%20bridgewater",
+        "player_id": "2152"
+    },
+    "D'Ernest Johnson": {
+        "full_name": "D'Ernest Johnson",
+        "first_name": "D'Ernest",
+        "last_name": "Johnson",
+        "position": "RB",
+        "team": "NE",
+        "slug": "d%27ernest%20johnson",
+        "player_id": "6694"
+    },
     "Adam Vinatieri": {
         "full_name": "Adam Vinatieri",
         "first_name": "Adam",
@@ -2140,15 +2383,6 @@
         "team": null,
         "slug": "adam%20vinatieri",
         "player_id": "120"
-    },
-    "Gus Edwards": {
-        "full_name": "Gus Edwards",
-        "first_name": "Gus",
-        "last_name": "Edwards",
-        "position": "RB",
-        "team": null,
-        "slug": "gus%20edwards",
-        "player_id": "5248"
     },
     "Parris Campbell": {
         "full_name": "Parris Campbell",
@@ -2167,42 +2401,6 @@
         "team": "PIT",
         "slug": "pittsburgh%20steelers",
         "player_id": "PIT"
-    },
-    "Wayne Gallman": {
-        "full_name": "Wayne Gallman",
-        "first_name": "Wayne",
-        "last_name": "Gallman",
-        "position": "RB",
-        "team": null,
-        "slug": "wayne%20gallman",
-        "player_id": "4150"
-    },
-    "Gardner Minshew": {
-        "full_name": "Gardner Minshew",
-        "first_name": "Gardner",
-        "last_name": "Minshew",
-        "position": "QB",
-        "team": "KC",
-        "slug": "gardner%20minshew",
-        "player_id": "6011"
-    },
-    "Indianapolis Colts": {
-        "full_name": "Indianapolis Colts",
-        "first_name": "Indianapolis",
-        "last_name": "Colts",
-        "position": "DEF",
-        "team": "IND",
-        "slug": "indianapolis%20colts",
-        "player_id": "IND"
-    },
-    "Dawson Knox": {
-        "full_name": "Dawson Knox",
-        "first_name": "Dawson",
-        "last_name": "Knox",
-        "position": "TE",
-        "team": "BUF",
-        "slug": "dawson%20knox",
-        "player_id": "5906"
     },
     "Jay Ajayi": {
         "full_name": "Jay Ajayi",
@@ -2240,32 +2438,23 @@
         "slug": "preston%20williams",
         "player_id": "6148"
     },
-    "Cole Beasley": {
-        "full_name": "Cole Beasley",
-        "first_name": "Cole",
-        "last_name": "Beasley",
+    "Antonio Callaway": {
+        "full_name": "Antonio Callaway",
+        "first_name": "Antonio",
+        "last_name": "Callaway",
         "position": "WR",
         "team": null,
-        "slug": "cole%20beasley",
-        "player_id": "1144"
+        "slug": "antonio%20callaway",
+        "player_id": "5310"
     },
-    "Jacoby Brissett": {
-        "full_name": "Jacoby Brissett",
-        "first_name": "Jacoby",
-        "last_name": "Brissett",
-        "position": "QB",
-        "team": "ARI",
-        "slug": "jacoby%20brissett",
-        "player_id": "3257"
-    },
-    "Andy Isabella": {
-        "full_name": "Andy Isabella",
-        "first_name": "Andy",
-        "last_name": "Isabella",
-        "position": "WR",
+    "Dustin Hopkins": {
+        "full_name": "Dustin Hopkins",
+        "first_name": "Dustin",
+        "last_name": "Hopkins",
+        "position": "K",
         "team": null,
-        "slug": "andy%20isabella",
-        "player_id": "5915"
+        "slug": "dustin%20hopkins",
+        "player_id": "1348"
     },
     "Mike Nugent": {
         "full_name": "Mike Nugent",
@@ -2276,15 +2465,6 @@
         "slug": "mike%20nugent",
         "player_id": "658"
     },
-    "Antonio Callaway": {
-        "full_name": "Antonio Callaway",
-        "first_name": "Antonio",
-        "last_name": "Callaway",
-        "position": "WR",
-        "team": null,
-        "slug": "antonio%20callaway",
-        "player_id": "5310"
-    },
     "Auden Tate": {
         "full_name": "Auden Tate",
         "first_name": "Auden",
@@ -2294,41 +2474,14 @@
         "slug": "auden%20tate",
         "player_id": "5130"
     },
-    "Matt Gay": {
-        "full_name": "Matt Gay",
-        "first_name": "Matt",
-        "last_name": "Gay",
-        "position": "K",
-        "team": null,
-        "slug": "matt%20gay",
-        "player_id": "6083"
-    },
-    "Kenny Stills": {
-        "full_name": "Kenny Stills",
-        "first_name": "Kenny",
-        "last_name": "Stills",
+    "KeeSean Johnson": {
+        "full_name": "KeeSean Johnson",
+        "first_name": "KeeSean",
+        "last_name": "Johnson",
         "position": "WR",
         "team": null,
-        "slug": "kenny%20stills",
-        "player_id": "1555"
-    },
-    "Jimmy Graham": {
-        "full_name": "Jimmy Graham",
-        "first_name": "Jimmy",
-        "last_name": "Graham",
-        "position": "TE",
-        "team": null,
-        "slug": "jimmy%20graham",
-        "player_id": "616"
-    },
-    "Zane Gonzalez": {
-        "full_name": "Zane Gonzalez",
-        "first_name": "Zane",
-        "last_name": "Gonzalez",
-        "position": "K",
-        "team": "ATL",
-        "slug": "zane%20gonzalez",
-        "player_id": "4233"
+        "slug": "keesean%20johnson",
+        "player_id": "5962"
     },
     "Chris Herndon": {
         "full_name": "Chris Herndon",
@@ -2338,15 +2491,6 @@
         "team": null,
         "slug": "chris%20herndon",
         "player_id": "5009"
-    },
-    "Javorius Allen": {
-        "full_name": "Javorius Allen",
-        "first_name": "Javorius",
-        "last_name": "Allen",
-        "position": "RB",
-        "team": null,
-        "slug": "javorius%20allen",
-        "player_id": "2430"
     },
     "Gerald Everett": {
         "full_name": "Gerald Everett",
@@ -2366,6 +2510,33 @@
         "slug": "reggie%20bonnafon",
         "player_id": "5162"
     },
+    "Matt Gay": {
+        "full_name": "Matt Gay",
+        "first_name": "Matt",
+        "last_name": "Gay",
+        "position": "K",
+        "team": null,
+        "slug": "matt%20gay",
+        "player_id": "6083"
+    },
+    "Zane Gonzalez": {
+        "full_name": "Zane Gonzalez",
+        "first_name": "Zane",
+        "last_name": "Gonzalez",
+        "position": "K",
+        "team": "ATL",
+        "slug": "zane%20gonzalez",
+        "player_id": "4233"
+    },
+    "Javorius Allen": {
+        "full_name": "Javorius Allen",
+        "first_name": "Javorius",
+        "last_name": "Allen",
+        "position": "RB",
+        "team": null,
+        "slug": "javorius%20allen",
+        "player_id": "2430"
+    },
     "Tyler Conklin": {
         "full_name": "Tyler Conklin",
         "first_name": "Tyler",
@@ -2375,6 +2546,15 @@
         "slug": "tyler%20conklin",
         "player_id": "5133"
     },
+    "Allen Lazard": {
+        "full_name": "Allen Lazard",
+        "first_name": "Allen",
+        "last_name": "Lazard",
+        "position": "WR",
+        "team": "NYJ",
+        "slug": "allen%20lazard",
+        "player_id": "5185"
+    },
     "Darren Fells": {
         "full_name": "Darren Fells",
         "first_name": "Darren",
@@ -2383,6 +2563,51 @@
         "team": "TB",
         "slug": "darren%20fells",
         "player_id": "1592"
+    },
+    "Luke Willson": {
+        "full_name": "Luke Willson",
+        "first_name": "Luke",
+        "last_name": "Willson",
+        "position": "TE",
+        "team": null,
+        "slug": "luke%20willson",
+        "player_id": "1603"
+    },
+    "Zay Jones": {
+        "full_name": "Zay Jones",
+        "first_name": "Zay",
+        "last_name": "Jones",
+        "position": "WR",
+        "team": "ARI",
+        "slug": "zay%20jones",
+        "player_id": "4080"
+    },
+    "Benny Snell": {
+        "full_name": "Benny Snell",
+        "first_name": "Benny",
+        "last_name": "Snell",
+        "position": "RB",
+        "team": null,
+        "slug": "benny%20snell",
+        "player_id": "6156"
+    },
+    "Darius Slayton": {
+        "full_name": "Darius Slayton",
+        "first_name": "Darius",
+        "last_name": "Slayton",
+        "position": "WR",
+        "team": "NYG",
+        "slug": "darius%20slayton",
+        "player_id": "6149"
+    },
+    "Jon Hilliman": {
+        "full_name": "Jon Hilliman",
+        "first_name": "Jon",
+        "last_name": "Hilliman",
+        "position": "RB",
+        "team": null,
+        "slug": "jon%20hilliman",
+        "player_id": "6446"
     },
     "Sam Darnold": {
         "full_name": "Sam Darnold",
@@ -2402,23 +2627,14 @@
         "slug": "matt%20prater",
         "player_id": "17"
     },
-    "Zay Jones": {
-        "full_name": "Zay Jones",
-        "first_name": "Zay",
-        "last_name": "Jones",
-        "position": "WR",
-        "team": "ARI",
-        "slug": "zay%20jones",
-        "player_id": "4080"
-    },
-    "Allen Lazard": {
-        "full_name": "Allen Lazard",
-        "first_name": "Allen",
-        "last_name": "Lazard",
-        "position": "WR",
-        "team": "NYJ",
-        "slug": "allen%20lazard",
-        "player_id": "5185"
+    "J.D. McKissic": {
+        "full_name": "J.D. McKissic",
+        "first_name": "J.D.",
+        "last_name": "McKissic",
+        "position": "RB",
+        "team": null,
+        "slug": "j.d.%20mckissic",
+        "player_id": "3664"
     },
     "Mason Rudolph": {
         "full_name": "Mason Rudolph",
@@ -2429,15 +2645,6 @@
         "slug": "mason%20rudolph",
         "player_id": "4972"
     },
-    "DeVante Parker": {
-        "full_name": "DeVante Parker",
-        "first_name": "DeVante",
-        "last_name": "Parker",
-        "position": "WR",
-        "team": null,
-        "slug": "devante%20parker",
-        "player_id": "2319"
-    },
     "Chris Boswell": {
         "full_name": "Chris Boswell",
         "first_name": "Chris",
@@ -2446,15 +2653,6 @@
         "team": "PIT",
         "slug": "chris%20boswell",
         "player_id": "1945"
-    },
-    "J.D. McKissic": {
-        "full_name": "J.D. McKissic",
-        "first_name": "J.D.",
-        "last_name": "McKissic",
-        "position": "RB",
-        "team": null,
-        "slug": "j.d.%20mckissic",
-        "player_id": "3664"
     },
     "Mark Walton": {
         "full_name": "Mark Walton",
@@ -2474,15 +2672,6 @@
         "slug": "daesean%20hamilton",
         "player_id": "4998"
     },
-    "Zach Pascal": {
-        "full_name": "Zach Pascal",
-        "first_name": "Zach",
-        "last_name": "Pascal",
-        "position": "WR",
-        "team": null,
-        "slug": "zach%20pascal",
-        "player_id": "4319"
-    },
     "Cameron Brate": {
         "full_name": "Cameron Brate",
         "first_name": "Cameron",
@@ -2491,6 +2680,15 @@
         "team": null,
         "slug": "cameron%20brate",
         "player_id": "2214"
+    },
+    "Zach Pascal": {
+        "full_name": "Zach Pascal",
+        "first_name": "Zach",
+        "last_name": "Pascal",
+        "position": "WR",
+        "team": null,
+        "slug": "zach%20pascal",
+        "player_id": "4319"
     },
     "Jonnu Smith": {
         "full_name": "Jonnu Smith",
@@ -2519,6 +2717,24 @@
         "slug": "nyheim%20hines",
         "player_id": "5347"
     },
+    "Noah Fant": {
+        "full_name": "Noah Fant",
+        "first_name": "Noah",
+        "last_name": "Fant",
+        "position": "TE",
+        "team": "CIN",
+        "slug": "noah%20fant",
+        "player_id": "5857"
+    },
+    "Dwayne Haskins": {
+        "full_name": "Dwayne Haskins",
+        "first_name": "Dwayne",
+        "last_name": "Haskins",
+        "position": "QB",
+        "team": "PIT",
+        "slug": "dwayne%20haskins",
+        "player_id": "5845"
+    },
     "Jack Doyle": {
         "full_name": "Jack Doyle",
         "first_name": "Jack",
@@ -2536,24 +2752,6 @@
         "team": "NYJ",
         "slug": "josh%20reynolds",
         "player_id": "4171"
-    },
-    "Derek Carr": {
-        "full_name": "Derek Carr",
-        "first_name": "Derek",
-        "last_name": "Carr",
-        "position": "QB",
-        "team": null,
-        "slug": "derek%20carr",
-        "player_id": "2028"
-    },
-    "Noah Fant": {
-        "full_name": "Noah Fant",
-        "first_name": "Noah",
-        "last_name": "Fant",
-        "position": "TE",
-        "team": "CIN",
-        "slug": "noah%20fant",
-        "player_id": "5857"
     },
     "Colin Kaepernick": {
         "full_name": "Colin Kaepernick",
@@ -2573,6 +2771,15 @@
         "slug": "new%20york%20giants",
         "player_id": "NYG"
     },
+    "Brian Hill": {
+        "full_name": "Brian Hill",
+        "first_name": "Brian",
+        "last_name": "Hill",
+        "position": "RB",
+        "team": null,
+        "slug": "brian%20hill",
+        "player_id": "4187"
+    },
     "Mike Gesicki": {
         "full_name": "Mike Gesicki",
         "first_name": "Mike",
@@ -2581,6 +2788,42 @@
         "team": "CIN",
         "slug": "mike%20gesicki",
         "player_id": "4993"
+    },
+    "Jacob Hollister": {
+        "full_name": "Jacob Hollister",
+        "first_name": "Jacob",
+        "last_name": "Hollister",
+        "position": "TE",
+        "team": null,
+        "slug": "jacob%20hollister",
+        "player_id": "4421"
+    },
+    "Chase McLaughlin": {
+        "full_name": "Chase McLaughlin",
+        "first_name": "Chase",
+        "last_name": "McLaughlin",
+        "position": "K",
+        "team": "TB",
+        "slug": "chase%20mclaughlin",
+        "player_id": "6650"
+    },
+    "Ross Dwelley": {
+        "full_name": "Ross Dwelley",
+        "first_name": "Ross",
+        "last_name": "Dwelley",
+        "position": "TE",
+        "team": null,
+        "slug": "ross%20dwelley",
+        "player_id": "5285"
+    },
+    "Dez Bryant": {
+        "full_name": "Dez Bryant",
+        "first_name": "Dez",
+        "last_name": "Bryant",
+        "position": "WR",
+        "team": null,
+        "slug": "dez%20bryant",
+        "player_id": "574"
     },
     "Eddy Pineiro": {
         "full_name": "Eddy Pineiro",
@@ -2591,41 +2834,23 @@
         "slug": "eddy%20pineiro",
         "player_id": "5189"
     },
-    "Darius Slayton": {
-        "full_name": "Darius Slayton",
-        "first_name": "Darius",
-        "last_name": "Slayton",
-        "position": "WR",
-        "team": "NYG",
-        "slug": "darius%20slayton",
-        "player_id": "6149"
+    "Daniel Carlson": {
+        "full_name": "Daniel Carlson",
+        "first_name": "Daniel",
+        "last_name": "Carlson",
+        "position": "K",
+        "team": "LV",
+        "slug": "daniel%20carlson",
+        "player_id": "5095"
     },
-    "Las Vegas Raiders": {
-        "full_name": "Las Vegas Raiders",
-        "first_name": "Las Vegas",
-        "last_name": "Raiders",
-        "position": "DEF",
-        "team": "OAK",
-        "slug": "las%20vegas%20raiders",
-        "player_id": "OAK"
-    },
-    "Brian Hill": {
-        "full_name": "Brian Hill",
-        "first_name": "Brian",
-        "last_name": "Hill",
+    "Jonathan Williams": {
+        "full_name": "Jonathan Williams",
+        "first_name": "Jonathan",
+        "last_name": "Williams",
         "position": "RB",
         "team": null,
-        "slug": "brian%20hill",
-        "player_id": "4187"
-    },
-    "Jacob Hollister": {
-        "full_name": "Jacob Hollister",
-        "first_name": "Jacob",
-        "last_name": "Hollister",
-        "position": "TE",
-        "team": null,
-        "slug": "jacob%20hollister",
-        "player_id": "4421"
+        "slug": "jonathan%20williams",
+        "player_id": "3312"
     },
     "Ryan Tannehill": {
         "full_name": "Ryan Tannehill",
@@ -2672,24 +2897,6 @@
         "slug": "ryan%20griffin",
         "player_id": "1425"
     },
-    "Jonathan Williams": {
-        "full_name": "Jonathan Williams",
-        "first_name": "Jonathan",
-        "last_name": "Williams",
-        "position": "RB",
-        "team": null,
-        "slug": "jonathan%20williams",
-        "player_id": "3312"
-    },
-    "Benny Snell": {
-        "full_name": "Benny Snell",
-        "first_name": "Benny",
-        "last_name": "Snell",
-        "position": "RB",
-        "team": null,
-        "slug": "benny%20snell",
-        "player_id": "6156"
-    },
     "Tyler Higbee": {
         "full_name": "Tyler Higbee",
         "first_name": "Tyler",
@@ -2708,14 +2915,14 @@
         "slug": "kansas%20city%20chiefs",
         "player_id": "KC"
     },
-    "Ryan Fitzpatrick": {
-        "full_name": "Ryan Fitzpatrick",
-        "first_name": "Ryan",
-        "last_name": "Fitzpatrick",
-        "position": "QB",
+    "Irv Smith": {
+        "full_name": "Irv Smith",
+        "first_name": "Irv",
+        "last_name": "Smith",
+        "position": "TE",
         "team": null,
-        "slug": "ryan%20fitzpatrick",
-        "player_id": "333"
+        "slug": "irv%20smith",
+        "player_id": "6126"
     },
     "Patrick Laird": {
         "full_name": "Patrick Laird",
@@ -2726,14 +2933,23 @@
         "slug": "patrick%20laird",
         "player_id": "6311"
     },
-    "Bilal Powell": {
-        "full_name": "Bilal Powell",
-        "first_name": "Bilal",
-        "last_name": "Powell",
+    "Ryan Fitzpatrick": {
+        "full_name": "Ryan Fitzpatrick",
+        "first_name": "Ryan",
+        "last_name": "Fitzpatrick",
+        "position": "QB",
+        "team": null,
+        "slug": "ryan%20fitzpatrick",
+        "player_id": "333"
+    },
+    "DeAndre Washington": {
+        "full_name": "DeAndre Washington",
+        "first_name": "DeAndre",
+        "last_name": "Washington",
         "position": "RB",
         "team": null,
-        "slug": "bilal%20powell",
-        "player_id": "818"
+        "slug": "deandre%20washington",
+        "player_id": "3300"
     },
     "Ian Thomas": {
         "full_name": "Ian Thomas",
@@ -2753,14 +2969,14 @@
         "slug": "justin%20watson",
         "player_id": "5374"
     },
-    "DeAndre Washington": {
-        "full_name": "DeAndre Washington",
-        "first_name": "DeAndre",
-        "last_name": "Washington",
+    "Mike Boone": {
+        "full_name": "Mike Boone",
+        "first_name": "Mike",
+        "last_name": "Boone",
         "position": "RB",
         "team": null,
-        "slug": "deandre%20washington",
-        "player_id": "3300"
+        "slug": "mike%20boone",
+        "player_id": "5209"
     },
     "Breshad Perriman": {
         "full_name": "Breshad Perriman",
@@ -2779,15 +2995,6 @@
         "team": null,
         "slug": "kai%20forbath",
         "player_id": "1287"
-    },
-    "Mike Boone": {
-        "full_name": "Mike Boone",
-        "first_name": "Mike",
-        "last_name": "Boone",
-        "position": "RB",
-        "team": null,
-        "slug": "mike%20boone",
-        "player_id": "5209"
     },
     "Michael Pittman": {
         "full_name": "Michael Pittman",
@@ -2816,15 +3023,6 @@
         "slug": "boston%20scott",
         "player_id": "5122"
     },
-    "Damien Harris": {
-        "full_name": "Damien Harris",
-        "first_name": "Damien",
-        "last_name": "Harris",
-        "position": "RB",
-        "team": null,
-        "slug": "damien%20harris",
-        "player_id": "5890"
-    },
     "Brandon Aiyuk": {
         "full_name": "Brandon Aiyuk",
         "first_name": "Brandon",
@@ -2851,15 +3049,6 @@
         "team": "DEN",
         "slug": "j.k.%20dobbins",
         "player_id": "6806"
-    },
-    "KeeSean Johnson": {
-        "full_name": "KeeSean Johnson",
-        "first_name": "KeeSean",
-        "last_name": "Johnson",
-        "position": "WR",
-        "team": null,
-        "slug": "keesean%20johnson",
-        "player_id": "5962"
     },
     "Bryce Love": {
         "full_name": "Bryce Love",
@@ -2896,15 +3085,6 @@
         "team": "KC",
         "slug": "clyde%20edwards-helaire",
         "player_id": "6820"
-    },
-    "Rob Gronkowski": {
-        "full_name": "Rob Gronkowski",
-        "first_name": "Rob",
-        "last_name": "Gronkowski",
-        "position": "TE",
-        "team": null,
-        "slug": "rob%20gronkowski",
-        "player_id": "515"
     },
     "Joe Burrow": {
         "full_name": "Joe Burrow",
@@ -3041,6 +3221,15 @@
         "slug": "cam%20akers",
         "player_id": "6938"
     },
+    "Arizona Cardinals": {
+        "full_name": "Arizona Cardinals",
+        "first_name": "Arizona",
+        "last_name": "Cardinals",
+        "position": "DEF",
+        "team": "ARI",
+        "slug": "arizona%20cardinals",
+        "player_id": "ARI"
+    },
     "Scotty Miller": {
         "full_name": "Scotty Miller",
         "first_name": "Scotty",
@@ -3059,6 +3248,24 @@
         "slug": "joshua%20kelley",
         "player_id": "7045"
     },
+    "Antonio Gandy-Golden": {
+        "full_name": "Antonio Gandy-Golden",
+        "first_name": "Antonio",
+        "last_name": "Gandy-Golden",
+        "position": "TE",
+        "team": null,
+        "slug": "antonio%20gandy-golden",
+        "player_id": "6906"
+    },
+    "A.J. Dillon": {
+        "full_name": "A.J. Dillon",
+        "first_name": "A.J.",
+        "last_name": "Dillon",
+        "position": "RB",
+        "team": "PHI",
+        "slug": "a.j.%20dillon",
+        "player_id": "6828"
+    },
     "Myles Gaskin": {
         "full_name": "Myles Gaskin",
         "first_name": "Myles",
@@ -3067,15 +3274,6 @@
         "team": "SEA",
         "slug": "myles%20gaskin",
         "player_id": "5980"
-    },
-    "Arizona Cardinals": {
-        "full_name": "Arizona Cardinals",
-        "first_name": "Arizona",
-        "last_name": "Cardinals",
-        "position": "DEF",
-        "team": "ARI",
-        "slug": "arizona%20cardinals",
-        "player_id": "ARI"
     },
     "Russell Gage": {
         "full_name": "Russell Gage",
@@ -3122,14 +3320,50 @@
         "slug": "keelan%20cole",
         "player_id": "4622"
     },
-    "Daniel Carlson": {
-        "full_name": "Daniel Carlson",
-        "first_name": "Daniel",
-        "last_name": "Carlson",
+    "KJ Hamler": {
+        "full_name": "KJ Hamler",
+        "first_name": "KJ",
+        "last_name": "Hamler",
+        "position": "WR",
+        "team": null,
+        "slug": "kj%20hamler",
+        "player_id": "6805"
+    },
+    "Chase Claypool": {
+        "full_name": "Chase Claypool",
+        "first_name": "Chase",
+        "last_name": "Claypool",
+        "position": "WR",
+        "team": null,
+        "slug": "chase%20claypool",
+        "player_id": "6886"
+    },
+    "Randy Bullock": {
+        "full_name": "Randy Bullock",
+        "first_name": "Randy",
+        "last_name": "Bullock",
         "position": "K",
-        "team": "LV",
-        "slug": "daniel%20carlson",
-        "player_id": "5095"
+        "team": null,
+        "slug": "randy%20bullock",
+        "player_id": "1099"
+    },
+    "Laviska Shenault": {
+        "full_name": "Laviska Shenault",
+        "first_name": "Laviska",
+        "last_name": "Shenault",
+        "position": "WR",
+        "team": null,
+        "slug": "laviska%20shenault",
+        "player_id": "6814"
+    },
+    "Jordan Akins": {
+        "full_name": "Jordan Akins",
+        "first_name": "Jordan",
+        "last_name": "Akins",
+        "position": "TE",
+        "team": "JAX",
+        "slug": "jordan%20akins",
+        "player_id": "5032"
     },
     "Adam Humphries": {
         "full_name": "Adam Humphries",
@@ -3149,33 +3383,6 @@
         "slug": "dalton%20schultz",
         "player_id": "5001"
     },
-    "KJ Hamler": {
-        "full_name": "KJ Hamler",
-        "first_name": "KJ",
-        "last_name": "Hamler",
-        "position": "WR",
-        "team": null,
-        "slug": "kj%20hamler",
-        "player_id": "6805"
-    },
-    "Laviska Shenault": {
-        "full_name": "Laviska Shenault",
-        "first_name": "Laviska",
-        "last_name": "Shenault",
-        "position": "WR",
-        "team": null,
-        "slug": "laviska%20shenault",
-        "player_id": "6814"
-    },
-    "Tre'Quan Smith": {
-        "full_name": "Tre'Quan Smith",
-        "first_name": "Tre'Quan",
-        "last_name": "Smith",
-        "position": "WR",
-        "team": null,
-        "slug": "tre%27quan%20smith",
-        "player_id": "5026"
-    },
     "Tee Higgins": {
         "full_name": "Tee Higgins",
         "first_name": "Tee",
@@ -3184,33 +3391,6 @@
         "team": "CIN",
         "slug": "tee%20higgins",
         "player_id": "6801"
-    },
-    "Randy Bullock": {
-        "full_name": "Randy Bullock",
-        "first_name": "Randy",
-        "last_name": "Bullock",
-        "position": "K",
-        "team": null,
-        "slug": "randy%20bullock",
-        "player_id": "1099"
-    },
-    "Greg Ward": {
-        "full_name": "Greg Ward",
-        "first_name": "Greg",
-        "last_name": "Ward",
-        "position": "WR",
-        "team": null,
-        "slug": "greg%20ward",
-        "player_id": "6744"
-    },
-    "Jeff Wilson": {
-        "full_name": "Jeff Wilson",
-        "first_name": "Jeff",
-        "last_name": "Wilson",
-        "position": "RB",
-        "team": "MIA",
-        "slug": "jeff%20wilson",
-        "player_id": "5284"
     },
     "Justin Herbert": {
         "full_name": "Justin Herbert",
@@ -3221,14 +3401,59 @@
         "slug": "justin%20herbert",
         "player_id": "6797"
     },
-    "A.J. Dillon": {
-        "full_name": "A.J. Dillon",
-        "first_name": "A.J.",
-        "last_name": "Dillon",
+    "Jeff Wilson": {
+        "full_name": "Jeff Wilson",
+        "first_name": "Jeff",
+        "last_name": "Wilson",
         "position": "RB",
-        "team": "PHI",
-        "slug": "a.j.%20dillon",
-        "player_id": "6828"
+        "team": "MIA",
+        "slug": "jeff%20wilson",
+        "player_id": "5284"
+    },
+    "La'Mical Perine": {
+        "full_name": "La'Mical Perine",
+        "first_name": "La'Mical",
+        "last_name": "Perine",
+        "position": "RB",
+        "team": null,
+        "slug": "la%27mical%20perine",
+        "player_id": "6908"
+    },
+    "Greg Ward": {
+        "full_name": "Greg Ward",
+        "first_name": "Greg",
+        "last_name": "Ward",
+        "position": "WR",
+        "team": null,
+        "slug": "greg%20ward",
+        "player_id": "6744"
+    },
+    "Olamide Zaccheaus": {
+        "full_name": "Olamide Zaccheaus",
+        "first_name": "Olamide",
+        "last_name": "Zaccheaus",
+        "position": "WR",
+        "team": "CHI",
+        "slug": "olamide%20zaccheaus",
+        "player_id": "6271"
+    },
+    "Robert Tonyan": {
+        "full_name": "Robert Tonyan",
+        "first_name": "Robert",
+        "last_name": "Tonyan",
+        "position": "TE",
+        "team": "KC",
+        "slug": "robert%20tonyan",
+        "player_id": "4602"
+    },
+    "Braxton Berrios": {
+        "full_name": "Braxton Berrios",
+        "first_name": "Braxton",
+        "last_name": "Berrios",
+        "position": "WR",
+        "team": "HOU",
+        "slug": "braxton%20berrios",
+        "player_id": "5121"
     },
     "David Moore": {
         "full_name": "David Moore",
@@ -3257,15 +3482,6 @@
         "slug": "jason%20sanders",
         "player_id": "5119"
     },
-    "Teddy Bridgewater": {
-        "full_name": "Teddy Bridgewater",
-        "first_name": "Teddy",
-        "last_name": "Bridgewater",
-        "position": "QB",
-        "team": "TB",
-        "slug": "teddy%20bridgewater",
-        "player_id": "2152"
-    },
     "Dontrell Hilliard": {
         "full_name": "Dontrell Hilliard",
         "first_name": "Dontrell",
@@ -3275,23 +3491,23 @@
         "slug": "dontrell%20hilliard",
         "player_id": "5536"
     },
-    "Robert Tonyan": {
-        "full_name": "Robert Tonyan",
-        "first_name": "Robert",
-        "last_name": "Tonyan",
-        "position": "TE",
-        "team": "KC",
-        "slug": "robert%20tonyan",
-        "player_id": "4602"
+    "Miami Dolphins": {
+        "full_name": "Miami Dolphins",
+        "first_name": "Miami",
+        "last_name": "Dolphins",
+        "position": "DEF",
+        "team": "MIA",
+        "slug": "miami%20dolphins",
+        "player_id": "MIA"
     },
-    "Olamide Zaccheaus": {
-        "full_name": "Olamide Zaccheaus",
-        "first_name": "Olamide",
-        "last_name": "Zaccheaus",
-        "position": "WR",
-        "team": "CHI",
-        "slug": "olamide%20zaccheaus",
-        "player_id": "6271"
+    "Cordarrelle Patterson": {
+        "full_name": "Cordarrelle Patterson",
+        "first_name": "Cordarrelle",
+        "last_name": "Patterson",
+        "position": "RB",
+        "team": null,
+        "slug": "cordarrelle%20patterson",
+        "player_id": "1535"
     },
     "Travis Fulgham": {
         "full_name": "Travis Fulgham",
@@ -3311,33 +3527,6 @@
         "slug": "andy%20dalton",
         "player_id": "829"
     },
-    "Cordarrelle Patterson": {
-        "full_name": "Cordarrelle Patterson",
-        "first_name": "Cordarrelle",
-        "last_name": "Patterson",
-        "position": "RB",
-        "team": null,
-        "slug": "cordarrelle%20patterson",
-        "player_id": "1535"
-    },
-    "Miami Dolphins": {
-        "full_name": "Miami Dolphins",
-        "first_name": "Miami",
-        "last_name": "Dolphins",
-        "position": "DEF",
-        "team": "MIA",
-        "slug": "miami%20dolphins",
-        "player_id": "MIA"
-    },
-    "La'Mical Perine": {
-        "full_name": "La'Mical Perine",
-        "first_name": "La'Mical",
-        "last_name": "Perine",
-        "position": "RB",
-        "team": null,
-        "slug": "la%27mical%20perine",
-        "player_id": "6908"
-    },
     "Trey Burton": {
         "full_name": "Trey Burton",
         "first_name": "Trey",
@@ -3356,68 +3545,14 @@
         "slug": "brandon%20mcmanus",
         "player_id": "1433"
     },
-    "D'Ernest Johnson": {
-        "full_name": "D'Ernest Johnson",
-        "first_name": "D'Ernest",
-        "last_name": "Johnson",
+    "C.J. Prosise": {
+        "full_name": "C.J. Prosise",
+        "first_name": "C.J.",
+        "last_name": "Prosise",
         "position": "RB",
-        "team": "NE",
-        "slug": "d%27ernest%20johnson",
-        "player_id": "6694"
-    },
-    "Chase Claypool": {
-        "full_name": "Chase Claypool",
-        "first_name": "Chase",
-        "last_name": "Claypool",
-        "position": "WR",
         "team": null,
-        "slug": "chase%20claypool",
-        "player_id": "6886"
-    },
-    "Dez Bryant": {
-        "full_name": "Dez Bryant",
-        "first_name": "Dez",
-        "last_name": "Bryant",
-        "position": "WR",
-        "team": null,
-        "slug": "dez%20bryant",
-        "player_id": "574"
-    },
-    "Rashard Higgins": {
-        "full_name": "Rashard Higgins",
-        "first_name": "Rashard",
-        "last_name": "Higgins",
-        "position": "WR",
-        "team": null,
-        "slug": "rashard%20higgins",
-        "player_id": "3328"
-    },
-    "JaMycal Hasty": {
-        "full_name": "JaMycal Hasty",
-        "first_name": "JaMycal",
-        "last_name": "Hasty",
-        "position": "RB",
-        "team": "MIA",
-        "slug": "jamycal%20hasty",
-        "player_id": "6996"
-    },
-    "Albert Okwuegbunam": {
-        "full_name": "Albert Okwuegbunam",
-        "first_name": "Albert",
-        "last_name": "Okwuegbunam",
-        "position": "TE",
-        "team": "LV",
-        "slug": "albert%20okwuegbunam",
-        "player_id": "6843"
-    },
-    "DeeJay Dallas": {
-        "full_name": "DeeJay Dallas",
-        "first_name": "DeeJay",
-        "last_name": "Dallas",
-        "position": "RB",
-        "team": "CAR",
-        "slug": "deejay%20dallas",
-        "player_id": "6931"
+        "slug": "c.j.%20prosise",
+        "player_id": "3204"
     },
     "Denzel Mims": {
         "full_name": "Denzel Mims",
@@ -3428,14 +3563,32 @@
         "slug": "denzel%20mims",
         "player_id": "6849"
     },
-    "Deonte Harty": {
-        "full_name": "Deonte Harty",
-        "first_name": "Deonte",
-        "last_name": "Harty",
-        "position": "WR",
-        "team": null,
-        "slug": "deonte%20harty",
-        "player_id": "6234"
+    "Jeremy McNichols": {
+        "full_name": "Jeremy McNichols",
+        "first_name": "Jeremy",
+        "last_name": "McNichols",
+        "position": "RB",
+        "team": "WAS",
+        "slug": "jeremy%20mcnichols",
+        "player_id": "4219"
+    },
+    "JaMycal Hasty": {
+        "full_name": "JaMycal Hasty",
+        "first_name": "JaMycal",
+        "last_name": "Hasty",
+        "position": "RB",
+        "team": "MIA",
+        "slug": "jamycal%20hasty",
+        "player_id": "6996"
+    },
+    "DeeJay Dallas": {
+        "full_name": "DeeJay Dallas",
+        "first_name": "DeeJay",
+        "last_name": "Dallas",
+        "position": "RB",
+        "team": "CAR",
+        "slug": "deejay%20dallas",
+        "player_id": "6931"
     },
     "Donovan Peoples-Jones": {
         "full_name": "Donovan Peoples-Jones",
@@ -3445,6 +3598,42 @@
         "team": null,
         "slug": "donovan%20peoples-jones",
         "player_id": "6824"
+    },
+    "Richard Rodgers": {
+        "full_name": "Richard Rodgers",
+        "first_name": "Richard",
+        "last_name": "Rodgers",
+        "position": "TE",
+        "team": null,
+        "slug": "richard%20rodgers",
+        "player_id": "2146"
+    },
+    "Rashard Higgins": {
+        "full_name": "Rashard Higgins",
+        "first_name": "Rashard",
+        "last_name": "Higgins",
+        "position": "WR",
+        "team": null,
+        "slug": "rashard%20higgins",
+        "player_id": "3328"
+    },
+    "Albert Okwuegbunam": {
+        "full_name": "Albert Okwuegbunam",
+        "first_name": "Albert",
+        "last_name": "Okwuegbunam",
+        "position": "TE",
+        "team": "LV",
+        "slug": "albert%20okwuegbunam",
+        "player_id": "6843"
+    },
+    "Deonte Harty": {
+        "full_name": "Deonte Harty",
+        "first_name": "Deonte",
+        "last_name": "Harty",
+        "position": "WR",
+        "team": null,
+        "slug": "deonte%20harty",
+        "player_id": "6234"
     },
     "Tua Tagovailoa": {
         "full_name": "Tua Tagovailoa",
@@ -3463,6 +3652,15 @@
         "team": null,
         "slug": "tyler%20ervin",
         "player_id": "3280"
+    },
+    "Tyler Johnson": {
+        "full_name": "Tyler Johnson",
+        "first_name": "Tyler",
+        "last_name": "Johnson",
+        "position": "WR",
+        "team": "NYJ",
+        "slug": "tyler%20johnson",
+        "player_id": "6960"
     },
     "Darnell Mooney": {
         "full_name": "Darnell Mooney",
@@ -3491,6 +3689,15 @@
         "slug": "trent%20taylor",
         "player_id": "4218"
     },
+    "Richie James": {
+        "full_name": "Richie James",
+        "first_name": "Richie",
+        "last_name": "James",
+        "position": "WR",
+        "team": null,
+        "slug": "richie%20james",
+        "player_id": "5137"
+    },
     "Devontae Booker": {
         "full_name": "Devontae Booker",
         "first_name": "Devontae",
@@ -3518,14 +3725,14 @@
         "slug": "cincinnati%20bengals",
         "player_id": "CIN"
     },
-    "Taysom Hill": {
-        "full_name": "Taysom Hill",
-        "first_name": "Taysom",
-        "last_name": "Hill",
-        "position": "TE",
-        "team": "NO",
-        "slug": "taysom%20hill",
-        "player_id": "4381"
+    "Alex Collins": {
+        "full_name": "Alex Collins",
+        "first_name": "Alex",
+        "last_name": "Collins",
+        "position": "RB",
+        "team": null,
+        "slug": "alex%20collins",
+        "player_id": "3327"
     },
     "Salvon Ahmed": {
         "full_name": "Salvon Ahmed",
@@ -3535,6 +3742,33 @@
         "team": "IND",
         "slug": "salvon%20ahmed",
         "player_id": "6918"
+    },
+    "Troymaine Pope": {
+        "full_name": "Troymaine Pope",
+        "first_name": "Troymaine",
+        "last_name": "Pope",
+        "position": "RB",
+        "team": null,
+        "slug": "troymaine%20pope",
+        "player_id": "3934"
+    },
+    "Ryan Nall": {
+        "full_name": "Ryan Nall",
+        "first_name": "Ryan",
+        "last_name": "Nall",
+        "position": "RB",
+        "team": null,
+        "slug": "ryan%20nall",
+        "player_id": "5163"
+    },
+    "Taysom Hill": {
+        "full_name": "Taysom Hill",
+        "first_name": "Taysom",
+        "last_name": "Hill",
+        "position": "TE",
+        "team": "NO",
+        "slug": "taysom%20hill",
+        "player_id": "4381"
     },
     "Samaje Perine": {
         "full_name": "Samaje Perine",
@@ -3581,6 +3815,24 @@
         "slug": "tyler%20bass",
         "player_id": "7042"
     },
+    "Cam Sims": {
+        "full_name": "Cam Sims",
+        "first_name": "Cam",
+        "last_name": "Sims",
+        "position": "WR",
+        "team": null,
+        "slug": "cam%20sims",
+        "player_id": "5432"
+    },
+    "Alex Smith": {
+        "full_name": "Alex Smith",
+        "first_name": "Alex",
+        "last_name": "Smith",
+        "position": "QB",
+        "team": null,
+        "slug": "alex%20smith",
+        "player_id": "268"
+    },
     "Jalen Hurts": {
         "full_name": "Jalen Hurts",
         "first_name": "Jalen",
@@ -3599,33 +3851,6 @@
         "slug": "chad%20hansen",
         "player_id": "4175"
     },
-    "Dustin Hopkins": {
-        "full_name": "Dustin Hopkins",
-        "first_name": "Dustin",
-        "last_name": "Hopkins",
-        "position": "K",
-        "team": null,
-        "slug": "dustin%20hopkins",
-        "player_id": "1348"
-    },
-    "Alex Smith": {
-        "full_name": "Alex Smith",
-        "first_name": "Alex",
-        "last_name": "Smith",
-        "position": "QB",
-        "team": null,
-        "slug": "alex%20smith",
-        "player_id": "268"
-    },
-    "Cam Sims": {
-        "full_name": "Cam Sims",
-        "first_name": "Cam",
-        "last_name": "Sims",
-        "position": "WR",
-        "team": null,
-        "slug": "cam%20sims",
-        "player_id": "5432"
-    },
     "Cody Parkey": {
         "full_name": "Cody Parkey",
         "first_name": "Cody",
@@ -3635,14 +3860,14 @@
         "slug": "cody%20parkey",
         "player_id": "1974"
     },
-    "Irv Smith": {
-        "full_name": "Irv Smith",
-        "first_name": "Irv",
-        "last_name": "Smith",
-        "position": "TE",
+    "Lynn Bowden": {
+        "full_name": "Lynn Bowden",
+        "first_name": "Lynn",
+        "last_name": "Bowden",
+        "position": "WR",
         "team": null,
-        "slug": "irv%20smith",
-        "player_id": "6126"
+        "slug": "lynn%20bowden",
+        "player_id": "6909"
     },
     "Cole Kmet": {
         "full_name": "Cole Kmet",
@@ -3662,15 +3887,6 @@
         "slug": "cairo%20santos",
         "player_id": "2020"
     },
-    "Lynn Bowden": {
-        "full_name": "Lynn Bowden",
-        "first_name": "Lynn",
-        "last_name": "Bowden",
-        "position": "WR",
-        "team": null,
-        "slug": "lynn%20bowden",
-        "player_id": "6909"
-    },
     "Dare Ogunbowale": {
         "full_name": "Dare Ogunbowale",
         "first_name": "Dare",
@@ -3688,15 +3904,6 @@
         "team": null,
         "slug": "tyron%20billy-johnson",
         "player_id": "6063"
-    },
-    "Dwayne Haskins": {
-        "full_name": "Dwayne Haskins",
-        "first_name": "Dwayne",
-        "last_name": "Haskins",
-        "position": "QB",
-        "team": "PIT",
-        "slug": "dwayne%20haskins",
-        "player_id": "5845"
     },
     "Jalen Guyton": {
         "full_name": "Jalen Guyton",
@@ -3941,6 +4148,42 @@
         "slug": "michael%20carter",
         "player_id": "7607"
     },
+    "Elijah Mitchell": {
+        "full_name": "Elijah Mitchell",
+        "first_name": "Elijah",
+        "last_name": "Mitchell",
+        "position": "RB",
+        "team": "KC",
+        "slug": "elijah%20mitchell",
+        "player_id": "7561"
+    },
+    "Quinn Nordin": {
+        "full_name": "Quinn Nordin",
+        "first_name": "Quinn",
+        "last_name": "Nordin",
+        "position": "K",
+        "team": null,
+        "slug": "quinn%20nordin",
+        "player_id": "8040"
+    },
+    "Gabe Davis": {
+        "full_name": "Gabe Davis",
+        "first_name": "Gabe",
+        "last_name": "Davis",
+        "position": "WR",
+        "team": "BUF",
+        "slug": "gabe%20davis",
+        "player_id": "6943"
+    },
+    "Tim Tebow": {
+        "full_name": "Tim Tebow",
+        "first_name": "Tim",
+        "last_name": "Tebow",
+        "position": "TE",
+        "team": null,
+        "slug": "tim%20tebow",
+        "player_id": "559"
+    },
     "K.J. Osborn": {
         "full_name": "K.J. Osborn",
         "first_name": "K.J.",
@@ -3959,15 +4202,6 @@
         "slug": "j.j.%20taylor",
         "player_id": "6973"
     },
-    "Jeremy McNichols": {
-        "full_name": "Jeremy McNichols",
-        "first_name": "Jeremy",
-        "last_name": "McNichols",
-        "position": "RB",
-        "team": "WAS",
-        "slug": "jeremy%20mcnichols",
-        "player_id": "4219"
-    },
     "Larry Rountree": {
         "full_name": "Larry Rountree",
         "first_name": "Larry",
@@ -3976,24 +4210,6 @@
         "team": null,
         "slug": "larry%20rountree",
         "player_id": "7574"
-    },
-    "Elijah Mitchell": {
-        "full_name": "Elijah Mitchell",
-        "first_name": "Elijah",
-        "last_name": "Mitchell",
-        "position": "RB",
-        "team": "KC",
-        "slug": "elijah%20mitchell",
-        "player_id": "7561"
-    },
-    "Braxton Berrios": {
-        "full_name": "Braxton Berrios",
-        "first_name": "Braxton",
-        "last_name": "Berrios",
-        "position": "WR",
-        "team": "HOU",
-        "slug": "braxton%20berrios",
-        "player_id": "5121"
     },
     "Demetric Felton": {
         "full_name": "Demetric Felton",
@@ -4013,6 +4229,15 @@
         "slug": "nick%20westbrook-ikhine",
         "player_id": "7496"
     },
+    "Kadarius Toney": {
+        "full_name": "Kadarius Toney",
+        "first_name": "Kadarius",
+        "last_name": "Toney",
+        "position": "WR",
+        "team": null,
+        "slug": "kadarius%20toney",
+        "player_id": "7606"
+    },
     "Brandon Bolden": {
         "full_name": "Brandon Bolden",
         "first_name": "Brandon",
@@ -4022,23 +4247,23 @@
         "slug": "brandon%20bolden",
         "player_id": "1034"
     },
-    "Chase McLaughlin": {
-        "full_name": "Chase McLaughlin",
-        "first_name": "Chase",
-        "last_name": "McLaughlin",
-        "position": "K",
-        "team": "TB",
-        "slug": "chase%20mclaughlin",
-        "player_id": "6650"
+    "Jaret Patterson": {
+        "full_name": "Jaret Patterson",
+        "first_name": "Jaret",
+        "last_name": "Patterson",
+        "position": "RB",
+        "team": "LAC",
+        "slug": "jaret%20patterson",
+        "player_id": "7537"
     },
-    "Kadarius Toney": {
-        "full_name": "Kadarius Toney",
-        "first_name": "Kadarius",
-        "last_name": "Toney",
-        "position": "WR",
-        "team": null,
-        "slug": "kadarius%20toney",
-        "player_id": "7606"
+    "Gary Brightwell": {
+        "full_name": "Gary Brightwell",
+        "first_name": "Gary",
+        "last_name": "Brightwell",
+        "position": "RB",
+        "team": "CIN",
+        "slug": "gary%20brightwell",
+        "player_id": "7529"
     },
     "Evan McPherson": {
         "full_name": "Evan McPherson",
@@ -4049,15 +4274,6 @@
         "slug": "evan%20mcpherson",
         "player_id": "7839"
     },
-    "Alex Collins": {
-        "full_name": "Alex Collins",
-        "first_name": "Alex",
-        "last_name": "Collins",
-        "position": "RB",
-        "team": null,
-        "slug": "alex%20collins",
-        "player_id": "3327"
-    },
     "Khalil Herbert": {
         "full_name": "Khalil Herbert",
         "first_name": "Khalil",
@@ -4067,14 +4283,14 @@
         "slug": "khalil%20herbert",
         "player_id": "7608"
     },
-    "Trayveon Williams": {
-        "full_name": "Trayveon Williams",
-        "first_name": "Trayveon",
-        "last_name": "Williams",
-        "position": "RB",
-        "team": "CLE",
-        "slug": "trayveon%20williams",
-        "player_id": "6144"
+    "Dan Arnold": {
+        "full_name": "Dan Arnold",
+        "first_name": "Dan",
+        "last_name": "Arnold",
+        "position": "TE",
+        "team": null,
+        "slug": "dan%20arnold",
+        "player_id": "4741"
     },
     "Ricky Seals-Jones": {
         "full_name": "Ricky Seals-Jones",
@@ -4085,15 +4301,6 @@
         "slug": "ricky%20seals-jones",
         "player_id": "4531"
     },
-    "Austin Seibert": {
-        "full_name": "Austin Seibert",
-        "first_name": "Austin",
-        "last_name": "Seibert",
-        "position": "K",
-        "team": null,
-        "slug": "austin%20seibert",
-        "player_id": "6219"
-    },
     "Greg Joseph": {
         "full_name": "Greg Joseph",
         "first_name": "Greg",
@@ -4102,6 +4309,24 @@
         "team": null,
         "slug": "greg%20joseph",
         "player_id": "5272"
+    },
+    "Trayveon Williams": {
+        "full_name": "Trayveon Williams",
+        "first_name": "Trayveon",
+        "last_name": "Williams",
+        "position": "RB",
+        "team": "CLE",
+        "slug": "trayveon%20williams",
+        "player_id": "6144"
+    },
+    "Austin Seibert": {
+        "full_name": "Austin Seibert",
+        "first_name": "Austin",
+        "last_name": "Seibert",
+        "position": "K",
+        "team": null,
+        "slug": "austin%20seibert",
+        "player_id": "6219"
     },
     "Kalif Raymond": {
         "full_name": "Kalif Raymond",
@@ -4121,6 +4346,15 @@
         "slug": "pat%20freiermuth",
         "player_id": "7600"
     },
+    "Van Jefferson": {
+        "full_name": "Van Jefferson",
+        "first_name": "Van",
+        "last_name": "Jefferson",
+        "position": "WR",
+        "team": "TEN",
+        "slug": "van%20jefferson",
+        "player_id": "6853"
+    },
     "Derrick Gore": {
         "full_name": "Derrick Gore",
         "first_name": "Derrick",
@@ -4129,15 +4363,6 @@
         "team": null,
         "slug": "derrick%20gore",
         "player_id": "6753"
-    },
-    "C.J. Uzomah": {
-        "full_name": "C.J. Uzomah",
-        "first_name": "C.J.",
-        "last_name": "Uzomah",
-        "position": "TE",
-        "team": null,
-        "slug": "c.j.%20uzomah",
-        "player_id": "2460"
     },
     "Jamal Agnew": {
         "full_name": "Jamal Agnew",
@@ -4148,14 +4373,23 @@
         "slug": "jamal%20agnew",
         "player_id": "4198"
     },
-    "Van Jefferson": {
-        "full_name": "Van Jefferson",
-        "first_name": "Van",
-        "last_name": "Jefferson",
+    "Amari Rodgers": {
+        "full_name": "Amari Rodgers",
+        "first_name": "Amari",
+        "last_name": "Rodgers",
         "position": "WR",
-        "team": "TEN",
-        "slug": "van%20jefferson",
-        "player_id": "6853"
+        "team": null,
+        "slug": "amari%20rodgers",
+        "player_id": "7540"
+    },
+    "C.J. Uzomah": {
+        "full_name": "C.J. Uzomah",
+        "first_name": "C.J.",
+        "last_name": "Uzomah",
+        "position": "TE",
+        "team": null,
+        "slug": "c.j.%20uzomah",
+        "player_id": "2460"
     },
     "Tyrod Taylor": {
         "full_name": "Tyrod Taylor",
@@ -4166,15 +4400,6 @@
         "slug": "tyrod%20taylor",
         "player_id": "827"
     },
-    "Jaret Patterson": {
-        "full_name": "Jaret Patterson",
-        "first_name": "Jaret",
-        "last_name": "Patterson",
-        "position": "RB",
-        "team": "LAC",
-        "slug": "jaret%20patterson",
-        "player_id": "7537"
-    },
     "Tajae Sharpe": {
         "full_name": "Tajae Sharpe",
         "first_name": "Tajae",
@@ -4184,15 +4409,6 @@
         "slug": "tajae%20sharpe",
         "player_id": "3297"
     },
-    "Dan Arnold": {
-        "full_name": "Dan Arnold",
-        "first_name": "Dan",
-        "last_name": "Arnold",
-        "position": "TE",
-        "team": null,
-        "slug": "dan%20arnold",
-        "player_id": "4741"
-    },
     "Jordan Love": {
         "full_name": "Jordan Love",
         "first_name": "Jordan",
@@ -4201,15 +4417,6 @@
         "team": "GB",
         "slug": "jordan%20love",
         "player_id": "6804"
-    },
-    "Tyler Johnson": {
-        "full_name": "Tyler Johnson",
-        "first_name": "Tyler",
-        "last_name": "Johnson",
-        "position": "WR",
-        "team": "NYJ",
-        "slug": "tyler%20johnson",
-        "player_id": "6960"
     },
     "Mike White": {
         "full_name": "Mike White",
@@ -4238,6 +4445,15 @@
         "slug": "ben%20skowronek",
         "player_id": "7757"
     },
+    "Kendrick Bourne": {
+        "full_name": "Kendrick Bourne",
+        "first_name": "Kendrick",
+        "last_name": "Bourne",
+        "position": "WR",
+        "team": "SF",
+        "slug": "kendrick%20bourne",
+        "player_id": "4454"
+    },
     "D'Onta Foreman": {
         "full_name": "D'Onta Foreman",
         "first_name": "D'Onta",
@@ -4265,14 +4481,14 @@
         "slug": "taylor%20heinicke",
         "player_id": "2711"
     },
-    "Kendrick Bourne": {
-        "full_name": "Kendrick Bourne",
-        "first_name": "Kendrick",
-        "last_name": "Bourne",
-        "position": "WR",
-        "team": "SF",
-        "slug": "kendrick%20bourne",
-        "player_id": "4454"
+    "Kene Nwangwu": {
+        "full_name": "Kene Nwangwu",
+        "first_name": "Kene",
+        "last_name": "Nwangwu",
+        "position": "RB",
+        "team": "NYJ",
+        "slug": "kene%20nwangwu",
+        "player_id": "7720"
     },
     "Foster Moreau": {
         "full_name": "Foster Moreau",
@@ -4282,15 +4498,6 @@
         "team": "NO",
         "slug": "foster%20moreau",
         "player_id": "5985"
-    },
-    "Kene Nwangwu": {
-        "full_name": "Kene Nwangwu",
-        "first_name": "Kene",
-        "last_name": "Nwangwu",
-        "position": "RB",
-        "team": "NYJ",
-        "slug": "kene%20nwangwu",
-        "player_id": "7720"
     },
     "Cedrick Wilson": {
         "full_name": "Cedrick Wilson",
@@ -4373,15 +4580,6 @@
         "slug": "godwin%20igwebuike",
         "player_id": "5220"
     },
-    "Gabe Davis": {
-        "full_name": "Gabe Davis",
-        "first_name": "Gabe",
-        "last_name": "Davis",
-        "position": "WR",
-        "team": "BUF",
-        "slug": "gabe%20davis",
-        "player_id": "6943"
-    },
     "Corey Clement": {
         "full_name": "Corey Clement",
         "first_name": "Corey",
@@ -4391,6 +4589,15 @@
         "slug": "corey%20clement",
         "player_id": "4651"
     },
+    "Jakeem Grant": {
+        "full_name": "Jakeem Grant",
+        "first_name": "Jakeem",
+        "last_name": "Grant",
+        "position": "WR",
+        "team": null,
+        "slug": "jakeem%20grant",
+        "player_id": "3342"
+    },
     "Craig Reynolds": {
         "full_name": "Craig Reynolds",
         "first_name": "Craig",
@@ -4399,6 +4606,15 @@
         "team": "NE",
         "slug": "craig%20reynolds",
         "player_id": "6659"
+    },
+    "Tyler Huntley": {
+        "full_name": "Tyler Huntley",
+        "first_name": "Tyler",
+        "last_name": "Huntley",
+        "position": "QB",
+        "team": "BAL",
+        "slug": "tyler%20huntley",
+        "player_id": "7083"
     },
     "Zach Wilson": {
         "full_name": "Zach Wilson",
@@ -4417,15 +4633,6 @@
         "team": "BUF",
         "slug": "joshua%20palmer",
         "player_id": "7670"
-    },
-    "Tyler Huntley": {
-        "full_name": "Tyler Huntley",
-        "first_name": "Tyler",
-        "last_name": "Huntley",
-        "position": "QB",
-        "team": "BAL",
-        "slug": "tyler%20huntley",
-        "player_id": "7083"
     },
     "Travis Etienne": {
         "full_name": "Travis Etienne",
@@ -4652,33 +4859,6 @@
         "slug": "drake%20london",
         "player_id": "8112"
     },
-    "Devin Duvernay": {
-        "full_name": "Devin Duvernay",
-        "first_name": "Devin",
-        "last_name": "Duvernay",
-        "position": "WR",
-        "team": "CHI",
-        "slug": "devin%20duvernay",
-        "player_id": "6847"
-    },
-    "Tyrion Davis-Price": {
-        "full_name": "Tyrion Davis-Price",
-        "first_name": "Tyrion",
-        "last_name": "Davis-Price",
-        "position": "RB",
-        "team": null,
-        "slug": "tyrion%20davis-price",
-        "player_id": "8211"
-    },
-    "Cade York": {
-        "full_name": "Cade York",
-        "first_name": "Cade",
-        "last_name": "York",
-        "position": "K",
-        "team": "NO",
-        "slug": "cade%20york",
-        "player_id": "8258"
-    },
     "Jaylen Warren": {
         "full_name": "Jaylen Warren",
         "first_name": "Jaylen",
@@ -4688,14 +4868,14 @@
         "slug": "jaylen%20warren",
         "player_id": "8228"
     },
-    "Ashton Dulin": {
-        "full_name": "Ashton Dulin",
-        "first_name": "Ashton",
-        "last_name": "Dulin",
+    "Devin Duvernay": {
+        "full_name": "Devin Duvernay",
+        "first_name": "Devin",
+        "last_name": "Duvernay",
         "position": "WR",
-        "team": "IND",
-        "slug": "ashton%20dulin",
-        "player_id": "6427"
+        "team": "CHI",
+        "slug": "devin%20duvernay",
+        "player_id": "6847"
     },
     "Isiah Pacheco": {
         "full_name": "Isiah Pacheco",
@@ -4706,14 +4886,41 @@
         "slug": "isiah%20pacheco",
         "player_id": "8205"
     },
-    "Noah Brown": {
-        "full_name": "Noah Brown",
-        "first_name": "Noah",
-        "last_name": "Brown",
+    "Cade York": {
+        "full_name": "Cade York",
+        "first_name": "Cade",
+        "last_name": "York",
+        "position": "K",
+        "team": "NO",
+        "slug": "cade%20york",
+        "player_id": "8258"
+    },
+    "Tyrion Davis-Price": {
+        "full_name": "Tyrion Davis-Price",
+        "first_name": "Tyrion",
+        "last_name": "Davis-Price",
+        "position": "RB",
+        "team": null,
+        "slug": "tyrion%20davis-price",
+        "player_id": "8211"
+    },
+    "Zamir White": {
+        "full_name": "Zamir White",
+        "first_name": "Zamir",
+        "last_name": "White",
+        "position": "RB",
+        "team": "LV",
+        "slug": "zamir%20white",
+        "player_id": "8139"
+    },
+    "Ashton Dulin": {
+        "full_name": "Ashton Dulin",
+        "first_name": "Ashton",
+        "last_name": "Dulin",
         "position": "WR",
-        "team": "WAS",
-        "slug": "noah%20brown",
-        "player_id": "4234"
+        "team": "IND",
+        "slug": "ashton%20dulin",
+        "player_id": "6427"
     },
     "Greg Dortch": {
         "full_name": "Greg Dortch",
@@ -4733,6 +4940,15 @@
         "slug": "jordan%20mason",
         "player_id": "8408"
     },
+    "Noah Brown": {
+        "full_name": "Noah Brown",
+        "first_name": "Noah",
+        "last_name": "Brown",
+        "position": "WR",
+        "team": "WAS",
+        "slug": "noah%20brown",
+        "player_id": "4234"
+    },
     "Mack Hollins": {
         "full_name": "Mack Hollins",
         "first_name": "Mack",
@@ -4741,6 +4957,24 @@
         "team": "NE",
         "slug": "mack%20hollins",
         "player_id": "4177"
+    },
+    "Marcus Mariota": {
+        "full_name": "Marcus Mariota",
+        "first_name": "Marcus",
+        "last_name": "Mariota",
+        "position": "QB",
+        "team": "WAS",
+        "slug": "marcus%20mariota",
+        "player_id": "2307"
+    },
+    "Caleb Huntley": {
+        "full_name": "Caleb Huntley",
+        "first_name": "Caleb",
+        "last_name": "Huntley",
+        "position": "RB",
+        "team": null,
+        "slug": "caleb%20huntley",
+        "player_id": "7741"
     },
     "Cameron Dicker": {
         "full_name": "Cameron Dicker",
@@ -4769,14 +5003,14 @@
         "slug": "riley%20patterson",
         "player_id": "7922"
     },
-    "Caleb Huntley": {
-        "full_name": "Caleb Huntley",
-        "first_name": "Caleb",
-        "last_name": "Huntley",
-        "position": "RB",
-        "team": null,
-        "slug": "caleb%20huntley",
-        "player_id": "7741"
+    "Geno Smith": {
+        "full_name": "Geno Smith",
+        "first_name": "Geno",
+        "last_name": "Smith",
+        "position": "QB",
+        "team": "LV",
+        "slug": "geno%20smith",
+        "player_id": "1373"
     },
     "Deon Jackson": {
         "full_name": "Deon Jackson",
@@ -4786,15 +5020,6 @@
         "team": null,
         "slug": "deon%20jackson",
         "player_id": "7551"
-    },
-    "Geno Smith": {
-        "full_name": "Geno Smith",
-        "first_name": "Geno",
-        "last_name": "Smith",
-        "position": "QB",
-        "team": "LV",
-        "slug": "geno%20smith",
-        "player_id": "1373"
     },
     "Pierre Strong": {
         "full_name": "Pierre Strong",
@@ -4823,6 +5048,15 @@
         "slug": "taylor%20bertolet",
         "player_id": "3467"
     },
+    "Greg Dulcich": {
+        "full_name": "Greg Dulcich",
+        "first_name": "Greg",
+        "last_name": "Dulcich",
+        "position": "TE",
+        "team": "MIA",
+        "slug": "greg%20dulcich",
+        "player_id": "8172"
+    },
     "Malik Willis": {
         "full_name": "Malik Willis",
         "first_name": "Malik",
@@ -4831,6 +5065,15 @@
         "team": "GB",
         "slug": "malik%20willis",
         "player_id": "8161"
+    },
+    "Samori Toure": {
+        "full_name": "Samori Toure",
+        "first_name": "Samori",
+        "last_name": "Toure",
+        "position": "WR",
+        "team": "NO",
+        "slug": "samori%20toure",
+        "player_id": "8235"
     },
     "Isaiah Likely": {
         "full_name": "Isaiah Likely",
@@ -4841,24 +5084,6 @@
         "slug": "isaiah%20likely",
         "player_id": "8131"
     },
-    "Greg Dulcich": {
-        "full_name": "Greg Dulcich",
-        "first_name": "Greg",
-        "last_name": "Dulcich",
-        "position": "TE",
-        "team": "MIA",
-        "slug": "greg%20dulcich",
-        "player_id": "8172"
-    },
-    "Marcus Mariota": {
-        "full_name": "Marcus Mariota",
-        "first_name": "Marcus",
-        "last_name": "Mariota",
-        "position": "QB",
-        "team": "WAS",
-        "slug": "marcus%20mariota",
-        "player_id": "2307"
-    },
     "DeAndre Carter": {
         "full_name": "DeAndre Carter",
         "first_name": "DeAndre",
@@ -4867,6 +5092,15 @@
         "team": "CLE",
         "slug": "deandre%20carter",
         "player_id": "2750"
+    },
+    "Grant Calcaterra": {
+        "full_name": "Grant Calcaterra",
+        "first_name": "Grant",
+        "last_name": "Calcaterra",
+        "position": "TE",
+        "team": "PHI",
+        "slug": "grant%20calcaterra",
+        "player_id": "8177"
     },
     "Keaontay Ingram": {
         "full_name": "Keaontay Ingram",
@@ -4913,14 +5147,14 @@
         "slug": "ke%27shawn%20vaughn",
         "player_id": "6885"
     },
-    "Richie James": {
-        "full_name": "Richie James",
-        "first_name": "Richie",
-        "last_name": "James",
-        "position": "WR",
-        "team": null,
-        "slug": "richie%20james",
-        "player_id": "5137"
+    "Zonovan Knight": {
+        "full_name": "Zonovan Knight",
+        "first_name": "Zonovan",
+        "last_name": "Knight",
+        "position": "RB",
+        "team": "ARI",
+        "slug": "zonovan%20knight",
+        "player_id": "8122"
     },
     "Jelani Woods": {
         "full_name": "Jelani Woods",
@@ -4930,15 +5164,6 @@
         "team": "NYJ",
         "slug": "jelani%20woods",
         "player_id": "8219"
-    },
-    "Zonovan Knight": {
-        "full_name": "Zonovan Knight",
-        "first_name": "Zonovan",
-        "last_name": "Knight",
-        "position": "RB",
-        "team": "ARI",
-        "slug": "zonovan%20knight",
-        "player_id": "8122"
     },
     "Harrison Bryant": {
         "full_name": "Harrison Bryant",
@@ -4967,15 +5192,6 @@
         "slug": "chig%20okonkwo",
         "player_id": "8210"
     },
-    "Kevin Harris": {
-        "full_name": "Kevin Harris",
-        "first_name": "Kevin",
-        "last_name": "Harris",
-        "position": "RB",
-        "team": null,
-        "slug": "kevin%20harris",
-        "player_id": "8174"
-    },
     "Brock Purdy": {
         "full_name": "Brock Purdy",
         "first_name": "Brock",
@@ -4984,6 +5200,15 @@
         "team": "SF",
         "slug": "brock%20purdy",
         "player_id": "8183"
+    },
+    "Kevin Harris": {
+        "full_name": "Kevin Harris",
+        "first_name": "Kevin",
+        "last_name": "Harris",
+        "position": "RB",
+        "team": null,
+        "slug": "kevin%20harris",
+        "player_id": "8174"
     },
     "Chris Moore": {
         "full_name": "Chris Moore",
@@ -4994,6 +5219,15 @@
         "slug": "chris%20moore",
         "player_id": "3269"
     },
+    "Tutu Atwell": {
+        "full_name": "Tutu Atwell",
+        "first_name": "Tutu",
+        "last_name": "Atwell",
+        "position": "WR",
+        "team": "LAR",
+        "slug": "tutu%20atwell",
+        "player_id": "7562"
+    },
     "Rashid Shaheed": {
         "full_name": "Rashid Shaheed",
         "first_name": "Rashid",
@@ -5002,15 +5236,6 @@
         "team": "SEA",
         "slug": "rashid%20shaheed",
         "player_id": "8676"
-    },
-    "Brandon Allen": {
-        "full_name": "Brandon Allen",
-        "first_name": "Brandon",
-        "last_name": "Allen",
-        "position": "QB",
-        "team": "TEN",
-        "slug": "brandon%20allen",
-        "player_id": "3357"
     },
     "Isaiah Hodgins": {
         "full_name": "Isaiah Hodgins",
@@ -5029,6 +5254,15 @@
         "team": "LAC",
         "slug": "hassan%20haskins",
         "player_id": "8123"
+    },
+    "Brandon Allen": {
+        "full_name": "Brandon Allen",
+        "first_name": "Brandon",
+        "last_name": "Allen",
+        "position": "QB",
+        "team": "TEN",
+        "slug": "brandon%20allen",
+        "player_id": "3357"
     },
     "Bijan Robinson": {
         "full_name": "Bijan Robinson",
@@ -5255,14 +5489,14 @@
         "slug": "zach%20charbonnet",
         "player_id": "9753"
     },
-    "Tutu Atwell": {
-        "full_name": "Tutu Atwell",
-        "first_name": "Tutu",
-        "last_name": "Atwell",
-        "position": "WR",
-        "team": "LAR",
-        "slug": "tutu%20atwell",
-        "player_id": "7562"
+    "Sam LaPorta": {
+        "full_name": "Sam LaPorta",
+        "first_name": "Sam",
+        "last_name": "LaPorta",
+        "position": "TE",
+        "team": "DET",
+        "slug": "sam%20laporta",
+        "player_id": "10859"
     },
     "Puka Nacua": {
         "full_name": "Puka Nacua",
@@ -5273,14 +5507,50 @@
         "slug": "puka%20nacua",
         "player_id": "9493"
     },
-    "Sam LaPorta": {
-        "full_name": "Sam LaPorta",
+    "Deuce Vaughn": {
+        "full_name": "Deuce Vaughn",
+        "first_name": "Deuce",
+        "last_name": "Vaughn",
+        "position": "RB",
+        "team": "DEN",
+        "slug": "deuce%20vaughn",
+        "player_id": "9505"
+    },
+    "Chase Brown": {
+        "full_name": "Chase Brown",
+        "first_name": "Chase",
+        "last_name": "Brown",
+        "position": "RB",
+        "team": "CIN",
+        "slug": "chase%20brown",
+        "player_id": "9224"
+    },
+    "Marvin Mims": {
+        "full_name": "Marvin Mims",
+        "first_name": "Marvin",
+        "last_name": "Mims",
+        "position": "WR",
+        "team": "DEN",
+        "slug": "marvin%20mims",
+        "player_id": "9494"
+    },
+    "Sam Howell": {
+        "full_name": "Sam Howell",
         "first_name": "Sam",
-        "last_name": "LaPorta",
-        "position": "TE",
-        "team": "DET",
-        "slug": "sam%20laporta",
-        "player_id": "10859"
+        "last_name": "Howell",
+        "position": "QB",
+        "team": "PHI",
+        "slug": "sam%20howell",
+        "player_id": "8162"
+    },
+    "Evan Hull": {
+        "full_name": "Evan Hull",
+        "first_name": "Evan",
+        "last_name": "Hull",
+        "position": "RB",
+        "team": "NO",
+        "slug": "evan%20hull",
+        "player_id": "9220"
     },
     "Jake Moody": {
         "full_name": "Jake Moody",
@@ -5300,6 +5570,33 @@
         "slug": "brandon%20aubrey",
         "player_id": "11533"
     },
+    "Tank Dell": {
+        "full_name": "Tank Dell",
+        "first_name": "Tank",
+        "last_name": "Dell",
+        "position": "WR",
+        "team": "HOU",
+        "slug": "tank%20dell",
+        "player_id": "9502"
+    },
+    "Durham Smythe": {
+        "full_name": "Durham Smythe",
+        "first_name": "Durham",
+        "last_name": "Smythe",
+        "position": "TE",
+        "team": "CHI",
+        "slug": "durham%20smythe",
+        "player_id": "5008"
+    },
+    "Ty Chandler": {
+        "full_name": "Ty Chandler",
+        "first_name": "Ty",
+        "last_name": "Chandler",
+        "position": "RB",
+        "team": "MIN",
+        "slug": "ty%20chandler",
+        "player_id": "8230"
+    },
     "Ronnie Rivers": {
         "full_name": "Ronnie Rivers",
         "first_name": "Ronnie",
@@ -5318,15 +5615,6 @@
         "slug": "zach%20evans",
         "player_id": "9222"
     },
-    "Tank Dell": {
-        "full_name": "Tank Dell",
-        "first_name": "Tank",
-        "last_name": "Dell",
-        "position": "WR",
-        "team": "HOU",
-        "slug": "tank%20dell",
-        "player_id": "9502"
-    },
     "C.J. Stroud": {
         "full_name": "C.J. Stroud",
         "first_name": "C.J.",
@@ -5335,15 +5623,6 @@
         "team": "HOU",
         "slug": "c.j.%20stroud",
         "player_id": "9758"
-    },
-    "Marvin Mims": {
-        "full_name": "Marvin Mims",
-        "first_name": "Marvin",
-        "last_name": "Mims",
-        "position": "WR",
-        "team": "DEN",
-        "slug": "marvin%20mims",
-        "player_id": "9494"
     },
     "Jake Ferguson": {
         "full_name": "Jake Ferguson",
@@ -5354,14 +5633,14 @@
         "slug": "jake%20ferguson",
         "player_id": "8110"
     },
-    "Keaton Mitchell": {
-        "full_name": "Keaton Mitchell",
-        "first_name": "Keaton",
-        "last_name": "Mitchell",
-        "position": "RB",
-        "team": "BAL",
-        "slug": "keaton%20mitchell",
-        "player_id": "9511"
+    "Josh Downs": {
+        "full_name": "Josh Downs",
+        "first_name": "Josh",
+        "last_name": "Downs",
+        "position": "WR",
+        "team": "IND",
+        "slug": "josh%20downs",
+        "player_id": "9500"
     },
     "Rico Dowdle": {
         "full_name": "Rico Dowdle",
@@ -5372,23 +5651,14 @@
         "slug": "rico%20dowdle",
         "player_id": "7021"
     },
-    "Josh Downs": {
-        "full_name": "Josh Downs",
-        "first_name": "Josh",
-        "last_name": "Downs",
-        "position": "WR",
-        "team": "IND",
-        "slug": "josh%20downs",
-        "player_id": "9500"
-    },
-    "Sam Howell": {
-        "full_name": "Sam Howell",
-        "first_name": "Sam",
-        "last_name": "Howell",
-        "position": "QB",
-        "team": "PHI",
-        "slug": "sam%20howell",
-        "player_id": "8162"
+    "Keaton Mitchell": {
+        "full_name": "Keaton Mitchell",
+        "first_name": "Keaton",
+        "last_name": "Mitchell",
+        "position": "RB",
+        "team": "BAL",
+        "slug": "keaton%20mitchell",
+        "player_id": "9511"
     },
     "Michael Wilson": {
         "full_name": "Michael Wilson",
@@ -5407,6 +5677,15 @@
         "team": "DEN",
         "slug": "jaleel%20mclaughlin",
         "player_id": "11439"
+    },
+    "Joshua Dobbs": {
+        "full_name": "Joshua Dobbs",
+        "first_name": "Joshua",
+        "last_name": "Dobbs",
+        "position": "QB",
+        "team": "NE",
+        "slug": "joshua%20dobbs",
+        "player_id": "4179"
     },
     "Emari Demercado": {
         "full_name": "Emari Demercado",
@@ -5435,6 +5714,15 @@
         "slug": "chris%20brooks",
         "player_id": "11370"
     },
+    "Jake Bobo": {
+        "full_name": "Jake Bobo",
+        "first_name": "Jake",
+        "last_name": "Bobo",
+        "position": "WR",
+        "team": "SEA",
+        "slug": "jake%20bobo",
+        "player_id": "10867"
+    },
     "Anders Carlson": {
         "full_name": "Anders Carlson",
         "first_name": "Anders",
@@ -5443,15 +5731,6 @@
         "team": null,
         "slug": "anders%20carlson",
         "player_id": "11008"
-    },
-    "Chris Rodriguez": {
-        "full_name": "Chris Rodriguez",
-        "first_name": "Chris",
-        "last_name": "Rodriguez",
-        "position": "RB",
-        "team": "WAS",
-        "slug": "chris%20rodriguez",
-        "player_id": "10219"
     },
     "DeMario Douglas": {
         "full_name": "DeMario Douglas",
@@ -5462,14 +5741,14 @@
         "slug": "demario%20douglas",
         "player_id": "9501"
     },
-    "Khalil Shakir": {
-        "full_name": "Khalil Shakir",
-        "first_name": "Khalil",
-        "last_name": "Shakir",
-        "position": "WR",
-        "team": "BUF",
-        "slug": "khalil%20shakir",
-        "player_id": "8134"
+    "Chris Rodriguez": {
+        "full_name": "Chris Rodriguez",
+        "first_name": "Chris",
+        "last_name": "Rodriguez",
+        "position": "RB",
+        "team": "WAS",
+        "slug": "chris%20rodriguez",
+        "player_id": "10219"
     },
     "Will Levis": {
         "full_name": "Will Levis",
@@ -5480,14 +5759,14 @@
         "slug": "will%20levis",
         "player_id": "9999"
     },
-    "Joshua Dobbs": {
-        "full_name": "Joshua Dobbs",
-        "first_name": "Joshua",
-        "last_name": "Dobbs",
-        "position": "QB",
-        "team": "NE",
-        "slug": "joshua%20dobbs",
-        "player_id": "4179"
+    "Khalil Shakir": {
+        "full_name": "Khalil Shakir",
+        "first_name": "Khalil",
+        "last_name": "Shakir",
+        "position": "WR",
+        "team": "BUF",
+        "slug": "khalil%20shakir",
+        "player_id": "8134"
     },
     "Matt Ammendola": {
         "full_name": "Matt Ammendola",
@@ -5497,15 +5776,6 @@
         "team": null,
         "slug": "matt%20ammendola",
         "player_id": "7617"
-    },
-    "Ty Chandler": {
-        "full_name": "Ty Chandler",
-        "first_name": "Ty",
-        "last_name": "Chandler",
-        "position": "RB",
-        "team": "MIN",
-        "slug": "ty%20chandler",
-        "player_id": "8230"
     },
     "Lucas Havrisik": {
         "full_name": "Lucas Havrisik",
@@ -5534,15 +5804,6 @@
         "slug": "brevin%20jordan",
         "player_id": "7568"
     },
-    "Chase Brown": {
-        "full_name": "Chase Brown",
-        "first_name": "Chase",
-        "last_name": "Brown",
-        "position": "RB",
-        "team": "CIN",
-        "slug": "chase%20brown",
-        "player_id": "9224"
-    },
     "Parker Washington": {
         "full_name": "Parker Washington",
         "first_name": "Parker",
@@ -5560,15 +5821,6 @@
         "team": "CIN",
         "slug": "jake%20browning",
         "player_id": "6111"
-    },
-    "Zamir White": {
-        "full_name": "Zamir White",
-        "first_name": "Zamir",
-        "last_name": "White",
-        "position": "RB",
-        "team": "LV",
-        "slug": "zamir%20white",
-        "player_id": "8139"
     },
     "Joe Flacco": {
         "full_name": "Joe Flacco",
@@ -5597,6 +5849,15 @@
         "slug": "dontayvion%20wicks",
         "player_id": "9486"
     },
+    "Drew Lock": {
+        "full_name": "Drew Lock",
+        "first_name": "Drew",
+        "last_name": "Lock",
+        "position": "QB",
+        "team": "SEA",
+        "slug": "drew%20lock",
+        "player_id": "5854"
+    },
     "Jake Butt": {
         "full_name": "Jake Butt",
         "first_name": "Jake",
@@ -5624,15 +5885,6 @@
         "slug": "nick%20foles",
         "player_id": "1029"
     },
-    "Tim Tebow": {
-        "full_name": "Tim Tebow",
-        "first_name": "Tim",
-        "last_name": "Tebow",
-        "position": "TE",
-        "team": null,
-        "slug": "tim%20tebow",
-        "player_id": "559"
-    },
     "Tucker Kraft": {
         "full_name": "Tucker Kraft",
         "first_name": "Tucker",
@@ -5641,6 +5893,24 @@
         "team": "GB",
         "slug": "tucker%20kraft",
         "player_id": "9484"
+    },
+    "Jaren Hall": {
+        "full_name": "Jaren Hall",
+        "first_name": "Jaren",
+        "last_name": "Hall",
+        "position": "QB",
+        "team": null,
+        "slug": "jaren%20hall",
+        "player_id": "9231"
+    },
+    "Jarrett Stidham": {
+        "full_name": "Jarrett Stidham",
+        "first_name": "Jarrett",
+        "last_name": "Stidham",
+        "position": "QB",
+        "team": "DEN",
+        "slug": "jarrett%20stidham",
+        "player_id": "6136"
     },
     "Brock Bowers": {
         "full_name": "Brock Bowers",
@@ -5849,6 +6119,15 @@
         "slug": "isaac%20guerendo",
         "player_id": "11651"
     },
+    "Devaughn Vele": {
+        "full_name": "Devaughn Vele",
+        "first_name": "Devaughn",
+        "last_name": "Vele",
+        "position": "WR",
+        "team": "NO",
+        "slug": "devaughn%20vele",
+        "player_id": "11834"
+    },
     "Colby Parkinson": {
         "full_name": "Colby Parkinson",
         "first_name": "Colby",
@@ -5857,6 +6136,60 @@
         "team": "LAR",
         "slug": "colby%20parkinson",
         "player_id": "6865"
+    },
+    "Ray Davis": {
+        "full_name": "Ray Davis",
+        "first_name": "Ray",
+        "last_name": "Davis",
+        "position": "RB",
+        "team": "BUF",
+        "slug": "ray%20davis",
+        "player_id": "11575"
+    },
+    "Kyle Juszczyk": {
+        "full_name": "Kyle Juszczyk",
+        "first_name": "Kyle",
+        "last_name": "Juszczyk",
+        "position": "FB",
+        "team": "SF",
+        "slug": "kyle%20juszczyk",
+        "player_id": "1379"
+    },
+    "Ja'Lynn Polk": {
+        "full_name": "Ja'Lynn Polk",
+        "first_name": "Ja'Lynn",
+        "last_name": "Polk",
+        "position": "WR",
+        "team": "NO",
+        "slug": "ja%27lynn%20polk",
+        "player_id": "11619"
+    },
+    "MarShawn Lloyd": {
+        "full_name": "MarShawn Lloyd",
+        "first_name": "MarShawn",
+        "last_name": "Lloyd",
+        "position": "RB",
+        "team": "GB",
+        "slug": "marshawn%20lloyd",
+        "player_id": "11581"
+    },
+    "Carson Steele": {
+        "full_name": "Carson Steele",
+        "first_name": "Carson",
+        "last_name": "Steele",
+        "position": "RB",
+        "team": "KC",
+        "slug": "carson%20steele",
+        "player_id": "11582"
+    },
+    "Xavier Legette": {
+        "full_name": "Xavier Legette",
+        "first_name": "Xavier",
+        "last_name": "Legette",
+        "position": "WR",
+        "team": "CAR",
+        "slug": "xavier%20legette",
+        "player_id": "11626"
     },
     "Ray-Ray McCloud": {
         "full_name": "Ray-Ray McCloud",
@@ -5876,15 +6209,6 @@
         "slug": "jordan%20whittington",
         "player_id": "11623"
     },
-    "Xavier Legette": {
-        "full_name": "Xavier Legette",
-        "first_name": "Xavier",
-        "last_name": "Legette",
-        "position": "WR",
-        "team": "CAR",
-        "slug": "xavier%20legette",
-        "player_id": "11626"
-    },
     "Jauan Jennings": {
         "full_name": "Jauan Jennings",
         "first_name": "Jauan",
@@ -5893,15 +6217,6 @@
         "team": "SF",
         "slug": "jauan%20jennings",
         "player_id": "7049"
-    },
-    "Carson Steele": {
-        "full_name": "Carson Steele",
-        "first_name": "Carson",
-        "last_name": "Steele",
-        "position": "RB",
-        "team": "KC",
-        "slug": "carson%20steele",
-        "player_id": "11582"
     },
     "Emanuel Wilson": {
         "full_name": "Emanuel Wilson",
@@ -5912,6 +6227,15 @@
         "slug": "emanuel%20wilson",
         "player_id": "11435"
     },
+    "Jalen Nailor": {
+        "full_name": "Jalen Nailor",
+        "first_name": "Jalen",
+        "last_name": "Nailor",
+        "position": "WR",
+        "team": "MIN",
+        "slug": "jalen%20nailor",
+        "player_id": "8180"
+    },
     "Tre Tucker": {
         "full_name": "Tre Tucker",
         "first_name": "Tre",
@@ -5920,6 +6244,15 @@
         "team": "LV",
         "slug": "tre%20tucker",
         "player_id": "10213"
+    },
+    "Hunter Luepke": {
+        "full_name": "Hunter Luepke",
+        "first_name": "Hunter",
+        "last_name": "Luepke",
+        "position": "FB",
+        "team": "DAL",
+        "slug": "hunter%20luepke",
+        "player_id": "11510"
     },
     "Audric Estime": {
         "full_name": "Audric Estime",
@@ -5930,23 +6263,14 @@
         "slug": "audric%20estime",
         "player_id": "11579"
     },
-    "Ray Davis": {
-        "full_name": "Ray Davis",
-        "first_name": "Ray",
-        "last_name": "Davis",
-        "position": "RB",
-        "team": "BUF",
-        "slug": "ray%20davis",
-        "player_id": "11575"
-    },
-    "Ja'Lynn Polk": {
-        "full_name": "Ja'Lynn Polk",
-        "first_name": "Ja'Lynn",
-        "last_name": "Polk",
+    "Bo Melton": {
+        "full_name": "Bo Melton",
+        "first_name": "Bo",
+        "last_name": "Melton",
         "position": "WR",
-        "team": "NO",
-        "slug": "ja%27lynn%20polk",
-        "player_id": "11619"
+        "team": "GB",
+        "slug": "bo%20melton",
+        "player_id": "8204"
     },
     "Kimani Vidal": {
         "full_name": "Kimani Vidal",
@@ -5956,6 +6280,24 @@
         "team": "LAC",
         "slug": "kimani%20vidal",
         "player_id": "11647"
+    },
+    "Brayden Narveson": {
+        "full_name": "Brayden Narveson",
+        "first_name": "Brayden",
+        "last_name": "Narveson",
+        "position": "K",
+        "team": null,
+        "slug": "brayden%20narveson",
+        "player_id": "11949"
+    },
+    "Theo Johnson": {
+        "full_name": "Theo Johnson",
+        "first_name": "Theo",
+        "last_name": "Johnson",
+        "position": "TE",
+        "team": "NYG",
+        "slug": "theo%20johnson",
+        "player_id": "11597"
     },
     "Jake Bates": {
         "full_name": "Jake Bates",
@@ -5993,15 +6335,6 @@
         "slug": "joshua%20karty",
         "player_id": "11789"
     },
-    "Trey Palmer": {
-        "full_name": "Trey Palmer",
-        "first_name": "Trey",
-        "last_name": "Palmer",
-        "position": "WR",
-        "team": "NO",
-        "slug": "trey%20palmer",
-        "player_id": "9492"
-    },
     "Cedric Tillman": {
         "full_name": "Cedric Tillman",
         "first_name": "Cedric",
@@ -6010,15 +6343,6 @@
         "team": "CLE",
         "slug": "cedric%20tillman",
         "player_id": "10444"
-    },
-    "Troy Franklin": {
-        "full_name": "Troy Franklin",
-        "first_name": "Troy",
-        "last_name": "Franklin",
-        "position": "WR",
-        "team": "DEN",
-        "slug": "troy%20franklin",
-        "player_id": "11627"
     },
     "Ricky Pearsall": {
         "full_name": "Ricky Pearsall",
@@ -6038,6 +6362,24 @@
         "slug": "bo%20nix",
         "player_id": "11563"
     },
+    "Trey Palmer": {
+        "full_name": "Trey Palmer",
+        "first_name": "Trey",
+        "last_name": "Palmer",
+        "position": "WR",
+        "team": "NO",
+        "slug": "trey%20palmer",
+        "player_id": "9492"
+    },
+    "Troy Franklin": {
+        "full_name": "Troy Franklin",
+        "first_name": "Troy",
+        "last_name": "Franklin",
+        "position": "WR",
+        "team": "DEN",
+        "slug": "troy%20franklin",
+        "player_id": "11627"
+    },
     "Jalen Coker": {
         "full_name": "Jalen Coker",
         "first_name": "Jalen",
@@ -6056,14 +6398,14 @@
         "slug": "chad%20ryland",
         "player_id": "10955"
     },
-    "MarShawn Lloyd": {
-        "full_name": "MarShawn Lloyd",
-        "first_name": "MarShawn",
-        "last_name": "Lloyd",
-        "position": "RB",
-        "team": "GB",
-        "slug": "marshawn%20lloyd",
-        "player_id": "11581"
+    "Rakim Jarrett": {
+        "full_name": "Rakim Jarrett",
+        "first_name": "Rakim",
+        "last_name": "Jarrett",
+        "position": "WR",
+        "team": null,
+        "slug": "rakim%20jarrett",
+        "player_id": "9495"
     },
     "Spencer Shrader": {
         "full_name": "Spencer Shrader",
@@ -6082,15 +6424,6 @@
         "team": "LV",
         "slug": "dylan%20laube",
         "player_id": "11574"
-    },
-    "Devaughn Vele": {
-        "full_name": "Devaughn Vele",
-        "first_name": "Devaughn",
-        "last_name": "Vele",
-        "position": "WR",
-        "team": "NO",
-        "slug": "devaughn%20vele",
-        "player_id": "11834"
     },
     "Isaiah Davis": {
         "full_name": "Isaiah Davis",
@@ -6119,15 +6452,6 @@
         "slug": "patrick%20taylor",
         "player_id": "6963"
     },
-    "Brenton Strange": {
-        "full_name": "Brenton Strange",
-        "first_name": "Brenton",
-        "last_name": "Strange",
-        "position": "TE",
-        "team": "JAX",
-        "slug": "brenton%20strange",
-        "player_id": "9480"
-    },
     "Israel Abanikanda": {
         "full_name": "Israel Abanikanda",
         "first_name": "Israel",
@@ -6136,6 +6460,24 @@
         "team": "DAL",
         "slug": "israel%20abanikanda",
         "player_id": "9227"
+    },
+    "Matthew Wright": {
+        "full_name": "Matthew Wright",
+        "first_name": "Matthew",
+        "last_name": "Wright",
+        "position": "K",
+        "team": null,
+        "slug": "matthew%20wright",
+        "player_id": "6268"
+    },
+    "Brenton Strange": {
+        "full_name": "Brenton Strange",
+        "first_name": "Brenton",
+        "last_name": "Strange",
+        "position": "TE",
+        "team": "JAX",
+        "slug": "brenton%20strange",
+        "player_id": "9480"
     },
     "Michael Penix": {
         "full_name": "Michael Penix",
@@ -6154,6 +6496,15 @@
         "team": null,
         "slug": "raheem%20blackshear",
         "player_id": "8255"
+    },
+    "Bryce Young": {
+        "full_name": "Bryce Young",
+        "first_name": "Bryce",
+        "last_name": "Young",
+        "position": "QB",
+        "team": "CAR",
+        "slug": "bryce%20young",
+        "player_id": "9228"
     },
     "Elic Ayomanor": {
         "full_name": "Elic Ayomanor",
@@ -6461,14 +6812,14 @@
         "slug": "tyler%20loop",
         "player_id": "12711"
     },
-    "Calvin Austin": {
-        "full_name": "Calvin Austin",
-        "first_name": "Calvin",
-        "last_name": "Austin",
+    "Kayshon Boutte": {
+        "full_name": "Kayshon Boutte",
+        "first_name": "Kayshon",
+        "last_name": "Boutte",
         "position": "WR",
-        "team": "PIT",
-        "slug": "calvin%20austin",
-        "player_id": "8125"
+        "team": "NE",
+        "slug": "kayshon%20boutte",
+        "player_id": "9504"
     },
     "Harold Fannin": {
         "full_name": "Harold Fannin",
@@ -6479,14 +6830,32 @@
         "slug": "harold%20fannin",
         "player_id": "12506"
     },
-    "Kayshon Boutte": {
-        "full_name": "Kayshon Boutte",
-        "first_name": "Kayshon",
-        "last_name": "Boutte",
+    "Calvin Austin": {
+        "full_name": "Calvin Austin",
+        "first_name": "Calvin",
+        "last_name": "Austin",
         "position": "WR",
-        "team": "NE",
-        "slug": "kayshon%20boutte",
-        "player_id": "9504"
+        "team": "PIT",
+        "slug": "calvin%20austin",
+        "player_id": "8125"
+    },
+    "Tahj Brooks": {
+        "full_name": "Tahj Brooks",
+        "first_name": "Tahj",
+        "last_name": "Brooks",
+        "position": "RB",
+        "team": "CIN",
+        "slug": "tahj%20brooks",
+        "player_id": "12543"
+    },
+    "Jake Tonges": {
+        "full_name": "Jake Tonges",
+        "first_name": "Jake",
+        "last_name": "Tonges",
+        "position": "TE",
+        "team": "SF",
+        "slug": "jake%20tonges",
+        "player_id": "8698"
     },
     "Ja'Tavion Sanders": {
         "full_name": "Ja'Tavion Sanders",
@@ -6505,15 +6874,6 @@
         "team": "KC",
         "slug": "jalen%20royals",
         "player_id": "12505"
-    },
-    "Tahj Brooks": {
-        "full_name": "Tahj Brooks",
-        "first_name": "Tahj",
-        "last_name": "Brooks",
-        "position": "RB",
-        "team": "CIN",
-        "slug": "tahj%20brooks",
-        "player_id": "12543"
     },
     "Parker Romo": {
         "full_name": "Parker Romo",
@@ -6551,23 +6911,14 @@
         "slug": "kavontae%20turpin",
         "player_id": "8917"
     },
-    "Theo Johnson": {
-        "full_name": "Theo Johnson",
-        "first_name": "Theo",
-        "last_name": "Johnson",
-        "position": "TE",
-        "team": "NYG",
-        "slug": "theo%20johnson",
-        "player_id": "11597"
-    },
-    "Mason Taylor": {
-        "full_name": "Mason Taylor",
-        "first_name": "Mason",
-        "last_name": "Taylor",
-        "position": "TE",
-        "team": "NYJ",
-        "slug": "mason%20taylor",
-        "player_id": "12498"
+    "Zavier Scott": {
+        "full_name": "Zavier Scott",
+        "first_name": "Zavier",
+        "last_name": "Scott",
+        "position": "RB",
+        "team": "MIN",
+        "slug": "zavier%20scott",
+        "player_id": "11299"
     },
     "Brashard Smith": {
         "full_name": "Brashard Smith",
@@ -6586,6 +6937,24 @@
         "team": "CLE",
         "slug": "isaiah%20bond",
         "player_id": "12503"
+    },
+    "Jaxson Dart": {
+        "full_name": "Jaxson Dart",
+        "first_name": "Jaxson",
+        "last_name": "Dart",
+        "position": "QB",
+        "team": "NYG",
+        "slug": "jaxson%20dart",
+        "player_id": "12508"
+    },
+    "Mason Taylor": {
+        "full_name": "Mason Taylor",
+        "first_name": "Mason",
+        "last_name": "Taylor",
+        "position": "TE",
+        "team": "NYJ",
+        "slug": "mason%20taylor",
+        "player_id": "12498"
     },
     "Trevor Etienne": {
         "full_name": "Trevor Etienne",
@@ -6614,15 +6983,6 @@
         "slug": "ryan%20flournoy",
         "player_id": "11783"
     },
-    "Jake Tonges": {
-        "full_name": "Jake Tonges",
-        "first_name": "Jake",
-        "last_name": "Tonges",
-        "position": "TE",
-        "team": "SF",
-        "slug": "jake%20tonges",
-        "player_id": "8698"
-    },
     "Tez Johnson": {
         "full_name": "Tez Johnson",
         "first_name": "Tez",
@@ -6631,24 +6991,6 @@
         "team": "TB",
         "slug": "tez%20johnson",
         "player_id": "12485"
-    },
-    "Jaxson Dart": {
-        "full_name": "Jaxson Dart",
-        "first_name": "Jaxson",
-        "last_name": "Dart",
-        "position": "QB",
-        "team": "NYG",
-        "slug": "jaxson%20dart",
-        "player_id": "12508"
-    },
-    "Tory Horton": {
-        "full_name": "Tory Horton",
-        "first_name": "Tory",
-        "last_name": "Horton",
-        "position": "WR",
-        "team": "SEA",
-        "slug": "tory%20horton",
-        "player_id": "12497"
     },
     "Devin Neal": {
         "full_name": "Devin Neal",
@@ -6659,6 +7001,15 @@
         "slug": "devin%20neal",
         "player_id": "12476"
     },
+    "Tory Horton": {
+        "full_name": "Tory Horton",
+        "first_name": "Tory",
+        "last_name": "Horton",
+        "position": "WR",
+        "team": "SEA",
+        "slug": "tory%20horton",
+        "player_id": "12497"
+    },
     "Jaylin Noel": {
         "full_name": "Jaylin Noel",
         "first_name": "Jaylin",
@@ -6668,6 +7019,15 @@
         "slug": "jaylin%20noel",
         "player_id": "12536"
     },
+    "Xavier Hutchinson": {
+        "full_name": "Xavier Hutchinson",
+        "first_name": "Xavier",
+        "last_name": "Hutchinson",
+        "position": "WR",
+        "team": "HOU",
+        "slug": "xavier%20hutchinson",
+        "player_id": "10218"
+    },
     "Chimere Dike": {
         "full_name": "Chimere Dike",
         "first_name": "Chimere",
@@ -6676,6 +7036,15 @@
         "team": "TEN",
         "slug": "chimere%20dike",
         "player_id": "12540"
+    },
+    "Andy Borregales": {
+        "full_name": "Andy Borregales",
+        "first_name": "Andy",
+        "last_name": "Borregales",
+        "position": "K",
+        "team": "NE",
+        "slug": "andy%20borregales",
+        "player_id": "12713"
     },
     "Tyler Badie": {
         "full_name": "Tyler Badie",

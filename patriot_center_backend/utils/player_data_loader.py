@@ -17,8 +17,8 @@ Notes:
 """
 
 import os
-from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
-from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
+from patriot_center_backend.utils.replacement_score_loader import load_replacement_score_cache
+from patriot_center_backend.utils.starters_loader import load_starters_cache
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
 from patriot_center_backend.constants import LEAGUE_IDS, PLAYERS_DATA_CACHE_FILE, USERNAME_TO_REAL_NAME
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
@@ -27,12 +27,31 @@ from patriot_center_backend.utils.player_ids_loader import load_player_ids
 # Constants
 # Load and memoize supporting datasets at import time so subsequent calls can reuse them.
 # Be aware: these may perform network and disk I/O during import.
-REPLACEMENT_SCORES   = load_or_update_replacement_score_cache()
-PLAYER_DATA          = load_or_update_starters_cache()
+REPLACEMENT_SCORES   = load_replacement_score_cache()
+PLAYER_DATA          = load_starters_cache()
 PLAYER_IDS           = load_player_ids()
 
 
-def load_or_update_player_data_cache():
+def load_player_data_cache():
+    """
+    Load ffWAR cache from disk.
+
+    Returns:
+        dict: ffWAR cache content.
+    """
+    cache = load_cache(PLAYERS_DATA_CACHE_FILE)
+    
+    if not cache:
+        # If the cache file does not exist or is invalid, return an empty dictionary
+        raise Exception("Player Data cache file not found or invalid.")
+
+    # Remove metadata before returning.
+    cache.pop("Last_Updated_Season", None)
+    cache.pop("Last_Updated_Week", None)
+    
+    return cache
+
+def update_player_data_cache():
     """
     Incrementally update ffWAR cache.
 
@@ -68,7 +87,10 @@ def load_or_update_player_data_cache():
 
         # If the cache is already up-to-date for the current season and week, stop processing.
         if last_updated_season == int(current_season) and last_updated_week == current_week:
-            break
+            cache.pop("Last_Updated_Season", None)
+            cache.pop("Last_Updated_Week", None)
+
+            return cache
 
         year = int(year)  # Ensure year is an integer
         max_weeks = _get_max_weeks(year, current_season, current_week)
@@ -469,5 +491,3 @@ def _get_all_rostered_players(roster_ids, season, week):
         rostered_players[imported_roster_ids[matchup['roster_id']]] = matchup['players']
     
     return rostered_players
-
-load_or_update_player_data_cache()

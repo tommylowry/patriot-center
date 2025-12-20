@@ -30,6 +30,20 @@ FIELDS_TO_KEEP = [
 
 def load_player_ids():
     """
+    Load player metadata cache, refreshing if stale.
+
+    Wrapper around update_player_ids() for external callers.
+    """
+    with open(PLAYER_IDS_CACHE_FILE, "r") as file:
+        data = json.load(file)
+    
+    if not data:
+        raise Exception("Player IDs cache is empty; please run update_player_ids() first.")
+    
+    return data
+
+def update_player_ids():
+    """
     Load player metadata (cached) or refresh if >7 days stale.
 
     Uses file modification time instead of embedded timestamp to determine freshness.

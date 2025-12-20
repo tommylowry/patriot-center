@@ -15,7 +15,7 @@ Notes:
 - Results are simple dicts suitable for JSON responses.
 - Totals are rounded to two decimals via Decimal normalization (ffWAR to 3).
 """
-from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+from patriot_center_backend.utils.player_data_loader import load_or_update_ffWAR_cache
 from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
 from patriot_center_backend.services.players import fetch_players

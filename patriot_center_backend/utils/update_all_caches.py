@@ -9,7 +9,7 @@ Side effects:
 """
 from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
 from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
-from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+from patriot_center_backend.utils.player_data_loader import load_or_update_ffWAR_cache
 
 
 def update_all_caches():

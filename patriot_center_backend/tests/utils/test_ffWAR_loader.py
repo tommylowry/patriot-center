@@ -11,19 +11,19 @@ class TestGetMaxWeeks:
 
     def test_returns_current_week_for_current_season(self):
         """Test returns current_week for current season."""
-        from patriot_center_backend.utils.ffWAR_loader import _get_max_weeks
+        from patriot_center_backend.utils.player_data_loader import _get_max_weeks
         assert _get_max_weeks(season=2024, current_season=2024, current_week=17) == 17
         assert _get_max_weeks(season=2025, current_season=2025, current_week=8) == 8
 
     def test_returns_17_for_past_seasons(self):
         """Test returns 17 for completed past seasons."""
-        from patriot_center_backend.utils.ffWAR_loader import _get_max_weeks
+        from patriot_center_backend.utils.player_data_loader import _get_max_weeks
         assert _get_max_weeks(season=2023, current_season=2024, current_week=17) == 17
         assert _get_max_weeks(season=2021, current_season=2024, current_week=17) == 17
 
     def test_returns_16_for_2019_and_2020(self):
         """Test returns 16 for 2019 and 2020 seasons (historical cap)."""
-        from patriot_center_backend.utils.ffWAR_loader import _get_max_weeks
+        from patriot_center_backend.utils.player_data_loader import _get_max_weeks
         assert _get_max_weeks(season=2019, current_season=2024, current_week=16) == 16
         assert _get_max_weeks(season=2020, current_season=2024, current_week=16) == 16
 
@@ -33,7 +33,7 @@ class TestCalculateFfwarPosition:
 
     def test_returns_empty_dict_when_no_players(self):
         """Test returns empty dict when no players in scores."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         # Empty scores - no managers have players
         scores = {
@@ -49,7 +49,7 @@ class TestCalculateFfwarPosition:
     @patch('patriot_center_backend.utils.ffWAR_loader.REPLACEMENT_SCORES')
     def test_player_above_replacement_wins_extra_games(self, mock_replacement):
         """Test that a player scoring above replacement adds wins."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         # Setup: 2 managers, 1 player each
         # Tommy has strong QB, Mike has weak RB
@@ -90,7 +90,7 @@ class TestCalculateFfwarPosition:
     @patch('patriot_center_backend.utils.ffWAR_loader.REPLACEMENT_SCORES')
     def test_calculates_weighted_scores_correctly(self, mock_replacement):
         """Test the weighted score calculation logic."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         # 3 managers with 1 QB each
         scores = {
@@ -127,7 +127,7 @@ class TestCalculateFfwarPosition:
     @patch('patriot_center_backend.utils.ffWAR_loader.REPLACEMENT_SCORES')
     def test_simulates_all_vs_all_matchups(self, mock_replacement):
         """Test that simulation considers all possible matchups."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         # With 3 managers, each player gets tested in:
         # - 3 manager_playing scenarios (could be on any team)
@@ -154,7 +154,7 @@ class TestCalculateFfwarPosition:
     @patch('patriot_center_backend.utils.ffWAR_loader.REPLACEMENT_SCORES')
     def test_includes_manager_and_position_in_result(self, mock_replacement):
         """Test that result includes manager and position metadata."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         scores = {
             "Tommy": {
@@ -176,7 +176,7 @@ class TestCalculateFfwarPosition:
     @patch('patriot_center_backend.utils.ffWAR_loader.REPLACEMENT_SCORES')
     def test_rounds_ffwar_to_three_decimals(self, mock_replacement):
         """Test that ffWAR is rounded to 3 decimal places."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         scores = {
             "Tommy": {"total_points": 120.0, "players": {"Player": 25.0}},
@@ -205,7 +205,7 @@ class TestFetchFfwar:
     @patch('patriot_center_backend.utils.ffWAR_loader.PLAYER_DATA')
     def test_groups_players_by_position(self, mock_player_data, mock_calculate):
         """Test that players are correctly grouped by position."""
-        from patriot_center_backend.utils.ffWAR_loader import _fetch_ffWAR
+        from patriot_center_backend.utils.player_data_loader import _fetch_ffWAR
 
         mock_player_data_dict = {
             "2024": {
@@ -236,7 +236,7 @@ class TestFetchFfwar:
     @patch('patriot_center_backend.utils.ffWAR_loader.PLAYER_DATA')
     def test_skips_total_points_sentinel(self, mock_player_data, mock_calculate):
         """Test that Total_Points is not treated as a player."""
-        from patriot_center_backend.utils.ffWAR_loader import _fetch_ffWAR
+        from patriot_center_backend.utils.player_data_loader import _fetch_ffWAR
 
         mock_player_data_dict = {
             "2024": {
@@ -268,7 +268,7 @@ class TestLoadOrUpdateFfwarCache:
     @patch('patriot_center_backend.utils.ffWAR_loader._fetch_ffWAR')
     def test_creates_new_cache_with_progress_markers(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test creates cache with Last_Updated markers."""
-        from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+        from patriot_center_backend.utils.player_data_loader import load_or_update_ffWAR_cache
 
         mock_current.return_value = (2024, 1)  # Just week 1
         mock_load.return_value = {}
@@ -288,7 +288,7 @@ class TestLoadOrUpdateFfwarCache:
     @patch('patriot_center_backend.utils.ffWAR_loader._fetch_ffWAR')
     def test_resumes_from_last_updated(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test resumes processing from Last_Updated markers."""
-        from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+        from patriot_center_backend.utils.player_data_loader import load_or_update_ffWAR_cache
 
         mock_current.return_value = (2024, 5)
         # Cache already has weeks 1-3 for 2024
@@ -314,7 +314,7 @@ class TestLoadOrUpdateFfwarCache:
     @patch('patriot_center_backend.utils.ffWAR_loader._fetch_ffWAR')
     def test_complete_fill_when_cache_is_empty(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test that weeks are capped correctly per season."""
-        from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+        from patriot_center_backend.utils.player_data_loader import load_or_update_ffWAR_cache
 
         mock_current.return_value = (2024, 12)
         mock_load.return_value = {}
@@ -333,7 +333,7 @@ class TestLoadOrUpdateFfwarCache:
     @patch('patriot_center_backend.utils.ffWAR_loader._fetch_ffWAR')
     def test_caps_weeks_at_17_for_regular_seasons(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test that weeks are capped at 17."""
-        from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+        from patriot_center_backend.utils.player_data_loader import load_or_update_ffWAR_cache
         
         mock_current.return_value = (2024, 18)
         mock_load.return_value = {}
@@ -352,7 +352,7 @@ class TestLoadOrUpdateFfwarCache:
     @patch('patriot_center_backend.utils.ffWAR_loader._fetch_ffWAR')
     def test_processes_historical_seasons_from_2019(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test processes all seasons from 2019 to current."""
-        from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+        from patriot_center_backend.utils.player_data_loader import load_or_update_ffWAR_cache
 
         mock_current.return_value = (2021, 1)  # Just to 2021 week 1
         mock_load.return_value = {}
@@ -373,7 +373,7 @@ class TestPlayoffScaling:
 
     def test_regular_season_no_scaling_2020(self):
         """Test that regular season weeks (< week 14) are not scaled in 2020."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         # Playoff season week 14 in 2020 - should NOT be scaled
         scores = {
@@ -407,7 +407,7 @@ class TestPlayoffScaling:
 
     def test_playoff_scaling_2020_week_17(self):
         """Test playoffs start at week 17 for 2020 and earlier."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         # 4 playoff teams
         scores = {
@@ -435,7 +435,7 @@ class TestPlayoffScaling:
 
     def test_playoff_scaling_2021_week_15(self):
         """Test playoffs start at week 15 for 2021 and later."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         # Week 14 in 2021 should NOT be playoffs (regular season)
         scores = {
@@ -465,7 +465,7 @@ class TestPlayoffScaling:
 
     def test_playoff_scaling_maintains_rounding(self):
         """Test that playoff scaling still rounds to 3 decimal places."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         scores = {
             "Team1": {"total_points": 125.0, "players": {"Player1": 28.5}},
@@ -489,7 +489,7 @@ class TestPlayoffScaling:
 
     def test_playoff_negative_ffwar_also_scaled(self):
         """Test that negative playoff ffWAR is also scaled down by 3."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         # Create scenario where a player performs below replacement
         scores = {
@@ -517,7 +517,7 @@ class TestPlayoffScaling:
 
     def test_playoff_boundary_conditions(self):
         """Test exact week boundaries for playoff scaling."""
-        from patriot_center_backend.utils.ffWAR_loader import _calculate_ffWAR_position
+        from patriot_center_backend.utils.player_data_loader import _calculate_ffWAR_position
 
         scores = {
             "A": {"total_points": 120.0, "players": {"P1": 25.0}},

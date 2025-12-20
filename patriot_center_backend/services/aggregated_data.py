@@ -103,6 +103,9 @@ def fetch_aggregated_managers(player, season=None, week=None):
     raw_dict = fetch_starters(season=season, week=week)
     managers_dict_to_return = {}
     
+    if not raw_dict:
+        return managers_dict_to_return
+
     for year, weeks in raw_dict.items():
         for week, managers in weeks.items():
             for manager, manager_data in managers.items():
@@ -284,3 +287,5 @@ def _handle_playoff_placement(aggregation_dict, primary_item, secondary_item, ye
         aggregation_dict[primary_item]["playoff_placement"][secondary_item][year] = placement
     
     return aggregation_dict
+
+# fetch_aggregated_managers("Jonathan Taylor")

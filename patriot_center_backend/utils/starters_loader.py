@@ -127,10 +127,10 @@ def load_or_update_starters_cache():
             print(f"  Starters cache updated internally for season {year}, week {week}")
 
 
-    # Persist all updated caches to disk.
-    save_cache(STARTERS_CACHE_FILE, cache)
-    save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
-    MANAGER_METADATA.save()
+        # Persist all updated caches to disk.
+        save_cache(STARTERS_CACHE_FILE, cache)
+        save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
+        MANAGER_METADATA.save()
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
     return cache

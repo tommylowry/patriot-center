@@ -680,6 +680,7 @@ class ManagerMetadataManager:
         return_dict["matchup_history"] = self._get_head_to_head_overall_from_cache(manager_1, manager_2, year, list_all_matchups=True)
 
         trades_between = self._get_trade_history_between_two_managers(manager_1, manager_2, year)
+
         return_dict["trades_between"] = {
             "total": len(trades_between),
             "trade_history": trades_between
@@ -770,12 +771,14 @@ class ManagerMetadataManager:
         for yr in years_to_check:
             yearly_data = self._cache[manager_name]["years"][yr]
             for week in yearly_data.get("weeks", {}):
-                weekly_transactions = yearly_data["weeks"][week]["transactions"]
+                weekly_transactions = copy.deepcopy(yearly_data["weeks"][week]["transactions"])
                 
                 # Trades
                 if transaction_type in [None, "trade"]:
-                    for transaction_id in weekly_transactions.get("trades", []).get("transaction_ids", []):
-                        trade_details = self._transaction_id_cache.get(transaction_id, {})
+                    transaction_ids = copy.deepcopy(weekly_transactions.get("trades", {}).get("transaction_ids", []))
+                    transaction_ids.reverse()
+                    for transaction_id in transaction_ids:
+                        trade_details = self._get_trade_card(transaction_id)
 
                         trade_details["type"] = "trade"
                         filtered_transactions.append(copy.deepcopy(trade_details))
@@ -783,7 +786,9 @@ class ManagerMetadataManager:
                 
                 # Adds
                 if transaction_type in [None, "add", "add_and_or_drop"]:
-                    for transaction_id in weekly_transactions.get("adds", []).get("transaction_ids", []):
+                    transaction_ids = copy.deepcopy(weekly_transactions.get("adds", {}).get("transaction_ids", []))
+                    transaction_ids.reverse()
+                    for transaction_id in transaction_ids:
                         add_details = self._transaction_id_cache.get(transaction_id, {})
                         if add_details:
                             
@@ -794,7 +799,7 @@ class ManagerMetadataManager:
                                     "year":          yr,
                                     "week":          week,
                                     "type":          "add",
-                                    "player":        self._get_image_url(add_details.get("add", "")),
+                                    "player":        self._get_image_url(add_details.get("add", ""), dictionary=True),
                                     "faab_spent":    add_details.get("faab_spent", None), # None if FAAB not implemented yet or a free agent add
                                     "transaction_id": transaction_id
                                 }
@@ -803,7 +808,9 @@ class ManagerMetadataManager:
 
                 # Drops
                 if transaction_type in [None, "drop", "add_and_or_drop"]:
-                    for transaction_id in weekly_transactions.get("drops", []).get("transaction_ids", []):
+                    transaction_ids = copy.deepcopy(weekly_transactions.get("drops", {}).get("transaction_ids", []))
+                    transaction_ids.reverse()
+                    for transaction_id in transaction_ids:
                         drop_details = self._transaction_id_cache.get(transaction_id, {})
                         if drop_details:
                             
@@ -822,8 +829,9 @@ class ManagerMetadataManager:
                 # Adds and Drops
                 if transaction_type in [None, "add_and_or_drop"]:
                     
-                    # 
-                    for transaction_id in weekly_transactions.get("adds", []).get("transaction_ids", []):
+                    transaction_ids = copy.deepcopy(weekly_transactions.get("adds", {}).get("transaction_ids", []))
+                    transaction_ids.reverse()
+                    for transaction_id in transaction_ids:
                         add_drop_details = self._transaction_id_cache.get(transaction_id, {})
                         if add_drop_details:
                             
@@ -842,6 +850,8 @@ class ManagerMetadataManager:
                 
         # Set total count before pagination
         transaction_history["total_count"] = len(filtered_transactions)
+
+        filtered_transactions.reverse()
 
         # Apply pagination
         paginated_transactions = filtered_transactions[offset:offset+limit] 
@@ -1467,10 +1477,9 @@ class ManagerMetadataManager:
         
 
         for t in transaction_ids:
-            trade_details = copy.deepcopy(self._transaction_id_cache.get(t, {}))
-
-            trades_between.append(copy.deepcopy(trade_details))
+            trades_between.append(self._get_trade_card(t))
         
+        trades_between.reverse()
         return trades_between
 
     def _get_manager_awards_from_cache(self, manager_name: str) -> dict:
@@ -2957,7 +2966,7 @@ class ManagerMetadataManager:
 
 # # Debug code - commented out
 # man = ManagerMetadataManager()
-# d = man._get_manager_awards_from_cache("Owen")
+# d = man._get_trade_history_between_two_managers("Tommy", "Mitch")
 # import json
 # pretty_json_string = json.dumps(d, indent=4)
 # print(pretty_json_string)

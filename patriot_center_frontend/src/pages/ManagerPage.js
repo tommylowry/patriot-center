@@ -4,6 +4,7 @@ import { useManagerSummary } from '../hooks/useManagerSummary';
 import { useManagerAwards } from '../hooks/useManagerAwards';
 import { useManagerTransactions } from '../hooks/useManagerTransactions';
 import { useManagerYearlyData } from '../hooks/useManagerYearlyData';
+import { useHeadToHead } from '../hooks/useHeadToHead';
 
 /**
  * ManagerPage - Social media style profile view with ALL manager data
@@ -16,6 +17,7 @@ export default function ManagerPage() {
   const [imageError, setImageError] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [transactionPage, setTransactionPage] = useState(0);
+  const [typeFilter, setTypeFilter] = useState('all');
   const transactionsPerPage = 20;
 
   // Fetch data from ALL endpoints
@@ -23,7 +25,7 @@ export default function ManagerPage() {
   const { awards, loading: awardsLoading } = useManagerAwards(managerName);
   const { transactions: transactionHistory, loading: transactionsLoading } = useManagerTransactions(
     managerName,
-    { year, limit: transactionsPerPage, offset: transactionPage * transactionsPerPage }
+    { year, type: typeFilter === 'all' ? undefined : typeFilter, limit: transactionsPerPage, offset: transactionPage * transactionsPerPage }
   );
   const { yearlyData, loading: yearlyLoading } = useManagerYearlyData(managerName, year);
 
@@ -92,19 +94,16 @@ export default function ManagerPage() {
       }}>
         {/* Header */}
         <div style={{
-          background: result === 'win' ? 'linear-gradient(90deg, #4CAF50 0%, #388E3C 100%)' :
-                      result === 'loss' ? 'linear-gradient(90deg, #f44336 0%, #D32F2F 100%)' :
-                      'linear-gradient(90deg, #9E9E9E 0%, #757575 100%)',
+          background: 'var(--bg-alt)',
           padding: '0.5rem 1rem',
           textAlign: 'center',
-          color: 'white',
+          color: 'var(--text)',
           fontWeight: 700,
           fontSize: '0.85rem',
           letterSpacing: '0.5px',
-          textTransform: 'uppercase'
+          borderBottom: '2px solid var(--border)'
         }}>
-          {week && year && `Week ${week} ${year} • `}
-          {result === 'win' ? 'WIN' : result === 'loss' ? 'LOSS' : result === 'tie' ? 'TIE' : 'FINAL'}
+          {week && year ? `Week ${week} ${year}` : 'Matchup'}
         </div>
 
         {/* Score Display with Manager Avatars */}
@@ -145,8 +144,7 @@ export default function ManagerPage() {
                 justifyContent: 'space-between',
                 alignItems: 'center',
                 padding: '1rem',
-                borderBottom: '1px solid var(--border)',
-                background: result === 'win' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'
+                borderBottom: '1px solid var(--border)'
               }}>
                 <Link
                   to={`/manager/${encodeURIComponent(manager1.name)}`}
@@ -154,7 +152,7 @@ export default function ManagerPage() {
                     flex: 1,
                     fontWeight: 600,
                     fontSize: '1rem',
-                    color: 'var(--text)',
+                    color: result === 'win' ? 'var(--success)' : 'var(--text)',
                     textDecoration: 'none'
                   }}
                 >
@@ -176,8 +174,7 @@ export default function ManagerPage() {
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center',
-                padding: '1rem',
-                background: result === 'loss' ? 'rgba(76, 175, 80, 0.1)' : 'transparent'
+                padding: '1rem'
               }}>
                 <Link
                   to={`/manager/${encodeURIComponent(manager2.name)}`}
@@ -185,7 +182,7 @@ export default function ManagerPage() {
                     flex: 1,
                     fontWeight: 600,
                     fontSize: '1rem',
-                    color: 'var(--text)',
+                    color: result === 'loss' ? 'var(--success)' : 'var(--text)',
                     textDecoration: 'none'
                   }}
                 >
@@ -249,8 +246,8 @@ export default function ManagerPage() {
                           src={player.image_url}
                           alt={player.name}
                           style={{
-                            width: '32px',
-                            height: '32px',
+                            width: '40px',
+                            height: '40px',
                             borderRadius: '4px',
                             objectFit: 'cover',
                             flexShrink: 0
@@ -307,8 +304,8 @@ export default function ManagerPage() {
                           src={player.image_url}
                           alt={player.name}
                           style={{
-                            width: '32px',
-                            height: '32px',
+                            width: '40px',
+                            height: '40px',
                             borderRadius: '4px',
                             objectFit: 'cover',
                             flexShrink: 0
@@ -471,9 +468,9 @@ export default function ManagerPage() {
           marginBottom: '1.5rem'
         }}>
           <StatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} />
-          <StatCard title="PF" value={overall.total_points_for?.toFixed(2) || 0} />
-          <StatCard title="PA" value={overall.total_points_against?.toFixed(2) || 0} />
-          <StatCard title="Diff" value={(overall.point_differential || 0).toFixed(2)} color={(overall.point_differential || 0) >= 0 ? 'var(--success)' : 'var(--danger)'} />
+          <StatCard title="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} />
+          <StatCard title="Avg PA" value={overall.average_points_against?.toFixed(2) || 0} />
+          <StatCard title="Avg Diff" value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)} color={((overall.average_points_for || 0) - (overall.average_points_against || 0)) >= 0 ? 'var(--success)' : 'var(--danger)'} />
           <StatCard title="Trades" value={trades.total || 0} />
           <StatCard title="Playoffs" value={playoffAppearances} />
           <StatCard title="Championships" value={championships} color={championships > 0 ? 'var(--accent)' : undefined} />
@@ -490,6 +487,7 @@ export default function ManagerPage() {
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'awards', label: 'Awards' },
+            { id: 'head-to-head', label: 'Head-to-Head' },
             { id: 'transactions', label: 'Transactions' },
             { id: 'weekly', label: 'Weekly Stats', disabled: !year }
           ].map(tab => (
@@ -526,11 +524,17 @@ export default function ManagerPage() {
           drops={drops}
           faab={faab}
           placements={placements}
-          headToHead={summary.head_to_head || {}}
         />}
 
         {activeTab === 'awards' && <AwardsTab
           awardsData={awardsData}
+          MatchupCard={MatchupCard}
+        />}
+
+        {activeTab === 'head-to-head' && <HeadToHeadTab
+          managerName={managerName}
+          headToHead={summary.head_to_head || {}}
+          year={year}
           MatchupCard={MatchupCard}
         />}
 
@@ -540,6 +544,8 @@ export default function ManagerPage() {
           setTransactionPage={setTransactionPage}
           totalPages={totalPages}
           transactionsPerPage={transactionsPerPage}
+          typeFilter={typeFilter}
+          setTypeFilter={setTypeFilter}
         />}
 
         {activeTab === 'weekly' && year && yearlyData && <WeeklyTab
@@ -574,6 +580,13 @@ function PlayerLink({ player, showImage = true }) {
   const playerName = typeof player === 'string' ? player : player?.name || 'Unknown';
   const imageUrl = typeof player === 'object' ? player?.image_url : null;
 
+  // Check if this is FAAB or a draft pick (not a real player)
+  const isFAAB = playerName.toLowerCase().includes('faab');
+  const isDraftPick = playerName.toLowerCase().includes('draft pick') ||
+                      playerName.toLowerCase().includes('round pick') ||
+                      /\d{4}\s+(1st|2nd|3rd|4th|5th|6th|7th)\s+round/i.test(playerName);
+  const shouldLink = !isFAAB && !isDraftPick;
+
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       {showImage && imageUrl && (
@@ -581,8 +594,8 @@ function PlayerLink({ player, showImage = true }) {
           src={imageUrl}
           alt={playerName}
           style={{
-            width: '24px',
-            height: '24px',
+            width: '28px',
+            height: '28px',
             borderRadius: '4px',
             objectFit: 'cover',
             flexShrink: 0
@@ -592,16 +605,22 @@ function PlayerLink({ player, showImage = true }) {
           }}
         />
       )}
-      <Link
-        to={`/player/${encodeURIComponent(playerName)}`}
-        style={{
-          color: 'var(--accent)',
-          textDecoration: 'none',
-          fontWeight: 500
-        }}
-      >
-        {playerName}
-      </Link>
+      {shouldLink ? (
+        <Link
+          to={`/player/${encodeURIComponent(playerName)}`}
+          style={{
+            color: 'var(--accent)',
+            textDecoration: 'none',
+            fontWeight: 500
+          }}
+        >
+          {playerName}
+        </Link>
+      ) : (
+        <span style={{ fontWeight: 500, color: 'var(--text)' }}>
+          {playerName}
+        </span>
+      )}
     </div>
   );
 }
@@ -618,8 +637,8 @@ function ManagerLink({ manager, showImage = true }) {
           src={imageUrl}
           alt={managerName}
           style={{
-            width: '24px',
-            height: '24px',
+            width: '28px',
+            height: '28px',
             borderRadius: '50%',
             objectFit: 'cover',
             border: '2px solid var(--border)',
@@ -644,12 +663,96 @@ function ManagerLink({ manager, showImage = true }) {
   );
 }
 
-// Overview Tab
-function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead }) {
+// TradeCard Component - Standardized trade display showing all managers objectively
+function TradeCard({ trade }) {
+  // Extract managers involved from the trade
+  const managersInvolved = trade.managers_involved || [];
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+    <div style={{
+      display: 'grid',
+      gridTemplateColumns: `repeat(${managersInvolved.length}, 1fr)`,
+      gap: '2rem'
+    }}>
+      {managersInvolved.map((manager, idx) => {
+        const managerName = typeof manager === 'string' ? manager : manager?.name || 'Unknown';
+        const managerKey = managerName.toLowerCase().replace(/\s+/g, '_');
+        const received = trade[`${managerKey}_received`] || [];
+        const sent = trade[`${managerKey}_sent`] || [];
+
+        return (
+          <div key={idx} style={{ textAlign: 'center' }}>
+            {/* Manager Name */}
+            <div style={{ marginBottom: '1rem', fontSize: '0.95rem', display: 'flex', justifyContent: 'center' }}>
+              <ManagerLink manager={manager} showImage={true} />
+            </div>
+
+            {/* Received - Emphasized */}
+            {received.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{
+                  fontSize: '0.8rem',
+                  color: 'var(--success)',
+                  marginBottom: '0.75rem',
+                  fontWeight: 600,
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px'
+                }}>
+                  Received
+                </div>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.5rem',
+                  alignItems: 'center'
+                }}>
+                  {received.map((p, i) => (
+                    <PlayerLink key={i} player={p} showImage={true} />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sent - De-emphasized */}
+            {sent.length > 0 && (
+              <div style={{
+                fontSize: '0.85rem',
+                opacity: 0.6
+              }}>
+                <div style={{
+                  fontSize: '0.65rem',
+                  color: 'var(--muted)',
+                  marginBottom: '0.5rem',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.3px'
+                }}>
+                  Sent
+                </div>
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.35rem',
+                  alignItems: 'center'
+                }}>
+                  {sent.map((p, i) => (
+                    <PlayerLink key={i} player={p} showImage={true} />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Overview Tab
+function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements }) {
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
       {/* Matchup Stats */}
-      <Section title="📊 Season Stats">
+      <Section title="Season Stats">
         <StatRow label="Regular Season" value={regularSeason.record || '0-0-0'} />
         <StatRow label="Playoffs" value={playoffs.record || '0-0-0'} />
         <StatRow label="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} />
@@ -657,7 +760,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       </Section>
 
       {/* Transaction Summary */}
-      <Section title="💼 Transactions">
+      <Section title="Transactions">
         <StatRow label="Trades" value={trades.total || 0} />
         <StatRow label="Adds" value={adds.total || 0} />
         <StatRow label="Drops" value={drops.total || 0} />
@@ -666,7 +769,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* Placement History */}
       {placements.length > 0 && (
-        <Section title="📅 Placements">
+        <Section title="Placements">
           <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
             {placements.sort((a, b) => b.year - a.year).map((p, i) => (
               <div key={i} style={{
@@ -690,7 +793,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* Top Trade Partners */}
       {trades.top_trade_partners && trades.top_trade_partners.length > 0 && (
-        <Section title="🤝 Top Trade Partners">
+        <Section title="Top Trade Partners">
           {trades.top_trade_partners.slice(0, 5).map((partner, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
               <ManagerLink manager={partner} />
@@ -702,7 +805,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* Top Players Added - NEW */}
       {adds.top_players_added && adds.top_players_added.length > 0 && (
-        <Section title="➕ Most Added Players">
+        <Section title="Most Added Players">
           {adds.top_players_added.slice(0, 5).map((player, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
               <PlayerLink player={player} />
@@ -714,7 +817,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* Top Players Dropped - NEW */}
       {drops.top_players_dropped && drops.top_players_dropped.length > 0 && (
-        <Section title="➖ Most Dropped Players">
+        <Section title="Most Dropped Players">
           {drops.top_players_dropped.slice(0, 5).map((player, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
               <PlayerLink player={player} />
@@ -726,7 +829,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* Most Acquired via Trade */}
       {trades.most_aquired_players && trades.most_aquired_players.length > 0 && (
-        <Section title="📈 Most Acquired (Trade)">
+        <Section title="Most Acquired (Trade)">
           {trades.most_aquired_players.slice(0, 3).map((player, i) => (
             <div key={i} style={{ marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
@@ -752,7 +855,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* Most Sent via Trade */}
       {trades.most_sent_players && trades.most_sent_players.length > 0 && (
-        <Section title="📉 Most Sent (Trade)">
+        <Section title="Most Sent (Trade)">
           {trades.most_sent_players.slice(0, 3).map((player, i) => (
             <div key={i} style={{ marginBottom: '0.75rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
@@ -778,7 +881,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* FAAB Biggest Acquisitions */}
       {faab.biggest_acquisitions && faab.biggest_acquisitions.length > 0 && (
-        <Section title="💰 Biggest FAAB Bids">
+        <Section title="Biggest FAAB Bids">
           {faab.biggest_acquisitions.map((bid, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
               <PlayerLink player={bid} />
@@ -790,164 +893,374 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* FAAB Traded */}
       {faab.faab_traded && (
-        <Section title="💸 FAAB Trading">
+        <Section title="FAAB Trading">
           <StatRow label="Sent" value={`$${faab.faab_traded.sent || 0}`} color="var(--danger)" />
           <StatRow label="Received" value={`$${faab.faab_traded.received || 0}`} color="var(--success)" />
           <StatRow label="Net" value={`$${faab.faab_traded.net || 0}`} color={faab.faab_traded.net > 0 ? 'var(--success)' : faab.faab_traded.net < 0 ? 'var(--danger)' : undefined} />
         </Section>
       )}
-
-      {/* Head-to-Head Full Width */}
-      {Object.keys(headToHead).length > 0 && (
-        <div style={{ gridColumn: '1 / -1' }}>
-          <Section title="⚔️ Head-to-Head Records">
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))', gap: '1rem' }}>
-              {Object.entries(headToHead).sort((a, b) => b[1].wins - a[1].wins).map(([opponentKey, data]) => {
-                const opponent = data.opponent || { name: opponentKey };
-                return (
-                  <div key={opponentKey} style={{
-                    padding: '1rem',
-                    background: 'var(--bg)',
-                    borderRadius: '8px',
-                    border: '1px solid var(--border)'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                      {opponent.image_url && (
-                        <img
-                          src={opponent.image_url}
-                          alt={opponent.name}
-                          style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            border: '2px solid var(--border)'
-                          }}
-                          onError={(e) => {
-                            e.target.style.display = 'none';
-                          }}
-                        />
-                      )}
-                      <Link
-                        to={`/manager/${encodeURIComponent(opponent.name)}`}
-                        style={{
-                          fontWeight: 700,
-                          color: 'var(--accent)',
-                          textDecoration: 'none'
-                        }}
-                      >
-                        {opponent.name}
-                      </Link>
-                    </div>
-                    <StatRow label="Record" value={`${data.wins}-${data.losses}-${data.ties}`} small />
-                    <StatRow label="Win%" value={`${((data.wins / (data.wins + data.losses + data.ties || 1)) * 100).toFixed(1)}%`} small />
-                    <StatRow label="PF" value={data.points_for?.toFixed(2) || 0} small />
-                    <StatRow label="PA" value={data.points_against?.toFixed(2) || 0} small />
-                  </div>
-                );
-              })}
-            </div>
-          </Section>
-        </div>
-      )}
     </div>
   );
 }
 
-// Awards Tab - Using MatchupCard for all matchup awards
-function AwardsTab({ awardsData, MatchupCard }) {
+// Head-to-Head Tab
+function HeadToHeadTab({ managerName, headToHead, year, MatchupCard }) {
+  const [expandedOpponent, setExpandedOpponent] = useState(null);
+
+  if (Object.keys(headToHead).length === 0) {
+    return (
+      <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
+        <p>No head-to-head records available</p>
+      </div>
+    );
+  }
+
+  // Sort opponents by number of games played (wins + losses + ties)
+  const sortedOpponents = Object.entries(headToHead).sort((a, b) => {
+    const totalA = a[1].wins + a[1].losses + a[1].ties;
+    const totalB = b[1].wins + b[1].losses + b[1].ties;
+    return totalB - totalA;
+  });
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.5rem' }}>
-      {/* Highest Weekly Score */}
-      {awardsData.highest_weekly_score && awardsData.highest_weekly_score.manager_1_score > 0 && (
-        <div>
-          <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--success)' }}>🎯 Highest Weekly Score</h3>
-          <MatchupCard matchup={awardsData.highest_weekly_score} />
-        </div>
-      )}
+    <div>
+      {sortedOpponents.map(([opponentKey, data]) => {
+        const opponent = data.opponent || { name: opponentKey };
+        const totalGames = data.wins + data.losses + data.ties;
+        const winPct = totalGames > 0 ? ((data.wins / totalGames) * 100).toFixed(1) : '0.0';
+        const avgPF = totalGames > 0 ? (data.points_for / totalGames).toFixed(2) : '0.00';
+        const avgPA = totalGames > 0 ? (data.points_against / totalGames).toFixed(2) : '0.00';
+        const avgPointDiff = totalGames > 0 ? ((data.points_for - data.points_against) / totalGames).toFixed(2) : '0.00';
+        const isExpanded = expandedOpponent === opponent.name;
 
-      {/* Lowest Weekly Score */}
-      {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.manager_1_score < Infinity && (
-        <div>
-          <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--danger)' }}>📉 Lowest Weekly Score</h3>
-          <MatchupCard matchup={awardsData.lowest_weekly_score} />
-        </div>
-      )}
-
-      {/* Biggest Blowout Win */}
-      {awardsData.biggest_blowout_win && awardsData.biggest_blowout_win.differential > 0 && (
-        <div>
-          <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--success)' }}>💥 Biggest Blowout Win</h3>
-          <MatchupCard matchup={awardsData.biggest_blowout_win} showMargin={true} />
-        </div>
-      )}
-
-      {/* Biggest Blowout Loss */}
-      {awardsData.biggest_blowout_loss && awardsData.biggest_blowout_loss.differential < 0 && (
-        <div>
-          <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--danger)' }}>😭 Biggest Blowout Loss</h3>
-          <MatchupCard matchup={awardsData.biggest_blowout_loss} showMargin={true} />
-        </div>
-      )}
-
-      {/* Biggest FAAB Bid */}
-      {awardsData.biggest_faab_bid && awardsData.biggest_faab_bid.amount > 0 && (
-        <AwardCard
-          title="💰 Biggest FAAB Bid"
-          value={`$${awardsData.biggest_faab_bid.amount}`}
-          subtitle={`${awardsData.biggest_faab_bid.player?.name || awardsData.biggest_faab_bid.player} (${awardsData.biggest_faab_bid.year})`}
-          color="var(--accent)"
-        />
-      )}
-
-      {/* Most Trades in Year */}
-      {awardsData.most_trades_in_year && awardsData.most_trades_in_year.count > 0 && (
-        <AwardCard
-          title="🔄 Most Trades (Single Season)"
-          value={awardsData.most_trades_in_year.count}
-          subtitle={awardsData.most_trades_in_year.year}
-          color="var(--accent)"
-        />
-      )}
+        return (
+          <OpponentCard
+            key={opponentKey}
+            managerName={managerName}
+            opponent={opponent}
+            data={data}
+            winPct={winPct}
+            avgPointDiff={avgPointDiff}
+            isExpanded={isExpanded}
+            onToggle={() => setExpandedOpponent(isExpanded ? null : opponent.name)}
+            year={year}
+            MatchupCard={MatchupCard}
+          />
+        );
+      })}
     </div>
   );
 }
 
-// Award Card Component
-function AwardCard({ title, value, subtitle, color, topScorers, TopScorers, managerName }) {
+// Separate component for each opponent card
+function OpponentCard({ managerName, opponent, data, totalGames, winPct, avgPF, avgPA, avgPointDiff, isExpanded, onToggle, year, MatchupCard }) {
+  const { data: detailedData, loading } = useHeadToHead(
+    isExpanded ? managerName : null,
+    isExpanded ? opponent.name : null,
+    { year }
+  );
+
+  const managerKey = managerName.toLowerCase().replace(/\s+/g, '_');
+  const opponentKey = opponent.name.toLowerCase().replace(/\s+/g, '_');
+
   return (
     <div style={{
-      padding: '1.5rem',
-      background: 'var(--bg-alt)',
-      borderRadius: '12px',
-      border: '1px solid var(--border)'
+      padding: '0.75rem 0',
+      borderBottom: '1px solid var(--border)'
     }}>
-      <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase', fontWeight: 600 }}>
-        {title}
+      {/* Compact Row */}
+      <div
+        onClick={onToggle}
+        style={{
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          padding: '0.5rem',
+          marginLeft: '-0.5rem',
+          marginRight: '-0.5rem',
+          borderRadius: '6px'
+        }}
+        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-alt)'}
+        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+      >
+        {opponent.image_url && (
+          <img
+            src={opponent.image_url}
+            alt={opponent.name}
+            style={{
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '2px solid var(--border)',
+              flexShrink: 0
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>{opponent.name}</div>
+        </div>
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.9rem' }}>
+          <div>
+            <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Record: </span>
+            <span style={{ fontWeight: 600 }}>{data.wins}-{data.losses}-{data.ties}</span>
+          </div>
+          <div>
+            <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Win%: </span>
+            <span style={{ fontWeight: 600, color: parseFloat(winPct) >= 50 ? 'var(--success)' : 'var(--danger)' }}>{winPct}%</span>
+          </div>
+          <div>
+            <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Diff: </span>
+            <span style={{ fontWeight: 600, color: parseFloat(avgPointDiff) >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+              {parseFloat(avgPointDiff) >= 0 ? '+' : ''}{avgPointDiff}
+            </span>
+          </div>
+        </div>
+        <div style={{ fontSize: '0.9rem', color: 'var(--muted)', flexShrink: 0 }}>
+          {isExpanded ? '▼' : '▶'}
+        </div>
       </div>
-      <div style={{ fontSize: '2.5rem', fontWeight: 700, color: color || 'var(--text)', marginBottom: '0.5rem' }}>
-        {value}
+
+      {/* Expanded Detailed Section */}
+      {isExpanded && (
+        <div style={{ padding: '1.5rem', paddingTop: '0', borderTop: '2px solid var(--border)' }}>
+          {loading && <p style={{ textAlign: 'center', color: 'var(--muted)' }}>Loading detailed stats...</p>}
+
+          {!loading && detailedData && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {/* Average Margins of Victory */}
+              {(detailedData.overall?.[`${managerKey}_average_margin_of_victory`] !== undefined ||
+                detailedData.overall?.[`${opponentKey}_average_margin_of_victory`] !== undefined) && (
+                <div>
+                  <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Average Margins of Victory</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    {detailedData.overall?.[`${managerKey}_average_margin_of_victory`] !== undefined && (
+                      <div style={{ padding: '1rem', background: 'var(--bg)', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>{managerName}</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
+                          +{detailedData.overall[`${managerKey}_average_margin_of_victory`]?.toFixed(2)}
+                        </div>
+                      </div>
+                    )}
+                    {detailedData.overall?.[`${opponentKey}_average_margin_of_victory`] !== undefined && (
+                      <div style={{ padding: '1rem', background: 'var(--bg)', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>{opponent.name}</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
+                          +{detailedData.overall[`${opponentKey}_average_margin_of_victory`]?.toFixed(2)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Last Wins */}
+              <div>
+                <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Most Recent Wins</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
+                  {detailedData.overall?.[`${managerKey}_last_win`] && Object.keys(detailedData.overall[`${managerKey}_last_win`]).length > 0 && (
+                    <div>
+                      <h5 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{managerName}'s Last Win</h5>
+                      <MatchupCard matchup={detailedData.overall[`${managerKey}_last_win`]} />
+                    </div>
+                  )}
+                  {detailedData.overall?.[`${opponentKey}_last_win`] && Object.keys(detailedData.overall[`${opponentKey}_last_win`]).length > 0 && (
+                    <div>
+                      <h5 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{opponent.name}'s Last Win</h5>
+                      <MatchupCard matchup={detailedData.overall[`${opponentKey}_last_win`]} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Biggest Blowouts */}
+              <div>
+                <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Biggest Blowouts</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
+                  {detailedData.overall?.[`${managerKey}_biggest_blowout`] && Object.keys(detailedData.overall[`${managerKey}_biggest_blowout`]).length > 0 && (
+                    <div>
+                      <h5 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{managerName}'s Biggest Blowout</h5>
+                      <MatchupCard matchup={detailedData.overall[`${managerKey}_biggest_blowout`]} showMargin={true} />
+                    </div>
+                  )}
+                  {detailedData.overall?.[`${opponentKey}_biggest_blowout`] && Object.keys(detailedData.overall[`${opponentKey}_biggest_blowout`]).length > 0 && (
+                    <div>
+                      <h5 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{opponent.name}'s Biggest Blowout</h5>
+                      <MatchupCard matchup={detailedData.overall[`${opponentKey}_biggest_blowout`]} showMargin={true} />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Trades Between */}
+              {detailedData.trades_between?.total > 0 && (
+                <div>
+                  <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>
+                    Trades Between ({detailedData.trades_between.total} total)
+                  </h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                    {detailedData.trades_between.trade_history?.map((trade, idx) => (
+                      <div key={idx} style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>
+                          Week {trade.week}, {trade.year}
+                        </div>
+                        <TradeCard trade={trade} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Matchup History */}
+              {detailedData.overall?.matchup_history?.length > 0 && (
+                <div>
+                  <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>
+                    All Matchups ({detailedData.overall.matchup_history.length} games)
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1rem' }}>
+                    {detailedData.overall.matchup_history.map((matchup, idx) => (
+                      <MatchupCard key={idx} matchup={matchup} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Awards Tab - Minimal flowing design
+function AwardsTab({ awardsData, MatchupCard }) {
+  return (
+    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+      {/* Performance Awards Section */}
+      <div style={{ marginBottom: '2rem' }}>
+        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text)' }}>
+          Performance Awards
+        </h3>
+
+        {/* Highest Weekly Score */}
+        {awardsData.highest_weekly_score && awardsData.highest_weekly_score.manager_1_score > 0 && (
+          <div style={{ paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '0.9rem', color: 'var(--success)', marginBottom: '0.75rem', fontWeight: 600 }}>
+              🎯 Highest Weekly Score
+            </div>
+            <MatchupCard matchup={awardsData.highest_weekly_score} />
+          </div>
+        )}
+
+        {/* Lowest Weekly Score */}
+        {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.manager_1_score < Infinity && (
+          <div style={{ paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '0.9rem', color: 'var(--danger)', marginBottom: '0.75rem', fontWeight: 600 }}>
+              📉 Lowest Weekly Score
+            </div>
+            <MatchupCard matchup={awardsData.lowest_weekly_score} />
+          </div>
+        )}
+
+        {/* Biggest Blowout Win */}
+        {awardsData.biggest_blowout_win && awardsData.biggest_blowout_win.differential > 0 && (
+          <div style={{ paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '0.9rem', color: 'var(--success)', marginBottom: '0.75rem', fontWeight: 600 }}>
+              💥 Biggest Blowout Win
+            </div>
+            <MatchupCard matchup={awardsData.biggest_blowout_win} showMargin={true} />
+          </div>
+        )}
+
+        {/* Biggest Blowout Loss */}
+        {awardsData.biggest_blowout_loss && awardsData.biggest_blowout_loss.differential < 0 && (
+          <div style={{ paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ fontSize: '0.9rem', color: 'var(--danger)', marginBottom: '0.75rem', fontWeight: 600 }}>
+              😭 Biggest Blowout Loss
+            </div>
+            <MatchupCard matchup={awardsData.biggest_blowout_loss} showMargin={true} />
+          </div>
+        )}
       </div>
-      <div style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>
-        {subtitle}
-      </div>
-      {topScorers && TopScorers && managerName && (
-        <TopScorers scorers={topScorers} managerName={managerName} />
+
+      {/* Activity Awards Section */}
+      {(awardsData.biggest_faab_bid?.amount > 0 || awardsData.most_trades_in_year?.count > 0) && (
+        <div>
+          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text)' }}>
+            Activity Awards
+          </h3>
+
+          {/* Biggest FAAB Bid */}
+          {awardsData.biggest_faab_bid && awardsData.biggest_faab_bid.amount > 0 && (
+            <div style={{
+              paddingBottom: '1rem',
+              marginBottom: '1rem',
+              borderBottom: awardsData.most_trades_in_year?.count > 0 ? '1px solid var(--border)' : 'none'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>
+                    💰 Biggest FAAB Bid
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                    {awardsData.biggest_faab_bid.player?.name || awardsData.biggest_faab_bid.player} ({awardsData.biggest_faab_bid.year})
+                  </div>
+                </div>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>
+                  ${awardsData.biggest_faab_bid.amount}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Most Trades in Year */}
+          {awardsData.most_trades_in_year && awardsData.most_trades_in_year.count > 0 && (
+            <div style={{ paddingBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>
+                    🔄 Most Trades (Single Season)
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                    {awardsData.most_trades_in_year.year}
+                  </div>
+                </div>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>
+                  {awardsData.most_trades_in_year.count}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
 }
 
 // Transactions Tab - SportsCenter Style with Filters
-function TransactionsTab({ transactionHistory, transactionPage, setTransactionPage, totalPages, transactionsPerPage }) {
-  const [typeFilter, setTypeFilter] = React.useState('all');
+function TransactionsTab({ transactionHistory, transactionPage, setTransactionPage, totalPages, transactionsPerPage, typeFilter, setTypeFilter }) {
+  // Reset to page 0 when filter changes
+  React.useEffect(() => {
+    setTransactionPage(0);
+  }, [typeFilter, setTransactionPage]);
 
-  if (!transactionHistory || !transactionHistory.transactions) {
-    return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>No transactions found</div>;
+  if (!transactionHistory) {
+    return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>Loading transactions...</div>;
+  }
+
+  if (!transactionHistory.transactions || transactionHistory.transactions.length === 0) {
+    return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
+      <p>No transactions found</p>
+      <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Total count: {transactionHistory.total_count || 0}</p>
+    </div>;
   }
 
   return (
-    <div>
+    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
       {/* Filters and Pagination Bar */}
       <div style={{
         display: 'flex',
@@ -963,7 +1276,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
       }}>
         {/* Filter Buttons */}
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          {['all', 'trade', 'add', 'drop', 'add_and_drop'].map(type => (
+          {['all', 'trade', 'add', 'drop', 'add_and_or_drop'].map(type => (
             <button
               key={type}
               onClick={() => setTypeFilter(type)}
@@ -983,7 +1296,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
               {type === 'trade' && '🔄 Trades'}
               {type === 'add' && '➕ Adds'}
               {type === 'drop' && '➖ Drops'}
-              {type === 'add_and_drop' && '🔄 Add/Drop'}
+              {type === 'add_and_or_drop' && '🔄 Add/Drop'}
             </button>
           ))}
         </div>
@@ -1029,115 +1342,65 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
         </div>
       </div>
 
-      {/* Transaction Feed - SportsCenter Style */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        {transactionHistory.transactions
-          .filter(txn => typeFilter === 'all' || txn.type === typeFilter)
-          .map((txn, i) => (
+      {/* Transaction Feed */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+        {transactionHistory.transactions.map((txn, i) => (
           <div key={i} style={{
-            background: 'linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 50%)',
-            borderRadius: '12px',
-            border: '2px solid var(--border)',
-            overflow: 'hidden',
-            position: 'relative'
+            paddingBottom: '1rem',
+            borderBottom: '1px solid var(--border)'
           }}>
-            {/* Header Bar - SportsCenter Style */}
+            {/* Header */}
             <div style={{
-              background: txn.type === 'trade' ? 'linear-gradient(90deg, #4a90e2 0%, #357ABD 100%)' :
-                          txn.type === 'add' ? 'linear-gradient(90deg, #4CAF50 0%, #388E3C 100%)' :
-                          txn.type === 'drop' ? 'linear-gradient(90deg, #f44336 0%, #D32F2F 100%)' :
-                          'linear-gradient(90deg, #FF9800 0%, #F57C00 100%)',
-              padding: '0.75rem 1rem',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
-              color: 'white'
+              marginBottom: '0.75rem'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.25rem' }}>
-                  {txn.type === 'trade' && '🔄'}
-                  {txn.type === 'add' && '➕'}
-                  {txn.type === 'drop' && '➖'}
-                  {txn.type === 'add_and_drop' && '🔄'}
-                </span>
-                <span style={{ fontWeight: 700, textTransform: 'uppercase', fontSize: '0.9rem', letterSpacing: '0.5px' }}>
-                  {txn.type === 'trade' && 'Trade'}
-                  {txn.type === 'add' && 'Acquisition'}
-                  {txn.type === 'drop' && 'Released'}
-                  {txn.type === 'add_and_drop' && 'Swap'}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                <span>
+                  {txn.type === 'trade' && '🔄 Trade'}
+                  {txn.type === 'add' && '➕ Add'}
+                  {txn.type === 'drop' && '➖ Drop'}
+                  {txn.type === 'add_and_or_drop' && '🔄 Add/Drop'}
                 </span>
               </div>
-              <div style={{ fontSize: '0.85rem', opacity: 0.9 }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
                 Week {txn.week} • {txn.year}
               </div>
             </div>
 
             {/* Content */}
-            <div style={{ padding: '1rem' }}>
+            <div>
               {txn.type === 'trade' && (
-                <div>
-                  <div style={{ marginBottom: '0.75rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                    Trade Partners: <span style={{ color: 'var(--text)', fontWeight: 600 }}>
-                      {txn.partners?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}
-                    </span>
-                  </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    <div style={{ padding: '0.75rem', background: 'var(--bg-alt)', borderRadius: '8px', border: '1px solid rgba(76, 175, 80, 0.3)' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--success)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                        Acquired
-                      </div>
-                      <div style={{ fontSize: '0.9rem' }}>
-                        {txn.acquired?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}
-                      </div>
-                    </div>
-                    <div style={{ padding: '0.75rem', background: 'var(--bg-alt)', borderRadius: '8px', border: '1px solid rgba(244, 67, 54, 0.3)' }}>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--danger)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                        Sent
-                      </div>
-                      <div style={{ fontSize: '0.9rem' }}>
-                        {txn.sent?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <TradeCard trade={txn} />
               )}
               {txn.type === 'add' && (
-                <div style={{ fontSize: '1.1rem', fontWeight: 600 }}>
-                  {typeof txn.player === 'string' ? txn.player : txn.player?.name || 'Unknown Player'}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <PlayerLink player={txn.player} showImage={true} />
                   {txn.faab_spent !== null && txn.faab_spent !== undefined && (
-                    <span style={{ marginLeft: '0.75rem', fontSize: '0.9rem', color: 'var(--success)', fontWeight: 700 }}>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--success)', fontWeight: 700 }}>
                       ${txn.faab_spent} FAAB
                     </span>
                   )}
                 </div>
               )}
               {txn.type === 'drop' && (
-                <div style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--danger)' }}>
-                  {typeof txn.player === 'string' ? txn.player : txn.player?.name || 'Unknown Player'}
-                </div>
+                <PlayerLink player={txn.player} showImage={true} />
               )}
-              {txn.type === 'add_and_drop' && (
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div style={{ padding: '0.75rem', background: 'var(--bg-alt)', borderRadius: '8px', border: '1px solid rgba(76, 175, 80, 0.3)' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--success)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                      Added
-                    </div>
-                    <div style={{ fontSize: '1rem', fontWeight: 600 }}>
-                      {typeof txn.added_player === 'string' ? txn.added_player : txn.added_player?.name || 'Unknown Player'}
-                      {txn.faab_spent !== null && txn.faab_spent !== undefined && (
-                        <span style={{ marginLeft: '0.5rem', fontSize: '0.85rem', color: 'var(--success)' }}>
-                          (${txn.faab_spent})
-                        </span>
-                      )}
-                    </div>
+              {txn.type === 'add_and_or_drop' && (
+                <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.95rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ color: 'var(--success)', fontSize: '0.8rem' }}>Added:</span>
+                    <PlayerLink player={txn.added_player} showImage={true} />
+                    {txn.faab_spent !== null && txn.faab_spent !== undefined && (
+                      <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                        (${txn.faab_spent})
+                      </span>
+                    )}
                   </div>
-                  <div style={{ padding: '0.75rem', background: 'var(--bg-alt)', borderRadius: '8px', border: '1px solid rgba(244, 67, 54, 0.3)' }}>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--danger)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
-                      Dropped
-                    </div>
-                    <div style={{ fontSize: '1rem', fontWeight: 600 }}>
-                      {typeof txn.dropped_player === 'string' ? txn.dropped_player : txn.dropped_player?.name || 'Unknown Player'}
-                    </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ color: 'var(--danger)', fontSize: '0.8rem' }}>Dropped:</span>
+                    <PlayerLink player={txn.dropped_player} showImage={true} />
                   </div>
                 </div>
               )}
@@ -1164,12 +1427,12 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
   );
 
   return (
-    <div>
+    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
       <h3 style={{ marginBottom: '1.5rem' }}>Week-by-Week Breakdown for {year}</h3>
 
       {/* Weekly Scores - SportsCenter Style with MatchupCard */}
       <Section title="📅 Weekly Matchups">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))', gap: '1rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1rem' }}>
           {validWeeklyScores.map((matchup, i) => (
             <MatchupCard
               key={i}
@@ -1187,16 +1450,11 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
               <div style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--accent)' }}>Week {weekData.week}</div>
               {weekData.trades.map((trade, j) => (
                 <div key={j} style={{
-                  padding: '0.75rem',
-                  background: 'var(--bg-alt)',
-                  borderRadius: '6px',
-                  marginBottom: '0.5rem',
-                  border: '1px solid var(--border)',
-                  fontSize: '0.9rem'
+                  paddingBottom: '0.75rem',
+                  marginBottom: '0.75rem',
+                  borderBottom: j < weekData.trades.length - 1 ? '1px solid var(--border)' : 'none'
                 }}>
-                  <div><strong>With:</strong> {trade.partners?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}</div>
-                  <div><strong>Got:</strong> {trade.acquired?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}</div>
-                  <div><strong>Sent:</strong> {trade.sent?.map(p => typeof p === 'string' ? p : p?.name || 'Unknown').join(', ')}</div>
+                  <TradeCard trade={trade} />
                 </div>
               ))}
             </div>
@@ -1253,7 +1511,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
 function Section({ title, children, style }) {
   return (
     <div style={{ ...style }}>
-      <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem', color: 'var(--text)' }}>{title}</h3>
+      <h3 style={{ marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>{title}</h3>
       {children}
     </div>
   );

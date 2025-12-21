@@ -431,7 +431,7 @@ export default function ManagerPage() {
         <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
           <h1 style={{ margin: '0 0 0.5rem 0', fontSize: '2rem' }}>{managerName}</h1>
           <div style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>
-            Years Active: {yearsActive.join(', ')} • {overall.record || '0-0-0'} Overall
+            Years Active: {yearsActive.join(', ')} • {overall.wins !== undefined ? formatRecord(overall.wins, overall.losses || 0, overall.ties || 0) : (overall.record || '0-0-0')} Overall
           </div>
         </div>
 
@@ -465,7 +465,8 @@ export default function ManagerPage() {
           gap: '1rem',
           overflowX: 'auto',
           paddingBottom: '1rem',
-          marginBottom: '1.5rem'
+          marginBottom: '1.5rem',
+          justifyContent: 'center'
         }}>
           <StatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} />
           <StatCard title="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} />
@@ -482,12 +483,12 @@ export default function ManagerPage() {
           gap: '0.5rem',
           borderBottom: '2px solid var(--border)',
           marginBottom: '2rem',
-          overflowX: 'auto'
+          overflowX: 'auto',
+          justifyContent: 'center'
         }}>
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'awards', label: 'Awards' },
-            { id: 'head-to-head', label: 'Head-to-Head' },
             { id: 'transactions', label: 'Transactions' },
             { id: 'weekly', label: 'Weekly Stats', disabled: !year }
           ].map(tab => (
@@ -524,17 +525,12 @@ export default function ManagerPage() {
           drops={drops}
           faab={faab}
           placements={placements}
+          headToHead={summary.head_to_head || {}}
+          managerName={managerName}
         />}
 
         {activeTab === 'awards' && <AwardsTab
           awardsData={awardsData}
-          MatchupCard={MatchupCard}
-        />}
-
-        {activeTab === 'head-to-head' && <HeadToHeadTab
-          managerName={managerName}
-          headToHead={summary.head_to_head || {}}
-          year={year}
           MatchupCard={MatchupCard}
         />}
 
@@ -747,364 +743,829 @@ function TradeCard({ trade }) {
   );
 }
 
+// Helper function to format records (hide ties if 0)
+function formatRecord(wins, losses, ties) {
+  if (ties === 0) {
+    return `${wins}-${losses}`;
+  }
+  return `${wins}-${losses}-${ties}`;
+}
+
 // Overview Tab
-function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements }) {
+function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName }) {
+  // Sort opponents by wins first, then win percentage as tie breaker
+  const sortedOpponents = headToHead ? Object.entries(headToHead).sort((a, b) => {
+    // First sort by wins (descending)
+    if (b[1].wins !== a[1].wins) {
+      return b[1].wins - a[1].wins;
+    }
+    // If wins are equal, sort by win percentage
+    const totalA = a[1].wins + a[1].losses + a[1].ties;
+    const totalB = b[1].wins + b[1].losses + b[1].ties;
+    const winPctA = totalA > 0 ? (a[1].wins / totalA) : 0;
+    const winPctB = totalB > 0 ? (b[1].wins / totalB) : 0;
+    return winPctB - winPctA;
+  }) : [];
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
-      {/* Matchup Stats */}
-      <Section title="Season Stats">
-        <StatRow label="Regular Season" value={regularSeason.record || '0-0-0'} />
-        <StatRow label="Playoffs" value={playoffs.record || '0-0-0'} />
-        <StatRow label="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} />
-        <StatRow label="Avg PA" value={overall.average_points_against?.toFixed(2) || 0} />
-      </Section>
+    <div style={{ display: 'flex', gap: '1.5rem' }}>
+      {/* Left Side - 2 Column Flowing Grid */}
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(auto, 250px))', gap: '0.5rem 0.75rem', alignContent: 'start' }}>
+        {/* Season Stats */}
+        <Section title="Season Stats">
+          <StatRow label="Regular Season" value={regularSeason.wins !== undefined ? formatRecord(regularSeason.wins, regularSeason.losses || 0, regularSeason.ties || 0) : (regularSeason.record || '0-0')} />
+          <StatRow label="Playoffs" value={playoffs.wins !== undefined ? formatRecord(playoffs.wins, playoffs.losses || 0, playoffs.ties || 0) : (playoffs.record || '0-0')} />
+          <StatRow label="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} />
+          <StatRow label="Avg PA" value={overall.average_points_against?.toFixed(2) || 0} />
+        </Section>
 
-      {/* Transaction Summary */}
-      <Section title="Transactions">
-        <StatRow label="Trades" value={trades.total || 0} />
-        <StatRow label="Adds" value={adds.total || 0} />
-        <StatRow label="Drops" value={drops.total || 0} />
-        <StatRow label="FAAB Spent" value={`$${faab.total_spent || 0}`} />
-      </Section>
+        {/* Transaction Summary */}
+        <Section title="Transactions">
+          <StatRow label="Trades" value={trades.total || 0} />
+          <StatRow label="Adds" value={adds.total || 0} />
+          <StatRow label="Drops" value={drops.total || 0} />
+          <StatRow label="FAAB Spent" value={`$${faab.total_spent || 0}`} />
+        </Section>
 
-      {/* Placement History */}
-      {placements.length > 0 && (
-        <Section title="Placements">
-          <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-            {placements.sort((a, b) => b.year - a.year).map((p, i) => (
-              <div key={i} style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                padding: '0.5rem 0',
-                borderBottom: i < placements.length - 1 ? '1px solid var(--border)' : 'none'
-              }}>
-                <span>{p.year}</span>
-                <span style={{ fontWeight: 700 }}>
-                  {p.placement === 1 && '🥇 Champion'}
-                  {p.placement === 2 && '🥈 Runner-up'}
-                  {p.placement === 3 && '🥉 3rd Place'}
-                  {p.placement > 3 && `${p.placement}th`}
-                </span>
+        {/* Placement History */}
+        {placements.length > 0 && (
+          <Section title="Placements">
+            <div>
+              {placements.sort((a, b) => b.year - a.year).map((p, i) => (
+                <div key={i} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  padding: '0.05rem 0',
+                  maxWidth: '200px',
+                  borderBottom: i < placements.length - 1 ? '1px solid var(--border)' : 'none'
+                }}>
+                  <span>{p.year}</span>
+                  <span style={{ fontWeight: 700 }}>
+                    {p.placement === 1 && '🥇 Champion'}
+                    {p.placement === 2 && '🥈 Runner-up'}
+                    {p.placement === 3 && '🥉 3rd Place'}
+                    {p.placement > 3 && `${p.placement}th`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Top Trade Partners */}
+        {trades.top_trade_partners && trades.top_trade_partners.length > 0 && (
+          <Section title="Top Trade Partners">
+            {trades.top_trade_partners.slice(0, 5).map((partner, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+                <ManagerLink manager={partner} />
+                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>{partner.count} trades</span>
               </div>
             ))}
+          </Section>
+        )}
+
+        {/* Top Players Added */}
+        {adds.top_players_added && adds.top_players_added.length > 0 && (
+          <Section title="Most Added Players">
+            {adds.top_players_added.slice(0, 5).map((player, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+                <PlayerLink player={player} />
+                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
+              </div>
+            ))}
+          </Section>
+        )}
+
+        {/* Top Players Dropped */}
+        {drops.top_players_dropped && drops.top_players_dropped.length > 0 && (
+          <Section title="Most Dropped Players">
+            {drops.top_players_dropped.slice(0, 5).map((player, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+                <PlayerLink player={player} />
+                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
+              </div>
+            ))}
+          </Section>
+        )}
+
+        {/* Most Acquired via Trade */}
+        {trades.most_aquired_players && trades.most_aquired_players.length > 0 && (
+          <Section title="Most Acquired (Trade)">
+            {trades.most_aquired_players.slice(0, 3).map((player, i) => (
+              <div key={i} style={{ marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+                  <PlayerLink player={player} />
+                  <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
+                </div>
+                {player.from && player.from.length > 0 && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                    <span>From:</span>
+                    {player.from.map((m, j) => (
+                      <span key={j} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <ManagerLink manager={m} showImage={false} />
+                        <span>({m.count})</span>
+                        {j < player.from.length - 1 && <span>,</span>}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </Section>
+        )}
+
+        {/* Most Sent via Trade */}
+        {trades.most_sent_players && trades.most_sent_players.length > 0 && (
+          <Section title="Most Sent (Trade)">
+            {trades.most_sent_players.slice(0, 3).map((player, i) => (
+              <div key={i} style={{ marginBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+                  <PlayerLink player={player} />
+                  <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
+                </div>
+                {player.to && player.to.length > 0 && (
+                  <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
+                    <span>To:</span>
+                    {player.to.map((m, j) => (
+                      <span key={j} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <ManagerLink manager={m} showImage={false} />
+                        <span>({m.count})</span>
+                        {j < player.to.length - 1 && <span>,</span>}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </Section>
+        )}
+
+        {/* FAAB Biggest Acquisitions */}
+        {faab.biggest_acquisitions && faab.biggest_acquisitions.length > 0 && (
+          <Section title="Biggest FAAB Bids">
+            {faab.biggest_acquisitions.map((bid, i) => (
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+                <PlayerLink player={bid} />
+                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>${bid.amount}</span>
+              </div>
+            ))}
+          </Section>
+        )}
+
+        {/* FAAB Traded */}
+        {faab.faab_traded && (
+          <Section title="FAAB Trading">
+            <StatRow label="Sent" value={`$${faab.faab_traded.sent || 0}`} color="var(--danger)" />
+            <StatRow label="Received" value={`$${faab.faab_traded.received || 0}`} color="var(--success)" />
+            <StatRow label="Net" value={`$${faab.faab_traded.net || 0}`} color={faab.faab_traded.net > 0 ? 'var(--success)' : faab.faab_traded.net < 0 ? 'var(--danger)' : undefined} />
+          </Section>
+        )}
+      </div>
+
+      {/* Right Sidebar - Head-to-Head */}
+      {sortedOpponents.length > 0 && (
+        <div style={{ width: '280px', flexShrink: 0 }}>
+          <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Head-to-Head</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {sortedOpponents.map(([opponentKey, data]) => {
+              const opponent = data.opponent || { name: opponentKey };
+              const totalGames = data.wins + data.losses + data.ties;
+              const winPct = totalGames > 0 ? ((data.wins / totalGames) * 100).toFixed(1) : '0.0';
+              const tradesCount = data.num_trades_between || 0;
+              const pointsFor = data.points_for || 0;
+              const pointsAgainst = data.points_against || 0;
+              const avgPointsFor = totalGames > 0 ? (pointsFor / totalGames).toFixed(1) : '0.0';
+              const avgPointsAgainst = totalGames > 0 ? (pointsAgainst / totalGames).toFixed(1) : '0.0';
+
+              return (
+                <div
+                  key={opponentKey}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                    padding: '0.75rem',
+                    background: 'var(--bg-alt)',
+                    borderRadius: '8px',
+                    border: '1px solid var(--border)',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <Link
+                      to={`/manager/${encodeURIComponent(opponent.name)}`}
+                      style={{ flexShrink: 0 }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {opponent.image_url && (
+                        <img
+                          src={opponent.image_url}
+                          alt={opponent.name}
+                          style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '50%',
+                            objectFit: 'cover',
+                            border: '2px solid var(--border)',
+                            cursor: 'pointer'
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      )}
+                    </Link>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <Link
+                        to={`/manager/${encodeURIComponent(opponent.name)}`}
+                        style={{
+                          fontWeight: 600,
+                          fontSize: '0.95rem',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                          color: 'var(--accent)',
+                          textDecoration: 'none',
+                          display: 'block'
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {opponent.name}
+                      </Link>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                        <span>{formatRecord(data.wins, data.losses, data.ties)}</span>
+                        {' • '}
+                        <span style={{
+                          fontWeight: 600,
+                          color: parseFloat(winPct) >= 50 ? 'var(--success)' : 'var(--danger)'
+                        }}>
+                          {winPct}%
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                        <span>Avg: {avgPointsFor} - {avgPointsAgainst}</span>
+                        {tradesCount > 0 && (
+                          <>
+                            {' • '}
+                            <span>{tradesCount} trade{tradesCount !== 1 ? 's' : ''}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <Link
+                    to={`/manager/${encodeURIComponent(managerName)}/vs/${encodeURIComponent(opponent.name)}`}
+                    style={{
+                      fontSize: '0.8rem',
+                      color: 'var(--accent)',
+                      textDecoration: 'none',
+                      fontWeight: 500,
+                      display: 'block',
+                      paddingLeft: '64px'
+                    }}
+                  >
+                    View details →
+                  </Link>
+                </div>
+              );
+            })}
           </div>
-        </Section>
-      )}
-
-      {/* Top Trade Partners */}
-      {trades.top_trade_partners && trades.top_trade_partners.length > 0 && (
-        <Section title="Top Trade Partners">
-          {trades.top_trade_partners.slice(0, 5).map((partner, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
-              <ManagerLink manager={partner} />
-              <span style={{ fontWeight: 600, color: 'var(--text)' }}>{partner.count} trades</span>
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* Top Players Added - NEW */}
-      {adds.top_players_added && adds.top_players_added.length > 0 && (
-        <Section title="Most Added Players">
-          {adds.top_players_added.slice(0, 5).map((player, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
-              <PlayerLink player={player} />
-              <span style={{ fontWeight: 600, color: 'var(--text)' }}>×{player.count}</span>
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* Top Players Dropped - NEW */}
-      {drops.top_players_dropped && drops.top_players_dropped.length > 0 && (
-        <Section title="Most Dropped Players">
-          {drops.top_players_dropped.slice(0, 5).map((player, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
-              <PlayerLink player={player} />
-              <span style={{ fontWeight: 600, color: 'var(--text)' }}>×{player.count}</span>
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* Most Acquired via Trade */}
-      {trades.most_aquired_players && trades.most_aquired_players.length > 0 && (
-        <Section title="Most Acquired (Trade)">
-          {trades.most_aquired_players.slice(0, 3).map((player, i) => (
-            <div key={i} style={{ marginBottom: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
-                <PlayerLink player={player} />
-                <span style={{ fontWeight: 600, color: 'var(--text)' }}>×{player.count}</span>
-              </div>
-              {player.from && player.from.length > 0 && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                  <span>From:</span>
-                  {player.from.map((m, j) => (
-                    <span key={j} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <ManagerLink manager={m} showImage={false} />
-                      <span>({m.count})</span>
-                      {j < player.from.length - 1 && <span>,</span>}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* Most Sent via Trade */}
-      {trades.most_sent_players && trades.most_sent_players.length > 0 && (
-        <Section title="Most Sent (Trade)">
-          {trades.most_sent_players.slice(0, 3).map((player, i) => (
-            <div key={i} style={{ marginBottom: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
-                <PlayerLink player={player} />
-                <span style={{ fontWeight: 600, color: 'var(--text)' }}>×{player.count}</span>
-              </div>
-              {player.to && player.to.length > 0 && (
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
-                  <span>To:</span>
-                  {player.to.map((m, j) => (
-                    <span key={j} style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <ManagerLink manager={m} showImage={false} />
-                      <span>({m.count})</span>
-                      {j < player.to.length - 1 && <span>,</span>}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* FAAB Biggest Acquisitions */}
-      {faab.biggest_acquisitions && faab.biggest_acquisitions.length > 0 && (
-        <Section title="Biggest FAAB Bids">
-          {faab.biggest_acquisitions.map((bid, i) => (
-            <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', fontSize: '0.95rem' }}>
-              <PlayerLink player={bid} />
-              <span style={{ fontWeight: 600, color: 'var(--text)' }}>${bid.amount}</span>
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* FAAB Traded */}
-      {faab.faab_traded && (
-        <Section title="FAAB Trading">
-          <StatRow label="Sent" value={`$${faab.faab_traded.sent || 0}`} color="var(--danger)" />
-          <StatRow label="Received" value={`$${faab.faab_traded.received || 0}`} color="var(--success)" />
-          <StatRow label="Net" value={`$${faab.faab_traded.net || 0}`} color={faab.faab_traded.net > 0 ? 'var(--success)' : faab.faab_traded.net < 0 ? 'var(--danger)' : undefined} />
-        </Section>
+        </div>
       )}
     </div>
   );
 }
 
-// Head-to-Head Tab
-function HeadToHeadTab({ managerName, headToHead, year, MatchupCard }) {
-  const [expandedOpponent, setExpandedOpponent] = useState(null);
+// Head-to-Head Matchup Details Page Component
+export function HeadToHeadMatchupPage() {
+  const { managerName, opponentName } = useParams();
+  const navigate = useNavigate();
+  const [year, setYear] = useState(null);
 
-  if (Object.keys(headToHead).length === 0) {
+  const { data: detailedData, loading } = useHeadToHead(managerName, opponentName, { year });
+
+  // SportsCenter-Style Matchup Card Component (reused from ManagerPage)
+  const MatchupCard = ({ matchup, showMargin = false }) => {
+    if (!matchup) return null;
+
+    const manager1 = matchup.manager_1 || {};
+    const manager2 = matchup.manager_2 || {};
+    const manager1Score = matchup.manager_1_score;
+    const manager2Score = matchup.manager_2_score;
+    const winner = matchup.winner;
+    const week = matchup.week;
+    const matchupYear = matchup.year;
+    const manager1TopScorers = matchup.manager_1_top_3_scorers || [];
+    const manager2TopScorers = matchup.manager_2_top_3_scorers || [];
+
+    // Determine result from perspective of manager_1
+    let result = 'tie';
+    if (winner === manager1.name) result = 'win';
+    else if (winner === manager2.name) result = 'loss';
+
     return (
-      <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
-        <p>No head-to-head records available</p>
+      <div style={{
+        background: 'linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%)',
+        borderRadius: '12px',
+        border: '2px solid var(--border)',
+        overflow: 'hidden'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: 'var(--bg-alt)',
+          padding: '0.5rem 1rem',
+          textAlign: 'center',
+          color: 'var(--text)',
+          fontWeight: 700,
+          fontSize: '0.85rem',
+          letterSpacing: '0.5px',
+          borderBottom: '2px solid var(--border)'
+        }}>
+          {week && matchupYear ? `Week ${week} ${matchupYear}` : 'Matchup'}
+        </div>
+
+        {/* Score Display with Manager Avatars */}
+        <div style={{ padding: '1.5rem' }}>
+          {/* Manager Avatars + Score Box */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
+            {/* Manager 1 Avatar */}
+            <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{ flexShrink: 0 }}>
+              {manager1.image_url && (
+                <img
+                  src={manager1.image_url}
+                  alt={manager1.name}
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '3px solid var(--border)'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              )}
+            </Link>
+
+            {/* Score Box - 2 rows x 2 columns */}
+            <div style={{
+              flex: 1,
+              background: 'var(--bg-alt)',
+              border: '2px solid var(--border)',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}>
+              {/* Manager 1 Row */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '1rem',
+                borderBottom: '1px solid var(--border)'
+              }}>
+                <Link
+                  to={`/manager/${encodeURIComponent(manager1.name)}`}
+                  style={{
+                    flex: 1,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    color: result === 'win' ? 'var(--success)' : 'var(--text)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  {manager1.name}
+                </Link>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 700,
+                  color: result === 'win' ? 'var(--success)' : 'var(--text)',
+                  minWidth: '80px',
+                  textAlign: 'right'
+                }}>
+                  {manager1Score?.toFixed(2)}
+                </div>
+              </div>
+
+              {/* Manager 2 Row */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                padding: '1rem'
+              }}>
+                <Link
+                  to={`/manager/${encodeURIComponent(manager2.name)}`}
+                  style={{
+                    flex: 1,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    color: result === 'loss' ? 'var(--success)' : 'var(--text)',
+                    textDecoration: 'none'
+                  }}
+                >
+                  {manager2.name}
+                </Link>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 700,
+                  color: result === 'loss' ? 'var(--success)' : 'var(--text)',
+                  minWidth: '80px',
+                  textAlign: 'right'
+                }}>
+                  {manager2Score?.toFixed(2)}
+                </div>
+              </div>
+            </div>
+
+            {/* Manager 2 Avatar */}
+            <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{ flexShrink: 0 }}>
+              {manager2.image_url && (
+                <img
+                  src={manager2.image_url}
+                  alt={manager2.name}
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    objectFit: 'cover',
+                    border: '3px solid var(--border)'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              )}
+            </Link>
+          </div>
+
+          {/* Top 3 Scorers Side by Side */}
+          {(manager1TopScorers?.length > 0 || manager2TopScorers?.length > 0) && (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              {/* Manager 1 Top Scorers */}
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                  {manager1.name} Top 3
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {manager1TopScorers?.slice(0, 3).map((player, i) => (
+                    <div key={i} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.5rem',
+                      background: 'var(--bg)',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border)',
+                      fontSize: '0.8rem'
+                    }}>
+                      {player.image_url && (
+                        <img
+                          src={player.image_url}
+                          alt={player.name}
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '4px',
+                            objectFit: 'cover',
+                            flexShrink: 0
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Link
+                          to={`/player/${encodeURIComponent(player.name)}`}
+                          style={{
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            display: 'block',
+                            color: 'var(--accent)',
+                            textDecoration: 'none'
+                          }}
+                        >
+                          {player.name}
+                        </Link>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+                          {player.position} • {player.score?.toFixed(2)} pts
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Manager 2 Top Scorers */}
+              <div>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                  {manager2.name} Top 3
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {manager2TopScorers?.slice(0, 3).map((player, i) => (
+                    <div key={i} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      padding: '0.5rem',
+                      background: 'var(--bg)',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border)',
+                      fontSize: '0.8rem'
+                    }}>
+                      {player.image_url && (
+                        <img
+                          src={player.image_url}
+                          alt={player.name}
+                          style={{
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '4px',
+                            objectFit: 'cover',
+                            flexShrink: 0
+                          }}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      )}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <Link
+                          to={`/player/${encodeURIComponent(player.name)}`}
+                          style={{
+                            fontWeight: 600,
+                            fontSize: '0.85rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                            display: 'block',
+                            color: 'var(--accent)',
+                            textDecoration: 'none'
+                          }}
+                        >
+                          {player.name}
+                        </Link>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
+                          {player.position} • {player.score?.toFixed(2)} pts
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Margin - Only show for blowouts */}
+          {showMargin && matchup.differential !== undefined && (
+            <div style={{
+              textAlign: 'center',
+              fontSize: '0.85rem',
+              color: 'var(--muted)',
+              paddingTop: '0.75rem',
+              marginTop: '0.75rem',
+              borderTop: '1px solid var(--border)'
+            }}>
+              Margin: {Math.abs(matchup.differential).toFixed(2)}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  if (loading && !detailedData) {
+    return (
+      <div className="App" style={{ paddingTop: '2rem' }}>
+        <p>Loading head-to-head data...</p>
       </div>
     );
   }
 
-  // Sort opponents by number of games played (wins + losses + ties)
-  const sortedOpponents = Object.entries(headToHead).sort((a, b) => {
-    const totalA = a[1].wins + a[1].losses + a[1].ties;
-    const totalB = b[1].wins + b[1].losses + b[1].ties;
-    return totalB - totalA;
-  });
-
-  return (
-    <div>
-      {sortedOpponents.map(([opponentKey, data]) => {
-        const opponent = data.opponent || { name: opponentKey };
-        const totalGames = data.wins + data.losses + data.ties;
-        const winPct = totalGames > 0 ? ((data.wins / totalGames) * 100).toFixed(1) : '0.0';
-        const avgPF = totalGames > 0 ? (data.points_for / totalGames).toFixed(2) : '0.00';
-        const avgPA = totalGames > 0 ? (data.points_against / totalGames).toFixed(2) : '0.00';
-        const avgPointDiff = totalGames > 0 ? ((data.points_for - data.points_against) / totalGames).toFixed(2) : '0.00';
-        const isExpanded = expandedOpponent === opponent.name;
-
-        return (
-          <OpponentCard
-            key={opponentKey}
-            managerName={managerName}
-            opponent={opponent}
-            data={data}
-            winPct={winPct}
-            avgPointDiff={avgPointDiff}
-            isExpanded={isExpanded}
-            onToggle={() => setExpandedOpponent(isExpanded ? null : opponent.name)}
-            year={year}
-            MatchupCard={MatchupCard}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-// Separate component for each opponent card
-function OpponentCard({ managerName, opponent, data, totalGames, winPct, avgPF, avgPA, avgPointDiff, isExpanded, onToggle, year, MatchupCard }) {
-  const { data: detailedData, loading } = useHeadToHead(
-    isExpanded ? managerName : null,
-    isExpanded ? opponent.name : null,
-    { year }
-  );
+  if (!detailedData) {
+    return (
+      <div className="App" style={{ paddingTop: '2rem' }}>
+        <p style={{ color: 'var(--danger)' }}>No head-to-head data available</p>
+      </div>
+    );
+  }
 
   const managerKey = managerName.toLowerCase().replace(/\s+/g, '_');
-  const opponentKey = opponent.name.toLowerCase().replace(/\s+/g, '_');
+  const opponentKey = opponentName.toLowerCase().replace(/\s+/g, '_');
+
+  // Get manager images from the detailed data
+  const manager1Data = detailedData?.overall?.matchup_history?.[0]?.manager_1 || { name: managerName };
+  const manager2Data = detailedData?.overall?.matchup_history?.[0]?.manager_2 || { name: opponentName };
 
   return (
-    <div style={{
-      padding: '0.75rem 0',
-      borderBottom: '1px solid var(--border)'
-    }}>
-      {/* Compact Row */}
-      <div
-        onClick={onToggle}
-        style={{
-          cursor: 'pointer',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          padding: '0.5rem',
-          marginLeft: '-0.5rem',
-          marginRight: '-0.5rem',
-          borderRadius: '6px'
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-alt)'}
-        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
-      >
-        {opponent.image_url && (
-          <img
-            src={opponent.image_url}
-            alt={opponent.name}
+    <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
+      {/* Back Button */}
+      <div style={{ padding: '1rem 2rem' }}>
+        <button onClick={() => navigate(`/manager/${encodeURIComponent(managerName)}`)} style={{
+          background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem 0'
+        }}>← Back to {managerName}</button>
+      </div>
+
+      {/* Hero Banner with Manager Pictures */}
+      <div style={{
+        background: 'linear-gradient(135deg, var(--accent) 0%, var(--bg-alt) 100%)',
+        padding: '2rem',
+        borderRadius: '0 0 16px 16px',
+        marginBottom: '2rem'
+      }}>
+        {/* Manager Pictures */}
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '3rem', marginBottom: '1.5rem' }}>
+          <div style={{ textAlign: 'center' }}>
+            {manager1Data.image_url && (
+              <img
+                src={manager1Data.image_url}
+                alt={managerName}
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '4px solid white',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                  marginBottom: '0.5rem'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            )}
+            <div style={{ color: 'white', fontWeight: 600, fontSize: '1.1rem' }}>{managerName}</div>
+          </div>
+          <div style={{ fontSize: '2rem', fontWeight: 700, color: 'white' }}>VS</div>
+          <div style={{ textAlign: 'center' }}>
+            {manager2Data.image_url && (
+              <img
+                src={manager2Data.image_url}
+                alt={opponentName}
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: '4px solid white',
+                  boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
+                  marginBottom: '0.5rem'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            )}
+            <div style={{ color: 'white', fontWeight: 600, fontSize: '1.1rem' }}>{opponentName}</div>
+          </div>
+        </div>
+
+        {/* Year Filter */}
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <select
+            value={year || 'ALL'}
+            onChange={(e) => setYear(e.target.value === 'ALL' ? null : e.target.value)}
             style={{
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              objectFit: 'cover',
-              border: '2px solid var(--border)',
-              flexShrink: 0
+              background: 'rgba(255,255,255,0.2)',
+              color: 'white',
+              border: '1px solid rgba(255,255,255,0.3)',
+              padding: '0.5rem 1rem',
+              borderRadius: '6px',
+              cursor: 'pointer',
+              backdropFilter: 'blur(10px)'
             }}
-            onError={(e) => {
-              e.target.style.display = 'none';
-            }}
-          />
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: '0.95rem', fontWeight: 600 }}>{opponent.name}</div>
-        </div>
-        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', fontSize: '0.9rem' }}>
-          <div>
-            <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Record: </span>
-            <span style={{ fontWeight: 600 }}>{data.wins}-{data.losses}-{data.ties}</span>
-          </div>
-          <div>
-            <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Win%: </span>
-            <span style={{ fontWeight: 600, color: parseFloat(winPct) >= 50 ? 'var(--success)' : 'var(--danger)' }}>{winPct}%</span>
-          </div>
-          <div>
-            <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>Diff: </span>
-            <span style={{ fontWeight: 600, color: parseFloat(avgPointDiff) >= 0 ? 'var(--success)' : 'var(--danger)' }}>
-              {parseFloat(avgPointDiff) >= 0 ? '+' : ''}{avgPointDiff}
-            </span>
-          </div>
-        </div>
-        <div style={{ fontSize: '0.9rem', color: 'var(--muted)', flexShrink: 0 }}>
-          {isExpanded ? '▼' : '▶'}
+          >
+            <option value="ALL" style={{ background: 'var(--bg)', color: 'var(--text)' }}>All Seasons</option>
+          </select>
         </div>
       </div>
 
-      {/* Expanded Detailed Section */}
-      {isExpanded && (
-        <div style={{ padding: '1.5rem', paddingTop: '0', borderTop: '2px solid var(--border)' }}>
-          {loading && <p style={{ textAlign: 'center', color: 'var(--muted)' }}>Loading detailed stats...</p>}
+      {/* Main Content */}
+      <div style={{ padding: '0 2rem 2rem 2rem' }}>
+        {loading && <p style={{ textAlign: 'center', color: 'var(--muted)' }}>Loading detailed stats...</p>}
 
-          {!loading && detailedData && (
+        {!loading && detailedData && (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 400px', gap: '2rem' }}>
+            {/* Left Column - Matchup Info */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              {/* Average Margins of Victory */}
-              {(detailedData.overall?.[`${managerKey}_average_margin_of_victory`] !== undefined ||
-                detailedData.overall?.[`${opponentKey}_average_margin_of_victory`] !== undefined) && (
-                <div>
-                  <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Average Margins of Victory</h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                    {detailedData.overall?.[`${managerKey}_average_margin_of_victory`] !== undefined && (
-                      <div style={{ padding: '1rem', background: 'var(--bg)', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>{managerName}</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
-                          +{detailedData.overall[`${managerKey}_average_margin_of_victory`]?.toFixed(2)}
-                        </div>
-                      </div>
-                    )}
-                    {detailedData.overall?.[`${opponentKey}_average_margin_of_victory`] !== undefined && (
-                      <div style={{ padding: '1rem', background: 'var(--bg)', borderRadius: '8px' }}>
-                        <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>{opponent.name}</div>
-                        <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
-                          +{detailedData.overall[`${opponentKey}_average_margin_of_victory`]?.toFixed(2)}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+              {/* Overall Record */}
+              <div style={{
+                padding: '1.5rem',
+                background: 'var(--bg-alt)',
+                borderRadius: '12px',
+                border: '1px solid var(--border)',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>Overall Record</div>
+                <div style={{ fontSize: '2.5rem', fontWeight: 700 }}>
+                  {formatRecord(detailedData.overall?.wins || 0, detailedData.overall?.losses || 0, detailedData.overall?.ties || 0)}
                 </div>
-              )}
+              </div>
 
-              {/* Last Wins */}
+            {/* Average Margins of Victory */}
+            {(detailedData.overall?.[`${managerKey}_average_margin_of_victory`] !== undefined ||
+              detailedData.overall?.[`${opponentKey}_average_margin_of_victory`] !== undefined) && (
               <div>
-                <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Most Recent Wins</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
-                  {detailedData.overall?.[`${managerKey}_last_win`] && Object.keys(detailedData.overall[`${managerKey}_last_win`]).length > 0 && (
-                    <div>
-                      <h5 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{managerName}'s Last Win</h5>
-                      <MatchupCard matchup={detailedData.overall[`${managerKey}_last_win`]} />
+                <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Average Margins of Victory</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  {detailedData.overall?.[`${managerKey}_average_margin_of_victory`] !== undefined && (
+                    <div style={{ padding: '1.5rem', background: 'var(--bg-alt)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>{managerName}</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
+                        +{detailedData.overall[`${managerKey}_average_margin_of_victory`]?.toFixed(2)}
+                      </div>
                     </div>
                   )}
-                  {detailedData.overall?.[`${opponentKey}_last_win`] && Object.keys(detailedData.overall[`${opponentKey}_last_win`]).length > 0 && (
-                    <div>
-                      <h5 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{opponent.name}'s Last Win</h5>
-                      <MatchupCard matchup={detailedData.overall[`${opponentKey}_last_win`]} />
+                  {detailedData.overall?.[`${opponentKey}_average_margin_of_victory`] !== undefined && (
+                    <div style={{ padding: '1.5rem', background: 'var(--bg-alt)', borderRadius: '8px', border: '1px solid var(--border)' }}>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.5rem' }}>{opponentName}</div>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--success)' }}>
+                        +{detailedData.overall[`${opponentKey}_average_margin_of_victory`]?.toFixed(2)}
+                      </div>
                     </div>
                   )}
                 </div>
               </div>
+            )}
+
+            {/* Last Wins - Side by Side */}
+            <div>
+              <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Most Recent Wins</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
+                {detailedData.overall?.[`${managerKey}_last_win`] && Object.keys(detailedData.overall[`${managerKey}_last_win`]).length > 0 && (
+                  <div>
+                    <h4 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{managerName}'s Last Win</h4>
+                    <MatchupCard matchup={detailedData.overall[`${managerKey}_last_win`]} />
+                  </div>
+                )}
+                {detailedData.overall?.[`${opponentKey}_last_win`] && Object.keys(detailedData.overall[`${opponentKey}_last_win`]).length > 0 && (
+                  <div>
+                    <h4 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{opponentName}'s Last Win</h4>
+                    <MatchupCard matchup={detailedData.overall[`${opponentKey}_last_win`]} />
+                  </div>
+                )}
+              </div>
+            </div>
 
               {/* Biggest Blowouts */}
               <div>
-                <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>Biggest Blowouts</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
+                <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Biggest Blowouts</h3>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                   {detailedData.overall?.[`${managerKey}_biggest_blowout`] && Object.keys(detailedData.overall[`${managerKey}_biggest_blowout`]).length > 0 && (
                     <div>
-                      <h5 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{managerName}'s Biggest Blowout</h5>
+                      <h4 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{managerName}'s Biggest Blowout</h4>
                       <MatchupCard matchup={detailedData.overall[`${managerKey}_biggest_blowout`]} showMargin={true} />
                     </div>
                   )}
                   {detailedData.overall?.[`${opponentKey}_biggest_blowout`] && Object.keys(detailedData.overall[`${opponentKey}_biggest_blowout`]).length > 0 && (
                     <div>
-                      <h5 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{opponent.name}'s Biggest Blowout</h5>
+                      <h4 style={{ marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>{opponentName}'s Biggest Blowout</h4>
                       <MatchupCard matchup={detailedData.overall[`${opponentKey}_biggest_blowout`]} showMargin={true} />
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* Trades Between */}
-              {detailedData.trades_between?.total > 0 && (
+              {/* Matchup History */}
+              {detailedData.overall?.matchup_history?.length > 0 && (
                 <div>
-                  <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>
-                    Trades Between ({detailedData.trades_between.total} total)
-                  </h4>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>
+                    All Matchups ({detailedData.overall.matchup_history.length} games)
+                  </h3>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    {detailedData.overall.matchup_history.map((matchup, idx) => (
+                      <MatchupCard key={idx} matchup={matchup} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Right Column - Trades */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+              {detailedData.trades_between?.total > 0 ? (
+                <div style={{
+                  padding: '1.5rem',
+                  background: 'var(--bg-alt)',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                  height: 'fit-content',
+                  position: 'sticky',
+                  top: '2rem'
+                }}>
+                  <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 700 }}>
+                    Trades Between
+                    <span style={{ fontSize: '0.9rem', color: 'var(--muted)', fontWeight: 400, marginLeft: '0.5rem' }}>
+                      ({detailedData.trades_between.total} total)
+                    </span>
+                  </h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', maxHeight: '80vh', overflowY: 'auto' }}>
                     {detailedData.trades_between.trade_history?.map((trade, idx) => (
-                      <div key={idx} style={{ paddingBottom: '1rem', borderBottom: '1px solid var(--border)' }}>
+                      <div key={idx} style={{ paddingBottom: '1rem', borderBottom: idx < detailedData.trades_between.trade_history.length - 1 ? '1px solid var(--border)' : 'none' }}>
                         <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem' }}>
                           Week {trade.week}, {trade.year}
                         </div>
@@ -1113,125 +1574,104 @@ function OpponentCard({ managerName, opponent, data, totalGames, winPct, avgPF, 
                     ))}
                   </div>
                 </div>
-              )}
-
-              {/* Matchup History */}
-              {detailedData.overall?.matchup_history?.length > 0 && (
-                <div>
-                  <h4 style={{ marginBottom: '1rem', fontSize: '1.1rem', fontWeight: 700 }}>
-                    All Matchups ({detailedData.overall.matchup_history.length} games)
-                  </h4>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '1rem' }}>
-                    {detailedData.overall.matchup_history.map((matchup, idx) => (
-                      <MatchupCard key={idx} matchup={matchup} />
-                    ))}
-                  </div>
+              ) : (
+                <div style={{
+                  padding: '2rem',
+                  background: 'var(--bg-alt)',
+                  borderRadius: '12px',
+                  border: '1px solid var(--border)',
+                  textAlign: 'center',
+                  color: 'var(--muted)'
+                }}>
+                  <p>No trades between these managers</p>
                 </div>
               )}
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
-// Awards Tab - Minimal flowing design
+// Awards Tab - Compact grid layout
 function AwardsTab({ awardsData, MatchupCard }) {
   return (
-    <div style={{ maxWidth: '900px', margin: '0 auto' }}>
-      {/* Performance Awards Section */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text)' }}>
-          Performance Awards
-        </h3>
-
+    <div>
+      {/* Matchup Awards in 2-column grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '1.5rem', marginBottom: '2rem' }}>
         {/* Highest Weekly Score */}
         {awardsData.highest_weekly_score && awardsData.highest_weekly_score.manager_1_score > 0 && (
-          <div style={{ paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '0.9rem', color: 'var(--success)', marginBottom: '0.75rem', fontWeight: 600 }}>
-              🎯 Highest Weekly Score
-            </div>
+          <div>
+            <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--success)' }}>🎯 Highest Weekly Score</h3>
             <MatchupCard matchup={awardsData.highest_weekly_score} />
           </div>
         )}
 
         {/* Lowest Weekly Score */}
         {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.manager_1_score < Infinity && (
-          <div style={{ paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '0.9rem', color: 'var(--danger)', marginBottom: '0.75rem', fontWeight: 600 }}>
-              📉 Lowest Weekly Score
-            </div>
+          <div>
+            <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--danger)' }}>📉 Lowest Weekly Score</h3>
             <MatchupCard matchup={awardsData.lowest_weekly_score} />
           </div>
         )}
 
         {/* Biggest Blowout Win */}
         {awardsData.biggest_blowout_win && awardsData.biggest_blowout_win.differential > 0 && (
-          <div style={{ paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '0.9rem', color: 'var(--success)', marginBottom: '0.75rem', fontWeight: 600 }}>
-              💥 Biggest Blowout Win
-            </div>
+          <div>
+            <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--success)' }}>💥 Biggest Blowout Win</h3>
             <MatchupCard matchup={awardsData.biggest_blowout_win} showMargin={true} />
           </div>
         )}
 
         {/* Biggest Blowout Loss */}
         {awardsData.biggest_blowout_loss && awardsData.biggest_blowout_loss.differential < 0 && (
-          <div style={{ paddingBottom: '1.5rem', marginBottom: '1.5rem', borderBottom: '1px solid var(--border)' }}>
-            <div style={{ fontSize: '0.9rem', color: 'var(--danger)', marginBottom: '0.75rem', fontWeight: 600 }}>
-              😭 Biggest Blowout Loss
-            </div>
+          <div>
+            <h3 style={{ marginBottom: '0.75rem', fontSize: '1rem', color: 'var(--danger)' }}>😭 Biggest Blowout Loss</h3>
             <MatchupCard matchup={awardsData.biggest_blowout_loss} showMargin={true} />
           </div>
         )}
       </div>
 
-      {/* Activity Awards Section */}
+      {/* Activity Awards in horizontal cards */}
       {(awardsData.biggest_faab_bid?.amount > 0 || awardsData.most_trades_in_year?.count > 0) && (
-        <div>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text)' }}>
-            Activity Awards
-          </h3>
-
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
           {/* Biggest FAAB Bid */}
           {awardsData.biggest_faab_bid && awardsData.biggest_faab_bid.amount > 0 && (
             <div style={{
-              paddingBottom: '1rem',
-              marginBottom: '1rem',
-              borderBottom: awardsData.most_trades_in_year?.count > 0 ? '1px solid var(--border)' : 'none'
+              padding: '1.5rem',
+              background: 'var(--bg-alt)',
+              borderRadius: '12px',
+              border: '1px solid var(--border)'
             }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>
-                    💰 Biggest FAAB Bid
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                    {awardsData.biggest_faab_bid.player?.name || awardsData.biggest_faab_bid.player} ({awardsData.biggest_faab_bid.year})
-                  </div>
-                </div>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>
-                  ${awardsData.biggest_faab_bid.amount}
-                </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                💰 Biggest FAAB Bid
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '0.5rem' }}>
+                ${awardsData.biggest_faab_bid.amount}
+              </div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>
+                {awardsData.biggest_faab_bid.player?.name || awardsData.biggest_faab_bid.player} ({awardsData.biggest_faab_bid.year})
               </div>
             </div>
           )}
 
           {/* Most Trades in Year */}
           {awardsData.most_trades_in_year && awardsData.most_trades_in_year.count > 0 && (
-            <div style={{ paddingBottom: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '0.9rem', color: 'var(--muted)', marginBottom: '0.25rem' }}>
-                    🔄 Most Trades (Single Season)
-                  </div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                    {awardsData.most_trades_in_year.year}
-                  </div>
-                </div>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent)' }}>
-                  {awardsData.most_trades_in_year.count}
-                </div>
+            <div style={{
+              padding: '1.5rem',
+              background: 'var(--bg-alt)',
+              borderRadius: '12px',
+              border: '1px solid var(--border)'
+            }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                🔄 Most Trades (Single Season)
+              </div>
+              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '0.5rem' }}>
+                {awardsData.most_trades_in_year.count}
+              </div>
+              <div style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>
+                {awardsData.most_trades_in_year.year}
               </div>
             </div>
           )}
@@ -1260,7 +1700,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
   }
 
   return (
-    <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+    <div>
       {/* Filters and Pagination Bar */}
       <div style={{
         display: 'flex',
@@ -1412,7 +1852,7 @@ function TransactionsTab({ transactionHistory, transactionPage, setTransactionPa
   );
 }
 
-// Weekly Stats Tab - Using MatchupCard and filtering out empty matchups
+// Weekly Stats Tab - Compact grid layout
 function WeeklyTab({ yearlyData, year, MatchupCard }) {
   if (!yearlyData) return null;
 
@@ -1427,22 +1867,24 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
   );
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+    <div>
       <h3 style={{ marginBottom: '1.5rem' }}>Week-by-Week Breakdown for {year}</h3>
 
-      {/* Weekly Scores - SportsCenter Style with MatchupCard */}
-      <Section title="📅 Weekly Matchups">
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '1rem' }}>
-          {validWeeklyScores.map((matchup, i) => (
-            <MatchupCard
-              key={i}
-              matchup={matchup}
-            />
-          ))}
-        </div>
-      </Section>
+      {/* Weekly Matchups in 2-column grid */}
+      {validWeeklyScores.length > 0 && (
+        <Section title="📅 Weekly Matchups">
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
+            {validWeeklyScores.map((matchup, i) => (
+              <MatchupCard
+                key={i}
+                matchup={matchup}
+              />
+            ))}
+          </div>
+        </Section>
+      )}
 
-      {/* Weekly Trades - NEW */}
+      {/* Weekly Trades */}
       {tradesByWeek.length > 0 && tradesByWeek.some(w => w.trades && w.trades.length > 0) && (
         <Section title="🔄 Trades by Week" style={{ marginTop: '2rem' }}>
           {tradesByWeek.filter(w => w.trades && w.trades.length > 0).map((weekData, i) => (
@@ -1462,7 +1904,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
         </Section>
       )}
 
-      {/* Weekly Adds - NEW */}
+      {/* Weekly Adds */}
       {addsByWeek.length > 0 && addsByWeek.some(w => w.players && w.players.length > 0) && (
         <Section title="➕ Adds by Week" style={{ marginTop: '2rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.75rem' }}>
@@ -1483,7 +1925,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
         </Section>
       )}
 
-      {/* Weekly Drops - NEW */}
+      {/* Weekly Drops */}
       {dropsByWeek.length > 0 && dropsByWeek.some(w => w.players && w.players.length > 0) && (
         <Section title="➖ Drops by Week" style={{ marginTop: '2rem' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.75rem' }}>
@@ -1511,7 +1953,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
 function Section({ title, children, style }) {
   return (
     <div style={{ ...style }}>
-      <h3 style={{ marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>{title}</h3>
+      <h3 style={{ marginBottom: '0.1rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>{title}</h3>
       {children}
     </div>
   );
@@ -1523,8 +1965,9 @@ function StatRow({ label, value, color, small }) {
     <div style={{
       display: 'flex',
       justifyContent: 'space-between',
-      padding: '0.5rem 0',
-      fontSize: small ? '0.85rem' : '0.95rem'
+      padding: '0.05rem 0',
+      fontSize: small ? '0.85rem' : '0.95rem',
+      maxWidth: '200px'
     }}>
       <span style={{ color: 'var(--muted)' }}>{label}</span>
       <span style={{ fontWeight: 600, color: color || 'var(--text)' }}>{value}</span>

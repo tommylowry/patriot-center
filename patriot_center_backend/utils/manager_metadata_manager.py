@@ -277,6 +277,7 @@ class ManagerMetadataManager:
                 "ties": 0,
                 "points_for": 76.15,
                 "points_against": 72.29
+                "num_trades_between": 3
                 },
                 ...
             }
@@ -1210,8 +1211,10 @@ class ManagerMetadataManager:
         head_to_head_data = []
         
         cached_head_to_head_data = copy.deepcopy(self._cache[manager_name]["summary"]["matchup_data"]["overall"])
+        trade_data = copy.deepcopy(self._cache[manager_name]["summary"]["transactions"]["trades"])
         if year:
             cached_head_to_head_data = copy.deepcopy(self._cache[manager_name]["years"][year]["summary"]["matchup_data"]["overall"])
+            trade_data = copy.deepcopy(self._cache[manager_name]["years"][year]["summary"]["transactions"]["trades"])
         
         opponents = [opponent] if opponent else list(copy.deepcopy(cached_head_to_head_data.get("points_for", {}).get("opponents", {})).keys())
         
@@ -1219,12 +1222,13 @@ class ManagerMetadataManager:
         for opponent in opponents:
 
             opponent_data = {
-                "opponent":       self._get_image_url(opponent, dictionary=True),
-                "wins":           cached_head_to_head_data["wins"]["opponents"].get(opponent, 0),
-                "losses":         cached_head_to_head_data["losses"]["opponents"].get(opponent, 0),
-                "ties":           cached_head_to_head_data["ties"]["opponents"].get(opponent, 0),
-                "points_for":     cached_head_to_head_data["points_for"]["opponents"].get(opponent, 0.0),
-                "points_against": cached_head_to_head_data["points_against"]["opponents"].get(opponent, 0.0)
+                "opponent":           self._get_image_url(opponent, dictionary=True),
+                "wins":               cached_head_to_head_data["wins"]["opponents"].get(opponent, 0),
+                "losses":             cached_head_to_head_data["losses"]["opponents"].get(opponent, 0),
+                "ties":               cached_head_to_head_data["ties"]["opponents"].get(opponent, 0),
+                "points_for":         cached_head_to_head_data["points_for"]["opponents"].get(opponent, 0.0),
+                "points_against":     cached_head_to_head_data["points_against"]["opponents"].get(opponent, 0.0),
+                "num_trades_between": trade_data["trade_partners"].get(opponent, 0)
             }
             head_to_head_data.append(copy.deepcopy(opponent_data))
         
@@ -1545,18 +1549,21 @@ class ManagerMetadataManager:
         }
         # Check if FAAB data exists in summary before accessing
         if "faab" in self._cache[manager_name].get("summary", {}).get("transactions", {}) and self._cache[manager_name]["summary"]["transactions"]["faab"]:
-            for player in self._cache[manager_name]["summary"]["transactions"]["faab"].get("players", {}):
-                faab_spent = self._cache[manager_name]["summary"]["transactions"]["faab"]["players"][player]
-                if faab_spent > biggest_faab_bid["amount"]:
-                    biggest_faab_bid["player"] = self._get_image_url(player, dictionary=True)
-                    biggest_faab_bid["amount"] = faab_spent
-            
-            # Find year of biggest bid
+
             for year in self._cache[manager_name].get("years", {}):
-                if biggest_faab_bid["player"]["name"] in self._cache[manager_name]["years"][year]["summary"]["transactions"].get("faab", {}).get("players", {}):
-                    if self._cache[manager_name]["years"][year]["summary"]["transactions"]["faab"]["players"][biggest_faab_bid["player"]["name"]] == biggest_faab_bid["amount"]:
-                        biggest_faab_bid["year"] = year
-                        break
+                
+                weeks = copy.deepcopy(self._cache[manager_name]["years"][year]["weeks"])
+                for week in weeks:
+                    
+                    weekly_faab_bids = copy.deepcopy(weeks.get(week, {}).get("transactions", {}).get("faab", {}).get("players", {}))
+                    for player in weekly_faab_bids:
+                        
+                        bid_amount = weekly_faab_bids[player]
+                        if bid_amount > biggest_faab_bid["amount"]:
+                            biggest_faab_bid["player"] = self._get_image_url(player, dictionary=True)
+                            biggest_faab_bid["amount"] = bid_amount
+                            biggest_faab_bid["year"]   = year
+        
         awards["biggest_faab_bid"] = copy.deepcopy(biggest_faab_bid)
 
         
@@ -2966,7 +2973,7 @@ class ManagerMetadataManager:
 
 # # Debug code - commented out
 # man = ManagerMetadataManager()
-# d = man._get_trade_history_between_two_managers("Tommy", "Mitch")
+# d = man.get_manager_awards("Mitch")
 # import json
 # pretty_json_string = json.dumps(d, indent=4)
 # print(pretty_json_string)

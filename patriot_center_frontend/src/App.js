@@ -6,7 +6,7 @@ import { useValidOptions } from './hooks/useValidOptions';
 import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import PlayerPage from './pages/PlayerPage';
 import ManagersPage from './pages/ManagersPage';
-import ManagerPage from './pages/ManagerPage';
+import ManagerPage, { HeadToHeadMatchupPage } from './pages/ManagerPage';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 
@@ -288,6 +288,7 @@ function App() {
           <Route path="/player/:playerSlug" element={<PlayerPage />} />
           <Route path="/managers" element={<ManagersPage />} />
           <Route path="/manager/:managerName" element={<ManagerPage />} />
+          <Route path="/manager/:managerName/vs/:opponentName" element={<HeadToHeadMatchupPage />} />
         </Routes>
       </Layout>
     </Router>

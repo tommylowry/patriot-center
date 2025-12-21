@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGet } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 /**
  * Hook to fetch summary data for a specific manager.
@@ -12,6 +13,7 @@ export function useManagerSummary(managerName, filters = {}) {
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   const { year } = filters;
 
@@ -22,6 +24,7 @@ export function useManagerSummary(managerName, filters = {}) {
     }
 
     setLoading(true);
+    startLoading();
     setError(null);
     try {
       const endpoint = year
@@ -35,8 +38,9 @@ export function useManagerSummary(managerName, filters = {}) {
       setSummary(null);
     } finally {
       setLoading(false);
+      stopLoading();
     }
-  }, [managerName, year]);
+  }, [managerName, year, startLoading, stopLoading]);
 
   useEffect(() => {
     fetchData();

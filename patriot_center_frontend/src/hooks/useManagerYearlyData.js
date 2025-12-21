@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGet } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 /**
  * Hook to fetch detailed yearly data for a specific manager.
@@ -12,6 +13,7 @@ export function useManagerYearlyData(managerName, year) {
   const [yearlyData, setYearlyData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   const fetchData = useCallback(async () => {
     if (!managerName || !year) {
@@ -20,6 +22,7 @@ export function useManagerYearlyData(managerName, year) {
     }
 
     setLoading(true);
+    startLoading();
     setError(null);
     try {
       const data = await apiGet(`/api/managers/${encodeURIComponent(managerName)}/yearly/${year}`);
@@ -29,8 +32,9 @@ export function useManagerYearlyData(managerName, year) {
       setYearlyData(null);
     } finally {
       setLoading(false);
+      stopLoading();
     }
-  }, [managerName, year]);
+  }, [managerName, year, startLoading, stopLoading]);
 
   useEffect(() => {
     fetchData();

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { fetchValidOptions } from '../services/options';
+import { useLoading } from '../contexts/LoadingContext';
 
 export function useValidOptions(year = null, week = null, manager = null, player = null, position = null) {
   const [options, setOptions] = useState({
@@ -11,10 +12,12 @@ export function useValidOptions(year = null, week = null, manager = null, player
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   useEffect(() => {
     let active = true;
     setLoading(true);
+    startLoading();
     setError(null);
 
     fetchValidOptions(year, week, manager, player, position)
@@ -36,10 +39,13 @@ export function useValidOptions(year = null, week = null, manager = null, player
         }
       })
       .catch(e => active && setError(e.message))
-      .finally(() => active && setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+        stopLoading();
+      });
 
     return () => { active = false; };
-  }, [year, week, manager, player, position]);
+  }, [year, week, manager, player, position, startLoading, stopLoading]);
 
   return { options, loading, error };
 }

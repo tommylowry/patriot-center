@@ -1,13 +1,16 @@
 import { useEffect, useState } from 'react';
 import { apiGet } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 export function usePlayersList() {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   useEffect(() => {
     let active = true;
+    startLoading();
 
     apiGet('/players/list')
       .then(data => {
@@ -20,10 +23,13 @@ export function usePlayersList() {
         if (!active) return;
         setError(e.message);
         setLoading(false);
+      })
+      .finally(() => {
+        stopLoading();
       });
 
     return () => { active = false; };
-  }, []);
+  }, [startLoading, stopLoading]);
 
   return { players, loading, error };
 }

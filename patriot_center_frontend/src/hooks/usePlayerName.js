@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { apiGet } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 export function usePlayerName(playerSlug) {
   const [playerName, setPlayerName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   useEffect(() => {
     if (!playerSlug) {
@@ -15,6 +17,7 @@ export function usePlayerName(playerSlug) {
 
     let active = true;
     setLoading(true);
+    startLoading();
     setError(null);
 
     apiGet(`/slug_to_player_name/${playerSlug}`)
@@ -28,10 +31,13 @@ export function usePlayerName(playerSlug) {
         // Fallback to decoded slug if API fails
         setPlayerName(decodeURIComponent(playerSlug));
       })
-      .finally(() => active && setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+        stopLoading();
+      });
 
     return () => { active = false; };
-  }, [playerSlug]);
+  }, [playerSlug, startLoading, stopLoading]);
 
   return { playerName, loading, error };
 }

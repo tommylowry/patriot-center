@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGet } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 /**
  * Hook to fetch transaction history for a specific manager with filtering.
@@ -12,6 +13,7 @@ export function useManagerTransactions(managerName, filters = {}) {
   const [transactions, setTransactions] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   const { year, type, limit = 50, offset = 0 } = filters;
 
@@ -22,6 +24,7 @@ export function useManagerTransactions(managerName, filters = {}) {
     }
 
     setLoading(true);
+    startLoading();
     setError(null);
     try {
       // Build endpoint with optional parameters
@@ -41,8 +44,9 @@ export function useManagerTransactions(managerName, filters = {}) {
       setTransactions(null);
     } finally {
       setLoading(false);
+      stopLoading();
     }
-  }, [managerName, year, type, limit, offset]);
+  }, [managerName, year, type, limit, offset, startLoading, stopLoading]);
 
   useEffect(() => {
     fetchData();

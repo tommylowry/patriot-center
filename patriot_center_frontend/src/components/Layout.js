@@ -2,6 +2,16 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SearchBar from './SearchBar';
 
+/**
+ * CRITICAL NAVIGATION PATTERN:
+ *
+ * - "Patriot Center Database" title and "Players" tab use plain <a> tags (NOT React Router <Link>)
+ * - This ensures they ALWAYS navigate to /?year=2025 with a full page reload
+ * - React Router Links don't work properly when already on the same route
+ * - "Managers" tab uses React Router <Link> since it's a different route (/managers)
+ *
+ * DO NOT change these to React Router Links - it will break navigation!
+ */
 export default function Layout({ children }) {
     const location = useLocation();
     return (
@@ -24,8 +34,8 @@ export default function Layout({ children }) {
                 }}>
                     {/* Centered Title */}
                     <div style={{ flex: 1 }} className="layout-spacer" />
-                    <Link
-                        to="/?year=2025"
+                    <a
+                        href="/?year=2025"
                         className="layout-title"
                         style={{
                             textDecoration: 'none',
@@ -36,7 +46,7 @@ export default function Layout({ children }) {
                         }}
                     >
                         Patriot Center Database
-                    </Link>
+                    </a>
                     {/* Search Bar on Right */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }} className="layout-search-container">
                         <SearchBar />
@@ -51,8 +61,8 @@ export default function Layout({ children }) {
                     padding: '0 2rem',
                     borderTop: '1px solid var(--border)'
                 }}>
-                    <Link
-                        to="/?year=2025"
+                    <a
+                        href="/?year=2025"
                         style={{
                             padding: '0.75rem 1.5rem',
                             textDecoration: 'none',
@@ -63,7 +73,7 @@ export default function Layout({ children }) {
                         }}
                     >
                         Players
-                    </Link>
+                    </a>
                     <Link
                         to="/managers"
                         style={{

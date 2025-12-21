@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGet } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 /**
  * Hook to fetch awards/achievements for a specific manager.
@@ -11,6 +12,7 @@ export function useManagerAwards(managerName) {
   const [awards, setAwards] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   const fetchData = useCallback(async () => {
     if (!managerName) {
@@ -19,6 +21,7 @@ export function useManagerAwards(managerName) {
     }
 
     setLoading(true);
+    startLoading();
     setError(null);
     try {
       const data = await apiGet(`/api/managers/${encodeURIComponent(managerName)}/awards`);
@@ -28,8 +31,9 @@ export function useManagerAwards(managerName) {
       setAwards(null);
     } finally {
       setLoading(false);
+      stopLoading();
     }
-  }, [managerName]);
+  }, [managerName, startLoading, stopLoading]);
 
   useEffect(() => {
     fetchData();

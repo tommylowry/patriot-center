@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiGet } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 /**
  * Hook to fetch detailed head-to-head data between two managers.
@@ -13,6 +14,7 @@ export function useHeadToHead(manager1, manager2, filters = {}) {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   const { year } = filters;
 
@@ -23,6 +25,7 @@ export function useHeadToHead(manager1, manager2, filters = {}) {
     }
 
     setLoading(true);
+    startLoading();
     setError(null);
     try {
       const endpoint = year
@@ -36,8 +39,9 @@ export function useHeadToHead(manager1, manager2, filters = {}) {
       setData(null);
     } finally {
       setLoading(false);
+      stopLoading();
     }
-  }, [manager1, manager2, year]);
+  }, [manager1, manager2, year, startLoading, stopLoading]);
 
   useEffect(() => {
     fetchData();

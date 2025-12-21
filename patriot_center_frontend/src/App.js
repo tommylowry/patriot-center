@@ -9,7 +9,38 @@ import ManagersPage from './pages/ManagersPage';
 import ManagerPage, { HeadToHeadMatchupPage } from './pages/ManagerPage';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
+import { LoadingProvider } from './contexts/LoadingContext';
+import { LoadingOverlay } from './components/LoadingOverlay';
 
+/**
+ * ==================================================================================
+ * CRITICAL: NAVIGATION BEHAVIOR PATTERN - DO NOT MODIFY
+ * ==================================================================================
+ *
+ * This HomePage implements the EXACT navigation behavior desired throughout the app.
+ *
+ * REQUIREMENTS:
+ * 1. Every filter change creates a NEW history entry (NO replace: true)
+ * 2. Back button undoes filter changes one at a time
+ * 3. URL params sync bidirectionally with component state
+ * 4. No infinite loops between URL->state and state->URL effects
+ *
+ * HOW IT WORKS:
+ * - Effect 1 (lines 28-50): Syncs URL params to state when URL changes (back/forward)
+ * - Effect 2 (lines 57-73): Syncs state to URL when filters change (creates history)
+ * - isSyncingRef prevents infinite loops by blocking Effect 2 during Effect 1
+ * - setTimeout ensures state updates complete before re-enabling URL sync
+ *
+ * VERIFIED WORKING:
+ * ✓ Filter changes create history entries
+ * ✓ Back button restores previous filter states
+ * ✓ Forward button re-applies filter changes
+ * ✓ No infinite loops
+ * ✓ Navigation links work from all pages
+ *
+ * IF YOU NEED THIS PATTERN ELSEWHERE: Copy this exact implementation
+ * ==================================================================================
+ */
 function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -21,10 +52,11 @@ function HomePage() {
 
   // Track if we're initializing from URL to prevent loops
   const isInitializedRef = useRef(false);
+  const isSyncingRef = useRef(false);
 
-  // Sync state with URL params ONLY on mount
+  // Sync URL params to state (runs on mount and when back/forward buttons change URL)
   useEffect(() => {
-    if (isInitializedRef.current) return;
+    isSyncingRef.current = true;
 
     const yearParam = searchParams.get('year');
     if (yearParam === 'ALL') {
@@ -36,17 +68,24 @@ function HomePage() {
     setManager(searchParams.get('manager') || null);
     setPositionFilter(searchParams.get('position') || 'ALL');
 
-    isInitializedRef.current = true;
-  }, []); // Only run once on mount
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+    }
+
+    // Use setTimeout to ensure state updates have completed before allowing URL sync
+    setTimeout(() => {
+      isSyncingRef.current = false;
+    }, 0);
+  }, [searchParams]);
 
   // Fetch dynamic filter options based on current selections
   const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager, null, positionFilter !== 'ALL' ? positionFilter : null);
 
   const { players, loading, error } = useAggregatedPlayers(year, week, manager);
 
-  // Update URL when filters change (after initialization)
+  // Update URL when filters change (after initialization) - creates history entries
   useEffect(() => {
-    if (!isInitializedRef.current) return;
+    if (!isInitializedRef.current || isSyncingRef.current) return;
 
     const params = new URLSearchParams();
 
@@ -59,7 +98,7 @@ function HomePage() {
     if (manager) params.set('manager', manager);
     if (positionFilter && positionFilter !== 'ALL') params.set('position', positionFilter);
 
-    setSearchParams(params, { replace: true });
+    setSearchParams(params); // No replace: true - creates new history entries
   }, [year, week, manager, positionFilter, setSearchParams]);
 
   const [sortKey, setSortKey] = useState('ffWAR');
@@ -280,18 +319,21 @@ function HomePage() {
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Layout>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/player/:playerSlug" element={<PlayerPage />} />
-          <Route path="/managers" element={<ManagersPage />} />
-          <Route path="/manager/:managerName" element={<ManagerPage />} />
-          <Route path="/manager/:managerName/vs/:opponentName" element={<HeadToHeadMatchupPage />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <LoadingProvider>
+      <LoadingOverlay />
+      <Router>
+        <ScrollToTop />
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/player/:playerSlug" element={<PlayerPage />} />
+            <Route path="/managers" element={<ManagersPage />} />
+            <Route path="/manager/:managerName" element={<ManagerPage />} />
+            <Route path="/manager/:managerName/vs/:opponentName" element={<HeadToHeadMatchupPage />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </LoadingProvider>
   );
 }
 

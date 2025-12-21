@@ -768,9 +768,9 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
   }) : [];
 
   return (
-    <div style={{ display: 'flex', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', gap: '1rem' }}>
       {/* Left Side - 2 Column Flowing Grid */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(auto, 250px))', gap: '0.5rem 0.75rem', alignContent: 'start' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(auto, 250px))', gap: '0.5rem 1rem', alignContent: 'start' }}>
         {/* Season Stats */}
         <Section title="Season Stats">
           <StatRow label="Regular Season" value={regularSeason.wins !== undefined ? formatRecord(regularSeason.wins, regularSeason.losses || 0, regularSeason.ties || 0) : (regularSeason.record || '0-0')} />
@@ -795,8 +795,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 <div key={i} style={{
                   display: 'flex',
                   justifyContent: 'space-between',
-                  padding: '0.05rem 0',
-                  maxWidth: '200px',
+                  alignItems: 'center',
+                  padding: '0.25rem 0',
                   borderBottom: i < placements.length - 1 ? '1px solid var(--border)' : 'none'
                 }}>
                   <span>{p.year}</span>
@@ -816,7 +816,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         {trades.top_trade_partners && trades.top_trade_partners.length > 0 && (
           <Section title="Top Trade Partners">
             {trades.top_trade_partners.slice(0, 5).map((partner, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                 <ManagerLink manager={partner} />
                 <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>{partner.count} trades</span>
               </div>
@@ -828,7 +828,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         {adds.top_players_added && adds.top_players_added.length > 0 && (
           <Section title="Most Added Players">
             {adds.top_players_added.slice(0, 5).map((player, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                 <PlayerLink player={player} />
                 <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
               </div>
@@ -840,7 +840,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         {drops.top_players_dropped && drops.top_players_dropped.length > 0 && (
           <Section title="Most Dropped Players">
             {drops.top_players_dropped.slice(0, 5).map((player, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                 <PlayerLink player={player} />
                 <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
               </div>
@@ -853,7 +853,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
           <Section title="Most Acquired (Trade)">
             {trades.most_aquired_players.slice(0, 3).map((player, i) => (
               <div key={i} style={{ marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                   <PlayerLink player={player} />
                   <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
                 </div>
@@ -879,7 +879,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
           <Section title="Most Sent (Trade)">
             {trades.most_sent_players.slice(0, 3).map((player, i) => (
               <div key={i} style={{ marginBottom: '0.5rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                   <PlayerLink player={player} />
                   <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
                 </div>
@@ -904,7 +904,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         {faab.biggest_acquisitions && faab.biggest_acquisitions.length > 0 && (
           <Section title="Biggest FAAB Bids">
             {faab.biggest_acquisitions.map((bid, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.05rem 0', maxWidth: '200px', fontSize: '0.95rem' }}>
+              <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                 <PlayerLink player={bid} />
                 <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>${bid.amount}</span>
               </div>
@@ -938,8 +938,9 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
               const avgPointsAgainst = totalGames > 0 ? (pointsAgainst / totalGames).toFixed(1) : '0.0';
 
               return (
-                <div
+                <Link
                   key={opponentKey}
+                  to={`/manager/${encodeURIComponent(managerName)}/vs/${encodeURIComponent(opponent.name)}`}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -948,7 +949,17 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                     background: 'var(--bg-alt)',
                     borderRadius: '8px',
                     border: '1px solid var(--border)',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    textDecoration: 'none',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--bg)';
+                    e.currentTarget.style.borderColor = 'var(--accent)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'var(--bg-alt)';
+                    e.currentTarget.style.borderColor = 'var(--border)';
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -1013,20 +1024,18 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                       </div>
                     </div>
                   </div>
-                  <Link
-                    to={`/manager/${encodeURIComponent(managerName)}/vs/${encodeURIComponent(opponent.name)}`}
+                  <div
                     style={{
                       fontSize: '0.8rem',
                       color: 'var(--accent)',
-                      textDecoration: 'none',
                       fontWeight: 500,
                       display: 'block',
                       paddingLeft: '64px'
                     }}
                   >
                     View details →
-                  </Link>
-                </div>
+                  </div>
+                </Link>
               );
             })}
           </div>
@@ -1953,7 +1962,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
 function Section({ title, children, style }) {
   return (
     <div style={{ ...style }}>
-      <h3 style={{ marginBottom: '0.1rem', fontSize: '1rem', fontWeight: 700, color: 'var(--text)' }}>{title}</h3>
+      <h3 style={{ marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>{title}</h3>
       {children}
     </div>
   );
@@ -1965,9 +1974,9 @@ function StatRow({ label, value, color, small }) {
     <div style={{
       display: 'flex',
       justifyContent: 'space-between',
-      padding: '0.05rem 0',
-      fontSize: small ? '0.85rem' : '0.95rem',
-      maxWidth: '200px'
+      alignItems: 'center',
+      padding: '0.25rem 0',
+      fontSize: small ? '0.85rem' : '0.95rem'
     }}>
       <span style={{ color: 'var(--muted)' }}>{label}</span>
       <span style={{ fontWeight: 600, color: color || 'var(--text)' }}>{value}</span>

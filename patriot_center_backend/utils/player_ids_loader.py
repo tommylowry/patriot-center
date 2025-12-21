@@ -34,8 +34,12 @@ def load_player_ids():
 
     Wrapper around update_player_ids() for external callers.
     """
-    with open(PLAYER_IDS_CACHE_FILE, "r") as file:
-        data = json.load(file)
+    try:
+        with open(PLAYER_IDS_CACHE_FILE, "r") as file:
+            data = json.load(file)
+    except:
+        print("Problem when loading Player Ids cache from file, refreshing data.")
+        data = update_player_ids()
     
     if not data:
         raise Exception("Player IDs cache is empty; please run update_player_ids() first.")

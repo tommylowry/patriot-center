@@ -39,7 +39,7 @@ class TestLoadPlayerIds:
 
     def test_ensures_defenses_present_in_cached_data(self):
         """Test adds missing defense entries to cached data."""
-        from patriot_center_backend.utils.player_ids_loader import load_player_ids
+        from patriot_center_backend.utils.player_ids_loader import update_player_ids
 
         # Cache is fresh but missing some defenses (no Last_Updated field)
         cache_data = {
@@ -53,7 +53,7 @@ class TestLoadPlayerIds:
 
         try:
             with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
-                result = load_player_ids()
+                result = update_player_ids()
 
             # All defenses should be present
             assert "KC" in result
@@ -67,7 +67,7 @@ class TestLoadPlayerIds:
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
     def test_refreshes_stale_cache(self, mock_fetch):
         """Test refreshes cache when file mtime is older than 7 days."""
-        from patriot_center_backend.utils.player_ids_loader import load_player_ids
+        from patriot_center_backend.utils.player_ids_loader import update_player_ids
 
         # Create temp file with cache data (no Last_Updated field)
         cache_data = {
@@ -89,7 +89,7 @@ class TestLoadPlayerIds:
             }
 
             with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
-                result = load_player_ids()
+                result = update_player_ids()
 
             # Should have called fetch to refresh
             mock_fetch.assert_called_once()
@@ -101,7 +101,7 @@ class TestLoadPlayerIds:
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
     def test_creates_cache_when_file_missing(self, mock_fetch):
         """Test creates new cache when file doesn't exist."""
-        from patriot_center_backend.utils.player_ids_loader import load_player_ids
+        from patriot_center_backend.utils.player_ids_loader import update_player_ids
 
         # Use non-existent path
         non_existent_path = "/tmp/nonexistent_player_ids_12345.json"
@@ -112,7 +112,7 @@ class TestLoadPlayerIds:
 
         try:
             with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', non_existent_path):
-                result = load_player_ids()
+                result = update_player_ids()
 
             # Should have called fetch
             mock_fetch.assert_called_once()
@@ -146,7 +146,7 @@ class TestLoadPlayerIds:
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
     def test_saves_refreshed_cache_to_disk(self, mock_fetch):
         """Test saves refreshed cache to disk without metadata fields."""
-        from patriot_center_backend.utils.player_ids_loader import load_player_ids
+        from patriot_center_backend.utils.player_ids_loader import update_player_ids
 
         with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
             temp_path = f.name
@@ -157,7 +157,7 @@ class TestLoadPlayerIds:
             }
 
             with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
-                load_player_ids()
+                update_player_ids()
 
             # Should have saved to disk
             with open(temp_path, 'r') as f:

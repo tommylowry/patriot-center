@@ -335,12 +335,13 @@ class TestLoadOrUpdateFfwarCache:
     @patch('patriot_center_backend.utils.player_data_loader.get_current_season_and_week')
     @patch('patriot_center_backend.utils.player_data_loader.load_cache')
     @patch('patriot_center_backend.utils.player_data_loader.save_cache')
+    @patch('patriot_center_backend.utils.player_data_loader._get_roster_ids')
     @patch('patriot_center_backend.utils.player_data_loader._fetch_ffWAR')
-    def test_creates_new_cache_with_progress_markers(self, mock_fetch, mock_save, mock_load, mock_current, mock_league_ids):
+    def test_creates_new_cache_with_progress_markers(self, mock_fetch, mock_roster_ids, mock_save, mock_load, mock_current, mock_league_ids):
         """Test creates cache with Last_Updated markers."""
         from patriot_center_backend.utils.player_data_loader import update_player_data_cache
 
-        mock_league_ids.keys = {2024: "league_id"}
+        mock_league_ids.keys.return_value = [2024]
         mock_current.return_value = (2024, 1)  # Just week 1
         mock_load.return_value = {}
         mock_fetch.return_value = {
@@ -354,6 +355,8 @@ class TestLoadOrUpdateFfwarCache:
                 "started": True
             }
         }
+        mock_roster_ids.return_value = {}
+        mock_fetch.return_value = {}
 
         result = update_player_data_cache()
 

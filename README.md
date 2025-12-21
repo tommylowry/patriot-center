@@ -69,7 +69,7 @@ Patriot Center tracks 16 managers in a multi-year fantasy football league and pr
 │   │   ├── cache_utils.py     # Generic cache load/save operations
 │   │   ├── sleeper_api_handler.py  # Sleeper API client
 │   │   ├── starters_loader.py      # Weekly roster data loader
-│   │   ├── ffWAR_loader.py         # ffWAR computation and caching
+│   │   ├── player_data_loader.py         # ffWAR computation and caching
 │   │   ├── replacement_score_loader.py  # Replacement-level calculations
 │   │   ├── player_ids_loader.py    # Player metadata management
 │   │   └── update_all_caches.py    # Batch cache update orchestrator
@@ -272,7 +272,7 @@ starters_loader → starters_cache.json + valid_options_cache.json
     ↓
 replacement_score_loader → replacement_score_cache.json
     ↓
-ffWAR_loader → ffWAR_cache.json
+player_data_loader → ffWAR_cache.json
     ↓
 aggregated_data service → Aggregated responses
 ```

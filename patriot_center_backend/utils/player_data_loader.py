@@ -28,7 +28,7 @@ from patriot_center_backend.utils.player_ids_loader import load_player_ids
 # Load and memoize supporting datasets at import time so subsequent calls can reuse them.
 # Be aware: these may perform network and disk I/O during import.
 REPLACEMENT_SCORES   = load_replacement_score_cache()
-PLAYER_DATA          = load_starters_cache()
+STARTERS_CACHE       = load_starters_cache()
 PLAYER_IDS           = load_player_ids()
 
 
@@ -155,7 +155,7 @@ def _fetch_ffWAR(season, week, roster_ids):
     Returns:
         dict: player -> {ffWAR, manager, position}
     """
-    weekly_data = PLAYER_DATA[str(season)][str(week)]
+    weekly_data = STARTERS_CACHE[str(season)][str(week)]
 
     players = {
         "QB":  {},
@@ -182,11 +182,11 @@ def _fetch_ffWAR(season, week, roster_ids):
                 
 
     ffWAR_results = {}
-    all_players_scores   = _get_all_player_scores(season, week)
+    all_player_scores   = _get_all_player_scores(season, week)
     all_rostered_players = _get_all_rostered_players(roster_ids, season, week)
     
     for position in players:
-        calculated_ffWAR = _calculate_ffWAR_position(players[position], season, week, position, all_players_scores[position], all_rostered_players)
+        calculated_ffWAR = _calculate_ffWAR_position(players[position], season, week, position, all_player_scores[position], all_rostered_players)
         if calculated_ffWAR == {}:
             continue
         for player_id in calculated_ffWAR:
@@ -197,7 +197,7 @@ def _fetch_ffWAR(season, week, roster_ids):
 
     return ffWAR_results
 
-def _calculate_ffWAR_position(scores, season, week, position, all_players_scores, all_rostered_players):
+def _calculate_ffWAR_position(scores, season, week, position, all_player_scores, all_rostered_players):
     """
     Simulate ffWAR for one position group.
 
@@ -252,10 +252,10 @@ def _calculate_ffWAR_position(scores, season, week, position, all_players_scores
     # Simulate head-to-head matchups to compute ffWAR for each player
     ffWAR_position = {}
 
-    for player_id in all_players_scores:
+    for player_id in all_player_scores:
         
         # Player's Full Name
-        player = all_players_scores[player_id]['name']
+        player = all_player_scores[player_id]['name']
         
 
         # Image URL
@@ -277,12 +277,12 @@ def _calculate_ffWAR_position(scores, season, week, position, all_players_scores
                     started = True
                 break
         
-        player_score = all_players_scores[player_id]['score']
+        player_score = all_player_scores[player_id]['score']
         
         player_data = {
-            "name":      all_players_scores[player_id]['name'],
+            "name":      all_player_scores[player_id]['name'],
             "image_url": image_url,
-            "score":     all_players_scores[player_id]['score'],
+            "score":     all_player_scores[player_id]['score'],
             "ffWAR":     0.0,
             "position":  position,
             "manager":   player_data_manager_value,
@@ -491,3 +491,6 @@ def _get_all_rostered_players(roster_ids, season, week):
         rostered_players[imported_roster_ids[matchup['roster_id']]] = matchup['players']
     
     return rostered_players
+
+# roster_ids = _get_roster_ids(2023)
+# _fetch_ffWAR(2023, 12, roster_ids)

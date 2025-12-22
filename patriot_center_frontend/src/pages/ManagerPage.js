@@ -279,7 +279,7 @@ export default function ManagerPage() {
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Link
-                          to={`/player/${encodeURIComponent(player.name)}`}
+                          to={`/player/${player.slug || encodeURIComponent(player.name.toLowerCase())}`}
                           style={{
                             fontWeight: 600,
                             fontSize: '0.85rem',
@@ -337,7 +337,7 @@ export default function ManagerPage() {
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Link
-                          to={`/player/${encodeURIComponent(player.name)}`}
+                          to={`/player/${player.slug || encodeURIComponent(player.name.toLowerCase())}`}
                           style={{
                             fontWeight: 600,
                             fontSize: '0.85rem',
@@ -465,16 +465,19 @@ export default function ManagerPage() {
                 title="Highest ffWAR"
                 player={topPlayers.highest}
                 stat="ffWAR"
+                additionalInfo={topPlayers.highest ? `${topPlayers.highest.num_games_started} starts` : null}
               />
               <PlayerStatCard
                 title="Lowest ffWAR"
                 player={topPlayers.lowest}
                 stat="ffWAR"
+                additionalInfo={topPlayers.lowest ? `${topPlayers.lowest.num_games_started} starts` : null}
               />
               <PlayerStatCard
                 title="Most Started"
                 player={topPlayers.mostStarted}
                 stat="num_games_started"
+                additionalInfo={topPlayers.mostStarted ? `${topPlayers.mostStarted.ffWAR?.toFixed(3)} ffWAR` : null}
               />
             </div>
 
@@ -496,7 +499,7 @@ export default function ManagerPage() {
                 rank={3}
               />
               <RankedStatCard title="Trades" value={trades.total || 0} rank={1} />
-              <RankedStatCard title="Playoffs" value={playoffAppearances} rank={2} />
+              <RankedStatCard title="Playoffs" value={playoffAppearances} rank={8} />
             </div>
           </div>
         </div>
@@ -599,30 +602,28 @@ function RankedStatCard({ title, value, color, rank }) {
   // Determine rank color based on position
   const getRankColor = (r) => {
     if (r <= 3) return 'var(--success)';
-    if (r <= 6) return 'var(--text)';
+    if (r <= 6) return 'var(--muted)';
     return 'var(--danger)';
   };
 
   return (
     <div style={{
-      padding: '1rem',
-      background: 'var(--bg-alt)',
-      borderRadius: '8px',
-      border: '1px solid var(--border)',
       textAlign: 'center',
-      position: 'relative'
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '0.25rem'
     }}>
+      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>{title}</div>
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: color || 'var(--text)' }}>{value}</div>
       {rank && (
         <div style={{
-          position: 'absolute',
-          top: '0.5rem',
-          right: '0.5rem',
-          width: '24px',
-          height: '24px',
+          width: '20px',
+          height: '20px',
           borderRadius: '50%',
           background: getRankColor(rank),
           color: 'white',
-          fontSize: '0.75rem',
+          fontSize: '0.7rem',
           fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
@@ -631,14 +632,12 @@ function RankedStatCard({ title, value, color, rank }) {
           {rank}
         </div>
       )}
-      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>{title}</div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: color || 'var(--text)' }}>{value}</div>
     </div>
   );
 }
 
 // Player Stat Card Component - Shows player with their key stat
-function PlayerStatCard({ title, player, stat }) {
+function PlayerStatCard({ title, player, stat, additionalInfo }) {
   if (!player) {
     return (
       <div style={{
@@ -658,18 +657,33 @@ function PlayerStatCard({ title, player, stat }) {
   }
 
   const playerName = player.key || player.name;
+  const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
   const statValue = stat === 'num_games_started' ? player[stat] : (player[stat]?.toFixed(3) || player[stat] || 0);
 
   return (
-    <div style={{
-      padding: '1rem',
-      background: 'var(--bg-alt)',
-      borderRadius: '8px',
-      border: '1px solid var(--border)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.75rem'
-    }}>
+    <Link
+      to={`/player/${playerSlug}`}
+      style={{
+        padding: '1rem',
+        background: 'var(--bg-alt)',
+        borderRadius: '8px',
+        border: '1px solid var(--border)',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.75rem',
+        textDecoration: 'none',
+        cursor: 'pointer',
+        transition: 'all 0.2s ease'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'var(--bg)';
+        e.currentTarget.style.borderColor = 'var(--accent)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'var(--bg-alt)';
+        e.currentTarget.style.borderColor = 'var(--border)';
+      }}
+    >
       {player.player_image_endpoint && (
         <img
           src={player.player_image_endpoint}
@@ -688,35 +702,36 @@ function PlayerStatCard({ title, player, stat }) {
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textAlign: 'center', marginBottom: '0.25rem' }}>{title}</div>
-        <Link
-          to={`/player/${encodeURIComponent(playerName)}`}
-          style={{
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            color: 'var(--accent)',
-            textDecoration: 'none',
-            display: 'block',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
-          }}
-        >
+        <div style={{
+          fontWeight: 600,
+          fontSize: '0.95rem',
+          color: 'var(--accent)',
+          overflow: 'hidden',
+          textOverflow: 'ellipsis',
+          whiteSpace: 'nowrap'
+        }}>
           {playerName}
-        </Link>
+        </div>
         <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
           {player.position} • {player.team}
         </div>
         <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginTop: '0.25rem' }}>
           {statValue}
         </div>
+        {additionalInfo && (
+          <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+            {additionalInfo}
+          </div>
+        )}
       </div>
-    </div>
+    </Link>
   );
 }
 
 // PlayerLink Component - Displays player with image and clickable link
 function PlayerLink({ player, showImage = true }) {
   const playerName = typeof player === 'string' ? player : player?.name || 'Unknown';
+  const playerSlug = typeof player === 'object' && player?.slug ? player.slug : encodeURIComponent(playerName.toLowerCase());
   const imageUrl = typeof player === 'object' ? player?.image_url : null;
 
   // Check if this is FAAB or a draft pick (not a real player)
@@ -746,7 +761,7 @@ function PlayerLink({ player, showImage = true }) {
       )}
       {shouldLink ? (
         <Link
-          to={`/player/${encodeURIComponent(playerName)}`}
+          to={`/player/${playerSlug}`}
           style={{
             color: 'var(--accent)',
             textDecoration: 'none',
@@ -1132,10 +1147,10 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                     e.currentTarget.style.borderColor = 'var(--border)';
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
                     <Link
                       to={`/manager/${encodeURIComponent(opponent.name)}`}
-                      style={{ flexShrink: 0 }}
+                      style={{ flexShrink: 0, display: 'flex', justifyContent: 'center' }}
                       onClick={(e) => e.stopPropagation()}
                     >
                       {opponent.image_url && (
@@ -1143,8 +1158,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                           src={opponent.image_url}
                           alt={opponent.name}
                           style={{
-                            width: '56px',
-                            height: '56px',
+                            width: '64px',
+                            height: '64px',
                             borderRadius: '50%',
                             objectFit: 'cover',
                             border: '2px solid var(--border)',
@@ -1161,7 +1176,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                         to={`/manager/${encodeURIComponent(opponent.name)}`}
                         style={{
                           fontWeight: 600,
-                          fontSize: '0.95rem',
+                          fontSize: '1rem',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
@@ -1173,7 +1188,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                       >
                         {opponent.name}
                       </Link>
-                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                      <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
                         <span>{formatRecord(data.wins, data.losses, data.ties)}</span>
                         {' • '}
                         <span style={{
@@ -1183,27 +1198,13 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                           {winPct}%
                         </span>
                       </div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-                        <span>Avg: {avgPointsFor} - {avgPointsAgainst}</span>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+                        <div>Avg: {avgPointsFor} - {avgPointsAgainst}</div>
                         {tradesCount > 0 && (
-                          <>
-                            {' • '}
-                            <span>{tradesCount} trade{tradesCount !== 1 ? 's' : ''}</span>
-                          </>
+                          <div>{tradesCount} trade{tradesCount !== 1 ? 's' : ''}</div>
                         )}
                       </div>
                     </div>
-                  </div>
-                  <div
-                    style={{
-                      fontSize: '0.8rem',
-                      color: 'var(--accent)',
-                      fontWeight: 500,
-                      display: 'block',
-                      paddingLeft: '64px'
-                    }}
-                  >
-                    View details →
                   </div>
                 </Link>
               );
@@ -1416,7 +1417,7 @@ export function HeadToHeadMatchupPage() {
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Link
-                          to={`/player/${encodeURIComponent(player.name)}`}
+                          to={`/player/${player.slug || encodeURIComponent(player.name.toLowerCase())}`}
                           style={{
                             fontWeight: 600,
                             fontSize: '0.85rem',
@@ -1474,7 +1475,7 @@ export function HeadToHeadMatchupPage() {
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <Link
-                          to={`/player/${encodeURIComponent(player.name)}`}
+                          to={`/player/${player.slug || encodeURIComponent(player.name.toLowerCase())}`}
                           style={{
                             fontWeight: 600,
                             fontSize: '0.85rem',

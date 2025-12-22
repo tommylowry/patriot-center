@@ -201,7 +201,7 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
     if player_id.isnumeric():
         player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
     else:
-        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_id}.png"
+        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
 
     players_dict[player] = {
         "total_points": player_data['points'],
@@ -209,6 +209,7 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         'ffWAR': player_data['ffWAR'],
         "position": player_data['position'],
         "player_image_endpoint": player_image_endpoint,
+        "slug": PLAYERS_CACHE[player],
         "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 
@@ -262,6 +263,7 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
         'ffWAR': raw_item['ffWAR'],
         "position": raw_item['position'],
         "player_image_endpoint": player_image_endpoint,
+        "slug": PLAYERS_CACHE[player],
         "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 

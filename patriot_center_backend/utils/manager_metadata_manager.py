@@ -173,7 +173,9 @@ class ManagerMetadataManager:
             "years_active": ["2019", "2020", "2021", "2022", "2023", "2024", "2025"],
             "matchup_data": {
                 "overall": {
-                    "record": "11-6-0",
+                    "wins": 11,
+                    "losses": 6,
+                    "ties": 0,
                     "win_percentage": 64.7,
                     "total_points_for": 1951.07,
                     "total_points_against": 1881.71,
@@ -183,12 +185,16 @@ class ManagerMetadataManager:
                     "average_point_differential": 4.08
                 },
                 "regular_season": {
-                    "record": "8-6-0",
+                    "wins": 8,
+                    "losses": 6,
+                    "ties": 0,
                     ... (same structure as overall)
                     "average_point_differential": -2.9
                 },
                 "playoffs": {
-                    "record": "3-0-0",
+                    "wins": 3
+                    "losses": 0,
+                    "ties": 0,
                     ... (same structure as overall)
                     "average_point_differential": 36.64
                 }
@@ -992,7 +998,9 @@ class ManagerMetadataManager:
 
                 if playoff == False:
                     matchup_data[season_state] = {
-                        "record":                     "0-0-0",
+                        "wins":                       0,
+                        "losses":                     0,
+                        "ties":                       0,
                         "win_percentage":             0.0,
                         "total_points_for":           0,
                         "total_points_against":       0,
@@ -1010,7 +1018,9 @@ class ManagerMetadataManager:
             num_losses = cached_matchup_data[season_state]["losses"]["total"]
             num_ties = cached_matchup_data[season_state]["ties"]["total"]
 
-            matchup_data[season_state]["record"] = f"{num_wins}-{num_losses}-{num_ties}"
+            matchup_data[season_state]["wins"] = num_wins
+            matchup_data[season_state]["losses"] = num_losses
+            matchup_data[season_state]["ties"] = num_ties
 
             # Calculate win percentage
             num_matchups = num_wins + num_losses + num_ties

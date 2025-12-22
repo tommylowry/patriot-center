@@ -29,8 +29,8 @@ export default function ManagerPage() {
   );
   const { yearlyData, loading: yearlyLoading } = useManagerYearlyData(managerName, year);
 
-  // Fetch aggregated players for top player cards
-  const { players: aggregatedPlayers } = useAggregatedPlayers('2025', null, managerName);
+  // Fetch aggregated players for top player cards (all years)
+  const { players: aggregatedPlayers } = useAggregatedPlayers(null, null, managerName);
 
   // Calculate top players from aggregated data
   const topPlayers = React.useMemo(() => {
@@ -246,7 +246,7 @@ export default function ManagerPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {/* Manager 1 Top Scorers */}
               <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
                   {manager1.name} Top 3
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -304,7 +304,7 @@ export default function ManagerPage() {
 
               {/* Manager 2 Top Scorers */}
               <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
                   {manager2.name} Top 3
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -387,7 +387,7 @@ export default function ManagerPage() {
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
       {/* Profile Info Section */}
       <div style={{ padding: '2rem' }}>
-        <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem' }}>
+        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem' }}>
           {/* Left 1/3 - Profile Picture and Info */}
           <div style={{ flex: '0 0 33%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* Profile Picture with Medal */}
@@ -450,7 +450,7 @@ export default function ManagerPage() {
             {/* Manager Info */}
             <h1 style={{ margin: '0.5rem 0 0.5rem 0', fontSize: '2rem', textAlign: 'center' }}>{managerName}</h1>
             <div style={{ color: 'var(--muted)', fontSize: '0.95rem', marginBottom: '0.5rem', textAlign: 'center' }}>
-              Years Active: {yearsActive.join(', ')}
+              {formatYearsActive(yearsActive)}
             </div>
             <div style={{ color: 'var(--text)', fontSize: '1.5rem', fontWeight: 700, textAlign: 'center' }}>
               {formatRecord(overall.wins || 0, overall.losses || 0, overall.ties || 0)}
@@ -458,26 +458,23 @@ export default function ManagerPage() {
           </div>
 
           {/* Right 2/3 - Player Cards and Stats */}
-          <div style={{ flex: '0 0 67%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ flex: '0 0 67%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {/* Top Half - Player Cards */}
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignContent: 'center' }}>
               <PlayerStatCard
                 title="Highest ffWAR"
                 player={topPlayers.highest}
                 stat="ffWAR"
-                statLabel="ffWAR"
               />
               <PlayerStatCard
                 title="Lowest ffWAR"
                 player={topPlayers.lowest}
                 stat="ffWAR"
-                statLabel="ffWAR"
               />
               <PlayerStatCard
                 title="Most Started"
                 player={topPlayers.mostStarted}
                 stat="num_games_started"
-                statLabel="Starts"
               />
             </div>
 
@@ -490,10 +487,10 @@ export default function ManagerPage() {
               alignContent: 'center'
             }}>
               <RankedStatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} rank={1} />
-              <RankedStatCard title="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} rank={2} />
-              <RankedStatCard title="Avg PA" value={overall.average_points_against?.toFixed(2) || 0} rank={5} />
+              <RankedStatCard title="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} rank={2} />
+              <RankedStatCard title="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} rank={5} />
               <RankedStatCard
-                title="Avg Diff"
+                title="AVG Diff"
                 value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)}
                 color={((overall.average_points_for || 0) - (overall.average_points_against || 0)) >= 0 ? 'var(--success)' : 'var(--danger)'}
                 rank={3}
@@ -641,7 +638,7 @@ function RankedStatCard({ title, value, color, rank }) {
 }
 
 // Player Stat Card Component - Shows player with their key stat
-function PlayerStatCard({ title, player, stat, statLabel }) {
+function PlayerStatCard({ title, player, stat }) {
   if (!player) {
     return (
       <div style={{
@@ -670,49 +667,47 @@ function PlayerStatCard({ title, player, stat, statLabel }) {
       borderRadius: '8px',
       border: '1px solid var(--border)',
       display: 'flex',
-      flexDirection: 'column',
-      gap: '0.5rem'
+      alignItems: 'center',
+      gap: '0.75rem'
     }}>
-      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', textAlign: 'center' }}>{title}</div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        {player.player_image_endpoint && (
-          <img
-            src={player.player_image_endpoint}
-            alt={playerName}
-            style={{
-              width: '50px',
-              height: '50px',
-              borderRadius: '8px',
-              objectFit: 'cover',
-              flexShrink: 0
-            }}
-            onError={(e) => {
-              e.target.style.display = 'none';
-            }}
-          />
-        )}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <Link
-            to={`/player/${encodeURIComponent(playerName)}`}
-            style={{
-              fontWeight: 600,
-              fontSize: '0.95rem',
-              color: 'var(--accent)',
-              textDecoration: 'none',
-              display: 'block',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
-              whiteSpace: 'nowrap'
-            }}
-          >
-            {playerName}
-          </Link>
-          <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-            {player.num_games_started} starts
-          </div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginTop: '0.25rem' }}>
-            {statLabel}: {statValue}
-          </div>
+      {player.player_image_endpoint && (
+        <img
+          src={player.player_image_endpoint}
+          alt={playerName}
+          style={{
+            width: '50px',
+            height: '50px',
+            borderRadius: '8px',
+            objectFit: 'cover',
+            flexShrink: 0
+          }}
+          onError={(e) => {
+            e.target.style.display = 'none';
+          }}
+        />
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textAlign: 'center', marginBottom: '0.25rem' }}>{title}</div>
+        <Link
+          to={`/player/${encodeURIComponent(playerName)}`}
+          style={{
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            color: 'var(--accent)',
+            textDecoration: 'none',
+            display: 'block',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          {playerName}
+        </Link>
+        <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+          {player.position} • {player.team}
+        </div>
+        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginTop: '0.25rem' }}>
+          {statValue}
         </div>
       </div>
     </div>
@@ -896,6 +891,30 @@ function formatRecord(wins, losses, ties) {
   return ties === 0 ? `${wins}-${losses}` : `${wins}-${losses}-${ties}`;
 }
 
+// Helper function to format years active as a compact range
+function formatYearsActive(years) {
+  if (!years || years.length === 0) return 'N/A';
+  if (years.length === 1) return `${years[0]} (1 season)`;
+
+  const sortedYears = [...years].map(y => Number(y)).sort((a, b) => a - b);
+  const first = sortedYears[0];
+  const last = sortedYears[sortedYears.length - 1];
+  const count = sortedYears.length;
+
+  // Check if years are continuous (no gaps)
+  const isContinuous = sortedYears.every((year, i) => {
+    if (i === 0) return true;
+    return year === sortedYears[i - 1] + 1;
+  });
+
+  // Show individual years only if there are gaps AND 4 or fewer years
+  if (!isContinuous && count <= 4) {
+    return `${sortedYears.join(', ')} (${count} season${count !== 1 ? 's' : ''})`;
+  }
+
+  return `${first} - ${last} (${count} season${count !== 1 ? 's' : ''})`;
+}
+
 // Overview Tab
 function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName }) {
   // Sort opponents by wins first, then win percentage as tie breaker
@@ -915,13 +934,13 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
   return (
     <div style={{ display: 'flex', gap: '1rem' }}>
       {/* Left Side - 2 Column Flowing Grid */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(200px, 350px))', gap: '0.5rem 1rem', alignContent: 'start' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(200px, 1fr))', gap: '0.5rem 1rem', alignContent: 'start', minWidth: '600px', maxWidth: '600px' }}>
         {/* Season Stats */}
         <Section title="Season Stats">
           <StatRow label="Regular Season" value={formatRecord(regularSeason.wins || 0, regularSeason.losses || 0, regularSeason.ties || 0)} />
           <StatRow label="Playoffs" value={formatRecord(playoffs.wins || 0, playoffs.losses || 0, playoffs.ties || 0)} />
-          <StatRow label="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} />
-          <StatRow label="Avg PA" value={overall.average_points_against?.toFixed(2) || 0} />
+          <StatRow label="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} />
+          <StatRow label="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} />
         </Section>
 
         {/* Transaction Summary */}
@@ -1358,7 +1377,7 @@ export function HeadToHeadMatchupPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {/* Manager 1 Top Scorers */}
               <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
                   {manager1.name} Top 3
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -1416,7 +1435,7 @@ export function HeadToHeadMatchupPage() {
 
               {/* Manager 2 Top Scorers */}
               <div>
-                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase', fontWeight: 600 }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
                   {manager2.name} Top 3
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
@@ -1798,7 +1817,7 @@ function AwardsTab({ awardsData, MatchupCard }) {
               borderRadius: '12px',
               border: '1px solid var(--border)'
             }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', fontWeight: 600 }}>
                 💰 Biggest FAAB Bid
               </div>
               <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '0.5rem' }}>
@@ -1818,7 +1837,7 @@ function AwardsTab({ awardsData, MatchupCard }) {
               borderRadius: '12px',
               border: '1px solid var(--border)'
             }}>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', textTransform: 'uppercase', fontWeight: 600 }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', fontWeight: 600 }}>
                 🔄 Most Trades (Single Season)
               </div>
               <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '0.5rem' }}>

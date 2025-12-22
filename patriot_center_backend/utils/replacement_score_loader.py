@@ -10,7 +10,6 @@ Notes:
 - Uses Sleeper API data (network I/O) via fetch_sleeper_data.
 - Seed player metadata via load_player_ids to filter and position players.
 - Current season/week is resolved at runtime and weeks are capped by era rules.
-- Importing this module triggers a cache warm-up by calling load_or_update_replacement_score_cache().
 """
 
 import os
@@ -22,7 +21,26 @@ from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get
 PLAYER_IDS = load_player_ids()
 
 
-def load_or_update_replacement_score_cache():
+def load_replacement_score_cache():
+    """
+    Load the replacement score cache from disk.
+
+    Returns:
+        dict: The replacement score cache.
+    """
+    cache = load_cache(REPLACEMENT_SCORE_CACHE_FILE)
+    
+    if not cache:
+        raise Exception("Replacement score cache is empty or missing.")
+
+    # Remove metadata before returning
+    cache.pop("Last_Updated_Season", None)
+    cache.pop("Last_Updated_Week", None)
+
+    return cache
+
+
+def update_replacement_score_cache():
     """
     Incrementally build replacement-level scores cache.
 

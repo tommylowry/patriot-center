@@ -30,11 +30,13 @@ def fetch_sleeper_data(endpoint: str):
     except:
         # Standardized error wrapper for upstream consumers
         error_string = f"Failed to fetch data from Sleeper API with call to {url}"
+        print(error_string)
         return {"error": error_string}, 500
     
     if response.status_code != 200:
         # Standardized error wrapper for upstream consumers
         error_string = f"Failed to fetch data from Sleeper API with call to {url}"
+        print(error_string)
         return {"error": error_string}, 500
 
     # Return parsed JSON along with success status

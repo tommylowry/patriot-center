@@ -492,7 +492,7 @@ class TestGetThreeYrAvg:
 
 
 class TestLoadOrUpdateReplacementScoreCache:
-    """Test load_or_update_replacement_score_cache main orchestration."""
+    """Test update_replacement_score_cache main orchestration."""
 
     @patch('patriot_center_backend.utils.replacement_score_loader.get_current_season_and_week')
     @patch('patriot_center_backend.utils.replacement_score_loader.load_cache')
@@ -501,7 +501,7 @@ class TestLoadOrUpdateReplacementScoreCache:
     @patch('patriot_center_backend.utils.replacement_score_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_creates_new_cache_with_baseline_structure(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test initializes new cache with Last_Updated markers."""
-        from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
+        from patriot_center_backend.utils.replacement_score_loader import update_replacement_score_cache
 
         mock_current.return_value = (2024, 1)
         mock_load.return_value = {}
@@ -510,7 +510,7 @@ class TestLoadOrUpdateReplacementScoreCache:
             "2024_scoring": {"QB": 15.0, "RB": 8.0, "WR": 10.0, "TE": 7.0, "K": 3.0, "DEF": 10.0}
         }
 
-        result = load_or_update_replacement_score_cache()
+        result = update_replacement_score_cache()
 
         # Should have called save
         assert mock_save.called
@@ -525,7 +525,7 @@ class TestLoadOrUpdateReplacementScoreCache:
     @patch('patriot_center_backend.utils.replacement_score_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_resumes_from_last_updated_markers(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test resumes processing from Last_Updated_Season and Last_Updated_Week."""
-        from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
+        from patriot_center_backend.utils.replacement_score_loader import update_replacement_score_cache
 
         mock_current.return_value = (2024, 5)
         # Cache already has weeks 1-3
@@ -540,7 +540,7 @@ class TestLoadOrUpdateReplacementScoreCache:
         }
         mock_fetch.return_value = {"byes": 0, "2024_scoring": {"QB": 18.0}}
 
-        result = load_or_update_replacement_score_cache()
+        result = update_replacement_score_cache()
 
         # Should only fetch weeks 4 and 5 (not 1-3)
         assert mock_fetch.call_count == 2
@@ -552,13 +552,13 @@ class TestLoadOrUpdateReplacementScoreCache:
     @patch('patriot_center_backend.utils.replacement_score_loader.LEAGUE_IDS', {2019: "id1", 2020: "id2"})
     def test_adds_3_historical_years_before_first_league_id(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test adds 3 years (2016, 2017, 2018) before first LEAGUE_IDS year (2019) for 3yr averages."""
-        from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
+        from patriot_center_backend.utils.replacement_score_loader import update_replacement_score_cache
 
         mock_current.return_value = (2019, 1)  # Just week 1 of first year
         mock_load.return_value = {}
         mock_fetch.return_value = {"byes": 0, "2019_scoring": {"QB": 15.0}}
 
-        result = load_or_update_replacement_score_cache()
+        result = update_replacement_score_cache()
 
         # First year in LEAGUE_IDS is 2019
         # Should add 3 historical years: 2016, 2017, 2018
@@ -575,7 +575,7 @@ class TestLoadOrUpdateReplacementScoreCache:
     @patch('patriot_center_backend.utils.replacement_score_loader.LEAGUE_IDS', {2022: "league_123"})
     def test_adds_3yr_avg_when_year_minus_3_exists(self, mock_3yr, mock_fetch, mock_save, mock_load, mock_current):
         """Test calls _get_three_yr_avg when data from 3 years ago exists."""
-        from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
+        from patriot_center_backend.utils.replacement_score_loader import update_replacement_score_cache
 
         mock_current.return_value = (2022, 1)
         # Cache has data from 2019 (year - 3)
@@ -587,7 +587,7 @@ class TestLoadOrUpdateReplacementScoreCache:
         mock_fetch.return_value = {"byes": 0, "2022_scoring": {"QB": 18.0}}
         mock_3yr.return_value = {"byes": 0, "2022_scoring": {"QB": 18.0}, "QB_3yr_avg": 16.5}
 
-        result = load_or_update_replacement_score_cache()
+        result = update_replacement_score_cache()
 
         # Should have called _get_three_yr_avg since 2019 data exists
         assert mock_3yr.called
@@ -598,7 +598,7 @@ class TestLoadOrUpdateReplacementScoreCache:
     @patch('patriot_center_backend.utils.replacement_score_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_skips_when_fully_up_to_date(self, mock_save, mock_load, mock_current):
         """Test skips processing when cache is already current."""
-        from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
+        from patriot_center_backend.utils.replacement_score_loader import update_replacement_score_cache
 
         mock_current.return_value = (2024, 5)
         # Cache is already at 2024 week 5
@@ -608,7 +608,7 @@ class TestLoadOrUpdateReplacementScoreCache:
             "2024": {str(w): {"byes": 0, "2024_scoring": {"QB": 15.0}} for w in range(1, 6)}
         }
 
-        result = load_or_update_replacement_score_cache()
+        result = update_replacement_score_cache()
 
         # Should still save (for consistency) but not fetch new data
         assert mock_save.called
@@ -620,14 +620,14 @@ class TestLoadOrUpdateReplacementScoreCache:
     @patch('patriot_center_backend.utils.replacement_score_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_full_update_with_empty_cache(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test caps current_week at 18 even if API returns higher."""
-        from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
+        from patriot_center_backend.utils.replacement_score_loader import update_replacement_score_cache
 
         # API returns week 25 (playoffs)
         mock_current.return_value = (2024, 12)
         mock_load.return_value = {}
         mock_fetch.return_value = {"byes": 0, "2024_scoring": {"QB": 15.0}}
 
-        result = load_or_update_replacement_score_cache()
+        result = update_replacement_score_cache()
 
         # For 2024: weeks 1-12 = 12 weeks
         # For 2023: weeks 1-18 = 18 weeks
@@ -643,14 +643,14 @@ class TestLoadOrUpdateReplacementScoreCache:
     @patch('patriot_center_backend.utils.replacement_score_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_caps_current_week_at_18(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test caps current_week at 18 even if API returns higher."""
-        from patriot_center_backend.utils.replacement_score_loader import load_or_update_replacement_score_cache
+        from patriot_center_backend.utils.replacement_score_loader import update_replacement_score_cache
 
         # API returns week 25 (playoffs)
         mock_current.return_value = (2024, 25)
         mock_load.return_value = {}
         mock_fetch.return_value = {"byes": 0, "2024_scoring": {"QB": 15.0}}
 
-        result = load_or_update_replacement_score_cache()
+        result = update_replacement_score_cache()
 
         # Should cap at 18, so max 18 calls for 2024
         assert "2024" in result

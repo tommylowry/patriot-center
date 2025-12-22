@@ -23,7 +23,23 @@ from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get
 
 PLAYER_IDS = load_player_ids()
 
-def load_or_update_starters_cache():
+def load_starters_cache():
+    """
+    Load the persisted starters cache from disk.
+
+    Returns:
+        dict: Nested {season: {week: {manager: {...}}}}
+    """
+    cache = load_cache(STARTERS_CACHE_FILE)
+
+    if not cache:
+        raise RuntimeError("Starters cache is not initialized. Please run the cache updater.")
+
+    cache.pop("Last_Updated_Season", None)
+    cache.pop("Last_Updated_Week", None)
+    return cache
+
+def update_starters_cache():
     """
     Incrementally load/update starters cache and persist changes.
 

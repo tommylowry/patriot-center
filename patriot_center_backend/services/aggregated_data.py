@@ -15,14 +15,15 @@ Notes:
 - Results are simple dicts suitable for JSON responses.
 - Totals are rounded to two decimals via Decimal normalization (ffWAR to 3).
 """
-from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+from patriot_center_backend.utils.player_data_loader import load_player_data_cache
 from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
 from patriot_center_backend.services.players import fetch_players
+from patriot_center_backend.utils import helpers
 
 # Load caches at module import for fast access
-PLAYERS_CACHE = fetch_players()
-FFWAR_CACHE   = load_or_update_ffWAR_cache()
+PLAYERS_CACHE     = fetch_players()
+PLAYER_DATA_CACHE = load_player_data_cache()
 
 def fetch_player_manager_aggregation(player, manager, season=None, week=None):
     """
@@ -138,10 +139,12 @@ def fetch_ffWAR_for_player(player, season=None, week=None):
     season_str = str(season)
     week_str = str(week)
 
-    if season_str in FFWAR_CACHE and week_str in FFWAR_CACHE[season_str]:
-        week_data = FFWAR_CACHE[season_str][week_str]
-        if player in week_data and "ffWAR" in week_data[player]:
-            return week_data[player]["ffWAR"]
+    if season_str in PLAYER_DATA_CACHE and week_str in PLAYER_DATA_CACHE[season_str]:
+        week_data = PLAYER_DATA_CACHE[season_str][week_str]
+        player_id = helpers.get_player_id(player)
+        
+        if player_id in week_data:
+            return week_data[player_id]["ffWAR"]
 
     return 0.0
 

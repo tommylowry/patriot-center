@@ -36,7 +36,7 @@ if file_age < timedelta(weeks=1):
 ```
 
 ### 4. Other Cache Loaders Already Clean
-- **Files**: `starters_loader.py`, `ffWAR_loader.py`, `replacement_score_loader.py`
+- **Files**: `starters_loader.py`, `player_data_loader.py`, `replacement_score_loader.py`
 - **Status**: Already remove `Last_Updated_Season` and `Last_Updated_Week` before saving
 - **No changes needed**: These were already not committing metadata fields
 

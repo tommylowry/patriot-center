@@ -1036,7 +1036,7 @@ class TestRetroactivelyAssignTeamPlacement:
 
 
 class TestLoadOrUpdateStartersCache:
-    """Test load_or_update_starters_cache main orchestration."""
+    """Test update_starters_cache main orchestration."""
 
     @patch('patriot_center_backend.utils.starters_loader.get_current_season_and_week')
     @patch('patriot_center_backend.utils.starters_loader.load_cache')
@@ -1045,7 +1045,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_creates_new_cache_with_baseline_structure(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test initializes new cache with Last_Updated markers."""
-        from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
+        from patriot_center_backend.utils.starters_loader import update_starters_cache
 
         mock_current.return_value = (2024, 1)
         mock_load.side_effect = lambda filename, **kwargs: {} if 'valid_options' not in filename else {}
@@ -1062,7 +1062,7 @@ class TestLoadOrUpdateStartersCache:
             {"managers": ["Tommy"], "players": ["Josh Allen"], "positions": ["QB"]}
         )
 
-        result = load_or_update_starters_cache()
+        result = update_starters_cache()
 
         # Should have called save (twice: starters_cache and valid_options_cache)
         assert mock_save.called
@@ -1077,7 +1077,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_resumes_from_last_updated_markers(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test resumes processing from Last_Updated_Season and Last_Updated_Week."""
-        from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
+        from patriot_center_backend.utils.starters_loader import update_starters_cache
 
         mock_current.return_value = (2024, 5)
 
@@ -1098,7 +1098,7 @@ class TestLoadOrUpdateStartersCache:
         mock_load.side_effect = load_side_effect
         mock_fetch.return_value = ({"Tommy": {"Total_Points": 115.0}}, ["Tommy"], [], [], {"managers": ["Tommy"], "players": [], "positions": []})
 
-        result = load_or_update_starters_cache()
+        result = update_starters_cache()
 
         # Should only fetch weeks 4 and 5 (not 1-3)
         assert mock_fetch.call_count == 2
@@ -1109,7 +1109,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_skips_when_fully_up_to_date(self, mock_save, mock_load, mock_current):
         """Test skips processing when cache is already current."""
-        from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
+        from patriot_center_backend.utils.starters_loader import update_starters_cache
 
         mock_current.return_value = (2024, 5)
 
@@ -1125,7 +1125,7 @@ class TestLoadOrUpdateStartersCache:
 
         mock_load.side_effect = load_side_effect
 
-        result = load_or_update_starters_cache()
+        result = update_starters_cache()
 
         # Should still save but not fetch new data
         assert mock_save.called
@@ -1137,14 +1137,14 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
     def test_caps_current_week_at_17(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test caps current_week at 17 (regular season) even if API returns higher."""
-        from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
+        from patriot_center_backend.utils.starters_loader import update_starters_cache
 
         # API returns week 18 (playoffs)
         mock_current.return_value = (2024, 18)
         mock_load.side_effect = lambda filename, **kwargs: {} if 'valid_options' not in filename else {}
         mock_fetch.return_value = ({"Tommy": {"Total_Points": 100.0}}, [], [], [], {})
 
-        result = load_or_update_starters_cache()
+        result = update_starters_cache()
 
         # Should cap at 17, so max 17 calls
         assert mock_fetch.call_count <= 17
@@ -1156,14 +1156,14 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2019: "id1", 2020: "id2"})
     def test_processes_2019_and_2020_with_16_week_cap(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test processes 2019 and 2020 with 16-week cap (includes playoffs)."""
-        from patriot_center_backend.utils.starters_loader import load_or_update_starters_cache
+        from patriot_center_backend.utils.starters_loader import update_starters_cache
 
         # Current season is 2021 so 2019 and 2020 are past seasons
         mock_current.return_value = (2021, 10)
         mock_load.side_effect = lambda filename, **kwargs: {} if 'valid_options' not in filename else {}
         mock_fetch.return_value = ({"Tommy": {"Total_Points": 100.0}}, ["Tommy"], [], [], {"managers": ["Tommy"], "players": [], "positions": []})
 
-        result = load_or_update_starters_cache()
+        result = update_starters_cache()
 
         # Should process:
         # - 2019: 16 weeks (includes playoffs)

@@ -258,12 +258,12 @@ class TestFetchFfwarForPlayer:
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Player", season=2024, week=None) == 0.0
 
-    @patch('patriot_center_backend.services.aggregated_data.FFWAR_CACHE', {"2024": {"1": {"Amon-Ra St. Brown": {"ffWAR": 2.345}}}})
+    @patch('patriot_center_backend.services.aggregated_data.PLAYER_DATA_CACHE', {"2024": {"1": {"7547":{"ffWAR": 2.345}}}})
     def test_returns_ffwar_from_cache(self):
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Amon-Ra St. Brown", season=2024, week=1) == 2.345
 
-    @patch('patriot_center_backend.services.aggregated_data.FFWAR_CACHE', {"2024": {"1": {}}})
+    @patch('patriot_center_backend.services.aggregated_data.PLAYER_DATA_CACHE', {"2024": {"1": {}}})
     def test_returns_zero_when_player_not_in_cache(self):
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Unknown Player", season=2024, week=1) == 0.0

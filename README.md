@@ -21,6 +21,7 @@ Patriot Center tracks 16 managers in a multi-year fantasy football league and pr
 - React 19.2.0 with React Router
 - Deployed on Netlify
 - Built with react-scripts
+- **Requirements**: Node.js >= 18.0.0, npm >= 9.0.0
 
 ### Backend
 - **Framework**: Python Flask with CORS support
@@ -69,16 +70,17 @@ Patriot Center tracks 16 managers in a multi-year fantasy football league and pr
 │   │   ├── cache_utils.py     # Generic cache load/save operations
 │   │   ├── sleeper_api_handler.py  # Sleeper API client
 │   │   ├── starters_loader.py      # Weekly roster data loader
-│   │   ├── ffWAR_loader.py         # ffWAR computation and caching
+│   │   ├── player_data_loader.py   # ffWAR computation for ALL NFL players
 │   │   ├── replacement_score_loader.py  # Replacement-level calculations
 │   │   ├── player_ids_loader.py    # Player metadata management
+│   │   ├── helpers.py              # Player ID/name lookup utilities
 │   │   └── update_all_caches.py    # Batch cache update orchestrator
 │   │
 │   ├── data/                  # JSON cache files (auto-generated)
 │   │   ├── starters_cache.json          # Weekly starter rosters
-│   │   ├── ffWAR_cache.json             # Computed ffWAR values
+│   │   ├── player_data_cache.json       # ffWAR for ALL NFL players each week
 │   │   ├── replacement_score_cache.json # Positional baselines
-│   │   ├── players_cache.json           # Player metadata
+│   │   ├── player_ids.json              # Player metadata
 │   │   └── valid_options_cache.json     # Filter validation data
 │   │
 │   └── tests/                 # Unit and integration tests
@@ -164,8 +166,8 @@ GET /ping    # Liveness check (returns "pong")
 ```bash
 cd patriot_center_frontend
 
-# Install dependencies
-npm install
+# Install dependencies (use npm ci for clean installs)
+npm ci
 
 # Start development server
 npm start
@@ -173,6 +175,8 @@ npm start
 # Build for production
 npm run build
 ```
+
+**Note:** Use `npm ci` instead of `npm install` for consistent, clean installs that respect the package-lock.json exactly. This is especially important after cloning the repository.
 
 ### Backend
 
@@ -227,10 +231,16 @@ pytest --cov  # Run with coverage
 
 ffWAR (Fantasy Football Wins Above Replacement) measures a player's value by:
 
-1. Taking each game where a player was started
-2. Simulating what would have happened if a "replacement level" player (positional average) was started instead
-3. Calculating the net change in wins/losses
-4. Aggregating across all weeks to determine total wins contributed
+1. **Calculate scores for ALL NFL players** who played that week (not just rostered players)
+2. **Simulate hypothetical matchups** - pair every player with every manager combination
+3. **Compare vs replacement level** - determine if the player wins/loses compared to a replacement-level player at their position
+4. **Aggregate net wins** - sum up the win differential across all simulated matchups
+5. **Normalize and scale** - divide by total simulations, apply playoff scaling (÷3 for 4-team playoffs)
+
+Each player gets an ffWAR score showing how many wins they contribute above/below a replacement-level player. The metric includes:
+- **League-wide coverage**: Every NFL player who played, whether rostered or not
+- **Position-specific baselines**: 3-year rolling average replacement scores
+- **Historical context**: Tracks which managers rostered each player and whether they started them
 
 This provides a more nuanced view of player value than raw points alone.
 
@@ -243,20 +253,24 @@ The backend uses an incremental JSON caching system to minimize API calls and co
 1. **Progress Markers**: Each cache tracks `Last_Updated_Season` and `Last_Updated_Week`
 2. **Resumability**: Updates can be interrupted and resumed without losing progress
 3. **Incremental Updates**: Only fetches/computes data for new weeks since last update
-4. **Import-time Loading**: Caches are loaded when modules are imported for fast access
+4. **Separation of Concerns**:
+   - `load_*` functions read existing caches
+   - `update_*` functions refresh and update caches
+   - Cron jobs handle weekly updates to prevent concurrent modifications
+5. **Import-time Loading**: Caches are loaded when modules are imported for fast access
 
 ### Cache Dependencies
 
 The caching system has a specific order of operations:
 
 ```
-1. player_ids_cache.json      (Sleeper API: player metadata, refreshed weekly)
+1. player_ids.json             (Sleeper API: player metadata, refreshed weekly)
    ↓
 2. starters_cache.json         (Sleeper API: weekly rosters + matchups)
    ↓
 3. replacement_score_cache.json (Computed: positional replacement levels)
    ↓
-4. ffWAR_cache.json            (Computed: wins above replacement via simulations)
+4. player_data_cache.json      (Computed: ffWAR for ALL NFL players who played)
    ↓
 5. valid_options_cache.json    (Derived: available filter combinations)
 ```
@@ -272,7 +286,7 @@ starters_loader → starters_cache.json + valid_options_cache.json
     ↓
 replacement_score_loader → replacement_score_cache.json
     ↓
-ffWAR_loader → ffWAR_cache.json
+player_data_loader → player_data_cache.json (ALL NFL players)
     ↓
 aggregated_data service → Aggregated responses
 ```

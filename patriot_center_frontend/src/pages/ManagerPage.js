@@ -5,15 +5,15 @@ import { useManagerAwards } from '../hooks/useManagerAwards';
 import { useManagerTransactions } from '../hooks/useManagerTransactions';
 import { useManagerYearlyData } from '../hooks/useManagerYearlyData';
 import { useHeadToHead } from '../hooks/useHeadToHead';
+import { useAggregatedPlayers } from '../hooks/useAggregatedPlayers';
 
 /**
  * ManagerPage - Social media style profile view with ALL manager data
  */
 export default function ManagerPage() {
   const { managerName } = useParams();
-  const navigate = useNavigate();
 
-  const [year, setYear] = useState(null);
+  const [year] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [transactionPage, setTransactionPage] = useState(0);
@@ -28,6 +28,26 @@ export default function ManagerPage() {
     { year, type: typeFilter === 'all' ? undefined : typeFilter, limit: transactionsPerPage, offset: transactionPage * transactionsPerPage }
   );
   const { yearlyData, loading: yearlyLoading } = useManagerYearlyData(managerName, year);
+
+  // Fetch aggregated players for top player cards
+  const { players: aggregatedPlayers } = useAggregatedPlayers('2025', null, managerName);
+
+  // Calculate top players from aggregated data
+  const topPlayers = React.useMemo(() => {
+    if (!aggregatedPlayers || aggregatedPlayers.length === 0) {
+      return { highest: null, lowest: null, mostStarted: null };
+    }
+
+    const highest = aggregatedPlayers.reduce((max, p) => (p.ffWAR || 0) > (max.ffWAR || 0) ? p : max, aggregatedPlayers[0]);
+    const lowest = aggregatedPlayers.reduce((min, p) => (p.ffWAR || 0) < (min.ffWAR || 0) ? p : min, aggregatedPlayers[0]);
+    const mostStarted = aggregatedPlayers.reduce((max, p) => {
+      if ((p.num_games_started || 0) > (max.num_games_started || 0)) return p;
+      if ((p.num_games_started || 0) === (max.num_games_started || 0) && (p.ffWAR || 0) > (max.ffWAR || 0)) return p;
+      return max;
+    }, aggregatedPlayers[0]);
+
+    return { highest, lowest, mostStarted };
+  }, [aggregatedPlayers]);
 
   React.useEffect(() => {
     setImageError(false);
@@ -365,116 +385,123 @@ export default function ManagerPage() {
 
   return (
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
-      {/* Back Button */}
-      <div style={{ padding: '1rem 2rem' }}>
-        <button onClick={() => navigate(-1)} style={{
-          background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontSize: '1rem', padding: '0.5rem 0'
-        }}>← Back to Managers</button>
-      </div>
-
-      {/* Hero Banner Section */}
-      <div style={{
-        background: 'linear-gradient(135deg, var(--accent) 0%, var(--bg-alt) 100%)',
-        height: '200px',
-        position: 'relative',
-        borderRadius: '0 0 16px 16px',
-        marginBottom: '80px'
-      }}>
-        {/* Profile Picture Overlay - Centered */}
-        <div style={{
-          position: 'absolute',
-          bottom: '-60px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '140px',
-          height: '140px',
-          borderRadius: '50%',
-          border: '5px solid var(--bg)',
-          background: 'var(--bg-alt)',
-          overflow: 'hidden'
-        }}>
-          {avatarUrl && !imageError && (
-            <img
-              src={avatarUrl}
-              alt={managerName}
-              onError={() => setImageError(true)}
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          )}
-        </div>
-
-        {/* Year Filter - Top Right */}
-        <div style={{ position: 'absolute', top: '1rem', right: '2rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <label htmlFor="year-select" style={{ color: 'white', fontSize: '0.9rem' }}>Filter:</label>
-          <select
-            id="year-select"
-            value={year || 'ALL'}
-            onChange={(e) => setYear(e.target.value === 'ALL' ? null : e.target.value)}
-            style={{
-              background: 'rgba(255,255,255,0.2)',
-              color: 'white',
-              border: '1px solid rgba(255,255,255,0.3)',
-              padding: '0.5rem 1rem',
-              borderRadius: '6px',
-              cursor: 'pointer',
-              backdropFilter: 'blur(10px)'
-            }}
-          >
-            <option value="ALL" style={{ background: 'var(--bg)', color: 'var(--text)' }}>All Seasons</option>
-            {yearsActive.map(y => <option key={y} value={y} style={{ background: 'var(--bg)', color: 'var(--text)' }}>{y}</option>)}
-          </select>
-        </div>
-      </div>
-
       {/* Profile Info Section */}
-      <div style={{ padding: '0 2rem 2rem 2rem' }}>
-        <div style={{ marginBottom: '1rem', textAlign: 'center' }}>
-          <h1 style={{ margin: '0 0 0.5rem 0', fontSize: '2rem' }}>{managerName}</h1>
-          <div style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>
-            Years Active: {yearsActive.join(', ')} • {overall.wins !== undefined ? formatRecord(overall.wins, overall.losses || 0, overall.ties || 0) : (overall.record || '0-0-0')} Overall
-          </div>
-        </div>
+      <div style={{ padding: '2rem' }}>
+        <div style={{ display: 'flex', gap: '2rem', marginBottom: '2rem' }}>
+          {/* Left 1/3 - Profile Picture and Info */}
+          <div style={{ flex: '0 0 33%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            {/* Profile Picture with Medal */}
+            <div style={{ position: 'relative', marginBottom: '1rem' }}>
+              <div style={{
+                width: '140px',
+                height: '140px',
+                borderRadius: '50%',
+                border: '4px solid var(--border)',
+                background: 'var(--bg-alt)',
+                overflow: 'hidden'
+              }}>
+                {avatarUrl && !imageError && (
+                  <img
+                    src={avatarUrl}
+                    alt={managerName}
+                    onError={() => setImageError(true)}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                )}
+              </div>
 
-        {/* Medals */}
-        {(medalCounts.gold > 0 || medalCounts.silver > 0 || medalCounts.bronze > 0) && (
-          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', justifyContent: 'center' }}>
-            {medalCounts.gold > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-alt)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
-                <span style={{ fontSize: '1.5rem' }}>🥇</span>
-                <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>×{medalCounts.gold}</span>
-              </div>
-            )}
-            {medalCounts.silver > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-alt)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
-                <span style={{ fontSize: '1.5rem' }}>🥈</span>
-                <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>×{medalCounts.silver}</span>
-              </div>
-            )}
-            {medalCounts.bronze > 0 && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--bg-alt)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
-                <span style={{ fontSize: '1.5rem' }}>🥉</span>
-                <span style={{ fontSize: '1.25rem', fontWeight: 700 }}>×{medalCounts.bronze}</span>
-              </div>
-            )}
-          </div>
-        )}
+              {/* Medal hanging off bottom */}
+              {(medalCounts.gold > 0 || medalCounts.silver > 0 || medalCounts.bronze > 0) && (
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-10px',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
+                  display: 'flex',
+                  gap: '0.5rem',
+                  background: 'var(--bg)',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '20px',
+                  border: '2px solid var(--border)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}>
+                  {medalCounts.gold > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '1.25rem' }}>🥇</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>×{medalCounts.gold}</span>
+                    </div>
+                  )}
+                  {medalCounts.silver > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '1.25rem' }}>🥈</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>×{medalCounts.silver}</span>
+                    </div>
+                  )}
+                  {medalCounts.bronze > 0 && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <span style={{ fontSize: '1.25rem' }}>🥉</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>×{medalCounts.bronze}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
 
-        {/* Quick Stats Horizontal Scroll */}
-        <div style={{
-          display: 'flex',
-          gap: '1rem',
-          overflowX: 'auto',
-          paddingBottom: '1rem',
-          marginBottom: '1.5rem',
-          justifyContent: 'center'
-        }}>
-          <StatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} />
-          <StatCard title="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} />
-          <StatCard title="Avg PA" value={overall.average_points_against?.toFixed(2) || 0} />
-          <StatCard title="Avg Diff" value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)} color={((overall.average_points_for || 0) - (overall.average_points_against || 0)) >= 0 ? 'var(--success)' : 'var(--danger)'} />
-          <StatCard title="Trades" value={trades.total || 0} />
-          <StatCard title="Playoffs" value={playoffAppearances} />
-          <StatCard title="Championships" value={championships} color={championships > 0 ? 'var(--accent)' : undefined} />
+            {/* Manager Info */}
+            <h1 style={{ margin: '0.5rem 0 0.5rem 0', fontSize: '2rem', textAlign: 'center' }}>{managerName}</h1>
+            <div style={{ color: 'var(--muted)', fontSize: '0.95rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+              Years Active: {yearsActive.join(', ')}
+            </div>
+            <div style={{ color: 'var(--text)', fontSize: '1.5rem', fontWeight: 700, textAlign: 'center' }}>
+              {formatRecord(overall.wins || 0, overall.losses || 0, overall.ties || 0)}
+            </div>
+          </div>
+
+          {/* Right 2/3 - Player Cards and Stats */}
+          <div style={{ flex: '0 0 67%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {/* Top Half - Player Cards */}
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignContent: 'center' }}>
+              <PlayerStatCard
+                title="Highest ffWAR"
+                player={topPlayers.highest}
+                stat="ffWAR"
+                statLabel="ffWAR"
+              />
+              <PlayerStatCard
+                title="Lowest ffWAR"
+                player={topPlayers.lowest}
+                stat="ffWAR"
+                statLabel="ffWAR"
+              />
+              <PlayerStatCard
+                title="Most Started"
+                player={topPlayers.mostStarted}
+                stat="num_games_started"
+                statLabel="Starts"
+              />
+            </div>
+
+            {/* Bottom Half - Stat Cards */}
+            <div style={{
+              flex: 1,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(6, 1fr)',
+              gap: '1rem',
+              alignContent: 'center'
+            }}>
+              <RankedStatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} rank={1} />
+              <RankedStatCard title="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} rank={2} />
+              <RankedStatCard title="Avg PA" value={overall.average_points_against?.toFixed(2) || 0} rank={5} />
+              <RankedStatCard
+                title="Avg Diff"
+                value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)}
+                color={((overall.average_points_for || 0) - (overall.average_points_against || 0)) >= 0 ? 'var(--success)' : 'var(--danger)'}
+                rank={3}
+              />
+              <RankedStatCard title="Trades" value={trades.total || 0} rank={1} />
+              <RankedStatCard title="Playoffs" value={playoffAppearances} rank={2} />
+            </div>
+          </div>
         </div>
 
         {/* Tab Navigation */}
@@ -489,8 +516,7 @@ export default function ManagerPage() {
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'awards', label: 'Awards' },
-            { id: 'transactions', label: 'Transactions' },
-            { id: 'weekly', label: 'Weekly Stats', disabled: !year }
+            { id: 'transactions', label: 'Transactions' }
           ].map(tab => (
             <button
               key={tab.id}
@@ -567,6 +593,128 @@ function StatCard({ title, value, color }) {
     }}>
       <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>{title}</div>
       <div style={{ fontSize: '1.5rem', fontWeight: 700, color: color || 'var(--text)' }}>{value}</div>
+    </div>
+  );
+}
+
+// Ranked Stat Card Component - Shows stat with ranking among active managers
+function RankedStatCard({ title, value, color, rank }) {
+  // Determine rank color based on position
+  const getRankColor = (r) => {
+    if (r <= 3) return 'var(--success)';
+    if (r <= 6) return 'var(--text)';
+    return 'var(--danger)';
+  };
+
+  return (
+    <div style={{
+      padding: '1rem',
+      background: 'var(--bg-alt)',
+      borderRadius: '8px',
+      border: '1px solid var(--border)',
+      textAlign: 'center',
+      position: 'relative'
+    }}>
+      {rank && (
+        <div style={{
+          position: 'absolute',
+          top: '0.5rem',
+          right: '0.5rem',
+          width: '24px',
+          height: '24px',
+          borderRadius: '50%',
+          background: getRankColor(rank),
+          color: 'white',
+          fontSize: '0.75rem',
+          fontWeight: 700,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center'
+        }}>
+          {rank}
+        </div>
+      )}
+      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>{title}</div>
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: color || 'var(--text)' }}>{value}</div>
+    </div>
+  );
+}
+
+// Player Stat Card Component - Shows player with their key stat
+function PlayerStatCard({ title, player, stat, statLabel }) {
+  if (!player) {
+    return (
+      <div style={{
+        padding: '1rem',
+        background: 'var(--bg-alt)',
+        borderRadius: '8px',
+        border: '1px solid var(--border)',
+        textAlign: 'center',
+        minHeight: '120px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Loading...</div>
+      </div>
+    );
+  }
+
+  const playerName = player.key || player.name;
+  const statValue = stat === 'num_games_started' ? player[stat] : (player[stat]?.toFixed(3) || player[stat] || 0);
+
+  return (
+    <div style={{
+      padding: '1rem',
+      background: 'var(--bg-alt)',
+      borderRadius: '8px',
+      border: '1px solid var(--border)',
+      display: 'flex',
+      flexDirection: 'column',
+      gap: '0.5rem'
+    }}>
+      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', textAlign: 'center' }}>{title}</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {player.player_image_endpoint && (
+          <img
+            src={player.player_image_endpoint}
+            alt={playerName}
+            style={{
+              width: '50px',
+              height: '50px',
+              borderRadius: '8px',
+              objectFit: 'cover',
+              flexShrink: 0
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <Link
+            to={`/player/${encodeURIComponent(playerName)}`}
+            style={{
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              color: 'var(--accent)',
+              textDecoration: 'none',
+              display: 'block',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap'
+            }}
+          >
+            {playerName}
+          </Link>
+          <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+            {player.num_games_started} starts
+          </div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginTop: '0.25rem' }}>
+            {statLabel}: {statValue}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -745,10 +893,7 @@ function TradeCard({ trade }) {
 
 // Helper function to format records (hide ties if 0)
 function formatRecord(wins, losses, ties) {
-  if (ties === 0) {
-    return `${wins}-${losses}`;
-  }
-  return `${wins}-${losses}-${ties}`;
+  return ties === 0 ? `${wins}-${losses}` : `${wins}-${losses}-${ties}`;
 }
 
 // Overview Tab
@@ -773,8 +918,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(200px, 350px))', gap: '0.5rem 1rem', alignContent: 'start' }}>
         {/* Season Stats */}
         <Section title="Season Stats">
-          <StatRow label="Regular Season" value={regularSeason.wins !== undefined ? formatRecord(regularSeason.wins, regularSeason.losses || 0, regularSeason.ties || 0) : (regularSeason.record || '0-0')} />
-          <StatRow label="Playoffs" value={playoffs.wins !== undefined ? formatRecord(playoffs.wins, playoffs.losses || 0, playoffs.ties || 0) : (playoffs.record || '0-0')} />
+          <StatRow label="Regular Season" value={formatRecord(regularSeason.wins || 0, regularSeason.losses || 0, regularSeason.ties || 0)} />
+          <StatRow label="Playoffs" value={formatRecord(playoffs.wins || 0, playoffs.losses || 0, playoffs.ties || 0)} />
           <StatRow label="Avg PF" value={overall.average_points_for?.toFixed(2) || 0} />
           <StatRow label="Avg PA" value={overall.average_points_against?.toFixed(2) || 0} />
         </Section>

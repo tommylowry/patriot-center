@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
  * TradeCard - Visual trade card with team logos and player headshots
  * Emphasis on received players with images, sent players as simple text
  */
-export function TradeCard({ trade }) {
+export function TradeCard({ trade, hideHeader = false }) {
   if (!trade) return null;
 
   const managersInvolved = trade.managers_involved || [];
@@ -18,7 +18,7 @@ export function TradeCard({ trade }) {
       overflow: 'hidden'
     }}>
       {/* Header */}
-      {week && year && (
+      {!hideHeader && week && year && (
         <div style={{
           background: 'var(--bg-alt)',
           padding: '0.5rem 1rem',

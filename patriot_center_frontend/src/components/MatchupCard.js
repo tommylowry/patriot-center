@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
  * MatchupCard - Sports broadcast style matchup display
  * Inspired by hockey/football broadcast graphics with team logos, scores, and player stats
  */
-export function MatchupCard({ matchup, showMargin = false }) {
+export function MatchupCard({ matchup, showMargin = false, hideHeader = false }) {
   if (!matchup) return null;
 
   const manager1 = matchup.manager_1 || {};
@@ -27,7 +27,7 @@ export function MatchupCard({ matchup, showMargin = false }) {
       overflow: 'hidden'
     }}>
       {/* Header with game info */}
-      {week && year && (
+      {!hideHeader && week && year && (
         <div style={{
           background: 'var(--bg-alt)',
           padding: '0.4rem 1rem',

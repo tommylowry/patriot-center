@@ -75,12 +75,12 @@ export default function HeadToHeadPage() {
   const m2WinPct = totalGames > 0 ? ((m2Wins / totalGames) * 100).toFixed(1) : '0.0';
 
   return (
-    <div className="App" style={{ paddingTop: '1rem', maxWidth: '1200px', margin: '0 auto' }}>
+    <div className="App" style={{ paddingTop: '1rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
       {/* Two-column layout with managers and their stats */}
       <div style={{
         display: 'grid',
         gridTemplateColumns: '1fr auto 1fr',
-        gap: '3rem',
+        gap: '4rem',
         marginBottom: '3rem',
         paddingBottom: '2rem',
         borderBottom: '1px solid var(--border)'
@@ -143,11 +143,6 @@ export default function HeadToHeadPage() {
 
           {/* Manager 1 Stats */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <StatRow
-              label="Total Points"
-              value={m1PointsFor.toFixed(0)}
-              highlight={m1PointsFor > m2PointsFor}
-            />
             <StatRow
               label="Avg Margin"
               value={m1AvgMargin.toFixed(1)}
@@ -255,11 +250,6 @@ export default function HeadToHeadPage() {
           {/* Manager 2 Stats */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
             <StatRow
-              label="Total Points"
-              value={m2PointsFor.toFixed(0)}
-              highlight={m2PointsFor > m1PointsFor}
-            />
-            <StatRow
               label="Avg Margin"
               value={m2AvgMargin.toFixed(1)}
               highlight={m2AvgMargin > m1AvgMargin}
@@ -315,8 +305,8 @@ export default function HeadToHeadPage() {
           </h2>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '1.5rem'
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '2rem'
           }}>
             {m1LastWin && Object.keys(m1LastWin).length > 0 && (
               <div>
@@ -328,7 +318,7 @@ export default function HeadToHeadPage() {
                 }}>
                   {m1.name}'s Last Win
                 </div>
-                <MatchupCard matchup={m1LastWin} showMargin={false} />
+                <MatchupCard matchup={m1LastWin} showMargin={false} hideHeader={true} />
               </div>
             )}
             {m2LastWin && Object.keys(m2LastWin).length > 0 && (
@@ -341,7 +331,7 @@ export default function HeadToHeadPage() {
                 }}>
                   {m2.name}'s Last Win
                 </div>
-                <MatchupCard matchup={m2LastWin} showMargin={false} />
+                <MatchupCard matchup={m2LastWin} showMargin={false} hideHeader={true} />
               </div>
             )}
             {m1BiggestBlowout && Object.keys(m1BiggestBlowout).length > 0 && (
@@ -354,7 +344,7 @@ export default function HeadToHeadPage() {
                 }}>
                   {m1.name}'s Biggest Blowout
                 </div>
-                <MatchupCard matchup={m1BiggestBlowout} showMargin={true} />
+                <MatchupCard matchup={m1BiggestBlowout} showMargin={true} hideHeader={true} />
               </div>
             )}
             {m2BiggestBlowout && Object.keys(m2BiggestBlowout).length > 0 && (
@@ -367,7 +357,7 @@ export default function HeadToHeadPage() {
                 }}>
                   {m2.name}'s Biggest Blowout
                 </div>
-                <MatchupCard matchup={m2BiggestBlowout} showMargin={true} />
+                <MatchupCard matchup={m2BiggestBlowout} showMargin={true} hideHeader={true} />
               </div>
             )}
           </div>
@@ -387,11 +377,21 @@ export default function HeadToHeadPage() {
           </h2>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(500px, 1fr))',
-            gap: '1rem'
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '1.5rem'
           }}>
             {matchupHistory.map((matchup, idx) => (
-              <MatchupCard key={idx} matchup={matchup} />
+              <div key={idx}>
+                <div style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'var(--muted)',
+                  marginBottom: '0.5rem'
+                }}>
+                  Week {matchup.week} • {matchup.year}
+                </div>
+                <MatchupCard matchup={matchup} hideHeader={true} />
+              </div>
             ))}
           </div>
         </div>
@@ -411,10 +411,20 @@ export default function HeadToHeadPage() {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '1rem'
+            gap: '1.5rem'
           }}>
             {tradeHistory.map((trade, idx) => (
-              <TradeCard key={idx} trade={trade} />
+              <div key={idx}>
+                <div style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'var(--muted)',
+                  marginBottom: '0.5rem'
+                }}>
+                  Week {trade.week} {trade.year}
+                </div>
+                <TradeCard trade={trade} hideHeader={true} />
+              </div>
             ))}
           </div>
         </div>

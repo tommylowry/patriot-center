@@ -1271,7 +1271,7 @@ export function HeadToHeadMatchupPage() {
 
   const { data: detailedData, loading } = useHeadToHead(managerName, opponentName, { year });
 
-  // SportsCenter-Style Matchup Card Component
+  // SportsCenter-Style Matchup Card Component (reused from ManagerPage)
   const MatchupCard = ({ matchup, showMargin = false }) => {
     if (!matchup) return null;
 
@@ -1285,182 +1285,165 @@ export function HeadToHeadMatchupPage() {
     const manager1TopScorers = matchup.manager_1_top_3_scorers || [];
     const manager2TopScorers = matchup.manager_2_top_3_scorers || [];
 
-    // Determine winner/loser for styling
-    const manager1Won = winner === manager1.name;
-    const manager2Won = winner === manager2.name;
-    const isTie = !manager1Won && !manager2Won;
+    // Determine result from perspective of manager_1
+    let result = 'tie';
+    if (winner === manager1.name) result = 'win';
+    else if (winner === manager2.name) result = 'loss';
 
     return (
       <div style={{
-        background: 'var(--bg-alt)',
-        borderRadius: '8px',
-        border: '1px solid var(--border)',
+        background: 'linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%)',
+        borderRadius: '12px',
+        border: '2px solid var(--border)',
         overflow: 'hidden'
       }}>
-        {/* Header - SportsCenter style */}
+        {/* Header */}
         <div style={{
-          background: 'linear-gradient(90deg, #1a1a1a 0%, #2a2a2a 100%)',
-          padding: '0.4rem 0.75rem',
+          background: 'var(--bg-alt)',
+          padding: '0.5rem 1rem',
           textAlign: 'center',
-          color: '#888',
-          fontWeight: 600,
-          fontSize: '0.7rem',
-          letterSpacing: '1px',
-          textTransform: 'uppercase',
+          color: 'var(--text)',
+          fontWeight: 700,
+          fontSize: '0.85rem',
+          letterSpacing: '0.5px',
           borderBottom: '2px solid var(--border)'
         }}>
-          Week {week} // {matchupYear}
+          {week && matchupYear ? `Week ${week} ${matchupYear}` : 'Matchup'}
         </div>
 
-        {/* Main Matchup Display */}
-        <div style={{ padding: '1rem' }}>
-          {/* Manager Avatars and Score Display */}
-          <div style={{ display: 'flex', alignItems: 'stretch', gap: '0.75rem', marginBottom: '1rem' }}>
+        {/* Score Display with Manager Avatars */}
+        <div style={{ padding: '1.5rem' }}>
+          {/* Manager Avatars + Score Box */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
             {/* Manager 1 Avatar */}
-            <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{ flexShrink: 0, alignSelf: 'center' }}>
+            <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{ flexShrink: 0 }}>
               {manager1.image_url && (
                 <img
                   src={manager1.image_url}
                   alt={manager1.name}
                   style={{
-                    width: '70px',
-                    height: '70px',
+                    width: '60px',
+                    height: '60px',
                     borderRadius: '50%',
                     objectFit: 'cover',
-                    border: `3px solid ${manager1Won ? 'var(--success)' : 'var(--border)'}`,
-                    opacity: manager2Won ? 0.6 : 1
+                    border: '3px solid var(--border)'
                   }}
-                  onError={(e) => e.target.style.display = 'none'}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
                 />
               )}
             </Link>
 
-            {/* Score Box */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              {/* Manager 1 Score Row */}
+            {/* Score Box - 2 rows x 2 columns */}
+            <div style={{
+              flex: 1,
+              background: 'var(--bg-alt)',
+              border: '2px solid var(--border)',
+              borderRadius: '8px',
+              overflow: 'hidden'
+            }}>
+              {/* Manager 1 Row */}
               <div style={{
-                flex: 1,
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'space-between',
-                background: manager1Won ? 'rgba(var(--success-rgb, 34, 197, 94), 0.1)' : 'var(--bg)',
-                padding: '0.75rem 1rem',
-                borderBottom: '2px solid var(--border)',
-                borderRadius: '4px 4px 0 0'
+                alignItems: 'center',
+                padding: '1rem',
+                borderBottom: '1px solid var(--border)'
               }}>
                 <Link
                   to={`/manager/${encodeURIComponent(manager1.name)}`}
                   style={{
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    color: manager1Won ? 'var(--success)' : 'var(--text)',
-                    textDecoration: 'none',
-                    opacity: manager2Won ? 0.6 : 1
+                    flex: 1,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    color: result === 'win' ? 'var(--success)' : 'var(--text)',
+                    textDecoration: 'none'
                   }}
                 >
                   {manager1.name}
                 </Link>
                 <div style={{
+                  fontSize: '1.5rem',
                   fontWeight: 700,
-                  fontSize: '1.8rem',
-                  color: manager1Won ? 'var(--success)' : 'var(--text)',
-                  minWidth: '70px',
-                  textAlign: 'center',
-                  background: manager1Won ? 'var(--danger)' : 'transparent',
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '4px',
-                  opacity: manager2Won ? 0.6 : 1
+                  color: result === 'win' ? 'var(--success)' : 'var(--text)',
+                  minWidth: '80px',
+                  textAlign: 'right'
                 }}>
-                  {manager1Score?.toFixed(0)}
+                  {manager1Score?.toFixed(2)}
                 </div>
               </div>
 
-              {/* Manager 2 Score Row */}
+              {/* Manager 2 Row */}
               <div style={{
-                flex: 1,
                 display: 'flex',
-                alignItems: 'center',
                 justifyContent: 'space-between',
-                background: manager2Won ? 'rgba(var(--success-rgb, 34, 197, 94), 0.1)' : 'var(--bg)',
-                padding: '0.75rem 1rem',
-                borderRadius: '0 0 4px 4px'
+                alignItems: 'center',
+                padding: '1rem'
               }}>
                 <Link
                   to={`/manager/${encodeURIComponent(manager2.name)}`}
                   style={{
-                    fontWeight: 700,
-                    fontSize: '1.1rem',
-                    color: manager2Won ? 'var(--success)' : 'var(--text)',
-                    textDecoration: 'none',
-                    opacity: manager1Won ? 0.6 : 1
+                    flex: 1,
+                    fontWeight: 600,
+                    fontSize: '1rem',
+                    color: result === 'loss' ? 'var(--success)' : 'var(--text)',
+                    textDecoration: 'none'
                   }}
                 >
                   {manager2.name}
                 </Link>
                 <div style={{
+                  fontSize: '1.5rem',
                   fontWeight: 700,
-                  fontSize: '1.8rem',
-                  color: manager2Won ? 'var(--success)' : 'var(--text)',
-                  minWidth: '70px',
-                  textAlign: 'center',
-                  background: manager2Won ? 'var(--danger)' : 'transparent',
-                  padding: '0.25rem 0.5rem',
-                  borderRadius: '4px',
-                  opacity: manager1Won ? 0.6 : 1
+                  color: result === 'loss' ? 'var(--success)' : 'var(--text)',
+                  minWidth: '80px',
+                  textAlign: 'right'
                 }}>
-                  {manager2Score?.toFixed(0)}
+                  {manager2Score?.toFixed(2)}
                 </div>
               </div>
             </div>
 
             {/* Manager 2 Avatar */}
-            <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{ flexShrink: 0, alignSelf: 'center' }}>
+            <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{ flexShrink: 0 }}>
               {manager2.image_url && (
                 <img
                   src={manager2.image_url}
                   alt={manager2.name}
                   style={{
-                    width: '70px',
-                    height: '70px',
+                    width: '60px',
+                    height: '60px',
                     borderRadius: '50%',
                     objectFit: 'cover',
-                    border: `3px solid ${manager2Won ? 'var(--success)' : 'var(--border)'}`,
-                    opacity: manager1Won ? 0.6 : 1
+                    border: '3px solid var(--border)'
                   }}
-                  onError={(e) => e.target.style.display = 'none'}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
                 />
               )}
             </Link>
           </div>
 
-          {/* Divider Line - SportsCenter style */}
-          <div style={{
-            height: '3px',
-            background: 'linear-gradient(90deg, var(--border) 0%, var(--accent) 50%, var(--border) 100%)',
-            margin: '1rem 0'
-          }} />
-
-          {/* Top 3 Scorers - Side by Side */}
+          {/* Top 3 Scorers Side by Side */}
           {(manager1TopScorers?.length > 0 || manager2TopScorers?.length > 0) && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1px 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               {/* Manager 1 Top Scorers */}
               <div>
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: 'var(--muted)',
-                  marginBottom: '0.5rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase'
-                }}>
-                  {manager1.name}
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
+                  {manager1.name} Top 3
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {manager1TopScorers?.slice(0, 3).map((player, i) => (
                     <div key={i} style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
+                      padding: '0.5rem',
+                      background: 'var(--bg)',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border)',
                       fontSize: '0.8rem'
                     }}>
                       {player.image_url && (
@@ -1468,14 +1451,15 @@ export function HeadToHeadMatchupPage() {
                           src={player.image_url}
                           alt={player.name}
                           style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '3px',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '4px',
                             objectFit: 'cover',
-                            flexShrink: 0,
-                            border: '1px solid var(--border)'
+                            flexShrink: 0
                           }}
-                          onError={(e) => e.target.style.display = 'none'}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
                         />
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -1488,51 +1472,36 @@ export function HeadToHeadMatchupPage() {
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                             display: 'block',
-                            color: 'var(--text)',
+                            color: 'var(--accent)',
                             textDecoration: 'none'
                           }}
                         >
                           {player.name}
                         </Link>
                         <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
-                          {player.position}
+                          {player.position} • {player.score?.toFixed(2)} pts
                         </div>
-                      </div>
-                      <div style={{
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
-                        color: 'var(--text)',
-                        minWidth: '45px',
-                        textAlign: 'right'
-                      }}>
-                        {player.score?.toFixed(1)}
                       </div>
                     </div>
                   ))}
                 </div>
               </div>
 
-              {/* Vertical Divider */}
-              <div style={{ background: 'var(--border)', width: '1px' }} />
-
               {/* Manager 2 Top Scorers */}
               <div>
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: 'var(--muted)',
-                  marginBottom: '0.5rem',
-                  fontWeight: 700,
-                  letterSpacing: '0.5px',
-                  textTransform: 'uppercase'
-                }}>
-                  {manager2.name}
+                <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', fontWeight: 600 }}>
+                  {manager2.name} Top 3
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {manager2TopScorers?.slice(0, 3).map((player, i) => (
                     <div key={i} style={{
                       display: 'flex',
                       alignItems: 'center',
                       gap: '0.5rem',
+                      padding: '0.5rem',
+                      background: 'var(--bg)',
+                      borderRadius: '6px',
+                      border: '1px solid var(--border)',
                       fontSize: '0.8rem'
                     }}>
                       {player.image_url && (
@@ -1540,14 +1509,15 @@ export function HeadToHeadMatchupPage() {
                           src={player.image_url}
                           alt={player.name}
                           style={{
-                            width: '32px',
-                            height: '32px',
-                            borderRadius: '3px',
+                            width: '40px',
+                            height: '40px',
+                            borderRadius: '4px',
                             objectFit: 'cover',
-                            flexShrink: 0,
-                            border: '1px solid var(--border)'
+                            flexShrink: 0
                           }}
-                          onError={(e) => e.target.style.display = 'none'}
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
                         />
                       )}
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -1560,24 +1530,15 @@ export function HeadToHeadMatchupPage() {
                             textOverflow: 'ellipsis',
                             whiteSpace: 'nowrap',
                             display: 'block',
-                            color: 'var(--text)',
+                            color: 'var(--accent)',
                             textDecoration: 'none'
                           }}
                         >
                           {player.name}
                         </Link>
                         <div style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>
-                          {player.position}
+                          {player.position} • {player.score?.toFixed(2)} pts
                         </div>
-                      </div>
-                      <div style={{
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
-                        color: 'var(--text)',
-                        minWidth: '45px',
-                        textAlign: 'right'
-                      }}>
-                        {player.score?.toFixed(1)}
                       </div>
                     </div>
                   ))}
@@ -1594,10 +1555,9 @@ export function HeadToHeadMatchupPage() {
               color: 'var(--muted)',
               paddingTop: '0.75rem',
               marginTop: '0.75rem',
-              borderTop: '1px solid var(--border)',
-              fontWeight: 600
+              borderTop: '1px solid var(--border)'
             }}>
-              Margin of Victory: {Math.abs(matchup.differential).toFixed(2)} pts
+              Margin: {Math.abs(matchup.differential).toFixed(2)}
             </div>
           )}
         </div>

@@ -75,6 +75,8 @@ export default function ManagerPage() {
   const placements = overallData.placements || [];
   const playoffAppearances = overallData.playoff_appearances || 0;
   const championships = overallData.championships || 0;
+  const rankings = summary.rankings || {};
+  const isActiveManager = summary.rankings?.is_active_manager ?? true;
   const awardsData = awards?.awards || {};
 
   // Calculate medal counts
@@ -387,9 +389,9 @@ export default function ManagerPage() {
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
       {/* Profile Info Section */}
       <div style={{ padding: '2rem' }}>
-        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', maxWidth: '900px' }}>
+        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', maxWidth: '1000px', margin: '0 auto 1rem auto' }}>
           {/* Left - Profile Picture and Info */}
-          <div style={{ flex: '0 0 20%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ flex: '0 0 20%', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
             {/* Profile Picture with Medal */}
             <div style={{ position: 'relative', marginBottom: '1rem' }}>
               <div style={{
@@ -458,7 +460,7 @@ export default function ManagerPage() {
           </div>
 
           {/* Right - Player Cards and Stats */}
-          <div style={{ flex: '0 0 80%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ flex: '0 0 80%', display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 0 }}>
             {/* Top Half - Player Cards */}
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignContent: 'center' }}>
               <PlayerStatCard
@@ -482,37 +484,54 @@ export default function ManagerPage() {
             </div>
 
             {/* Bottom Half - Stat Cards */}
-            <div style={{
-              flex: 1,
-              display: 'grid',
-              gridTemplateColumns: 'repeat(6, 1fr)',
-              gap: '1rem',
-              alignContent: 'center'
-            }}>
-              <RankedStatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} rank={1} />
-              <RankedStatCard title="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} rank={2} />
-              <RankedStatCard title="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} rank={5} />
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center' }}>
+              {rankings.worst && (
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: 'var(--muted)',
+                  textAlign: 'center',
+                  letterSpacing: '0.3px'
+                }}>
+                  {year
+                    ? `Note: circle tiles reflect ranking among the ${rankings.worst} managers of the ${year} season`
+                    : isActiveManager
+                      ? `Note: circle tiles reflect ranking among the ${rankings.worst} active managers`
+                      : `Note: circle tiles reflect ranking among the ${rankings.worst} managers all time`
+                  }
+                </div>
+              )}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(6, 1fr)',
+                gap: '1rem'
+              }}>
+                <RankedStatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} rank={rankings.win_percentage} worst={rankings.worst} />
+              <RankedStatCard title="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} rank={rankings.average_points_for} worst={rankings.worst} />
+              <RankedStatCard title="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} rank={rankings.average_points_against} worst={rankings.worst} />
               <RankedStatCard
                 title="AVG Diff"
                 value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)}
-                color={((overall.average_points_for || 0) - (overall.average_points_against || 0)) >= 0 ? 'var(--success)' : 'var(--danger)'}
-                rank={3}
+                rank={rankings.average_points_differential}
+                worst={rankings.worst}
               />
-              <RankedStatCard title="Trades" value={trades.total || 0} rank={1} />
-              <RankedStatCard title="Playoffs" value={playoffAppearances} rank={8} />
+              <RankedStatCard title="Trades" value={trades.total || 0} rank={rankings.trades} worst={rankings.worst} />
+              <RankedStatCard title="Playoffs" value={playoffAppearances} rank={rankings.playoffs} worst={rankings.worst} />
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Tab Navigation */}
-        <div style={{
-          display: 'flex',
-          gap: '0.5rem',
-          borderBottom: '2px solid var(--border)',
-          marginBottom: '2rem',
-          overflowX: 'auto',
-          justifyContent: 'center'
-        }}>
+      {/* Tab Navigation */}
+      <div style={{
+        display: 'flex',
+        gap: '0.5rem',
+        borderBottom: '2px solid var(--border)',
+        marginBottom: '2rem',
+        maxWidth: '1000px',
+        margin: '0 auto 2rem auto',
+        overflowX: 'auto',
+        justifyContent: 'center'
+      }}>
           {[
             { id: 'overview', label: 'Overview' },
             { id: 'awards', label: 'Awards' },
@@ -539,9 +558,9 @@ export default function ManagerPage() {
               {tab.label}
             </button>
           ))}
-        </div>
+      </div>
 
-        {/* Tab Content */}
+      {/* Tab Content */}
         {activeTab === 'overview' && <OverviewTab
           overall={overall}
           regularSeason={regularSeason}
@@ -598,13 +617,21 @@ function StatCard({ title, value, color }) {
 }
 
 // Ranked Stat Card Component - Shows stat with ranking among active managers
-function RankedStatCard({ title, value, color, rank }) {
-  // Determine rank color based on position
-  const getRankColor = (r) => {
-    if (r <= 3) return 'var(--success)';
-    if (r <= 6) return 'var(--muted)';
+function RankedStatCard({ title, value, color, rank, worst }) {
+  // Determine rank color based on dynamic thirds
+  const getRankColor = (r, w) => {
+    if (!r || !w) return 'var(--text)';
+    const firstThird = Math.ceil(w / 3);
+    const secondThird = Math.ceil((2 * w) / 3);
+
+    if (r <= firstThird) return 'var(--success)';
+    if (r <= secondThird) return 'var(--muted)';
     return 'var(--danger)';
   };
+
+  const rankColor = getRankColor(rank, worst);
+  const textColor = '#000000'; // Use black text for all circles
+  const displayColor = color || rankColor;
 
   return (
     <div style={{
@@ -615,15 +642,15 @@ function RankedStatCard({ title, value, color, rank }) {
       gap: '0.25rem'
     }}>
       <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>{title}</div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: color || 'var(--text)' }}>{value}</div>
-      {rank && (
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: displayColor }}>{value}</div>
+      {rank && worst && (
         <div style={{
-          width: '20px',
-          height: '20px',
+          width: '28px',
+          height: '28px',
           borderRadius: '50%',
-          background: getRankColor(rank),
-          color: 'white',
-          fontSize: '0.7rem',
+          background: rankColor,
+          color: textColor,
+          fontSize: '0.85rem',
           fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
@@ -660,6 +687,13 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
   const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
   const statValue = stat === 'num_games_started' ? player[stat] : (player[stat]?.toFixed(3) || player[stat] || 0);
 
+  // Determine stat value color based on title
+  const getStatValueColor = () => {
+    if (title === "Highest ffWAR") return 'var(--success)';
+    if (title === "Lowest ffWAR" && parseFloat(statValue) < 0) return 'var(--danger)';
+    return 'var(--text)';
+  };
+
   return (
     <Link
       to={`/player/${playerSlug}`}
@@ -669,7 +703,7 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
         borderRadius: '8px',
         border: '1px solid var(--border)',
         display: 'flex',
-        alignItems: 'center',
+        flexDirection: 'column',
         gap: '0.75rem',
         textDecoration: 'none',
         cursor: 'pointer',
@@ -684,45 +718,55 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
         e.currentTarget.style.borderColor = 'var(--border)';
       }}
     >
-      {player.player_image_endpoint && (
-        <img
-          src={player.player_image_endpoint}
-          alt={playerName}
-          style={{
-            width: '50px',
-            height: '50px',
-            borderRadius: '8px',
-            objectFit: 'cover',
-            flexShrink: 0
-          }}
-          onError={(e) => {
-            e.target.style.display = 'none';
-          }}
-        />
-      )}
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textAlign: 'center', marginBottom: '0.25rem' }}>{title}</div>
-        <div style={{
-          fontWeight: 600,
-          fontSize: '0.95rem',
-          color: 'var(--accent)',
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap'
-        }}>
-          {playerName}
-        </div>
-        <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-          {player.position} • {player.team}
-        </div>
-        <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)', marginTop: '0.25rem' }}>
-          {statValue}
-        </div>
-        {additionalInfo && (
-          <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
-            {additionalInfo}
-          </div>
+      <div style={{
+        fontSize: '0.9rem',
+        fontWeight: 600,
+        color: 'var(--text)',
+        textAlign: 'center',
+        letterSpacing: '0.5px'
+      }}>
+        {title}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        {player.player_image_endpoint && (
+          <img
+            src={player.player_image_endpoint}
+            alt={playerName}
+            style={{
+              width: '70px',
+              height: '70px',
+              borderRadius: '8px',
+              objectFit: 'cover',
+              flexShrink: 0
+            }}
+            onError={(e) => {
+              e.target.style.display = 'none';
+            }}
+          />
         )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{
+            fontWeight: 600,
+            fontSize: '0.95rem',
+            color: 'var(--accent)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap'
+          }}>
+            {playerName}
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+            {player.position} • {player.team}
+          </div>
+          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: '0.25rem' }}>
+            {statValue}
+          </div>
+          {additionalInfo && (
+            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+              {additionalInfo}
+            </div>
+          )}
+        </div>
       </div>
     </Link>
   );

@@ -1,12 +1,14 @@
 import copy
+from decimal import Decimal
 
-from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, TRANSACTION_IDS_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE
+from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, TRANSACTION_IDS_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.services.players import fetch_players
 
 STARTERS_CACHE = load_cache(STARTERS_CACHE_FILE)
+VALID_OPTIONS_CACHE = load_cache(VALID_OPTIONS_CACHE_FILE)
 
 
 class ManagerMetadataManager:
@@ -273,6 +275,17 @@ class ManagerMetadataManager:
                 "best_finish": 1,
                 "championships": 2
             },
+            "rankings":{
+                "best": 1,          # to signify the best number
+                "worst": 12,        # to signify the worse number
+                "is_active_manager": True
+                "win_percentage": 1,
+                "average_points_for": 2,
+                "average_points_against": 5,
+                "average_points_differential": 3,
+                "trades": 1,
+                "playoffs": 8
+            },
             "head_to_head": {
                 "opponent": {
                     "name": "Tommy",
@@ -308,6 +321,7 @@ class ManagerMetadataManager:
         return_dict["matchup_data"] = self._get_matchup_details_from_cache(manager_name, year)
         return_dict["transactions"] = self._get_transaction_details_from_cache(manager_name, year)
         return_dict["overall_data"] = self._get_overall_data_details_from_cache(manager_name)
+        return_dict["rankings"]     = self._get_ranking_details_from_cache(manager_name, year)
         return_dict["head_to_head"] = self._get_head_to_head_details_from_cache(manager_name, year)
 
         return copy.deepcopy(return_dict)
@@ -973,7 +987,6 @@ class ManagerMetadataManager:
             dict: Formatted matchup data with keys 'overall', 'regular_season', and 'playoffs'.
                   Each contains record, win_percentage, points stats, and averages.
         """
-        from decimal import Decimal
 
         matchup_data = {
             "overall":        {},
@@ -1203,6 +1216,108 @@ class ManagerMetadataManager:
 
         return copy.deepcopy(overall_data)
 
+    def _get_ranking_details_from_cache(self, manager_name: str, year: str = None) -> dict:
+        returning_dictionary = {
+            "best": 1
+        }
+        
+        manager_rankings = {
+            "win_percentage": [],
+            "average_points_for": [],
+            "average_points_against": [],
+            "average_points_differential": [],
+            "trades": [],
+            "playoffs": [],
+        }
+
+        eval_manager_values = {
+            "win_percentage": 0.0,
+            "average_points_for": 0.0,
+            "average_points_against": 0.0,
+            "average_points_differential": 0.0,
+            "trades": 0,
+            "playoffs": 0,
+        }
+
+        current_year = year
+        if not year:
+            current_year = str(max(LEAGUE_IDS.keys()))
+
+        managers = VALID_OPTIONS_CACHE[current_year]["managers"]
+
+        returning_dictionary["is_active_manager"] = True
+        if manager_name not in managers:
+            returning_dictionary["is_active_manager"] = False
+            managers = list(self._cache.keys())
+
+        returning_dictionary["worst"] = len(managers)
+        
+        for manager in managers:
+            
+            summary_section = copy.deepcopy(self._cache.get(manager, {}).get("summary", {}))
+            if year:
+                summary_section = copy.deepcopy(self._cache.get(manager, {}).get("years", {}).get(year, {}).get("summary", {}))
+
+             # Extract record components
+            num_wins = summary_section["matchup_data"]["overall"]["wins"]["total"]
+            num_losses = summary_section["matchup_data"]["overall"]["losses"]["total"]
+            num_ties = summary_section["matchup_data"]["overall"]["ties"]["total"]
+
+            # Calculate win percentage
+            num_matchups = num_wins + num_losses + num_ties
+
+            win_percentage = 0.0
+            if num_matchups != 0:
+                win_percentage = float(Decimal((num_wins / num_matchups * 100)).quantize(Decimal('0.1')))
+
+            # Points for/against and averages
+            total_points_for         = summary_section["matchup_data"]["overall"]["points_for"]["total"]
+            total_points_against     = summary_section["matchup_data"]["overall"]["points_against"]["total"]
+            total_point_differential = float(Decimal((total_points_for - total_points_against)).quantize(Decimal('0.01')))
+            
+            average_points_for         = 0.0
+            average_points_against     = 0.0
+            average_point_differential = 0.0
+            if num_matchups != 0:
+                average_points_for         = float(Decimal((total_points_for / num_matchups)).quantize(Decimal('0.01')))
+                average_points_against     = float(Decimal((total_points_against / num_matchups)).quantize(Decimal('0.01')))
+                average_point_differential = float(Decimal(((total_point_differential) / num_matchups)).quantize(Decimal('0.01')))
+            
+            num_trades = summary_section["transactions"]["trades"]["total"]
+            num_playoffs = len(self._cache.get(manager, {}).get("summary", {}).get("overall_data", {}).get("playoff_appearances", []))
+            
+            manager_rankings["win_percentage"].append({manager: win_percentage})
+            manager_rankings["average_points_for"].append({manager: average_points_for})
+            manager_rankings["average_points_against"].append({manager: average_points_against})
+            manager_rankings["average_points_differential"].append({manager: average_point_differential})
+            manager_rankings["trades"].append({manager: num_trades})
+            manager_rankings["playoffs"].append({manager: num_playoffs})
+
+            if manager == manager_name:
+                eval_manager_values["win_percentage"] = win_percentage
+                eval_manager_values["average_points_for"] = average_points_for
+                eval_manager_values["average_points_against"] = average_points_against
+                eval_manager_values["average_points_differential"] = average_point_differential
+                eval_manager_values["trades"] = num_trades
+                eval_manager_values["playoffs"] = num_playoffs
+
+        
+        for k in manager_rankings:
+            manager_rankings[k].sort(key=lambda item: list(item.values())[0], reverse=True)
+
+            rank = 1
+            manager_value = eval_manager_values[k]
+            for item in manager_rankings[k]:
+                value = item[list(item.keys())[0]]
+                if value != manager_value:
+                    # If the value is different from the previous one, update the rank
+                    rank += 1
+                else:
+                    returning_dictionary[k] = rank
+                    break
+        
+        return copy.deepcopy(returning_dictionary)
+    
     def _get_head_to_head_details_from_cache(self, manager_name: str, year: str = None, opponent: str = None) -> dict:
         """
         Helper to extract head-to-head matchup data from cache for a manager.
@@ -1285,7 +1400,6 @@ class ManagerMetadataManager:
             dict or list: If list_all_matchups is False, returns dict with summary stats (wins, points, etc).
                          If list_all_matchups is True, returns list of individual matchup details with top scorers.
         """
-        from decimal import Decimal
         if list_all_matchups:
             years = list(self._cache[manager_1].get("years", {}).keys())
             if year:
@@ -1512,7 +1626,6 @@ class ManagerMetadataManager:
             dict: Awards data including first_place, second_place, third_place counts,
                   most_trades_in_year, and biggest_faab_bid details
         """
-        from decimal import Decimal
 
         awards = {}
 
@@ -1596,7 +1709,6 @@ class ManagerMetadataManager:
             dict: Score awards including highest_weekly_score, lowest_weekly_score,
                   biggest_blowout_win, and biggest_blowout_loss, each with matchup details
         """
-        from decimal import Decimal
 
         score_awards = {}
 
@@ -2717,7 +2829,6 @@ class ManagerMetadataManager:
             self._add_matchup_details_to_cache(manager_2)
 
     def _add_matchup_details_to_cache(self, matchup_data: dict):
-        from decimal import Decimal
         
         # Extract matchup data
         manager = matchup_data.get("manager", None)
@@ -2981,10 +3092,10 @@ class ManagerMetadataManager:
 
 
 
-# # Debug code - commented out
-# man = ManagerMetadataManager()
-# d = man.get_manager_awards("Mitch")
-# import json
-# pretty_json_string = json.dumps(d, indent=4)
-# print(pretty_json_string)
-# print("")
+# Debug code - commented out
+man = ManagerMetadataManager()
+d = man._get_ranking_details_from_cache("Parker")
+import json
+pretty_json_string = json.dumps(d, indent=4)
+print(pretty_json_string)
+print("")

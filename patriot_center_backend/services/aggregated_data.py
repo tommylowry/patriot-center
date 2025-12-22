@@ -254,7 +254,7 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
     if player_id.isnumeric():
         player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
     else:
-        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_id}.png"
+        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
 
     managers_dict[manager] = {
         "player": player,  # Include the player name

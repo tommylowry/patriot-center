@@ -328,8 +328,61 @@ class TestFetchFfwar:
             assert mock_calculate_ffWAR_position.call_count == 6  # All 6 positions (QB, RB, WR, TE, K, DEF)
 
 
+class TestLoadPlayerDataCache:
+    """Test load_player_data_cache function."""
+
+    @patch('patriot_center_backend.utils.player_data_loader.load_cache')
+    def test_loads_existing_cache_successfully(self, mock_load):
+        """Test successfully loads cache from disk."""
+        from patriot_center_backend.utils.player_data_loader import load_player_data_cache
+
+        mock_cache = {
+            "2024": {
+                "1": {
+                    "123": {
+                        "name": "Josh Allen",
+                        "ffWAR": 1.234,
+                        "position": "QB"
+                    }
+                }
+            },
+            "Last_Updated_Season": "2024",
+            "Last_Updated_Week": 1
+        }
+        mock_load.return_value = mock_cache
+
+        result = load_player_data_cache()
+
+        # Should remove metadata
+        assert "Last_Updated_Season" not in result
+        assert "Last_Updated_Week" not in result
+        # Should have player data
+        assert "2024" in result
+        assert result["2024"]["1"]["123"]["name"] == "Josh Allen"
+
+    @patch('patriot_center_backend.utils.player_data_loader.load_cache')
+    def test_raises_exception_when_cache_empty(self, mock_load):
+        """Test raises exception when cache file is empty or missing."""
+        from patriot_center_backend.utils.player_data_loader import load_player_data_cache
+
+        mock_load.return_value = {}
+
+        with pytest.raises(Exception, match="Player Data cache file not found or invalid"):
+            load_player_data_cache()
+
+    @patch('patriot_center_backend.utils.player_data_loader.load_cache')
+    def test_raises_exception_when_cache_none(self, mock_load):
+        """Test raises exception when cache is None."""
+        from patriot_center_backend.utils.player_data_loader import load_player_data_cache
+
+        mock_load.return_value = None
+
+        with pytest.raises(Exception, match="Player Data cache file not found or invalid"):
+            load_player_data_cache()
+
+
 class TestLoadOrUpdateFfwarCache:
-    """Test load_or_update_ffWAR_cache main orchestration function."""
+    """Test update_player_data_cache main orchestration function."""
 
     @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
     @patch('patriot_center_backend.utils.player_data_loader.get_current_season_and_week')
@@ -823,3 +876,405 @@ class TestPlayoffScaling:
 
         # Week 15 should be approximately 1/3 of week 14 (accounting for rounding)
         assert abs(result_2021_w15["1"]["ffWAR"] * 3 - result_2021_w14["1"]["ffWAR"]) < 0.01
+
+
+class TestCalculatePlayerScore:
+    """Test _calculate_player_score helper function."""
+
+    def test_calculates_score_with_single_stat(self):
+        """Test calculating player score with a single stat."""
+        from patriot_center_backend.utils.player_data_loader import _calculate_player_score
+
+        player_data = {
+            "pass_td": 3
+        }
+        scoring_settings = {
+            "pass_td": 4  # 4 points per passing TD
+        }
+
+        result = _calculate_player_score(player_data, scoring_settings)
+        assert result == 12.0
+
+    def test_calculates_score_with_multiple_stats(self):
+        """Test calculating player score with multiple stats."""
+        from patriot_center_backend.utils.player_data_loader import _calculate_player_score
+
+        player_data = {
+            "pass_yd": 300,
+            "pass_td": 2,
+            "rush_yd": 50,
+            "rush_td": 1
+        }
+        scoring_settings = {
+            "pass_yd": 0.04,  # 1 point per 25 yards
+            "pass_td": 4,
+            "rush_yd": 0.1,   # 1 point per 10 yards
+            "rush_td": 6
+        }
+
+        # Expected: (300 * 0.04) + (2 * 4) + (50 * 0.1) + (1 * 6)
+        #         = 12 + 8 + 5 + 6 = 31.0
+        result = _calculate_player_score(player_data, scoring_settings)
+        assert result == 31.0
+
+    def test_ignores_stats_not_in_scoring_settings(self):
+        """Test that stats not in scoring settings are ignored."""
+        from patriot_center_backend.utils.player_data_loader import _calculate_player_score
+
+        player_data = {
+            "pass_td": 2,
+            "gp": 1,  # Games played - not scored
+            "player_id": "123"  # Not a stat
+        }
+        scoring_settings = {
+            "pass_td": 4
+        }
+
+        result = _calculate_player_score(player_data, scoring_settings)
+        assert result == 8.0
+
+    def test_handles_zero_stats(self):
+        """Test handling player with zero in all stats."""
+        from patriot_center_backend.utils.player_data_loader import _calculate_player_score
+
+        player_data = {
+            "pass_td": 0,
+            "rush_td": 0
+        }
+        scoring_settings = {
+            "pass_td": 4,
+            "rush_td": 6
+        }
+
+        result = _calculate_player_score(player_data, scoring_settings)
+        assert result == 0.0
+
+    def test_rounds_to_two_decimals(self):
+        """Test that score is rounded to 2 decimal places."""
+        from patriot_center_backend.utils.player_data_loader import _calculate_player_score
+
+        player_data = {
+            "pass_yd": 333  # Should be 13.32 points
+        }
+        scoring_settings = {
+            "pass_yd": 0.04
+        }
+
+        result = _calculate_player_score(player_data, scoring_settings)
+        assert result == 13.32
+
+    def test_handles_negative_stats(self):
+        """Test handling negative stats like interceptions."""
+        from patriot_center_backend.utils.player_data_loader import _calculate_player_score
+
+        player_data = {
+            "pass_td": 2,
+            "pass_int": 3  # Interceptions
+        }
+        scoring_settings = {
+            "pass_td": 4,
+            "pass_int": -2  # -2 points per interception
+        }
+
+        # Expected: (2 * 4) + (3 * -2) = 8 - 6 = 2.0
+        result = _calculate_player_score(player_data, scoring_settings)
+        assert result == 2.0
+
+
+class TestGetAllPlayerScores:
+    """Test _get_all_player_scores helper function."""
+
+    @patch('patriot_center_backend.utils.player_data_loader.PLAYER_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_fetches_and_groups_players_by_position(self, mock_fetch, mock_league_ids, mock_player_ids):
+        """Test that players are fetched and grouped by position."""
+        from patriot_center_backend.utils.player_data_loader import _get_all_player_scores
+
+        mock_league_ids.get.return_value = "league123"
+
+        # Mock player IDs
+        mock_player_ids_dict = {
+            "123": {"full_name": "Josh Allen", "position": "QB"},
+            "456": {"full_name": "Saquon Barkley", "position": "RB"},
+            "789": {"full_name": "Travis Kelce", "position": "TE"}
+        }
+        mock_player_ids.__getitem__ = lambda self, key: mock_player_ids_dict[key]
+        mock_player_ids.__contains__ = lambda self, key: key in mock_player_ids_dict
+        mock_player_ids.items = lambda: mock_player_ids_dict.items()
+
+        # Mock week data
+        mock_week_data = {
+            "123": {
+                "gp": 1,
+                "pass_yd": 300,
+                "pass_td": 3
+            },
+            "456": {
+                "gp": 1,
+                "rush_yd": 120,
+                "rush_td": 1
+            },
+            "789": {
+                "gp": 1,
+                "rec": 8,
+                "rec_yd": 95,
+                "rec_td": 1
+            }
+        }
+
+        # Mock scoring settings
+        mock_scoring = {
+            "pass_yd": 0.04,
+            "pass_td": 4,
+            "rush_yd": 0.1,
+            "rush_td": 6,
+            "rec": 1,
+            "rec_yd": 0.1,
+            "rec_td": 6
+        }
+
+        mock_fetch.side_effect = [
+            (mock_week_data, 200),  # Week data
+            ({"scoring_settings": mock_scoring}, 200)  # League data
+        ]
+
+        result = _get_all_player_scores(2024, 1)
+
+        # Verify structure
+        assert "QB" in result
+        assert "RB" in result
+        assert "TE" in result
+
+        # Verify Josh Allen (QB)
+        assert "123" in result["QB"]
+        assert result["QB"]["123"]["name"] == "Josh Allen"
+        # Score: (300 * 0.04) + (3 * 4) = 12 + 12 = 24.0
+        assert result["QB"]["123"]["score"] == 24.0
+
+        # Verify Saquon Barkley (RB)
+        assert "456" in result["RB"]
+        assert result["RB"]["456"]["name"] == "Saquon Barkley"
+        # Score: (120 * 0.1) + (1 * 6) = 12 + 6 = 18.0
+        assert result["RB"]["456"]["score"] == 18.0
+
+    @patch('patriot_center_backend.utils.player_data_loader.PLAYER_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_skips_players_with_no_games_played(self, mock_fetch, mock_league_ids, mock_player_ids):
+        """Test that players with gp=0 are skipped."""
+        from patriot_center_backend.utils.player_data_loader import _get_all_player_scores
+
+        mock_league_ids.get.return_value = "league123"
+
+        mock_player_ids_dict = {
+            "123": {"full_name": "Active Player", "position": "QB"},
+            "456": {"full_name": "Inactive Player", "position": "QB"}
+        }
+        mock_player_ids.__getitem__ = lambda self, key: mock_player_ids_dict[key]
+        mock_player_ids.__contains__ = lambda self, key: key in mock_player_ids_dict
+
+        mock_week_data = {
+            "123": {"gp": 1, "pass_td": 2},
+            "456": {"gp": 0, "pass_td": 0}  # Should be skipped
+        }
+
+        mock_fetch.side_effect = [
+            (mock_week_data, 200),
+            ({"scoring_settings": {"pass_td": 4}}, 200)
+        ]
+
+        result = _get_all_player_scores(2024, 1)
+
+        # Active player should be included
+        assert "123" in result["QB"]
+        # Inactive player should be skipped
+        assert "456" not in result["QB"]
+
+    @patch('patriot_center_backend.utils.player_data_loader.PLAYER_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_raises_exception_on_api_failure(self, mock_fetch, mock_league_ids, mock_player_ids):
+        """Test raises exception when API call fails."""
+        from patriot_center_backend.utils.player_data_loader import _get_all_player_scores
+
+        mock_league_ids.get.return_value = "league123"
+        mock_fetch.return_value = ({}, 500)  # API error
+
+        with pytest.raises(Exception, match="Failed to fetch week data from Sleeper API"):
+            _get_all_player_scores(2024, 1)
+
+    @patch('patriot_center_backend.utils.player_data_loader.PLAYER_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_skips_team_entries(self, mock_fetch, mock_league_ids, mock_player_ids):
+        """Test that TEAM_ entries are skipped."""
+        from patriot_center_backend.utils.player_data_loader import _get_all_player_scores
+
+        mock_league_ids.get.return_value = "league123"
+
+        mock_week_data = {
+            "TEAM_NE": {"some_stat": 10},  # Should be skipped
+            "123": {"gp": 1, "pass_td": 2}
+        }
+
+        mock_player_ids_dict = {
+            "123": {"full_name": "Player", "position": "QB"}
+        }
+        mock_player_ids.__getitem__ = lambda self, key: mock_player_ids_dict[key]
+        mock_player_ids.__contains__ = lambda self, key: key in mock_player_ids_dict
+
+        mock_fetch.side_effect = [
+            (mock_week_data, 200),
+            ({"scoring_settings": {"pass_td": 4}}, 200)
+        ]
+
+        result = _get_all_player_scores(2024, 1)
+
+        # Only the real player should be included
+        assert "123" in result["QB"]
+        assert len(result["QB"]) == 1
+
+
+class TestGetRosterIds:
+    """Test _get_roster_ids helper function."""
+
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.USERNAME_TO_REAL_NAME')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_maps_roster_ids_to_managers(self, mock_fetch, mock_username_map, mock_league_ids):
+        """Test mapping roster IDs to manager names."""
+        from patriot_center_backend.utils.player_data_loader import _get_roster_ids
+
+        mock_league_ids.__getitem__ = lambda self, key: "league123"
+
+        mock_username_map.__getitem__ = lambda self, key: {
+            "tommy_username": "Tommy",
+            "mike_username": "Mike"
+        }[key]
+
+        # Mock users response
+        mock_users = [
+            {"user_id": "user1", "display_name": "tommy_username"},
+            {"user_id": "user2", "display_name": "mike_username"}
+        ]
+
+        # Mock rosters response
+        mock_rosters = [
+            {"roster_id": 1, "owner_id": "user1"},
+            {"roster_id": 2, "owner_id": "user2"}
+        ]
+
+        mock_fetch.side_effect = [
+            (mock_users, 200),
+            (mock_rosters, 200)
+        ]
+
+        result = _get_roster_ids(2024)
+
+        assert result[1] == "Tommy"
+        assert result[2] == "Mike"
+
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.USERNAME_TO_REAL_NAME')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_handles_none_owner_id_special_case(self, mock_fetch, mock_username_map, mock_league_ids):
+        """Test handling of None owner_id (maps to Davey)."""
+        from patriot_center_backend.utils.player_data_loader import _get_roster_ids
+
+        mock_league_ids.__getitem__ = lambda self, key: "league123"
+
+        mock_users = []
+        mock_rosters = [
+            {"roster_id": 1, "owner_id": None}  # Special case
+        ]
+
+        mock_fetch.side_effect = [
+            (mock_users, 200),
+            (mock_rosters, 200)
+        ]
+
+        result = _get_roster_ids(2024)
+
+        assert result[1] == "Davey"
+
+
+class TestGetAllRosteredPlayers:
+    """Test _get_all_rostered_players helper function."""
+
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_returns_rostered_players_by_manager(self, mock_fetch, mock_league_ids):
+        """Test returns players rostered by each manager."""
+        from patriot_center_backend.utils.player_data_loader import _get_all_rostered_players
+
+        mock_league_ids.__getitem__ = lambda self, key: "league123"
+
+        roster_ids = {
+            1: "Tommy",
+            2: "Mike"
+        }
+
+        mock_matchups = [
+            {"roster_id": 1, "players": ["123", "456", "789"]},
+            {"roster_id": 2, "players": ["111", "222"]}
+        ]
+
+        mock_fetch.return_value = (mock_matchups, 200)
+
+        result = _get_all_rostered_players(roster_ids, 2024, 1)
+
+        assert result["Tommy"] == ["123", "456", "789"]
+        assert result["Mike"] == ["111", "222"]
+
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_handles_2019_week_1_3_tommy_cody_swap(self, mock_fetch, mock_league_ids):
+        """Test handles known issue with Tommy/Cody roster swap in 2019 weeks 1-3."""
+        from patriot_center_backend.utils.player_data_loader import _get_all_rostered_players
+
+        mock_league_ids.__getitem__ = lambda self, key: "league123"
+
+        roster_ids = {
+            1: "Cody",
+            2: "Mike"
+        }
+
+        mock_matchups = [
+            {"roster_id": 1, "players": ["123"]},
+            {"roster_id": 2, "players": ["456"]}
+        ]
+
+        mock_fetch.return_value = (mock_matchups, 200)
+
+        # Test week 3 of 2019 - should swap Cody to Tommy
+        result = _get_all_rostered_players(roster_ids, 2019, 3)
+
+        assert result["Tommy"] == ["123"]  # Cody -> Tommy
+        assert result["Mike"] == ["456"]
+
+    @patch('patriot_center_backend.utils.player_data_loader.LEAGUE_IDS')
+    @patch('patriot_center_backend.utils.player_data_loader.fetch_sleeper_data')
+    def test_no_swap_after_week_3_in_2019(self, mock_fetch, mock_league_ids):
+        """Test that swap doesn't happen after week 3 in 2019."""
+        from patriot_center_backend.utils.player_data_loader import _get_all_rostered_players
+
+        mock_league_ids.__getitem__ = lambda self, key: "league123"
+
+        roster_ids = {
+            1: "Cody",
+            2: "Mike"
+        }
+
+        mock_matchups = [
+            {"roster_id": 1, "players": ["123"]},
+            {"roster_id": 2, "players": ["456"]}
+        ]
+
+        mock_fetch.return_value = (mock_matchups, 200)
+
+        # Test week 4 of 2019 - no swap
+        result = _get_all_rostered_players(roster_ids, 2019, 4)
+
+        assert result["Cody"] == ["123"]  # No swap
+        assert result["Mike"] == ["456"]

@@ -358,10 +358,41 @@ year
 
 def _get_all_player_scores(year, week):
     """
-    Helper to extract all player scores for a given season and week.
+    Fetch and calculate fantasy scores for all NFL players in a given week.
+
+    This function retrieves raw stats from the Sleeper API for the specified season
+    and week, then calculates each player's fantasy score based on the league's
+    scoring settings. Players are grouped by position for easier processing.
+
+    Args:
+        year (int): The NFL season year (e.g., 2024).
+        week (int): The week number (1-17).
 
     Returns:
-        dict: player -> score
+        dict: Nested dictionary with structure:
+            {
+                "QB": {
+                    "player_id": {"score": float, "name": str},
+                    ...
+                },
+                "RB": {...},
+                "WR": {...},
+                "TE": {...},
+                "K": {...},
+                "DEF": {...}
+            }
+
+        Each position contains all players who played that week (gp > 0),
+        with their calculated fantasy score and full name.
+
+    Raises:
+        Exception: If the Sleeper API call fails (non-200 response).
+
+    Notes:
+        - Players with gp (games played) = 0 are excluded.
+        - TEAM_ entries are skipped (not real players).
+        - Defense players with numeric IDs are excluded.
+        - Handles edge case of traded players with modified IDs.
     """
     # Fetch data from the Sleeper API for the given season and week
     sleeper_response_week_data = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
@@ -426,9 +457,37 @@ def _get_all_player_scores(year, week):
 
 
 def _calculate_player_score(player_data, scoring_settings):
+    """
+    Calculate a player's total fantasy score based on their stats and league scoring settings.
+
+    Iterates through all stats in player_data and multiplies each stat value by its
+    corresponding points-per-unit value from scoring_settings. Only stats that exist
+    in the scoring_settings are counted.
+
+    Args:
+        player_data (dict): Player's raw stats for the week.
+            Example: {"pass_yd": 300, "pass_td": 3, "rush_yd": 20, "gp": 1}
+
+        scoring_settings (dict): League's scoring rules mapping stat keys to point values.
+            Example: {"pass_yd": 0.04, "pass_td": 4, "rush_yd": 0.1}
+
+    Returns:
+        float: The player's total fantasy points, rounded to 2 decimal places.
+
+    Example:
+        >>> player_data = {"pass_yd": 300, "pass_td": 2, "gp": 1}
+        >>> scoring_settings = {"pass_yd": 0.04, "pass_td": 4}
+        >>> _calculate_player_score(player_data, scoring_settings)
+        20.0  # (300 * 0.04) + (2 * 4) = 12 + 8 = 20.0
+
+    Notes:
+        - Stats not in scoring_settings are ignored (e.g., "gp", "player_id").
+        - Supports negative point values (e.g., interceptions: -2 per int).
+        - Always rounds to exactly 2 decimal places.
+    """
     total_score = 0.0
     for stat_key, stat_value in player_data.items():
-
+        # Only count stats that have scoring values defined in league settings
         if stat_key in scoring_settings:
             points_per_unit = scoring_settings[stat_key]
             total_score += stat_value * points_per_unit
@@ -438,10 +497,25 @@ def _calculate_player_score(player_data, scoring_settings):
 
 def _get_roster_ids(season):
     """
-    Helper to extract all roster IDs for a given season.
+    Build a mapping of roster IDs to real manager names for a given season.
+
+    This function performs a two-step API query:
+    1. Fetches all users in the league to map user_id -> real name
+    2. Fetches all rosters to map roster_id -> user_id
+
+    Then combines them to create roster_id -> real_name mapping.
+
+    Args:
+        season (int): The NFL season year (e.g., 2024).
 
     Returns:
-        set: roster IDs
+        dict: Mapping of roster IDs to manager real names.
+            Example: {1: "Tommy", 2: "Mike", 3: "James"}
+
+    Notes:
+        - Uses USERNAME_TO_REAL_NAME constant to convert display names to real names.
+        - Special case: If owner_id is None, defaults to "Davey" (known data issue).
+        - Roster IDs are integers from the Sleeper API.
     """
     user_ids = {}
     users_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/users")[0]
@@ -467,15 +541,38 @@ def _get_roster_ids(season):
 
 def _get_all_rostered_players(roster_ids, season, week):
     """
-    Helper to extract all rostered players for a given season and week.
+    Get all players rostered by each manager for a specific week's matchup.
+
+    Fetches matchup data from the Sleeper API and maps each manager to their
+    list of rostered players for that week. Handles a known historical data
+    inconsistency in early 2019.
+
+    Args:
+        roster_ids (dict): Mapping of roster_id -> manager_name.
+            Example: {1: "Tommy", 2: "Mike"}
+
+        season (int): The NFL season year (e.g., 2024).
+
+        week (int): The week number (1-17).
 
     Returns:
-        set: player IDs
+        dict: Mapping of manager names to lists of player IDs they rostered.
+            Example: {
+                "Tommy": ["4034", "1234", "5678"],
+                "Mike": ["9999", "8888"]
+            }
+
+    Notes:
+        - Uses deep copy to avoid mutating the input roster_ids.
+        - Known issue: In 2019 weeks 1-3, "Cody" roster is reassigned to "Tommy"
+          due to a historical league roster transfer.
+        - Player IDs are strings from the Sleeper API.
     """
     import copy
     imported_roster_ids = copy.deepcopy(roster_ids)
 
     # Handle known issue with Tommy's roster ID in early 2019 weeks
+    # In weeks 1-3 of 2019, Cody's roster should be attributed to Tommy
     if int(season) == 2019 and int(week) <=3:
         for key in roster_ids:
             if roster_ids[key] == "Cody":

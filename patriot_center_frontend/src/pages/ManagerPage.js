@@ -387,9 +387,9 @@ export default function ManagerPage() {
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
       {/* Profile Info Section */}
       <div style={{ padding: '2rem' }}>
-        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem' }}>
-          {/* Left 1/3 - Profile Picture and Info */}
-          <div style={{ flex: '0 0 33%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', maxWidth: '900px' }}>
+          {/* Left - Profile Picture and Info */}
+          <div style={{ flex: '0 0 20%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             {/* Profile Picture with Medal */}
             <div style={{ position: 'relative', marginBottom: '1rem' }}>
               <div style={{
@@ -457,8 +457,8 @@ export default function ManagerPage() {
             </div>
           </div>
 
-          {/* Right 2/3 - Player Cards and Stats */}
-          <div style={{ flex: '0 0 67%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {/* Right - Player Cards and Stats */}
+          <div style={{ flex: '0 0 80%', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             {/* Top Half - Player Cards */}
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignContent: 'center' }}>
               <PlayerStatCard
@@ -908,11 +908,17 @@ function formatYearsActive(years) {
   });
 
   // Show individual years only if there are gaps AND 4 or fewer years
-  if (!isContinuous && count <= 4) {
-    return `${sortedYears.join(', ')} (${count} season${count !== 1 ? 's' : ''})`;
-  }
+  const yearsText = (!isContinuous && count <= 4)
+    ? sortedYears.join(', ')
+    : `${first} - ${last}`;
 
-  return `${first} - ${last} (${count} season${count !== 1 ? 's' : ''})`;
+  return (
+    <>
+      {yearsText}
+      <br />
+      <span style={{ fontSize: '0.85rem' }}>({count} season{count !== 1 ? 's' : ''})</span>
+    </>
+  );
 }
 
 // Overview Tab

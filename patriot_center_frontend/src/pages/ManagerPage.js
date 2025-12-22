@@ -389,9 +389,9 @@ export default function ManagerPage() {
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
       {/* Profile Info Section */}
       <div style={{ padding: '2rem' }}>
-        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', maxWidth: '1000px', margin: '0 auto 1rem auto' }}>
+        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', width: '896px', maxWidth: '896px', margin: '0 auto 1rem auto' }}>
           {/* Left - Profile Picture and Info */}
-          <div style={{ flex: '0 0 20%', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
+          <div style={{ flex: '0 0 18%', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
             {/* Profile Picture with Medal */}
             <div style={{ position: 'relative', marginBottom: '1rem' }}>
               <div style={{
@@ -460,9 +460,9 @@ export default function ManagerPage() {
           </div>
 
           {/* Right - Player Cards and Stats */}
-          <div style={{ flex: '0 0 80%', display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 0 }}>
+          <div style={{ flex: '0 0 82%', display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 0, overflow: 'hidden' }}>
             {/* Top Half - Player Cards */}
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignContent: 'center' }}>
+            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignContent: 'center', minWidth: 0 }}>
               <PlayerStatCard
                 title="Highest ffWAR"
                 player={topPlayers.highest}
@@ -527,7 +527,8 @@ export default function ManagerPage() {
         gap: '0.5rem',
         borderBottom: '2px solid var(--border)',
         marginBottom: '2rem',
-        maxWidth: '1000px',
+        width: '896px',
+        maxWidth: '896px',
         margin: '0 auto 2rem auto',
         overflowX: 'auto',
         justifyContent: 'center'
@@ -707,7 +708,9 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
         gap: '0.75rem',
         textDecoration: 'none',
         cursor: 'pointer',
-        transition: 'all 0.2s ease'
+        transition: 'all 0.2s ease',
+        minWidth: 0,
+        overflow: 'hidden'
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = 'var(--bg)';
@@ -750,8 +753,8 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
             fontSize: '0.95rem',
             color: 'var(--accent)',
             overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap'
+            wordBreak: 'break-word',
+            lineHeight: '1.2'
           }}>
             {playerName}
           </div>

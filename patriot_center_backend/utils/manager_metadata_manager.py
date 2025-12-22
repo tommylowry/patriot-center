@@ -1,5 +1,6 @@
 import copy
 from decimal import Decimal
+import json
 
 from patriot_center_backend.constants import MANAGER_METADATA_CACHE_FILE, TRANSACTION_IDS_FILE, LEAGUE_IDS, NAME_TO_MANAGER_USERNAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache
@@ -37,6 +38,7 @@ class ManagerMetadataManager:
         # Weekly metadata
         self._year = None
         self._week = None
+        self._weekly_transaction_ids = []
 
         # Playoff roster IDs
         self._playoff_roster_ids = {}
@@ -96,6 +98,9 @@ class ManagerMetadataManager:
         # Scrub transaction data for the week
         self._scrub_transaction_data(year, week)
 
+        # Joke trades, add drop by accident, etc
+        self._check_for_reverse_transactions()
+
         # Scrub matchup data for the week
         self._scrub_matchup_data(year, week)
 
@@ -105,7 +110,8 @@ class ManagerMetadataManager:
 
         # Clear weekly metadata
         self._year = None
-        self._week = None    
+        self._week = None
+        self._weekly_transaction_ids = []
 
 
     def set_playoff_placements(self, placements: dict, year: str):
@@ -2236,6 +2242,153 @@ class ManagerMetadataManager:
                 return False
         
         return True
+    
+    def _check_for_reverse_transactions(self):
+        
+        while len(self._weekly_transaction_ids) > 1:
+            weekly_transaction_ids = copy.deepcopy(self._weekly_transaction_ids)
+            
+            transaction_id1 = weekly_transaction_ids.pop()
+            transaction1    = copy.deepcopy(self._transaction_id_cache[transaction_id1])
+
+            for transaction_id2 in weekly_transaction_ids:
+                transaction2 = copy.deepcopy(self._transaction_id_cache[transaction_id2])
+                
+                if sorted(transaction1['managers_involved']) != sorted(transaction2['managers_involved']):
+                    continue
+
+                if sorted(transaction1['types']) != sorted(transaction2['types']):
+                    continue
+
+                if sorted(transaction1['players_involved']) != sorted(transaction2['players_involved']):
+                    continue
+                
+                if transaction1.get("add", "") != transaction2.get("drop", ""):
+                    continue
+
+                if transaction1.get("drop", "") != transaction2.get("add", ""):
+                    continue
+
+                if "trade_details" in transaction1 and "trade_details" in transaction2:
+                    if sorted(list(transaction1['trade_details'].keys())) == sorted(list(transaction2['trade_details'].keys())):
+                        
+                        invalid_transaction = True
+                        for player in transaction1['trade_details']:
+                            if transaction1["trade_details"][player]['old_manager'] != transaction2['trade_details'][player]['new_manager']:
+                                invalid_transaction = False
+                                break
+                            if transaction1["trade_details"][player]['new_manager'] != transaction2['trade_details'][player]['old_manager']:
+                                invalid_transaction = False
+                                break
+                        if not invalid_transaction:
+                            continue
+                
+
+                # theyre an identical swap, remove them both from all the cache
+                if "trade" in transaction1["types"]:
+                    self._revert_trade_transaction(transaction_id1, transaction_id2)
+                    weekly_transaction_ids.remove(transaction_id2)
+                else:
+                    self._revert_add_drop_transaction(transaction_id1, transaction_id2)
+                    weekly_transaction_ids.remove(transaction_id2)
+            
+            
+            self._weekly_transaction_ids = copy.deepcopy(weekly_transaction_ids)
+
+    def _revert_trade_transaction(self, transaction_id1: str, transaction_id2: str):
+        transaction = copy.deepcopy(self._transaction_id_cache[transaction_id1])
+        
+        year = transaction['year']
+        week = transaction['week']
+
+        for manager in transaction['managers_involved']:
+            
+            overall_trades = self._cache[manager]['summary']['transactions']
+            yearly_trades  = self._cache[manager]['years'][year]['summary']['transactions']
+            weekly_trades  = self._cache[manager]['years'][year]['weeks'][week]['transactions']
+
+            for d in [overall_trades, yearly_trades, weekly_trades]:
+                
+                # if there were 2 trades made, these 2 were the 2, so it should now be empty
+                d['trades']['total'] -= 2
+                if d['trades']['total'] == 0:
+                    d = {
+                        "total": 0,
+                        "trade_partners": {},
+                        "trade_players_acquired": {},
+                        "trade_players_sent": {},
+                        "transaction_ids": []
+                    }
+                    continue
+
+                # first remove all other managers as ones this manager has traded with
+                other_managers = copy.deepcopy(transaction['managers_involved'])
+                other_managers.remove(manager)
+                for other_manager in other_managers:
+                    
+                    d['trades']['trade_partners'][other_manager] -= 2
+                    if d['trades']['trade_partners'][other_manager] == 0:
+                        del d['trades']['trade_partners'][other_manager]
+                
+                for player in list(transaction['trade_details'].keys()):
+                    if manager != transaction['trade_details'][player].get('new_manager', '') and manager != transaction['trade_details'][player].get('old_manager', ''):
+                        continue
+                    
+                    if transaction['trade_details'][player].get('new_manager', '') == manager:
+                        d['trades']['trade_players_acquired'][player]['total'] -= 1
+                        if d['trades']['trade_players_acquired'][player]['total'] == 0:
+                            del d['trades']['trade_players_acquired'][player]
+                        
+                        else:
+                            trade_partner = transaction['trade_details'][player].get('old_manager', '')
+                            
+                            d['trades']['trade_players_acquired'][player]['trade_partners'].get(trade_partner, -1) -= 1
+                            if d['trades']['trade_players_acquired'][player]['trade_partners'].get(trade_partner, -1) == 0:
+                                del d['trades']['trade_players_acquired'][player]['trade_partners'][trade_partner]
+
+                    
+                    elif transaction['trade_details'][player].get('old_manager', '') == manager:
+                        d['trades']['trade_players_sent'][player]['total'] -= 1
+                        if d['trades']['trade_players_sent'][player]['total'] == 0:
+                            del d['trades']['trade_players_sent'][player]
+                        
+                        else:
+                            trade_partner = transaction['trade_details'][player].get('new_manager', '')
+                            
+                            d['trades']['trade_players_sent'][player]['trade_partners'].get(trade_partner, -1) -= 1
+                            if d['trades']['trade_players_sent'][player]['trade_partners'].get(trade_partner, -1) == 0:
+                                del d['trades']['trade_players_sent'][player]['trade_partners'][trade_partner]
+
+                    
+                    # faab is here, the logic is to turn it into an int, so player = "$1 FAAB" -> faab = 1
+                    if "FAAB" in player:
+                        
+                        faab = player.split(" ")[0]
+                        faab.remove("$")
+                        faab = int(faab)    
+                        d['faab']['traded_away']['total'] -= faab
+                        d['faab']['acquired_from']['total'] -= faab
+
+                        trade_partner = transaction['trade_details'][player].get('new_manager', '')
+                        if trade_partner == manager:
+                            trade_partner = transaction['trade_details'][player].get('old_manager', '')
+
+                        d['faab']['traded_away']['trade_partners'].get(trade_partner, -1) -= faab
+                        if d['faab']['traded_away']['trade_partners'].get(trade_partner, -1) == 0:
+                            del d['faab']['traded_away']['trade_partners'][trade_partner]
+                        
+                        d['faab']['acquired_from']['trade_partners'].get(trade_partner, -1) -= faab
+                        if d['faab']['acquired_from']['trade_partners'].get(trade_partner, -1) == 0:
+                            del d['faab']['acquired_from']['trade_partners'][trade_partner]
+            
+        del self._transaction_id_cache[transaction_id1]
+        del self._transaction_id_cache[transaction_id2]
+
+
+    
+
+    def _revert_add_drop_transaction(self, transaction_id1: str, transaction_id2: str):
+        return
 
 
 
@@ -2406,10 +2559,8 @@ class ManagerMetadataManager:
                 sent_summary[player]["trade_partners"][sent[player]] += 1
                 sent_summary[player]["total"] += 1
 
-
         # Finally, add transaction ID to weekly summary to avoid double counting
         weekly_summary["transaction_ids"].append(transaction_id)
-
 
 
 
@@ -2755,16 +2906,14 @@ class ManagerMetadataManager:
                         "old_manager": manager,
                         "new_manager": players_sent[player]
                     }
-        
+
+
         # FAAB data being handled in trades and add/drop for transactions
-        elif transaction_type == "faab":
-            return
-        
-        # Transaction type unknown
-        else:
+        elif transaction_type != "faab":
             raise ValueError(f"Unknown transaction type: {transaction_type}")
-
-
+        
+        if transaction_id not in self._weekly_transaction_ids:
+            self._weekly_transaction_ids.append(transaction_id)
         
 
 
@@ -3092,10 +3241,10 @@ class ManagerMetadataManager:
 
 
 
-# Debug code - commented out
-man = ManagerMetadataManager()
-d = man._get_ranking_details_from_cache("Parker")
-import json
-pretty_json_string = json.dumps(d, indent=4)
-print(pretty_json_string)
-print("")
+# # Debug code - commented out
+# man = ManagerMetadataManager()
+# d = man._get_ranking_details_from_cache("Parker")
+# import json
+# pretty_json_string = json.dumps(d, indent=4)
+# print(pretty_json_string)
+# print("")

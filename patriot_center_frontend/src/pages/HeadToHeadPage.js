@@ -319,7 +319,7 @@ export default function HeadToHeadPage() {
                 }}>
                   {m1.name}'s Last Win
                 </div>
-                <MatchupCard matchup={m1LastWin} showMargin={false} hideHeader={true} />
+                <MatchupCard matchup={m1LastWin} showMargin={false} />
               </div>
             )}
             {m2LastWin && Object.keys(m2LastWin).length > 0 && (
@@ -332,7 +332,7 @@ export default function HeadToHeadPage() {
                 }}>
                   {m2.name}'s Last Win
                 </div>
-                <MatchupCard matchup={m2LastWin} showMargin={false} hideHeader={true} />
+                <MatchupCard matchup={m2LastWin} showMargin={false} />
               </div>
             )}
             {m1BiggestBlowout && Object.keys(m1BiggestBlowout).length > 0 && (
@@ -345,7 +345,7 @@ export default function HeadToHeadPage() {
                 }}>
                   {m1.name}'s Biggest Blowout
                 </div>
-                <MatchupCard matchup={m1BiggestBlowout} showMargin={true} hideHeader={true} />
+                <MatchupCard matchup={m1BiggestBlowout} showMargin={true} />
               </div>
             )}
             {m2BiggestBlowout && Object.keys(m2BiggestBlowout).length > 0 && (
@@ -358,7 +358,7 @@ export default function HeadToHeadPage() {
                 }}>
                   {m2.name}'s Biggest Blowout
                 </div>
-                <MatchupCard matchup={m2BiggestBlowout} showMargin={true} hideHeader={true} />
+                <MatchupCard matchup={m2BiggestBlowout} showMargin={true} />
               </div>
             )}
           </div>
@@ -382,17 +382,7 @@ export default function HeadToHeadPage() {
             gap: '1.5rem'
           }}>
             {matchupHistory.map((matchup, idx) => (
-              <div key={idx}>
-                <div style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: 'var(--muted)',
-                  marginBottom: '0.5rem'
-                }}>
-                  Week {matchup.week} • {matchup.year}
-                </div>
-                <MatchupCard matchup={matchup} hideHeader={true} />
-              </div>
+              <MatchupCard key={idx} matchup={matchup} />
             ))}
           </div>
         </div>

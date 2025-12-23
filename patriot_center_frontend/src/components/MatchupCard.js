@@ -29,130 +29,102 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
       {/* Header with game info */}
       {!hideHeader && week && year && (
         <div style={{
-          background: 'var(--bg-alt)',
-          padding: '0.4rem 1rem',
+          padding: '0.75rem 0 0.5rem 0',
           textAlign: 'center',
-          fontSize: '0.7rem',
-          fontWeight: 600,
+          fontSize: '0.95rem',
+          fontWeight: 700,
           letterSpacing: '1.5px',
           textTransform: 'uppercase',
-          color: 'var(--muted)',
-          borderBottom: '1px solid var(--border)'
+          color: 'var(--text)',
+          marginBottom: '0.75rem'
         }}>
-          Week {week} • {year}
+          {year} Week {week}
         </div>
       )}
 
       {/* Main matchup area - broadcast style */}
-      <div style={{ padding: '1.5rem' }}>
-        {/* Team Logos and Scores */}
+      <div style={{ padding: '0.75rem' }}>
+        {/* Top Section - Logos, Names and Scores */}
         <div style={{
-          display: 'grid',
-          gridTemplateColumns: '100px 1fr 100px',
-          gap: '1.5rem',
+          display: 'flex',
           alignItems: 'center',
-          marginBottom: '1rem'
+          gap: '0.75rem',
+          marginBottom: '0.75rem'
         }}>
           {/* Manager 1 Logo */}
           <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              {manager1.image_url && (
-                <img
-                  src={manager1.image_url}
-                  alt={manager1.name}
-                  style={{
-                    width: '90px',
-                    height: '90px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: `3px solid ${manager1Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)'}`,
-                    boxShadow: manager1Won ? '0 0 20px rgba(46, 204, 113, 0.3)' : 'none'
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
-              )}
-            </div>
+            {manager1.image_url && (
+              <img
+                src={manager1.image_url}
+                alt={manager1.name}
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: `3px solid ${manager1Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)'}`,
+                  boxShadow: manager1Won ? '0 0 20px rgba(46, 204, 113, 0.4)' : 'none'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            )}
           </Link>
 
-          {/* Center - Team Names and Scores */}
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.5rem'
-          }}>
-            {/* Manager 1 Name and Score */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              background: manager1Won ? 'rgba(46, 204, 113, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-              padding: '0.75rem 1rem',
-              borderRadius: '6px',
-              border: `2px solid ${manager1Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)'}`
-            }}>
+          {/* Center - Names and Scores (stacked like NHL broadcast) */}
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            {/* Manager 1 Row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Link
                 to={`/manager/${encodeURIComponent(manager1.name)}`}
                 style={{
-                  fontSize: '1.2rem',
+                  fontSize: '0.8rem',
                   fontWeight: 700,
                   letterSpacing: '0.5px',
                   textTransform: 'uppercase',
                   color: manager1Won ? 'var(--success)' : 'var(--text)',
                   textDecoration: 'none',
-                  flex: 1
+                  textShadow: manager1Won ? '0 0 15px rgba(46, 204, 113, 0.3)' : 'none'
                 }}
               >
                 {manager1.name}
               </Link>
               <div style={{
-                background: manager1Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)',
-                color: manager1Won ? '#000' : 'var(--text)',
-                padding: '0.5rem 1rem',
-                borderRadius: '4px',
-                fontSize: '1.4rem',
-                fontWeight: 700,
-                minWidth: '80px',
-                textAlign: 'center'
+                fontSize: '1.8rem',
+                fontWeight: 900,
+                lineHeight: 1,
+                color: manager1Won ? 'var(--success)' : 'var(--text)',
+                textShadow: manager1Won ? '0 0 20px rgba(46, 204, 113, 0.4)' : 'none',
+                fontVariantNumeric: 'tabular-nums'
               }}>
                 {manager1Score?.toFixed(2)}
               </div>
             </div>
 
-            {/* Manager 2 Name and Score */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              background: manager2Won ? 'rgba(46, 204, 113, 0.1)' : 'rgba(255, 255, 255, 0.03)',
-              padding: '0.75rem 1rem',
-              borderRadius: '6px',
-              border: `2px solid ${manager2Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)'}`
-            }}>
+            {/* Manager 2 Row */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <Link
                 to={`/manager/${encodeURIComponent(manager2.name)}`}
                 style={{
-                  fontSize: '1.2rem',
+                  fontSize: '0.8rem',
                   fontWeight: 700,
                   letterSpacing: '0.5px',
                   textTransform: 'uppercase',
                   color: manager2Won ? 'var(--success)' : 'var(--text)',
                   textDecoration: 'none',
-                  flex: 1
+                  textShadow: manager2Won ? '0 0 15px rgba(46, 204, 113, 0.3)' : 'none'
                 }}
               >
                 {manager2.name}
               </Link>
               <div style={{
-                background: manager2Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)',
-                color: manager2Won ? '#000' : 'var(--text)',
-                padding: '0.5rem 1rem',
-                borderRadius: '4px',
-                fontSize: '1.4rem',
-                fontWeight: 700,
-                minWidth: '80px',
-                textAlign: 'center'
+                fontSize: '1.8rem',
+                fontWeight: 900,
+                lineHeight: 1,
+                color: manager2Won ? 'var(--success)' : 'var(--text)',
+                textShadow: manager2Won ? '0 0 20px rgba(46, 204, 113, 0.4)' : 'none',
+                fontVariantNumeric: 'tabular-nums'
               }}>
                 {manager2Score?.toFixed(2)}
               </div>
@@ -161,25 +133,23 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
 
           {/* Manager 2 Logo */}
           <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{ textDecoration: 'none' }}>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              {manager2.image_url && (
-                <img
-                  src={manager2.image_url}
-                  alt={manager2.name}
-                  style={{
-                    width: '90px',
-                    height: '90px',
-                    borderRadius: '50%',
-                    objectFit: 'cover',
-                    border: `3px solid ${manager2Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)'}`,
-                    boxShadow: manager2Won ? '0 0 20px rgba(46, 204, 113, 0.3)' : 'none'
-                  }}
-                  onError={(e) => {
-                    e.target.style.display = 'none';
-                  }}
-                />
-              )}
-            </div>
+            {manager2.image_url && (
+              <img
+                src={manager2.image_url}
+                alt={manager2.name}
+                style={{
+                  width: '60px',
+                  height: '60px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  border: `3px solid ${manager2Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)'}`,
+                  boxShadow: manager2Won ? '0 0 20px rgba(46, 204, 113, 0.4)' : 'none'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            )}
           </Link>
         </div>
 
@@ -187,15 +157,15 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
         <div style={{
           height: '1px',
           background: 'var(--border)',
-          margin: '1.5rem 0'
+          margin: '0.5rem 0'
         }} />
 
         {/* Player Stats - Two Column Layout */}
         {(manager1TopScorers?.length > 0 || manager2TopScorers?.length > 0) && (
           <div style={{
             display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '2rem'
+            gridTemplateColumns: '1fr auto 1fr',
+            gap: '1rem'
           }}>
             {/* Manager 1 Stats */}
             <div>
@@ -231,8 +201,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       src={player.image_url}
                       alt={player.name}
                       style={{
-                        width: '35px',
-                        height: '35px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '4px',
                         objectFit: 'cover',
                         flexShrink: 0
@@ -245,16 +215,10 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   <div style={{
                     fontWeight: 600,
                     flex: 1,
-                    color: 'var(--text)'
+                    color: 'var(--text)',
+                    textAlign: 'left'
                   }}>
                     {player.name}
-                  </div>
-                  <div style={{
-                    fontSize: '0.7rem',
-                    color: 'var(--muted)',
-                    marginRight: '0.5rem'
-                  }}>
-                    {player.position}
                   </div>
                   <div style={{
                     fontWeight: 700,
@@ -267,6 +231,13 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                 </Link>
               ))}
             </div>
+
+            {/* Vertical Divider */}
+            <div style={{
+              width: '1px',
+              background: 'var(--border)',
+              height: '100%'
+            }} />
 
             {/* Manager 2 Stats */}
             <div>
@@ -302,8 +273,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       src={player.image_url}
                       alt={player.name}
                       style={{
-                        width: '35px',
-                        height: '35px',
+                        width: '32px',
+                        height: '32px',
                         borderRadius: '4px',
                         objectFit: 'cover',
                         flexShrink: 0
@@ -316,16 +287,10 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   <div style={{
                     fontWeight: 600,
                     flex: 1,
-                    color: 'var(--text)'
+                    color: 'var(--text)',
+                    textAlign: 'left'
                   }}>
                     {player.name}
-                  </div>
-                  <div style={{
-                    fontSize: '0.7rem',
-                    color: 'var(--muted)',
-                    marginRight: '0.5rem'
-                  }}>
-                    {player.position}
                   </div>
                   <div style={{
                     fontWeight: 700,

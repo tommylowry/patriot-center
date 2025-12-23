@@ -1690,7 +1690,7 @@ class ManagerMetadataManager:
                     weekly_faab_bids = copy.deepcopy(weeks.get(week, {}).get("transactions", {}).get("faab", {}).get("players", {}))
                     for player in weekly_faab_bids:
                         
-                        bid_amount = weekly_faab_bids[player]
+                        bid_amount = weekly_faab_bids[player]["total_faab_spent"]
                         if bid_amount > biggest_faab_bid["amount"]:
                             biggest_faab_bid["player"] = self._get_image_url(player, dictionary=True)
                             biggest_faab_bid["amount"] = bid_amount
@@ -3348,10 +3348,10 @@ class ManagerMetadataManager:
 
 
 
-# # Debug code - commented out
-# man = ManagerMetadataManager()
-# d = man.get_manager_yearly_data("Tommy", "2025")
-# import json
-# pretty_json_string = json.dumps(d, indent=4)
-# print(pretty_json_string)
-# print("")
+# Debug code - commented out
+man = ManagerMetadataManager()
+d = man.get_manager_awards("Tommy")
+import json
+pretty_json_string = json.dumps(d, indent=4)
+print(pretty_json_string)
+print("")

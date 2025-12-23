@@ -1100,7 +1100,10 @@ class ManagerMetadataManager:
         cached_transaction_data = copy.deepcopy(self._cache[manager_name]["summary"]["transactions"])
         if year:
             cached_transaction_data = copy.deepcopy(self._cache[manager_name]["years"][year]["summary"]["transactions"])
-        
+
+        if 'faab' in cached_transaction_data:
+            for player in cached_transaction_data['faab']['players']:
+                cached_transaction_data['faab']['players'][player] = cached_transaction_data['faab']['players'][player]['total_faab_spent']
         
         trades = {
             "total":              cached_transaction_data["trades"]["total"],
@@ -2314,6 +2317,15 @@ class ManagerMetadataManager:
             yearly_trades  = self._cache[manager]['years'][year]['summary']['transactions']
             weekly_trades  = self._cache[manager]['years'][year]['weeks'][week]['transactions']
 
+            if transaction_id1 in weekly_trades['trades']['transaction_ids']:
+                weekly_trades['trades']['transaction_ids'].remove(transaction_id1)
+            if transaction_id2 in weekly_trades['trades']['transaction_ids']:
+                weekly_trades['trades']['transaction_ids'].remove(transaction_id2)
+            if "faab" in weekly_trades and "transaction_ids" in weekly_trades['faab'] and transaction_id1 in weekly_trades['faab']['transaction_ids']:
+                weekly_trades['faab']['transaction_ids'].remove(transaction_id1)
+            if "faab" in weekly_trades and "transaction_ids" in weekly_trades['faab'] and transaction_id2 in weekly_trades['faab']['transaction_ids']:
+                weekly_trades['faab']['transaction_ids'].remove(transaction_id2)
+
             for d in [overall_trades, yearly_trades, weekly_trades]:
 
                 # if there were 2 trades made, these 2 were the 2, so it should now be empty
@@ -2406,7 +2418,7 @@ class ManagerMetadataManager:
         remove_faab_details = False
         if "faab_spent" in transaction or "faab_spent" in self._transaction_id_cache[transaction_id1]:
             remove_faab_details = True
-            
+
             players_faab_spent_for = []
             if "faab_spent" in transaction:
                 players_faab_spent_for.append(transaction["add"])
@@ -2425,6 +2437,27 @@ class ManagerMetadataManager:
             places_to_change.append(self._cache[manager]['years'][year]['summary']['transactions']["drops"])
             places_to_change.append(self._cache[manager]['years'][year]['weeks'][week]['transactions']["adds"])
             places_to_change.append(self._cache[manager]['years'][year]['weeks'][week]['transactions']["drops"])
+
+            weekly_adds  = self._cache[manager]['years'][year]['weeks'][week]['transactions']["adds"]
+            weekly_drops = self._cache[manager]['years'][year]['weeks'][week]['transactions']["drops"]
+            if transaction_id1 in weekly_adds['transaction_ids']:
+                weekly_adds['transaction_ids'].remove(transaction_id1)
+            if transaction_id2 in weekly_adds['transaction_ids']:
+                weekly_adds['transaction_ids'].remove(transaction_id2)
+            if transaction_id1 in weekly_drops['transaction_ids']:
+                weekly_drops['transaction_ids'].remove(transaction_id1)
+            if transaction_id2 in weekly_drops['transaction_ids']:
+                weekly_drops['transaction_ids'].remove(transaction_id2)
+
+
+            weekly_transactions = self._cache[manager]['years'][year]['weeks'][week]['transactions']
+            if "faab" in weekly_transactions and "transaction_ids" in weekly_transactions['faab'] and transaction_id1 in weekly_transactions['faab']['transaction_ids']:
+                weekly_transactions['faab']['transaction_ids'].remove(transaction_id1)
+            if "faab" in weekly_transactions and "transaction_ids" in weekly_transactions['faab'] and transaction_id2 in weekly_transactions['faab']['transaction_ids']:
+                weekly_transactions['faab']['transaction_ids'].remove(transaction_id2)
+
+            
+            
 
             for d in places_to_change:
 
@@ -3317,7 +3350,7 @@ class ManagerMetadataManager:
 
 # # Debug code - commented out
 # man = ManagerMetadataManager()
-# d = man._get_ranking_details_from_cache("Parker")
+# d = man.get_manager_yearly_data("Tommy", "2025")
 # import json
 # pretty_json_string = json.dumps(d, indent=4)
 # print(pretty_json_string)

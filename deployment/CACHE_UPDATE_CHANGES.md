@@ -61,17 +61,21 @@ if file_age < timedelta(weeks=1):
 
 ### 3. Secure Automation
 - Cannot be manually triggered (schedule-only)
-- Runs every Monday at 3 AM automatically
+- Runs every Tuesday at 1 AM automatically
 - No HTTP endpoint to exploit
 
 ## How the System Works Now
 
-### Weekly Update Flow (Every Monday 3 AM EST):
+### Weekly Update Flow (Every Tuesday 1 AM EST):
 
 ```
 1. GitHub Actions triggers scheduled workflow
 2. Checks out repository
-3. Runs: update_all_caches()
+3. Runs:
+  a) update_starters_cache()
+  b) update_replacement_score_cache()
+  c) update_player_data_cache()
+  d) update_player_ids()
 
    For player_ids:
    - Check file mtime
@@ -104,9 +108,6 @@ cd patriot_center_backend
 
 # Test player_ids loader (won't call API if file is <1 week old)
 python -c "from utils.player_ids_loader import load_player_ids; load_player_ids()"
-
-# Test all cache updates
-python -c "from utils.update_all_caches import update_all_caches; update_all_caches()"
 
 # Run tests
 pytest tests/utils/test_player_ids_loader.py -v

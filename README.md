@@ -73,8 +73,7 @@ Patriot Center tracks 16 managers in a multi-year fantasy football league and pr
 │   │   ├── player_data_loader.py   # ffWAR computation for ALL NFL players
 │   │   ├── replacement_score_loader.py  # Replacement-level calculations
 │   │   ├── player_ids_loader.py    # Player metadata management
-│   │   ├── helpers.py              # Player ID/name lookup utilities
-│   │   └── update_all_caches.py    # Batch cache update orchestrator
+│   │   └── helpers.py              # Player ID/name lookup utilities
 │   │
 │   ├── data/                  # JSON cache files (auto-generated)
 │   │   ├── starters_cache.json          # Weekly starter rosters

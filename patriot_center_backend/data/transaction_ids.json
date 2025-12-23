@@ -494,31 +494,6 @@
         "add": "A.J. Brown",
         "drop": "C.J. Anderson"
     },
-    "476532545912041472": {
-        "year": "2019",
-        "week": "1",
-        "managers_involved": [
-            "Jay",
-            "Christian"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Derrick Henry",
-            "Devin Singletary"
-        ],
-        "trade_details": {
-            "Derrick Henry": {
-                "old_manager": "Christian",
-                "new_manager": "Jay"
-            },
-            "Devin Singletary": {
-                "old_manager": "Jay",
-                "new_manager": "Christian"
-            }
-        }
-    },
     "476499177849745408": {
         "year": "2019",
         "week": "1",
@@ -552,31 +527,6 @@
         ],
         "add": "Kalen Ballage",
         "drop": "Alexander Mattison"
-    },
-    "476463904927510528": {
-        "year": "2019",
-        "week": "1",
-        "managers_involved": [
-            "Jay",
-            "Christian"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Devin Singletary",
-            "Derrick Henry"
-        ],
-        "trade_details": {
-            "Devin Singletary": {
-                "old_manager": "Christian",
-                "new_manager": "Jay"
-            },
-            "Derrick Henry": {
-                "old_manager": "Jay",
-                "new_manager": "Christian"
-            }
-        }
     },
     "476459845940146176": {
         "year": "2019",
@@ -1279,40 +1229,6 @@
             "DeVante Parker"
         ],
         "add": "DeVante Parker"
-    },
-    "474641463125209088": {
-        "year": "2019",
-        "week": "1",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "New York Jets",
-            "Las Vegas Raiders"
-        ],
-        "add": "New York Jets",
-        "drop": "Las Vegas Raiders"
-    },
-    "474640855680937984": {
-        "year": "2019",
-        "week": "1",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Las Vegas Raiders",
-            "New York Jets"
-        ],
-        "add": "Las Vegas Raiders",
-        "drop": "New York Jets"
     },
     "474640591855022080": {
         "year": "2019",
@@ -3269,23 +3185,6 @@
         "add": "Dan Bailey",
         "drop": "Rashaad Penny"
     },
-    "478956273312722944": {
-        "year": "2019",
-        "week": "2",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Gardner Minshew",
-            "Derek Carr"
-        ],
-        "add": "Gardner Minshew",
-        "drop": "Derek Carr"
-    },
     "478956100859719680": {
         "year": "2019",
         "week": "2",
@@ -3350,23 +3249,6 @@
         ],
         "add": "Jalen Hurd",
         "drop": "Tre'Quan Smith"
-    },
-    "478343667858272256": {
-        "year": "2019",
-        "week": "2",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Derek Carr",
-            "Gardner Minshew"
-        ],
-        "add": "Derek Carr",
-        "drop": "Gardner Minshew"
     },
     "478329220041273344": {
         "year": "2019",
@@ -4804,40 +4686,6 @@
         ],
         "add": "Wayne Gallman",
         "drop": "Darwin Thompson"
-    },
-    "480554491318366208": {
-        "year": "2019",
-        "week": "3",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jordan Wilkins",
-            "Jameis Winston"
-        ],
-        "add": "Jordan Wilkins",
-        "drop": "Jameis Winston"
-    },
-    "480552735431716864": {
-        "year": "2019",
-        "week": "3",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jameis Winston",
-            "Jordan Wilkins"
-        ],
-        "add": "Jameis Winston",
-        "drop": "Jordan Wilkins"
     },
     "480549356286504960": {
         "year": "2019",
@@ -6430,23 +6278,6 @@
         "add": "Reggie Bonnafon",
         "drop": "Paul Richardson"
     },
-    "486754623760101376": {
-        "year": "2019",
-        "week": "5",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Mason Crosby",
-            "Mike Nugent"
-        ],
-        "add": "Mason Crosby",
-        "drop": "Mike Nugent"
-    },
     "486730885073203200": {
         "year": "2019",
         "week": "5",
@@ -6536,23 +6367,6 @@
             "Jay Ajayi"
         ],
         "add": "Jay Ajayi"
-    },
-    "485677465524498432": {
-        "year": "2019",
-        "week": "5",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Mike Nugent",
-            "Mason Crosby"
-        ],
-        "add": "Mike Nugent",
-        "drop": "Mason Crosby"
     },
     "485676970927976448": {
         "year": "2019",
@@ -8548,23 +8362,6 @@
             }
         }
     },
-    "494269496740016128": {
-        "year": "2019",
-        "week": "8",
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Tony Pollard",
-            "Jameis Winston"
-        ],
-        "add": "Tony Pollard",
-        "drop": "Jameis Winston"
-    },
     "494261021058265088": {
         "year": "2019",
         "week": "8",
@@ -8643,23 +8440,6 @@
         ],
         "add": "Mason Crosby",
         "drop": "Joey Slye"
-    },
-    "494189235255898112": {
-        "year": "2019",
-        "week": "8",
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jameis Winston",
-            "Tony Pollard"
-        ],
-        "add": "Jameis Winston",
-        "drop": "Tony Pollard"
     },
     "494017836092485632": {
         "year": "2019",
@@ -9045,23 +8825,6 @@
             }
         }
     },
-    "492908971447808000": {
-        "year": "2019",
-        "week": "8",
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "New Orleans Saints",
-            "Indianapolis Colts"
-        ],
-        "add": "New Orleans Saints",
-        "drop": "Indianapolis Colts"
-    },
     "492907044911706112": {
         "year": "2019",
         "week": "8",
@@ -9231,23 +8994,6 @@
         ],
         "add": "Kyle Rudolph",
         "drop": "Cole Beasley"
-    },
-    "492721652291858432": {
-        "year": "2019",
-        "week": "8",
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Indianapolis Colts",
-            "New Orleans Saints"
-        ],
-        "add": "Indianapolis Colts",
-        "drop": "New Orleans Saints"
     },
     "492711702303862784": {
         "year": "2019",
@@ -10248,40 +9994,6 @@
         ],
         "add": "Ross Dwelley",
         "drop": "Jason Myers"
-    },
-    "499350047138246656": {
-        "year": "2019",
-        "week": "10",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jacob Hollister",
-            "Ross Dwelley"
-        ],
-        "add": "Jacob Hollister",
-        "drop": "Ross Dwelley"
-    },
-    "499349756984684544": {
-        "year": "2019",
-        "week": "10",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Ross Dwelley",
-            "Jacob Hollister"
-        ],
-        "add": "Ross Dwelley",
-        "drop": "Jacob Hollister"
     },
     "499335432668966912": {
         "year": "2019",
@@ -13000,40 +12712,6 @@
         "add": "Los Angeles Chargers",
         "drop": "New York Jets"
     },
-    "513055231085584384": {
-        "year": "2019",
-        "week": "16",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Ka'imi Fairbairn",
-            "Mason Crosby"
-        ],
-        "add": "Ka'imi Fairbairn",
-        "drop": "Mason Crosby"
-    },
-    "513053442027286528": {
-        "year": "2019",
-        "week": "16",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Mason Crosby",
-            "Ka'imi Fairbairn"
-        ],
-        "add": "Mason Crosby",
-        "drop": "Ka'imi Fairbairn"
-    },
     "513053359579516928": {
         "year": "2019",
         "week": "16",
@@ -14951,23 +14629,6 @@
         "add": "Randy Bullock",
         "drop": "Matt Prater"
     },
-    "613798533438451712": {
-        "year": "2020",
-        "week": "2",
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Mike Gesicki",
-            "Logan Thomas"
-        ],
-        "add": "Mike Gesicki",
-        "drop": "Logan Thomas"
-    },
     "613716852308254720": {
         "year": "2020",
         "week": "2",
@@ -14984,106 +14645,6 @@
         ],
         "add": "Devonta Freeman",
         "drop": "Myles Gaskin"
-    },
-    "613599232427151360": {
-        "year": "2020",
-        "week": "2",
-        "managers_involved": [
-            "Cody",
-            "Soup"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Travis Kelce",
-            "Tyler Boyd",
-            "Sony Michel",
-            "Mike Evans",
-            "John Brown",
-            "Jared Cook",
-            "James Robinson"
-        ],
-        "trade_details": {
-            "Travis Kelce": {
-                "old_manager": "Soup",
-                "new_manager": "Cody"
-            },
-            "Tyler Boyd": {
-                "old_manager": "Soup",
-                "new_manager": "Cody"
-            },
-            "Sony Michel": {
-                "old_manager": "Soup",
-                "new_manager": "Cody"
-            },
-            "Mike Evans": {
-                "old_manager": "Cody",
-                "new_manager": "Soup"
-            },
-            "John Brown": {
-                "old_manager": "Cody",
-                "new_manager": "Soup"
-            },
-            "Jared Cook": {
-                "old_manager": "Cody",
-                "new_manager": "Soup"
-            },
-            "James Robinson": {
-                "old_manager": "Cody",
-                "new_manager": "Soup"
-            }
-        }
-    },
-    "613597083873816576": {
-        "year": "2020",
-        "week": "2",
-        "managers_involved": [
-            "Cody",
-            "Soup"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Mike Evans",
-            "John Brown",
-            "Jared Cook",
-            "James Robinson",
-            "Travis Kelce",
-            "Tyler Boyd",
-            "Sony Michel"
-        ],
-        "trade_details": {
-            "Mike Evans": {
-                "old_manager": "Soup",
-                "new_manager": "Cody"
-            },
-            "John Brown": {
-                "old_manager": "Soup",
-                "new_manager": "Cody"
-            },
-            "Jared Cook": {
-                "old_manager": "Soup",
-                "new_manager": "Cody"
-            },
-            "James Robinson": {
-                "old_manager": "Soup",
-                "new_manager": "Cody"
-            },
-            "Travis Kelce": {
-                "old_manager": "Cody",
-                "new_manager": "Soup"
-            },
-            "Tyler Boyd": {
-                "old_manager": "Cody",
-                "new_manager": "Soup"
-            },
-            "Sony Michel": {
-                "old_manager": "Cody",
-                "new_manager": "Soup"
-            }
-        }
     },
     "613477714363645952": {
         "year": "2020",
@@ -15115,31 +14676,6 @@
         ],
         "add": "Ka'imi Fairbairn",
         "drop": "Laviska Shenault"
-    },
-    "613219770921197568": {
-        "year": "2020",
-        "week": "2",
-        "managers_involved": [
-            "Cody",
-            "Jay"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Michael Pittman",
-            "Mike Williams"
-        ],
-        "trade_details": {
-            "Michael Pittman": {
-                "old_manager": "Jay",
-                "new_manager": "Cody"
-            },
-            "Mike Williams": {
-                "old_manager": "Cody",
-                "new_manager": "Jay"
-            }
-        }
     },
     "613147198061883392": {
         "year": "2020",
@@ -15281,31 +14817,6 @@
         ],
         "add": "Jordan Reed",
         "drop": "Michael Pittman"
-    },
-    "612809930658877440": {
-        "year": "2020",
-        "week": "2",
-        "managers_involved": [
-            "Cody",
-            "Jay"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Mike Williams",
-            "Michael Pittman"
-        ],
-        "trade_details": {
-            "Mike Williams": {
-                "old_manager": "Jay",
-                "new_manager": "Cody"
-            },
-            "Michael Pittman": {
-                "old_manager": "Cody",
-                "new_manager": "Jay"
-            }
-        }
     },
     "612783800396627968": {
         "year": "2020",
@@ -15704,23 +15215,6 @@
         ],
         "add": "Boston Scott",
         "drop": "DeSean Jackson"
-    },
-    "611989045702152192": {
-        "year": "2020",
-        "week": "2",
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Logan Thomas",
-            "Mike Gesicki"
-        ],
-        "add": "Logan Thomas",
-        "drop": "Mike Gesicki"
     },
     "611986246109065216": {
         "year": "2020",
@@ -16698,23 +16192,6 @@
         ],
         "add": "Jalen Richard"
     },
-    "615334700914946048": {
-        "year": "2020",
-        "week": "3",
-        "managers_involved": [
-            "Luke"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Chicago Bears",
-            "Washington Commanders"
-        ],
-        "add": "Chicago Bears",
-        "drop": "Washington Commanders"
-    },
     "615312353361219584": {
         "year": "2020",
         "week": "3",
@@ -16998,23 +16475,6 @@
             "Zach Pascal"
         ],
         "add": "Zach Pascal"
-    },
-    "614846331256643584": {
-        "year": "2020",
-        "week": "3",
-        "managers_involved": [
-            "Luke"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Washington Commanders",
-            "Chicago Bears"
-        ],
-        "add": "Washington Commanders",
-        "drop": "Chicago Bears"
     },
     "614692505732071424": {
         "year": "2020",
@@ -19764,23 +19224,6 @@
         ],
         "drop": "Saquon Barkley"
     },
-    "620611849448169472": {
-        "year": "2020",
-        "week": "5",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Mason Crosby",
-            "New Orleans Saints"
-        ],
-        "add": "Mason Crosby",
-        "drop": "New Orleans Saints"
-    },
     "620434136741523456": {
         "year": "2020",
         "week": "5",
@@ -19853,23 +19296,6 @@
         ],
         "add": "Olamide Zaccheaus",
         "drop": "Brandin Cooks"
-    },
-    "620369697711394816": {
-        "year": "2020",
-        "week": "5",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "New Orleans Saints",
-            "Mason Crosby"
-        ],
-        "add": "New Orleans Saints",
-        "drop": "Mason Crosby"
     },
     "620306554452783104": {
         "year": "2020",
@@ -21343,23 +20769,6 @@
             }
         }
     },
-    "623127794561404928": {
-        "year": "2020",
-        "week": "6",
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Wayne Gallman",
-            "Chicago Bears"
-        ],
-        "add": "Wayne Gallman",
-        "drop": "Chicago Bears"
-    },
     "623044723464052736": {
         "year": "2020",
         "week": "6",
@@ -21446,23 +20855,6 @@
         ],
         "add": "Eric Ebron",
         "drop": "Dalton Schultz"
-    },
-    "622840734571134976": {
-        "year": "2020",
-        "week": "6",
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Chicago Bears",
-            "Wayne Gallman"
-        ],
-        "add": "Chicago Bears",
-        "drop": "Wayne Gallman"
     },
     "622560459567984640": {
         "year": "2020",
@@ -26330,46 +25722,6 @@
         ],
         "add": "J.D. McKissic"
     },
-    "632336273486475264": {
-        "year": "2020",
-        "week": "10",
-        "managers_involved": [
-            "Cody",
-            "Jay"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Dalvin Cook"
-        ],
-        "trade_details": {
-            "Dalvin Cook": {
-                "old_manager": "Cody",
-                "new_manager": "Jay"
-            }
-        }
-    },
-    "632336107664650240": {
-        "year": "2020",
-        "week": "10",
-        "managers_involved": [
-            "Cody",
-            "Jay"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Dalvin Cook"
-        ],
-        "trade_details": {
-            "Dalvin Cook": {
-                "old_manager": "Jay",
-                "new_manager": "Cody"
-            }
-        }
-    },
     "632334982114779136": {
         "year": "2020",
         "week": "10",
@@ -27554,51 +26906,6 @@
         ],
         "drop": "New York Giants"
     },
-    "639966446428037120": {
-        "year": "2020",
-        "week": "12",
-        "managers_involved": [
-            "Anthony",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Leonard Fournette",
-            "JuJu Smith-Schuster",
-            "Ronald Jones",
-            "Giovani Bernard",
-            "J.D. McKissic",
-            "Joe Mixon"
-        ],
-        "trade_details": {
-            "Leonard Fournette": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Anthony"
-            },
-            "JuJu Smith-Schuster": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Anthony"
-            },
-            "Ronald Jones": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Anthony"
-            },
-            "Giovani Bernard": {
-                "old_manager": "Anthony",
-                "new_manager": "Dheeraj"
-            },
-            "J.D. McKissic": {
-                "old_manager": "Anthony",
-                "new_manager": "Dheeraj"
-            },
-            "Joe Mixon": {
-                "old_manager": "Anthony",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
     "639963154943774720": {
         "year": "2020",
         "week": "12",
@@ -27707,51 +27014,6 @@
             }
         }
     },
-    "639548237782519808": {
-        "year": "2020",
-        "week": "12",
-        "managers_involved": [
-            "Anthony",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Giovani Bernard",
-            "J.D. McKissic",
-            "Joe Mixon",
-            "Leonard Fournette",
-            "JuJu Smith-Schuster",
-            "Ronald Jones"
-        ],
-        "trade_details": {
-            "Giovani Bernard": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Anthony"
-            },
-            "J.D. McKissic": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Anthony"
-            },
-            "Joe Mixon": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Anthony"
-            },
-            "Leonard Fournette": {
-                "old_manager": "Anthony",
-                "new_manager": "Dheeraj"
-            },
-            "JuJu Smith-Schuster": {
-                "old_manager": "Anthony",
-                "new_manager": "Dheeraj"
-            },
-            "Ronald Jones": {
-                "old_manager": "Anthony",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
     "639266868405874688": {
         "year": "2020",
         "week": "12",
@@ -27813,40 +27075,6 @@
         ],
         "add": "Kyle Rudolph",
         "drop": "Zack Moss"
-    },
-    "638888732409581568": {
-        "year": "2020",
-        "week": "12",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "DK Metcalf",
-            "Pittsburgh Steelers"
-        ],
-        "add": "DK Metcalf",
-        "drop": "Pittsburgh Steelers"
-    },
-    "638888635701514240": {
-        "year": "2020",
-        "week": "12",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Pittsburgh Steelers",
-            "DK Metcalf"
-        ],
-        "add": "Pittsburgh Steelers",
-        "drop": "DK Metcalf"
     },
     "638888128404455424": {
         "year": "2020",
@@ -28205,70 +27433,6 @@
         "add": "Kendall Hinton",
         "drop": "Royce Freeman"
     },
-    "638571007560527872": {
-        "year": "2020",
-        "week": "12",
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jalen Reagor",
-            "Pittsburgh Steelers"
-        ],
-        "add": "Jalen Reagor",
-        "drop": "Pittsburgh Steelers"
-    },
-    "638570792136802304": {
-        "year": "2020",
-        "week": "12",
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Pittsburgh Steelers",
-            "Jalen Reagor"
-        ],
-        "add": "Pittsburgh Steelers",
-        "drop": "Jalen Reagor"
-    },
-    "638556934605193216": {
-        "year": "2020",
-        "week": "12",
-        "managers_involved": [
-            "Owen",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Laviska Shenault",
-            "Green Bay Packers",
-            "Dallas Cowboys"
-        ],
-        "trade_details": {
-            "Laviska Shenault": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Owen"
-            },
-            "Green Bay Packers": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Owen"
-            },
-            "Dallas Cowboys": {
-                "old_manager": "Owen",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
     "638556779659223040": {
         "year": "2020",
         "week": "12",
@@ -28358,36 +27522,6 @@
         ],
         "add": "Royce Freeman",
         "drop": "Malcolm Brown"
-    },
-    "638550487116910592": {
-        "year": "2020",
-        "week": "12",
-        "managers_involved": [
-            "Owen",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Dallas Cowboys",
-            "Laviska Shenault",
-            "Green Bay Packers"
-        ],
-        "trade_details": {
-            "Dallas Cowboys": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Owen"
-            },
-            "Laviska Shenault": {
-                "old_manager": "Owen",
-                "new_manager": "Dheeraj"
-            },
-            "Green Bay Packers": {
-                "old_manager": "Owen",
-                "new_manager": "Dheeraj"
-            }
-        }
     },
     "638540548273143808": {
         "year": "2020",
@@ -30836,40 +29970,6 @@
         "add": "Jared Cook",
         "drop": "Tyler Higbee"
     },
-    "646226824346673152": {
-        "year": "2020",
-        "week": "15",
-        "managers_involved": [
-            "Billiam"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Rodrigo Blankenship",
-            "Ryan Succop"
-        ],
-        "add": "Rodrigo Blankenship",
-        "drop": "Ryan Succop"
-    },
-    "646225959602847744": {
-        "year": "2020",
-        "week": "15",
-        "managers_involved": [
-            "Billiam"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Ryan Succop",
-            "Rodrigo Blankenship"
-        ],
-        "add": "Ryan Succop",
-        "drop": "Rodrigo Blankenship"
-    },
     "646186810984382464": {
         "year": "2020",
         "week": "15",
@@ -30959,23 +30059,6 @@
         ],
         "add": "Salvon Ahmed",
         "drop": "Rashard Higgins"
-    },
-    "645908601696796672": {
-        "year": "2020",
-        "week": "15",
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jalen Hurts",
-            "Jared Goff"
-        ],
-        "add": "Jalen Hurts",
-        "drop": "Jared Goff"
     },
     "645784014468259840": {
         "year": "2020",
@@ -31077,23 +30160,6 @@
             "Damien Harris"
         ],
         "add": "Damien Harris"
-    },
-    "645163257165856768": {
-        "year": "2020",
-        "week": "15",
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jared Goff",
-            "Jalen Hurts"
-        ],
-        "add": "Jared Goff",
-        "drop": "Jalen Hurts"
     },
     "645162193096126464": {
         "year": "2020",
@@ -36594,36 +35660,6 @@
         "faab_spent": 74,
         "drop": "Nick Westbrook-Ikhine"
     },
-    "753410296923742208": {
-        "year": "2021",
-        "week": "5",
-        "managers_involved": [
-            "Luke",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Nyheim Hines",
-            "Jonathan Taylor",
-            "Saquon Barkley"
-        ],
-        "trade_details": {
-            "Nyheim Hines": {
-                "old_manager": "Tommy",
-                "new_manager": "Luke"
-            },
-            "Jonathan Taylor": {
-                "old_manager": "Tommy",
-                "new_manager": "Luke"
-            },
-            "Saquon Barkley": {
-                "old_manager": "Luke",
-                "new_manager": "Tommy"
-            }
-        }
-    },
     "753410026621763584": {
         "year": "2021",
         "week": "5",
@@ -36651,36 +35687,6 @@
             "Ty'Son Williams"
         ],
         "add": "Ty'Son Williams"
-    },
-    "753408341929283584": {
-        "year": "2021",
-        "week": "5",
-        "managers_involved": [
-            "Luke",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Saquon Barkley",
-            "Nyheim Hines",
-            "Jonathan Taylor"
-        ],
-        "trade_details": {
-            "Saquon Barkley": {
-                "old_manager": "Tommy",
-                "new_manager": "Luke"
-            },
-            "Nyheim Hines": {
-                "old_manager": "Luke",
-                "new_manager": "Tommy"
-            },
-            "Jonathan Taylor": {
-                "old_manager": "Luke",
-                "new_manager": "Tommy"
-            }
-        }
     },
     "753380131401269248": {
         "year": "2021",
@@ -40537,31 +39543,6 @@
         "add": "Carson Wentz",
         "faab_spent": 0
     },
-    "759645816423149568": {
-        "year": "2021",
-        "week": "8",
-        "managers_involved": [
-            "Cody",
-            "Davey"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Robert Tonyan",
-            "Cole Beasley"
-        ],
-        "trade_details": {
-            "Robert Tonyan": {
-                "old_manager": "Davey",
-                "new_manager": "Cody"
-            },
-            "Cole Beasley": {
-                "old_manager": "Cody",
-                "new_manager": "Davey"
-            }
-        }
-    },
     "759572313556762624": {
         "year": "2021",
         "week": "8",
@@ -40799,31 +39780,6 @@
         "add": "Los Angeles Chargers",
         "faab_spent": 0,
         "drop": "New England Patriots"
-    },
-    "759086925507358720": {
-        "year": "2021",
-        "week": "8",
-        "managers_involved": [
-            "Cody",
-            "Davey"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Cole Beasley",
-            "Robert Tonyan"
-        ],
-        "trade_details": {
-            "Cole Beasley": {
-                "old_manager": "Davey",
-                "new_manager": "Cody"
-            },
-            "Robert Tonyan": {
-                "old_manager": "Cody",
-                "new_manager": "Davey"
-            }
-        }
     },
     "759083685847965696": {
         "year": "2021",
@@ -42644,66 +41600,6 @@
         "faab_spent": 8,
         "drop": "San Francisco 49ers"
     },
-    "764743204049723392": {
-        "year": "2021",
-        "week": "10",
-        "managers_involved": [
-            "Luke",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Cooper Kupp",
-            "Cordarrelle Patterson",
-            "DJ Moore"
-        ],
-        "trade_details": {
-            "Cooper Kupp": {
-                "old_manager": "Tommy",
-                "new_manager": "Luke"
-            },
-            "Cordarrelle Patterson": {
-                "old_manager": "Luke",
-                "new_manager": "Tommy"
-            },
-            "DJ Moore": {
-                "old_manager": "Luke",
-                "new_manager": "Tommy"
-            }
-        }
-    },
-    "764742760170541056": {
-        "year": "2021",
-        "week": "10",
-        "managers_involved": [
-            "Luke",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Cordarrelle Patterson",
-            "DJ Moore",
-            "Cooper Kupp"
-        ],
-        "trade_details": {
-            "Cordarrelle Patterson": {
-                "old_manager": "Tommy",
-                "new_manager": "Luke"
-            },
-            "DJ Moore": {
-                "old_manager": "Tommy",
-                "new_manager": "Luke"
-            },
-            "Cooper Kupp": {
-                "old_manager": "Luke",
-                "new_manager": "Tommy"
-            }
-        }
-    },
     "764739545223983104": {
         "year": "2021",
         "week": "10",
@@ -42726,56 +41622,6 @@
             "Courtland Sutton": {
                 "old_manager": "Anthony",
                 "new_manager": "Soup"
-            }
-        }
-    },
-    "764736261734060032": {
-        "year": "2021",
-        "week": "10",
-        "managers_involved": [
-            "Davey",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Matt Gay",
-            "Kyler Murray"
-        ],
-        "trade_details": {
-            "Matt Gay": {
-                "old_manager": "Tommy",
-                "new_manager": "Davey"
-            },
-            "Kyler Murray": {
-                "old_manager": "Davey",
-                "new_manager": "Tommy"
-            }
-        }
-    },
-    "764735801635692544": {
-        "year": "2021",
-        "week": "10",
-        "managers_involved": [
-            "Davey",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Kyler Murray",
-            "Matt Gay"
-        ],
-        "trade_details": {
-            "Kyler Murray": {
-                "old_manager": "Tommy",
-                "new_manager": "Davey"
-            },
-            "Matt Gay": {
-                "old_manager": "Davey",
-                "new_manager": "Tommy"
             }
         }
     },
@@ -43320,56 +42166,6 @@
         "add": "Nick Folk",
         "faab_spent": 2,
         "drop": "Randy Bullock"
-    },
-    "768243686546137088": {
-        "year": "2021",
-        "week": "11",
-        "managers_involved": [
-            "Tommy",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Michael Gallup",
-            "Michael Pittman"
-        ],
-        "trade_details": {
-            "Michael Gallup": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
-            },
-            "Michael Pittman": {
-                "old_manager": "Tommy",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
-    "768242970360242176": {
-        "year": "2021",
-        "week": "11",
-        "managers_involved": [
-            "Tommy",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Michael Pittman",
-            "Michael Gallup"
-        ],
-        "trade_details": {
-            "Michael Pittman": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
-            },
-            "Michael Gallup": {
-                "old_manager": "Tommy",
-                "new_manager": "Dheeraj"
-            }
-        }
     },
     "768239037843845120": {
         "year": "2021",
@@ -44426,126 +43222,6 @@
             }
         }
     },
-    "771126070786240512": {
-        "year": "2021",
-        "week": "12",
-        "managers_involved": [
-            "Ty",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Aaron Jones",
-            "Nick Chubb",
-            "Marquise Brown",
-            "A.J. Dillon",
-            "Melvin Gordon",
-            "Sony Michel",
-            "DK Metcalf",
-            "Darrell Henderson",
-            "Javonte Williams"
-        ],
-        "trade_details": {
-            "Aaron Jones": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Nick Chubb": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Marquise Brown": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "A.J. Dillon": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Melvin Gordon": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            },
-            "Sony Michel": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            },
-            "DK Metcalf": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            },
-            "Darrell Henderson": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            },
-            "Javonte Williams": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
-    "771117043956248576": {
-        "year": "2021",
-        "week": "12",
-        "managers_involved": [
-            "Ty",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Melvin Gordon",
-            "Sony Michel",
-            "DK Metcalf",
-            "Darrell Henderson",
-            "Javonte Williams",
-            "Aaron Jones",
-            "Nick Chubb",
-            "Marquise Brown",
-            "A.J. Dillon"
-        ],
-        "trade_details": {
-            "Melvin Gordon": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Sony Michel": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "DK Metcalf": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Darrell Henderson": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Javonte Williams": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Aaron Jones": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            },
-            "Nick Chubb": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            },
-            "Marquise Brown": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            },
-            "A.J. Dillon": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
     "770875843609436160": {
         "year": "2021",
         "week": "12",
@@ -45188,41 +43864,6 @@
         ],
         "drop": "David Johnson"
     },
-    "769301535367749632": {
-        "year": "2021",
-        "week": "12",
-        "managers_involved": [
-            "Mitch",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "DeAndre Hopkins",
-            "DeVonta Smith",
-            "Dalvin Cook",
-            "Alexander Mattison"
-        ],
-        "trade_details": {
-            "DeAndre Hopkins": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "DeVonta Smith": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "Dalvin Cook": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            },
-            "Alexander Mattison": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            }
-        }
-    },
     "769293863524401152": {
         "year": "2021",
         "week": "12",
@@ -45250,41 +43891,6 @@
             "Pittsburgh Steelers"
         ],
         "drop": "Pittsburgh Steelers"
-    },
-    "769289589557997568": {
-        "year": "2021",
-        "week": "12",
-        "managers_involved": [
-            "Mitch",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Dalvin Cook",
-            "Alexander Mattison",
-            "DeAndre Hopkins",
-            "DeVonta Smith"
-        ],
-        "trade_details": {
-            "Dalvin Cook": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "Alexander Mattison": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "DeAndre Hopkins": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            },
-            "DeVonta Smith": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            }
-        }
     },
     "769285460940984320": {
         "year": "2021",
@@ -49448,40 +48054,6 @@
         ],
         "add": "Sammy Watkins"
     },
-    "874733155394084864": {
-        "year": "2022",
-        "week": "1",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jeff Wilson",
-            "Mike Davis"
-        ],
-        "add": "Jeff Wilson",
-        "drop": "Mike Davis"
-    },
-    "874732673502265344": {
-        "year": "2022",
-        "week": "1",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Mike Davis",
-            "Jeff Wilson"
-        ],
-        "add": "Mike Davis",
-        "drop": "Jeff Wilson"
-    },
     "874732539007774720": {
         "year": "2022",
         "week": "1",
@@ -49572,40 +48144,6 @@
         ],
         "add": "Chuba Hubbard"
     },
-    "874710701498155008": {
-        "year": "2022",
-        "week": "1",
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Joshua Palmer",
-            "Ty Montgomery"
-        ],
-        "add": "Joshua Palmer",
-        "drop": "Ty Montgomery"
-    },
-    "874710493724700672": {
-        "year": "2022",
-        "week": "1",
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Ty Montgomery",
-            "Joshua Palmer"
-        ],
-        "add": "Ty Montgomery",
-        "drop": "Joshua Palmer"
-    },
     "874682638693220352": {
         "year": "2022",
         "week": "1",
@@ -49672,66 +48210,6 @@
         ],
         "add": "Nico Collins",
         "faab_spent": 0
-    },
-    "874005814136967168": {
-        "year": "2022",
-        "week": "1",
-        "managers_involved": [
-            "Mitch",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Darren Waller",
-            "Michael Pittman",
-            "Ja'Marr Chase"
-        ],
-        "trade_details": {
-            "Darren Waller": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "Michael Pittman": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "Ja'Marr Chase": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            }
-        }
-    },
-    "874003716653654016": {
-        "year": "2022",
-        "week": "1",
-        "managers_involved": [
-            "Mitch",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Ja'Marr Chase",
-            "Darren Waller",
-            "Michael Pittman"
-        ],
-        "trade_details": {
-            "Ja'Marr Chase": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "Darren Waller": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            },
-            "Michael Pittman": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            }
-        }
     },
     "873989649289355264": {
         "year": "2022",
@@ -50505,96 +48983,6 @@
             "Jamison Crowder"
         ],
         "add": "Jamison Crowder"
-    },
-    "877641439281045504": {
-        "year": "2022",
-        "week": "2",
-        "managers_involved": [
-            "Owen",
-            "Ty"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Travis Kelce",
-            "Patrick Mahomes",
-            "Najee Harris",
-            "Dak Prescott",
-            "Taysom Hill",
-            "Tyler Allgeier"
-        ],
-        "trade_details": {
-            "Travis Kelce": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
-            "Patrick Mahomes": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
-            "Najee Harris": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
-            "Dak Prescott": {
-                "old_manager": "Owen",
-                "new_manager": "Ty"
-            },
-            "Taysom Hill": {
-                "old_manager": "Owen",
-                "new_manager": "Ty"
-            },
-            "Tyler Allgeier": {
-                "old_manager": "Owen",
-                "new_manager": "Ty"
-            }
-        }
-    },
-    "877640477950763008": {
-        "year": "2022",
-        "week": "2",
-        "managers_involved": [
-            "Owen",
-            "Ty"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Dak Prescott",
-            "Taysom Hill",
-            "Tyler Allgeier",
-            "Travis Kelce",
-            "Patrick Mahomes",
-            "Najee Harris"
-        ],
-        "trade_details": {
-            "Dak Prescott": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
-            "Taysom Hill": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
-            "Tyler Allgeier": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
-            "Travis Kelce": {
-                "old_manager": "Owen",
-                "new_manager": "Ty"
-            },
-            "Patrick Mahomes": {
-                "old_manager": "Owen",
-                "new_manager": "Ty"
-            },
-            "Najee Harris": {
-                "old_manager": "Owen",
-                "new_manager": "Ty"
-            }
-        }
     },
     "877366114957877248": {
         "year": "2022",
@@ -51839,56 +50227,6 @@
             }
         }
     },
-    "879090461078401024": {
-        "year": "2022",
-        "week": "3",
-        "managers_involved": [
-            "Owen",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Tom Brady",
-            "Joe Burrow"
-        ],
-        "trade_details": {
-            "Tom Brady": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
-            },
-            "Joe Burrow": {
-                "old_manager": "Owen",
-                "new_manager": "Tommy"
-            }
-        }
-    },
-    "879090068881723392": {
-        "year": "2022",
-        "week": "3",
-        "managers_involved": [
-            "Owen",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Joe Burrow",
-            "Tom Brady"
-        ],
-        "trade_details": {
-            "Joe Burrow": {
-                "old_manager": "Tommy",
-                "new_manager": "Owen"
-            },
-            "Tom Brady": {
-                "old_manager": "Owen",
-                "new_manager": "Tommy"
-            }
-        }
-    },
     "878888769074442240": {
         "year": "2022",
         "week": "3",
@@ -52729,31 +51067,6 @@
             }
         }
     },
-    "882742301926219776": {
-        "year": "2022",
-        "week": "4",
-        "managers_involved": [
-            "Ty",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Tyler Allgeier",
-            "Javonte Williams"
-        ],
-        "trade_details": {
-            "Tyler Allgeier": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Javonte Williams": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
     "882727022525493248": {
         "year": "2022",
         "week": "4",
@@ -52837,31 +51150,6 @@
         "add": "Caleb Huntley",
         "faab_spent": 11,
         "drop": "Chase Claypool"
-    },
-    "882488144090894336": {
-        "year": "2022",
-        "week": "4",
-        "managers_involved": [
-            "Ty",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Javonte Williams",
-            "Tyler Allgeier"
-        ],
-        "trade_details": {
-            "Javonte Williams": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Ty"
-            },
-            "Tyler Allgeier": {
-                "old_manager": "Ty",
-                "new_manager": "Dheeraj"
-            }
-        }
     },
     "882313491372101632": {
         "year": "2022",
@@ -53565,46 +51853,6 @@
         "faab_spent": 0,
         "drop": "New Orleans Saints"
     },
-    "885518588084191232": {
-        "year": "2022",
-        "week": "5",
-        "managers_involved": [
-            "Tommy",
-            "Christian"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Gabe Davis",
-            "Michael Carter",
-            "Breece Hall",
-            "Matt Breida",
-            "Saquon Barkley"
-        ],
-        "trade_details": {
-            "Gabe Davis": {
-                "old_manager": "Christian",
-                "new_manager": "Tommy"
-            },
-            "Michael Carter": {
-                "old_manager": "Christian",
-                "new_manager": "Tommy"
-            },
-            "Breece Hall": {
-                "old_manager": "Christian",
-                "new_manager": "Tommy"
-            },
-            "Matt Breida": {
-                "old_manager": "Tommy",
-                "new_manager": "Christian"
-            },
-            "Saquon Barkley": {
-                "old_manager": "Tommy",
-                "new_manager": "Christian"
-            }
-        }
-    },
     "885419549896613888": {
         "year": "2022",
         "week": "5",
@@ -53782,46 +52030,6 @@
             }
         }
     },
-    "885289746551783424": {
-        "year": "2022",
-        "week": "5",
-        "managers_involved": [
-            "Tommy",
-            "Christian"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Matt Breida",
-            "Saquon Barkley",
-            "Gabe Davis",
-            "Michael Carter",
-            "Breece Hall"
-        ],
-        "trade_details": {
-            "Matt Breida": {
-                "old_manager": "Christian",
-                "new_manager": "Tommy"
-            },
-            "Saquon Barkley": {
-                "old_manager": "Christian",
-                "new_manager": "Tommy"
-            },
-            "Gabe Davis": {
-                "old_manager": "Tommy",
-                "new_manager": "Christian"
-            },
-            "Michael Carter": {
-                "old_manager": "Tommy",
-                "new_manager": "Christian"
-            },
-            "Breece Hall": {
-                "old_manager": "Tommy",
-                "new_manager": "Christian"
-            }
-        }
-    },
     "885236032122089472": {
         "year": "2022",
         "week": "5",
@@ -53912,23 +52120,6 @@
         ],
         "add": "Will Dissly"
     },
-    "884869129809879040": {
-        "year": "2022",
-        "week": "5",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Tyler Boyd",
-            "Rondale Moore"
-        ],
-        "add": "Tyler Boyd",
-        "drop": "Rondale Moore"
-    },
     "884862213914484736": {
         "year": "2022",
         "week": "5",
@@ -54015,23 +52206,6 @@
             "Josh Reynolds"
         ],
         "drop": "Josh Reynolds"
-    },
-    "884815119677378560": {
-        "year": "2022",
-        "week": "5",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Rondale Moore",
-            "Tyler Boyd"
-        ],
-        "add": "Rondale Moore",
-        "drop": "Tyler Boyd"
     },
     "884814968854564864": {
         "year": "2022",
@@ -54176,40 +52350,6 @@
         ],
         "add": "Greg Joseph",
         "drop": "James Cook"
-    },
-    "884736671907102720": {
-        "year": "2022",
-        "week": "5",
-        "managers_involved": [
-            "Luke"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Riley Patterson",
-            "Graham Gano"
-        ],
-        "add": "Riley Patterson",
-        "drop": "Graham Gano"
-    },
-    "884731400874770432": {
-        "year": "2022",
-        "week": "5",
-        "managers_involved": [
-            "Luke"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Graham Gano",
-            "Riley Patterson"
-        ],
-        "add": "Graham Gano",
-        "drop": "Riley Patterson"
     },
     "884715832004050944": {
         "year": "2022",
@@ -55013,40 +53153,6 @@
             "Phillip Lindsay"
         ],
         "add": "Phillip Lindsay"
-    },
-    "887350690845118464": {
-        "year": "2022",
-        "week": "6",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Rondale Moore",
-            "Zay Jones"
-        ],
-        "add": "Rondale Moore",
-        "drop": "Zay Jones"
-    },
-    "887350488457433088": {
-        "year": "2022",
-        "week": "6",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Zay Jones",
-            "Rondale Moore"
-        ],
-        "add": "Zay Jones",
-        "drop": "Rondale Moore"
     },
     "887315652208205824": {
         "year": "2022",
@@ -57104,40 +55210,6 @@
         "add": "Matt Gay",
         "drop": "Marquise Goodwin"
     },
-    "892491331723853824": {
-        "year": "2022",
-        "week": "8",
-        "managers_involved": [
-            "Davey"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Brett Maher",
-            "Robbie Gould"
-        ],
-        "add": "Brett Maher",
-        "drop": "Robbie Gould"
-    },
-    "892489071568797696": {
-        "year": "2022",
-        "week": "8",
-        "managers_involved": [
-            "Davey"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Robbie Gould",
-            "Brett Maher"
-        ],
-        "add": "Robbie Gould",
-        "drop": "Brett Maher"
-    },
     "892475480945823744": {
         "year": "2022",
         "week": "8",
@@ -58258,74 +56330,6 @@
         "faab_spent": 4,
         "drop": "Evan Engram"
     },
-    "895466694057803776": {
-        "year": "2022",
-        "week": "9",
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "New York Giants",
-            "Wan'Dale Robinson"
-        ],
-        "add": "New York Giants",
-        "drop": "Wan'Dale Robinson"
-    },
-    "895464296132263936": {
-        "year": "2022",
-        "week": "9",
-        "managers_involved": [
-            "Mitch"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Deshaun Watson",
-            "New York Giants"
-        ],
-        "add": "Deshaun Watson",
-        "drop": "New York Giants"
-    },
-    "895464246371041280": {
-        "year": "2022",
-        "week": "9",
-        "managers_involved": [
-            "Mitch"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "New York Giants",
-            "Deshaun Watson"
-        ],
-        "add": "New York Giants",
-        "drop": "Deshaun Watson"
-    },
-    "895462705215971328": {
-        "year": "2022",
-        "week": "9",
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Wan'Dale Robinson",
-            "New York Giants"
-        ],
-        "add": "Wan'Dale Robinson",
-        "drop": "New York Giants"
-    },
     "895449436560486400": {
         "year": "2022",
         "week": "9",
@@ -58411,40 +56415,6 @@
                 "new_manager": "Luke"
             }
         }
-    },
-    "895415508730527744": {
-        "year": "2022",
-        "week": "9",
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Deshaun Watson",
-            "Jarvis Landry"
-        ],
-        "add": "Deshaun Watson",
-        "drop": "Jarvis Landry"
-    },
-    "895415450245152768": {
-        "year": "2022",
-        "week": "9",
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jarvis Landry",
-            "Deshaun Watson"
-        ],
-        "add": "Jarvis Landry",
-        "drop": "Deshaun Watson"
     },
     "895333566383443968": {
         "year": "2022",
@@ -58918,31 +56888,6 @@
             }
         }
     },
-    "893597228424581120": {
-        "year": "2022",
-        "week": "9",
-        "managers_involved": [
-            "Tommy",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Hayden Hurst",
-            "$6 FAAB"
-        ],
-        "trade_details": {
-            "Hayden Hurst": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
-            },
-            "$6 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
     "893593361586569216": {
         "year": "2022",
         "week": "9",
@@ -58988,31 +56933,6 @@
             "Mike Boone"
         ],
         "drop": "Mike Boone"
-    },
-    "893590917284630528": {
-        "year": "2022",
-        "week": "9",
-        "managers_involved": [
-            "Tommy",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "$6 FAAB",
-            "Hayden Hurst"
-        ],
-        "trade_details": {
-            "$6 FAAB": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
-            },
-            "Hayden Hurst": {
-                "old_manager": "Tommy",
-                "new_manager": "Dheeraj"
-            }
-        }
     },
     "893536738562220032": {
         "year": "2022",
@@ -59244,24 +57164,6 @@
             "Latavius Murray"
         ],
         "drop": "Latavius Murray"
-    },
-    "898196630829092864": {
-        "year": "2022",
-        "week": "10",
-        "managers_involved": [
-            "Soup"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Evan McPherson",
-            "Robbie Gould"
-        ],
-        "add": "Evan McPherson",
-        "faab_spent": 0,
-        "drop": "Robbie Gould"
     },
     "898196321163419648": {
         "year": "2022",
@@ -60095,24 +57997,6 @@
         "add": "Brett Maher",
         "faab_spent": 0,
         "drop": "Marcus Mariota"
-    },
-    "896039345155489792": {
-        "year": "2022",
-        "week": "10",
-        "managers_involved": [
-            "Soup"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Robbie Gould",
-            "Evan McPherson"
-        ],
-        "add": "Robbie Gould",
-        "faab_spent": 0,
-        "drop": "Evan McPherson"
     },
     "896039169409835008": {
         "year": "2022",
@@ -61690,42 +59574,6 @@
             }
         }
     },
-    "903127344595206144": {
-        "year": "2022",
-        "week": "12",
-        "managers_involved": [
-            "Tommy",
-            "Mitch"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jonathan Taylor",
-            "Jonathan Taylor"
-        ],
-        "add": "Jonathan Taylor",
-        "drop": "Jonathan Taylor"
-    },
-    "903124977359343616": {
-        "year": "2022",
-        "week": "12",
-        "managers_involved": [
-            "Mitch",
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jonathan Taylor",
-            "Jonathan Taylor"
-        ],
-        "add": "Jonathan Taylor",
-        "drop": "Jonathan Taylor"
-    },
     "903120275121065984": {
         "year": "2022",
         "week": "12",
@@ -61974,116 +59822,6 @@
             "James Conner": {
                 "old_manager": "Owen",
                 "new_manager": "Christian"
-            }
-        }
-    },
-    "902802675299835904": {
-        "year": "2022",
-        "week": "12",
-        "managers_involved": [
-            "Cody",
-            "Mitch"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "DeAndre Hopkins",
-            "Tyler Lockett",
-            "Raheem Mostert",
-            "Jeff Wilson",
-            "Mike Williams",
-            "Jonathan Taylor",
-            "Michael Pittman",
-            "Deon Jackson"
-        ],
-        "trade_details": {
-            "DeAndre Hopkins": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
-            },
-            "Tyler Lockett": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
-            },
-            "Raheem Mostert": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
-            },
-            "Jeff Wilson": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
-            },
-            "Mike Williams": {
-                "old_manager": "Cody",
-                "new_manager": "Mitch"
-            },
-            "Jonathan Taylor": {
-                "old_manager": "Cody",
-                "new_manager": "Mitch"
-            },
-            "Michael Pittman": {
-                "old_manager": "Cody",
-                "new_manager": "Mitch"
-            },
-            "Deon Jackson": {
-                "old_manager": "Cody",
-                "new_manager": "Mitch"
-            }
-        }
-    },
-    "902792964211126272": {
-        "year": "2022",
-        "week": "12",
-        "managers_involved": [
-            "Cody",
-            "Mitch"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Mike Williams",
-            "Jonathan Taylor",
-            "Michael Pittman",
-            "Deon Jackson",
-            "DeAndre Hopkins",
-            "Tyler Lockett",
-            "Raheem Mostert",
-            "Jeff Wilson"
-        ],
-        "trade_details": {
-            "Mike Williams": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
-            },
-            "Jonathan Taylor": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
-            },
-            "Michael Pittman": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
-            },
-            "Deon Jackson": {
-                "old_manager": "Mitch",
-                "new_manager": "Cody"
-            },
-            "DeAndre Hopkins": {
-                "old_manager": "Cody",
-                "new_manager": "Mitch"
-            },
-            "Tyler Lockett": {
-                "old_manager": "Cody",
-                "new_manager": "Mitch"
-            },
-            "Raheem Mostert": {
-                "old_manager": "Cody",
-                "new_manager": "Mitch"
-            },
-            "Jeff Wilson": {
-                "old_manager": "Cody",
-                "new_manager": "Mitch"
             }
         }
     },
@@ -64993,40 +62731,6 @@
         ],
         "drop": "Greg Dulcich"
     },
-    "912477384857796608": {
-        "year": "2022",
-        "week": "16",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Deon Jackson",
-            "Ameer Abdullah"
-        ],
-        "add": "Deon Jackson",
-        "drop": "Ameer Abdullah"
-    },
-    "912477309804920832": {
-        "year": "2022",
-        "week": "16",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Ameer Abdullah",
-            "Deon Jackson"
-        ],
-        "add": "Ameer Abdullah",
-        "drop": "Deon Jackson"
-    },
     "912476799395872768": {
         "year": "2022",
         "week": "16",
@@ -67717,24 +65421,6 @@
             }
         }
     },
-    "1012239217789358080": {
-        "year": "2023",
-        "week": "3",
-        "managers_involved": [
-            "Ty",
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Tee Higgins",
-            "Tee Higgins"
-        ],
-        "add": "Tee Higgins",
-        "drop": "Tee Higgins"
-    },
     "1012176762983968768": {
         "year": "2023",
         "week": "3",
@@ -67777,24 +65463,6 @@
         "add": "DJ Chark",
         "faab_spent": 3,
         "drop": "Mike Williams"
-    },
-    "1011847983702786048": {
-        "year": "2023",
-        "week": "3",
-        "managers_involved": [
-            "Owen",
-            "Ty"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Tee Higgins",
-            "Tee Higgins"
-        ],
-        "add": "Tee Higgins",
-        "drop": "Tee Higgins"
     },
     "1011845254230351872": {
         "year": "2023",
@@ -67900,23 +65568,6 @@
         ],
         "add": "Clyde Edwards-Helaire"
     },
-    "1011716234951499776": {
-        "year": "2023",
-        "week": "3",
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Younghoe Koo",
-            "Clyde Edwards-Helaire"
-        ],
-        "add": "Younghoe Koo",
-        "drop": "Clyde Edwards-Helaire"
-    },
     "1011699607883190272": {
         "year": "2023",
         "week": "3",
@@ -67930,23 +65581,6 @@
             "Adam Thielen"
         ],
         "add": "Adam Thielen"
-    },
-    "1011694051499937792": {
-        "year": "2023",
-        "week": "3",
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Clyde Edwards-Helaire",
-            "Younghoe Koo"
-        ],
-        "add": "Clyde Edwards-Helaire",
-        "drop": "Younghoe Koo"
     },
     "1011674027720527872": {
         "year": "2023",
@@ -70582,23 +68216,6 @@
         "faab_spent": 0,
         "drop": "Brandon Aubrey"
     },
-    "1019316669862350848": {
-        "year": "2023",
-        "week": "6",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Rico Dowdle",
-            "Jordan Mason"
-        ],
-        "add": "Rico Dowdle",
-        "drop": "Jordan Mason"
-    },
     "1019307982112395264": {
         "year": "2023",
         "week": "6",
@@ -70626,23 +68243,6 @@
             "Blake Grupe"
         ],
         "add": "Blake Grupe"
-    },
-    "1019265243425509376": {
-        "year": "2023",
-        "week": "6",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jordan Mason",
-            "Rico Dowdle"
-        ],
-        "add": "Jordan Mason",
-        "drop": "Rico Dowdle"
     },
     "1019263732171640832": {
         "year": "2023",
@@ -79243,40 +76843,6 @@
         ],
         "drop": "Jacoby Brissett"
     },
-    "1047196019902988288": {
-        "year": "2023",
-        "week": "17",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Dontayvion Wicks",
-            "Christian Watson"
-        ],
-        "add": "Dontayvion Wicks",
-        "drop": "Christian Watson"
-    },
-    "1047195864197840896": {
-        "year": "2023",
-        "week": "17",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Christian Watson",
-            "Dontayvion Wicks"
-        ],
-        "add": "Christian Watson",
-        "drop": "Dontayvion Wicks"
-    },
     "1047195551726387200": {
         "year": "2023",
         "week": "17",
@@ -80142,40 +77708,6 @@
         ],
         "drop": "Will Reichard"
     },
-    "1139012818000429056": {
-        "year": "2024",
-        "week": "1",
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Isaac Guerendo",
-            "Kyle Juszczyk"
-        ],
-        "add": "Isaac Guerendo",
-        "drop": "Kyle Juszczyk"
-    },
-    "1139011426447802368": {
-        "year": "2024",
-        "week": "1",
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Kyle Juszczyk",
-            "Isaac Guerendo"
-        ],
-        "add": "Kyle Juszczyk",
-        "drop": "Isaac Guerendo"
-    },
     "1138920419022532608": {
         "year": "2024",
         "week": "1",
@@ -80422,56 +77954,6 @@
             "DeMario Douglas": {
                 "old_manager": "Benz",
                 "new_manager": "Christian"
-            }
-        }
-    },
-    "1137878198659710976": {
-        "year": "2024",
-        "week": "1",
-        "managers_involved": [
-            "Tommy",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Tank Dell",
-            "Justin Jefferson"
-        ],
-        "trade_details": {
-            "Tank Dell": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
-            },
-            "Justin Jefferson": {
-                "old_manager": "Tommy",
-                "new_manager": "Dheeraj"
-            }
-        }
-    },
-    "1137874609023578112": {
-        "year": "2024",
-        "week": "1",
-        "managers_involved": [
-            "Tommy",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Justin Jefferson",
-            "Tank Dell"
-        ],
-        "trade_details": {
-            "Justin Jefferson": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Tommy"
-            },
-            "Tank Dell": {
-                "old_manager": "Tommy",
-                "new_manager": "Dheeraj"
             }
         }
     },
@@ -82220,41 +79702,6 @@
         ],
         "add": "Sam Darnold",
         "drop": "Jamaal Williams"
-    },
-    "1143558382935199744": {
-        "year": "2024",
-        "week": "3",
-        "managers_involved": [
-            "Benz"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Zach Ertz",
-            "Los Angeles Chargers"
-        ],
-        "add": "Zach Ertz",
-        "drop": "Los Angeles Chargers"
-    },
-    "1143366880883998720": {
-        "year": "2024",
-        "week": "3",
-        "managers_involved": [
-            "Benz"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Los Angeles Chargers",
-            "Zach Ertz"
-        ],
-        "add": "Los Angeles Chargers",
-        "faab_spent": 0,
-        "drop": "Zach Ertz"
     },
     "1143289556352319488": {
         "year": "2024",
@@ -85175,40 +82622,6 @@
         ],
         "add": "Tre Tucker"
     },
-    "1151164971682893824": {
-        "year": "2024",
-        "week": "6",
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jaylen Wright",
-            "Kimani Vidal"
-        ],
-        "add": "Jaylen Wright",
-        "drop": "Kimani Vidal"
-    },
-    "1151161640004620288": {
-        "year": "2024",
-        "week": "6",
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Kimani Vidal",
-            "Jaylen Wright"
-        ],
-        "add": "Kimani Vidal",
-        "drop": "Jaylen Wright"
-    },
     "1151161332109152256": {
         "year": "2024",
         "week": "6",
@@ -87828,23 +85241,6 @@
         ],
         "add": "Dalvin Cook"
     },
-    "1158857630253842432": {
-        "year": "2024",
-        "week": "9",
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Ezekiel Elliott",
-            "Dalvin Cook"
-        ],
-        "add": "Ezekiel Elliott",
-        "drop": "Dalvin Cook"
-    },
     "1158852788944896000": {
         "year": "2024",
         "week": "9",
@@ -87959,23 +85355,6 @@
             "JuJu Smith-Schuster"
         ],
         "drop": "JuJu Smith-Schuster"
-    },
-    "1158835388002336768": {
-        "year": "2024",
-        "week": "9",
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Dalvin Cook",
-            "Ezekiel Elliott"
-        ],
-        "add": "Dalvin Cook",
-        "drop": "Ezekiel Elliott"
     },
     "1158832493458526208": {
         "year": "2024",
@@ -89552,40 +86931,6 @@
         ],
         "add": "Jonnu Smith",
         "drop": "Jared Goff"
-    },
-    "1163895531781869568": {
-        "year": "2024",
-        "week": "11",
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "New Orleans Saints",
-            "Indianapolis Colts"
-        ],
-        "add": "New Orleans Saints",
-        "drop": "Indianapolis Colts"
-    },
-    "1163895236850995200": {
-        "year": "2024",
-        "week": "11",
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Indianapolis Colts",
-            "New Orleans Saints"
-        ],
-        "add": "Indianapolis Colts",
-        "drop": "New Orleans Saints"
     },
     "1163877765246996480": {
         "year": "2024",
@@ -94357,40 +91702,6 @@
         "add": "Rashod Bateman",
         "drop": "J.J. McCarthy"
     },
-    "1272957852150943744": {
-        "year": "2025",
-        "week": "2",
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "DeMario Douglas",
-            "Rashod Bateman"
-        ],
-        "add": "DeMario Douglas",
-        "drop": "Rashod Bateman"
-    },
-    "1272950069645029376": {
-        "year": "2025",
-        "week": "2",
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Rashod Bateman",
-            "DeMario Douglas"
-        ],
-        "add": "Rashod Bateman",
-        "drop": "DeMario Douglas"
-    },
     "1272949969791246336": {
         "year": "2025",
         "week": "2",
@@ -95419,31 +92730,6 @@
         ],
         "drop": "Jalen Royals"
     },
-    "1276198996569780224": {
-        "year": "2025",
-        "week": "3",
-        "managers_involved": [
-            "Mitch",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "$2 FAAB",
-            "Kayshon Boutte"
-        ],
-        "trade_details": {
-            "$2 FAAB": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "Kayshon Boutte": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            }
-        }
-    },
     "1276188831241998336": {
         "year": "2025",
         "week": "3",
@@ -95908,31 +93194,6 @@
             "Chig Okonkwo"
         ],
         "drop": "Chig Okonkwo"
-    },
-    "1275099205437767680": {
-        "year": "2025",
-        "week": "3",
-        "managers_involved": [
-            "Mitch",
-            "Tommy"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Kayshon Boutte",
-            "$2 FAAB"
-        ],
-        "trade_details": {
-            "Kayshon Boutte": {
-                "old_manager": "Tommy",
-                "new_manager": "Mitch"
-            },
-            "$2 FAAB": {
-                "old_manager": "Mitch",
-                "new_manager": "Tommy"
-            }
-        }
     },
     "1274884866843897856": {
         "year": "2025",
@@ -97985,56 +95246,6 @@
             }
         }
     },
-    "1281014787802681344": {
-        "year": "2025",
-        "week": "5",
-        "managers_involved": [
-            "Owen",
-            "Jay"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Brenton Strange",
-            "Mason Taylor"
-        ],
-        "trade_details": {
-            "Brenton Strange": {
-                "old_manager": "Jay",
-                "new_manager": "Owen"
-            },
-            "Mason Taylor": {
-                "old_manager": "Owen",
-                "new_manager": "Jay"
-            }
-        }
-    },
-    "1281011815546908672": {
-        "year": "2025",
-        "week": "5",
-        "managers_involved": [
-            "Owen",
-            "Jay"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Mason Taylor",
-            "Brenton Strange"
-        ],
-        "trade_details": {
-            "Mason Taylor": {
-                "old_manager": "Jay",
-                "new_manager": "Owen"
-            },
-            "Brenton Strange": {
-                "old_manager": "Owen",
-                "new_manager": "Jay"
-            }
-        }
-    },
     "1280607020927455232": {
         "year": "2025",
         "week": "5",
@@ -99203,56 +96414,6 @@
             }
         }
     },
-    "1282845621769732096": {
-        "year": "2025",
-        "week": "6",
-        "managers_involved": [
-            "Owen",
-            "Ty"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Rhamondre Stevenson",
-            "Dallas Goedert"
-        ],
-        "trade_details": {
-            "Rhamondre Stevenson": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
-            "Dallas Goedert": {
-                "old_manager": "Owen",
-                "new_manager": "Ty"
-            }
-        }
-    },
-    "1282844300119396352": {
-        "year": "2025",
-        "week": "6",
-        "managers_involved": [
-            "Owen",
-            "Ty"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Dallas Goedert",
-            "Rhamondre Stevenson"
-        ],
-        "trade_details": {
-            "Dallas Goedert": {
-                "old_manager": "Ty",
-                "new_manager": "Owen"
-            },
-            "Rhamondre Stevenson": {
-                "old_manager": "Owen",
-                "new_manager": "Ty"
-            }
-        }
-    },
     "1282842956310540288": {
         "year": "2025",
         "week": "6",
@@ -100172,44 +97333,6 @@
             "$2 FAAB": {
                 "old_manager": "Ty",
                 "new_manager": "Dheeraj"
-            }
-        }
-    },
-    "1286122599671173120": {
-        "year": "2025",
-        "week": "7",
-        "managers_involved": [
-            "Dheeraj",
-            "Mitch"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Jerry Jeudy",
-            "Jerry Jeudy"
-        ],
-        "add": "Jerry Jeudy",
-        "drop": "Jerry Jeudy"
-    },
-    "1286118686498762752": {
-        "year": "2025",
-        "week": "7",
-        "managers_involved": [
-            "Mitch",
-            "Dheeraj"
-        ],
-        "types": [
-            "trade"
-        ],
-        "players_involved": [
-            "Jerry Jeudy"
-        ],
-        "trade_details": {
-            "Jerry Jeudy": {
-                "old_manager": "Dheeraj",
-                "new_manager": "Mitch"
             }
         }
     },
@@ -102847,23 +99970,6 @@
         ],
         "add": "Zach Ertz"
     },
-    "1290771424880885760": {
-        "year": "2025",
-        "week": "9",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "New York Jets",
-            "Carolina Panthers"
-        ],
-        "add": "New York Jets",
-        "drop": "Carolina Panthers"
-    },
     "1290760883424759808": {
         "year": "2025",
         "week": "9",
@@ -103050,24 +100156,6 @@
         "add": "Parker Washington",
         "faab_spent": 4,
         "drop": "Xavier Hutchinson"
-    },
-    "1290048137766924288": {
-        "year": "2025",
-        "week": "9",
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Carolina Panthers",
-            "New York Jets"
-        ],
-        "add": "Carolina Panthers",
-        "faab_spent": 0,
-        "drop": "New York Jets"
     },
     "1289796524754075648": {
         "year": "2025",
@@ -104769,24 +101857,6 @@
         ],
         "drop": "Jaydon Blue"
     },
-    "1296381946317783040": {
-        "year": "2025",
-        "week": "11",
-        "managers_involved": [
-            "Tommy",
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Los Angeles Chargers",
-            "Los Angeles Chargers"
-        ],
-        "add": "Los Angeles Chargers",
-        "drop": "Los Angeles Chargers"
-    },
     "1296272782962749440": {
         "year": "2025",
         "week": "11",
@@ -104906,24 +101976,6 @@
         ],
         "add": "Jake Elliott",
         "drop": "Daniel Carlson"
-    },
-    "1295880172947410944": {
-        "year": "2025",
-        "week": "11",
-        "managers_involved": [
-            "Jay",
-            "Tommy"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Los Angeles Chargers",
-            "Los Angeles Chargers"
-        ],
-        "add": "Los Angeles Chargers",
-        "drop": "Los Angeles Chargers"
     },
     "1295827342014312448": {
         "year": "2025",
@@ -107095,23 +104147,6 @@
         "faab_spent": 0,
         "drop": "Ollie Gordon"
     },
-    "1303454382393679873": {
-        "year": "2025",
-        "week": "14",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Tyrod Taylor",
-            "Trey Lance"
-        ],
-        "add": "Tyrod Taylor",
-        "drop": "Trey Lance"
-    },
     "1303449250792771584": {
         "year": "2025",
         "week": "14",
@@ -107139,23 +104174,6 @@
             "Matthew Golden"
         ],
         "drop": "Matthew Golden"
-    },
-    "1303441244772384768": {
-        "year": "2025",
-        "week": "14",
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [
-            "add",
-            "drop"
-        ],
-        "players_involved": [
-            "Trey Lance",
-            "Tyrod Taylor"
-        ],
-        "add": "Trey Lance",
-        "drop": "Tyrod Taylor"
     },
     "1303414502548594688": {
         "year": "2025",

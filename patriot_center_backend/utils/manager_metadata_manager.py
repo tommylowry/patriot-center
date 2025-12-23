@@ -2183,7 +2183,7 @@ class ManagerMetadataManager:
                 transaction_type = "add_or_drop"
             
             # if adds or drops is multiple players, its commish forced swap/trade
-            elif len(transaction.get("adds", {})) > 1 or len(transaction.get("drops", {})) > 1:
+            elif len(transaction.get("adds", {})) >= 1 or len(transaction.get("drops", {})) >= 1:
                 transaction_type = "trade"
             
             # only one add and only one drop, so add_or_drop
@@ -2269,6 +2269,13 @@ class ManagerMetadataManager:
                 if transaction1.get("drop", "") != transaction2.get("add", ""):
                     continue
 
+                if "faab_spent" in transaction1 and "faab_spent" in transaction2:
+                    # faab was spent to do this so we're counting it as a valid transaction
+                    # and the user changing their mind but having to pay for it, which is correct
+                    # in being documented
+                    if transaction1["faab_spent"] != 0 or transaction2["faab_spent"] != 0:
+                        continue
+
                 if "trade_details" in transaction1 and "trade_details" in transaction2:
                     if sorted(list(transaction1['trade_details'].keys())) == sorted(list(transaction2['trade_details'].keys())):
                         
@@ -2308,7 +2315,7 @@ class ManagerMetadataManager:
             weekly_trades  = self._cache[manager]['years'][year]['weeks'][week]['transactions']
 
             for d in [overall_trades, yearly_trades, weekly_trades]:
-                
+
                 # if there were 2 trades made, these 2 were the 2, so it should now be empty
                 d['trades']['total'] -= 2
                 if d['trades']['total'] == 0:
@@ -2331,40 +2338,45 @@ class ManagerMetadataManager:
                         del d['trades']['trade_partners'][other_manager]
                 
                 for player in list(transaction['trade_details'].keys()):
+                    
+                    # If manager wasn't involved, skip
                     if manager != transaction['trade_details'][player].get('new_manager', '') and manager != transaction['trade_details'][player].get('old_manager', ''):
                         continue
                     
-                    if transaction['trade_details'][player].get('new_manager', '') == manager:
-                        d['trades']['trade_players_acquired'][player]['total'] -= 1
-                        if d['trades']['trade_players_acquired'][player]['total'] == 0:
-                            del d['trades']['trade_players_acquired'][player]
-                        
-                        else:
-                            trade_partner = transaction['trade_details'][player].get('old_manager', '')
-                            
-                            d['trades']['trade_players_acquired'][player]['trade_partners'].get(trade_partner, -1) -= 1
-                            if d['trades']['trade_players_acquired'][player]['trade_partners'].get(trade_partner, -1) == 0:
-                                del d['trades']['trade_players_acquired'][player]['trade_partners'][trade_partner]
-
+                    # Remove from acquired
+                    d['trades']['trade_players_acquired'][player]['total'] -= 1
+                    if d['trades']['trade_players_acquired'][player]['total'] == 0:
+                        del d['trades']['trade_players_acquired'][player]
                     
-                    elif transaction['trade_details'][player].get('old_manager', '') == manager:
-                        d['trades']['trade_players_sent'][player]['total'] -= 1
-                        if d['trades']['trade_players_sent'][player]['total'] == 0:
-                            del d['trades']['trade_players_sent'][player]
+                    else:
+                        trade_partner = transaction['trade_details'][player].get('new_manager', '')
+                        if trade_partner == manager:
+                            trade_partner = transaction['trade_details'][player].get('old_manager', '')
                         
-                        else:
-                            trade_partner = transaction['trade_details'][player].get('new_manager', '')
-                            
-                            d['trades']['trade_players_sent'][player]['trade_partners'].get(trade_partner, -1) -= 1
-                            if d['trades']['trade_players_sent'][player]['trade_partners'].get(trade_partner, -1) == 0:
-                                del d['trades']['trade_players_sent'][player]['trade_partners'][trade_partner]
+                        d['trades']['trade_players_acquired'][player]['trade_partners'][trade_partner] -= 1
+                        if d['trades']['trade_players_acquired'][player]['trade_partners'][trade_partner] == 0:
+                            del d['trades']['trade_players_acquired'][player]['trade_partners'][trade_partner]
+
+                    # Remove from sent
+                    d['trades']['trade_players_sent'][player]['total'] -= 1
+                    if d['trades']['trade_players_sent'][player]['total'] == 0:
+                        del d['trades']['trade_players_sent'][player]
+                    
+                    else:
+                        trade_partner = transaction['trade_details'][player].get('new_manager', '')
+                        if trade_partner == manager:
+                            trade_partner = transaction['trade_details'][player].get('old_manager', '')
+                        
+                        d['trades']['trade_players_sent'][player]['trade_partners'][trade_partner] -= 1
+                        if d['trades']['trade_players_sent'][player]['trade_partners'][trade_partner] == 0:
+                            del d['trades']['trade_players_sent'][player]['trade_partners'][trade_partner]
 
                     
                     # faab is here, the logic is to turn it into an int, so player = "$1 FAAB" -> faab = 1
                     if "FAAB" in player:
                         
                         faab = player.split(" ")[0]
-                        faab.remove("$")
+                        faab = faab.replace("$", "")
                         faab = int(faab)    
                         d['faab']['traded_away']['total'] -= faab
                         d['faab']['acquired_from']['total'] -= faab
@@ -2373,12 +2385,12 @@ class ManagerMetadataManager:
                         if trade_partner == manager:
                             trade_partner = transaction['trade_details'][player].get('old_manager', '')
 
-                        d['faab']['traded_away']['trade_partners'].get(trade_partner, -1) -= faab
-                        if d['faab']['traded_away']['trade_partners'].get(trade_partner, -1) == 0:
+                        d['faab']['traded_away']['trade_partners'][trade_partner] -= faab
+                        if d['faab']['traded_away']['trade_partners'][trade_partner] == 0:
                             del d['faab']['traded_away']['trade_partners'][trade_partner]
                         
-                        d['faab']['acquired_from']['trade_partners'].get(trade_partner, -1) -= faab
-                        if d['faab']['acquired_from']['trade_partners'].get(trade_partner, -1) == 0:
+                        d['faab']['acquired_from']['trade_partners'][trade_partner] -= faab
+                        if d['faab']['acquired_from']['trade_partners'][trade_partner] == 0:
                             del d['faab']['acquired_from']['trade_partners'][trade_partner]
             
         del self._transaction_id_cache[transaction_id1]
@@ -2388,7 +2400,68 @@ class ManagerMetadataManager:
     
 
     def _revert_add_drop_transaction(self, transaction_id1: str, transaction_id2: str):
-        return
+        
+        transaction = copy.deepcopy(self._transaction_id_cache[transaction_id1])
+        
+        remove_faab_details = False
+        if "faab_spent" in transaction or "faab_spent" in self._transaction_id_cache[transaction_id1]:
+            remove_faab_details = True
+            
+            players_faab_spent_for = []
+            if "faab_spent" in transaction:
+                players_faab_spent_for.append(transaction["add"])
+            if "faab_spent" in self._transaction_id_cache[transaction_id2]:
+                players_faab_spent_for.append(self._transaction_id_cache[transaction_id2]["add"])
+
+        year = transaction['year']
+        week = transaction['week']
+
+        for manager in transaction['managers_involved']:
+            
+            places_to_change = []
+            places_to_change.append(self._cache[manager]['summary']['transactions']["adds"])
+            places_to_change.append(self._cache[manager]['summary']['transactions']["drops"])
+            places_to_change.append(self._cache[manager]['years'][year]['summary']['transactions']["adds"])
+            places_to_change.append(self._cache[manager]['years'][year]['summary']['transactions']["drops"])
+            places_to_change.append(self._cache[manager]['years'][year]['weeks'][week]['transactions']["adds"])
+            places_to_change.append(self._cache[manager]['years'][year]['weeks'][week]['transactions']["drops"])
+
+            for d in places_to_change:
+
+                # if there were 2 adds/drops made, these 2 were the 2, so it should now be empty
+                d['total'] -= 2
+                if d['total'] == 0:
+                    d = {
+                        "total": 0,
+                        "trade_partners": {},
+                        "trade_players_acquired": {},
+                        "trade_players_sent": {},
+                        "transaction_ids": []
+                    }
+                    continue
+                
+                for player in transaction['players_involved']:
+                    d['players'][player] -=1
+                    if d['players'][player] == 0:
+                        del d['players'][player]
+            
+            if remove_faab_details:
+                faab_places_to_change = []
+                faab_places_to_change.append(self._cache[manager]['summary']['transactions']["faab"])
+                faab_places_to_change.append(self._cache[manager]['years'][year]['summary']['transactions']["faab"])
+                faab_places_to_change.append(self._cache[manager]['years'][year]['weeks'][week]['transactions']["faab"])
+
+                for d in faab_places_to_change:
+                    for player in players_faab_spent_for:
+                        
+                        d['players'][player]['num_bids_won'] -= 1
+                        if d['players'][player]['num_bids_won'] == 0:
+                            del d['players'][player]
+
+
+            
+            del self._transaction_id_cache[transaction_id1]
+            del self._transaction_id_cache[transaction_id2]
 
 
 
@@ -2659,7 +2732,10 @@ class ManagerMetadataManager:
         "faab" = {
             "total_lost_or_gained": 0,
             "players":{
-                # "player_name": faab_amount
+                # "player_name": {
+                #  'num_bids_won': 0,
+                #  'total_faab_spent': 0
+                #}
             },
             "traded_away": {
                 "total": 0,
@@ -2694,8 +2770,12 @@ class ManagerMetadataManager:
 
                 # Process player-specific FAAB amounts
                 if player_name not in summary["players"]:
-                    summary["players"][player_name] = 0
-                summary["players"][player_name] += faab_amount
+                    summary["players"][player_name] = {
+                        'num_bids_won': 0,
+                        'total_faab_spent': 0
+                    }
+                summary["players"][player_name]['num_bids_won']     += 1
+                summary["players"][player_name]['total_faab_spent'] += faab_amount
         
         elif transaction_type == "trade":
             # Add trade FAAB details in all summaries
@@ -2745,9 +2825,6 @@ class ManagerMetadataManager:
         if isinstance(item, str):
             player_name = self._player_ids.get(item, {}).get("full_name", "")
 
-            # if player_name == "Kene Nwangwu":
-            #     print("Debugging Nwangwu")
-
             if player_name not in self._players_cache:
                 player_meta = self._player_ids.get(item, {})
                 
@@ -2776,9 +2853,6 @@ class ManagerMetadataManager:
                     player_meta["player_id"] = player_id
 
                     if player_meta.get("full_name") not in self._players_cache:
-
-                        # if player_meta.get("full_name") == "Kene Nwangwu":
-                        #     print("Debugging Nwangwu")
                         
                         slug = player_meta.get("full_name", "").lower()
                         slug = slug.replace(" ", "%20")
@@ -2818,7 +2892,6 @@ class ManagerMetadataManager:
             transaction_type = transaction_info.get("free_agent_type", "")
             if transaction_type not in valid_add_or_drop_types:
                 raise ValueError(f"Transaction type {transaction_info.get('type') } not a valid 'add_or_drop' type, needs to be one of: {valid_add_or_drop_types}")
-
         
         # If transaction not in cache, make a new object
         if transaction_id not in self._transaction_id_cache:
@@ -2857,6 +2930,10 @@ class ManagerMetadataManager:
         
         # Trade transaction
         elif transaction_type == "trade":
+
+            # Get players acquired and players sent
+            players_acquired = transaction_info.get("acquired", {})
+            players_sent = transaction_info.get("sent", {})
             
             # Initialize trade details if not already in cache
             if "trade_details" not in transaction_info_to_cache:
@@ -2866,15 +2943,6 @@ class ManagerMetadataManager:
             for partner in transaction_info.get("trade_partners", []):
                 if partner and partner not in transaction_info_to_cache["managers_involved"]:
                     transaction_info_to_cache["managers_involved"].append(partner)
-            
-            # Get players acquired and players sent
-            players_acquired = transaction_info.get("acquired", {})
-            if not players_acquired:
-                print(f"WARNING: Player sent with no return, transaction_info: {transaction_info}")
-            
-            players_sent = transaction_info.get("sent", {})
-            if not players_sent:
-                print(f"WARNING: Player sent with no return, transaction_info: {transaction_info}")
             
             # Adding player from players_acquired into players_involved and into the trade
             # details if not already in cache
@@ -3116,7 +3184,10 @@ class ManagerMetadataManager:
         self._faab_template = {
             "total_lost_or_gained": 0,
             "players":{
-                # "player_name": faab_amount
+                # "player_name": {
+                #  'num_bids_won': 0,
+                #  'total_faab_spent': 0
+                #}
             },
             "traded_away": {
                 "total": 0,
@@ -3171,7 +3242,10 @@ class ManagerMetadataManager:
             # "faab" = {
             #     "total_lost_or_gained": 0,
             #     "players":{
-            #         # "player_name": faab_amount
+            #         # "player_name": {
+            #         #     'num_bids_won': 0,
+            #         #     'total_faab_spent': 0
+            #         # }
             #     },
             #     "traded_away": {
             #         "total": 0,

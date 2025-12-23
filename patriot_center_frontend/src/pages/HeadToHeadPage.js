@@ -75,16 +75,17 @@ export default function HeadToHeadPage() {
   const m2WinPct = totalGames > 0 ? ((m2Wins / totalGames) * 100).toFixed(1) : '0.0';
 
   return (
-    <div className="App" style={{ paddingTop: '1rem', maxWidth: '1400px', margin: '0 auto', width: '100%' }}>
-      {/* Two-column layout with managers and their stats */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr auto 1fr',
-        gap: '4rem',
-        marginBottom: '3rem',
-        paddingBottom: '2rem',
-        borderBottom: '1px solid var(--border)'
-      }}>
+    <div className="App" style={{ paddingTop: '1rem' }}>
+      <div style={{ maxWidth: '896px', margin: '0 auto' }}>
+        {/* Two-column layout with managers and their stats */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr auto 1fr',
+          gap: '3rem',
+          marginBottom: '3rem',
+          paddingBottom: '2rem',
+          borderBottom: '1px solid var(--border)'
+        }}>
         {/* Manager 1 Side */}
         <div>
           {/* Manager 1 Info */}
@@ -429,6 +430,7 @@ export default function HeadToHeadPage() {
           </div>
         </div>
       )}
+      </div>
     </div>
   );
 }

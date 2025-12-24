@@ -74,6 +74,22 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
           }}>
             {/* Manager 1 Stats */}
             <div>
+              {/* Manager 1 Name */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '0.5rem'
+              }}>
+                <div style={{
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.5px',
+                  color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
+                  textShadow: manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
+                }}>
+                  {manager1.name}
+                </div>
+              </div>
               <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{
                 textDecoration: 'none',
                 display: 'flex',
@@ -90,7 +106,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       borderRadius: '50%',
                       objectFit: 'cover',
                       border: '3px solid rgba(255, 255, 255, 0.1)',
-                      boxShadow: manager1Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none'
+                      boxShadow: manager1Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none',
+                      opacity: manager1Won ? 1 : 0.8,
+                      filter: manager1Won ? 'none' : 'grayscale(0.15)'
                     }}
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -108,7 +126,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   fontSize: '2.5rem',
                   fontWeight: 400,
                   lineHeight: 1,
-                  color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--text)',
+                  color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'rgba(255, 255, 255, 0.4)',
                   fontVariantNumeric: 'tabular-nums',
                   letterSpacing: '2px',
                   fontFamily: '"7segment", monospace',
@@ -145,7 +163,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                         height: '42px',
                         borderRadius: '4px',
                         objectFit: 'cover',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        opacity: manager1Won ? 1 : 0.8,
+                        filter: manager1Won ? 'none' : 'grayscale(0.15)'
                       }}
                       onError={(e) => {
                         e.target.style.display = 'none';
@@ -163,7 +183,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       <div style={{
                         fontWeight: 400,
                         color: 'var(--muted)',
-                        fontSize: '0.8rem'
+                        fontSize: '0.8rem',
+                        opacity: manager1Won ? 1 : 0.6
                       }}>
                         {player.first_name}
                       </div>
@@ -171,8 +192,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     {player.last_name && (
                       <div style={{
                         fontWeight: 600,
-                        color: 'var(--text)',
-                        fontSize: '0.85rem'
+                        color: manager1Won ? 'var(--text)' : 'var(--muted)',
+                        fontSize: '0.85rem',
+                        opacity: manager1Won ? 1 : 0.7
                       }}>
                         {player.last_name}
                       </div>
@@ -183,7 +205,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                         color: 'var(--muted)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
-                        opacity: 0.5
+                        opacity: manager1Won ? 0.5 : 0.4
                       }}>
                         {player.position}
                       </div>
@@ -191,7 +213,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   </div>
                   <div style={{
                     fontWeight: 400,
-                    color: 'var(--text)',
+                    color: manager1Won ? 'var(--text)' : 'rgba(255, 255, 255, 0.5)',
                     minWidth: '55px',
                     textAlign: 'right',
                     fontSize: '1.5rem',
@@ -214,6 +236,22 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
 
             {/* Manager 2 Stats */}
             <div>
+              {/* Manager 2 Name */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '0.5rem'
+              }}>
+                <div style={{
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  letterSpacing: '0.5px',
+                  color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
+                  textShadow: manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
+                }}>
+                  {manager2.name}
+                </div>
+              </div>
               <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{
                 textDecoration: 'none',
                 display: 'flex',
@@ -230,7 +268,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       borderRadius: '50%',
                       objectFit: 'cover',
                       border: '3px solid rgba(255, 255, 255, 0.1)',
-                      boxShadow: manager2Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none'
+                      boxShadow: manager2Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none',
+                      opacity: manager2Won ? 1 : 0.8,
+                      filter: manager2Won ? 'none' : 'grayscale(0.15)'
                     }}
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -248,7 +288,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   fontSize: '2.5rem',
                   fontWeight: 400,
                   lineHeight: 1,
-                  color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--text)',
+                  color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'rgba(255, 255, 255, 0.4)',
                   fontVariantNumeric: 'tabular-nums',
                   letterSpacing: '2px',
                   fontFamily: '"7segment", monospace',
@@ -278,7 +318,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                 >
                   <div style={{
                     fontWeight: 400,
-                    color: 'var(--text)',
+                    color: manager2Won ? 'var(--text)' : 'rgba(255, 255, 255, 0.5)',
                     minWidth: '55px',
                     textAlign: 'left',
                     fontSize: '1.5rem',
@@ -299,7 +339,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       <div style={{
                         fontWeight: 400,
                         color: 'var(--muted)',
-                        fontSize: '0.8rem'
+                        fontSize: '0.8rem',
+                        opacity: manager2Won ? 1 : 0.6
                       }}>
                         {player.first_name}
                       </div>
@@ -307,8 +348,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     {player.last_name && (
                       <div style={{
                         fontWeight: 600,
-                        color: 'var(--text)',
-                        fontSize: '0.85rem'
+                        color: manager2Won ? 'var(--text)' : 'var(--muted)',
+                        fontSize: '0.85rem',
+                        opacity: manager2Won ? 1 : 0.7
                       }}>
                         {player.last_name}
                       </div>
@@ -319,7 +361,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                         color: 'var(--muted)',
                         textTransform: 'uppercase',
                         letterSpacing: '0.5px',
-                        opacity: 0.5
+                        opacity: manager2Won ? 0.5 : 0.4
                       }}>
                         {player.position}
                       </div>
@@ -334,7 +376,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                         height: '42px',
                         borderRadius: '4px',
                         objectFit: 'cover',
-                        flexShrink: 0
+                        flexShrink: 0,
+                        opacity: manager2Won ? 1 : 0.8,
+                        filter: manager2Won ? 'none' : 'grayscale(0.15)'
                       }}
                       onError={(e) => {
                         e.target.style.display = 'none';

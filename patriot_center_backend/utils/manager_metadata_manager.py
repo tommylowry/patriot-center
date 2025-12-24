@@ -368,6 +368,7 @@ class ManagerMetadataManager:
                             "manager_1_score": 126.92,
                             "manager_2_score": 91.89,
                             "winner": "Tommy",
+                            ## added first_name last_name and manager_1/2_lowest_scorer
                             "manager_1_top_3_scorers": [
                                 {"name": "Indianapolis Colts", "score": 18.5, "position": "DEF", "image_url": "https://sleepercdn.com/images/team_logos/nfl/no.png"},
                                 {"name": "James Conner", "score": 17.4, "position": "RB", "image_url": "https://sleepercdn.com/content/nfl/players/6904.jpg"},
@@ -376,6 +377,7 @@ class ManagerMetadataManager:
                             "manager_2_top_3_scorers:": [
                                 ... (same structure as "manager_1_top_3_scorers")
                             },
+                            ## added first_name last_name and manager_1/2_lowest_scorer
                         ...
                     ],
                     "regular_season": {

@@ -81,13 +81,14 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                 marginBottom: '0.5rem'
               }}>
                 <div style={{
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  letterSpacing: '0.5px',
+                  fontSize: '1.75rem',
+                  fontWeight: 400,
+                  fontFamily: '"Doto", monospace',
+                  fontVariationSettings: '"ROND" 100',
                   color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
                   textShadow: manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
                 }}>
-                  {manager1.name}
+                  {manager1.name?.toUpperCase()}
                 </div>
               </div>
               <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{
@@ -243,13 +244,14 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                 marginBottom: '0.5rem'
               }}>
                 <div style={{
-                  fontSize: '1rem',
-                  fontWeight: 600,
-                  letterSpacing: '0.5px',
+                  fontSize: '1.75rem',
+                  fontWeight: 400,
+                  fontFamily: '"Doto", monospace',
+                  fontVariationSettings: '"ROND" 100',
                   color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
                   textShadow: manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
                 }}>
-                  {manager2.name}
+                  {manager2.name?.toUpperCase()}
                 </div>
               </div>
               <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{

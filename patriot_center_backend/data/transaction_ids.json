@@ -105203,5 +105203,319 @@
         "add": "Jared Goff",
         "faab_spent": 10,
         "drop": "Washington Commanders"
+    },
+    "1309227877639659520": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Quinshon Judkins"
+        ],
+        "drop": "Quinshon Judkins"
+    },
+    "1309227825793880064": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Bhayshul Tuten"
+        ],
+        "drop": "Bhayshul Tuten"
+    },
+    "1309161081742057472": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Anthony"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "C.J. Stroud"
+        ],
+        "drop": "C.J. Stroud"
+    },
+    "1309160189378703360": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Anthony"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Pat Bryant"
+        ],
+        "drop": "Pat Bryant"
+    },
+    "1308514971784605696": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Samaje Perine",
+            "Tre Tucker"
+        ],
+        "add": "Samaje Perine",
+        "drop": "Tre Tucker"
+    },
+    "1308512733745917952": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "add"
+        ],
+        "players_involved": [
+            "Evan McPherson"
+        ],
+        "add": "Evan McPherson"
+    },
+    "1308512506238484480": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Nick Chubb"
+        ],
+        "drop": "Nick Chubb"
+    },
+    "1308307031886671872": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Sam"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Dalton Schultz",
+            "Samaje Perine"
+        ],
+        "add": "Dalton Schultz",
+        "faab_spent": 0,
+        "drop": "Samaje Perine"
+    },
+    "1308225453319802880": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Philadelphia Eagles"
+        ],
+        "drop": "Philadelphia Eagles"
+    },
+    "1307874825112403968": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Nick Chubb",
+            "Jawhar Jordan"
+        ],
+        "add": "Nick Chubb",
+        "faab_spent": 0,
+        "drop": "Jawhar Jordan"
+    },
+    "1307874542340825088": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Garrett Wilson"
+        ],
+        "drop": "Garrett Wilson"
+    },
+    "1307873642222215168": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "add"
+        ],
+        "players_involved": [
+            "LeQuint Allen"
+        ],
+        "add": "LeQuint Allen",
+        "faab_spent": 0
+    },
+    "1307856519865311232": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Sam"
+        ],
+        "types": [
+            "add"
+        ],
+        "players_involved": [
+            "Marquise Brown"
+        ],
+        "add": "Marquise Brown",
+        "faab_spent": 0
+    },
+    "1307856475581870080": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Sam"
+        ],
+        "types": [
+            "add"
+        ],
+        "players_involved": [
+            "Samaje Perine"
+        ],
+        "add": "Samaje Perine",
+        "faab_spent": 0
+    },
+    "1307499956243804160": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Jawhar Jordan",
+            "Wil Lutz"
+        ],
+        "add": "Jawhar Jordan",
+        "faab_spent": 0,
+        "drop": "Wil Lutz"
+    },
+    "1307475696150413312": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Anthony"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Pat Bryant",
+            "Emari Demercado"
+        ],
+        "add": "Pat Bryant",
+        "faab_spent": 0,
+        "drop": "Emari Demercado"
+    },
+    "1307312871461376000": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Cody"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Chicago Bears",
+            "Ty Johnson"
+        ],
+        "add": "Chicago Bears",
+        "faab_spent": 0,
+        "drop": "Ty Johnson"
+    },
+    "1307179016301596672": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Cody"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Indianapolis Colts"
+        ],
+        "drop": "Indianapolis Colts"
+    },
+    "1307106997866332160": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Wil Lutz",
+            "Devaughn Vele"
+        ],
+        "add": "Wil Lutz",
+        "faab_spent": 0,
+        "drop": "Devaughn Vele"
+    },
+    "1307028575479668736": {
+        "year": "2025",
+        "week": "16",
+        "managers_involved": [
+            "Sam"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Tampa Bay Buccaneers",
+            "Carolina Panthers"
+        ],
+        "add": "Tampa Bay Buccaneers",
+        "faab_spent": 0,
+        "drop": "Carolina Panthers"
     }
 }

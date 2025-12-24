@@ -36165,7 +36165,8 @@
             "Tennessee Titans",
             "Trevor Lawrence",
             "Adonai Mitchell",
-            "Mike Gesicki"
+            "Mike Gesicki",
+            "Colby Parkinson"
         ],
         "weeks": [
             "1",
@@ -36182,7 +36183,8 @@
             "12",
             "13",
             "14",
-            "15"
+            "15",
+            "16"
         ],
         "positions": [
             "QB",
@@ -42068,6 +42070,152 @@
                 "Mike Gesicki",
                 "Cam Little",
                 "San Francisco 49ers"
+            ],
+            "positions": [
+                "QB",
+                "RB",
+                "WR",
+                "TE",
+                "K",
+                "DEF"
+            ]
+        },
+        "16": {
+            "Ty": {
+                "players": [
+                    "Jordan Love",
+                    "Travis Etienne",
+                    "Quinshon Judkins",
+                    "CeeDee Lamb",
+                    "Ja'Marr Chase",
+                    "Mark Andrews",
+                    "Ashton Jeanty",
+                    "Nico Collins",
+                    "Brandon Aubrey",
+                    "New Orleans Saints"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Christian": {
+                "players": [
+                    "Jared Goff",
+                    "Breece Hall",
+                    "Jaylen Warren",
+                    "Puka Nacua",
+                    "Amon-Ra St. Brown",
+                    "Kyle Pitts",
+                    "Aaron Jones",
+                    "Wan'Dale Robinson",
+                    "Jason Myers",
+                    "New England Patriots"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Cody": {
+                "players": [
+                    "Baker Mayfield",
+                    "De'Von Achane",
+                    "Kyren Williams",
+                    "Jaxon Smith-Njigba",
+                    "Mike Evans",
+                    "Colby Parkinson",
+                    "Marvin Harrison",
+                    "Michael Wilson",
+                    "Jake Bates",
+                    "Chicago Bears"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "Sach": {
+                "players": [
+                    "Dak Prescott",
+                    "Jahmyr Gibbs",
+                    "James Cook",
+                    "A.J. Brown",
+                    "Chris Olave",
+                    "Travis Kelce",
+                    "Kareem Hunt",
+                    "Stefon Diggs",
+                    "Chris Boswell",
+                    "Buffalo Bills"
+                ],
+                "positions": [
+                    "QB",
+                    "RB",
+                    "WR",
+                    "TE",
+                    "K",
+                    "DEF"
+                ]
+            },
+            "managers": [
+                "Ty",
+                "Christian",
+                "Cody",
+                "Sach"
+            ],
+            "players": [
+                "Jordan Love",
+                "Travis Etienne",
+                "Quinshon Judkins",
+                "CeeDee Lamb",
+                "Ja'Marr Chase",
+                "Mark Andrews",
+                "Ashton Jeanty",
+                "Nico Collins",
+                "Brandon Aubrey",
+                "New Orleans Saints",
+                "Jared Goff",
+                "Breece Hall",
+                "Jaylen Warren",
+                "Puka Nacua",
+                "Amon-Ra St. Brown",
+                "Kyle Pitts",
+                "Aaron Jones",
+                "Wan'Dale Robinson",
+                "Jason Myers",
+                "New England Patriots",
+                "Baker Mayfield",
+                "De'Von Achane",
+                "Kyren Williams",
+                "Jaxon Smith-Njigba",
+                "Mike Evans",
+                "Colby Parkinson",
+                "Marvin Harrison",
+                "Michael Wilson",
+                "Jake Bates",
+                "Chicago Bears",
+                "Dak Prescott",
+                "Jahmyr Gibbs",
+                "James Cook",
+                "A.J. Brown",
+                "Chris Olave",
+                "Travis Kelce",
+                "Kareem Hunt",
+                "Stefon Diggs",
+                "Chris Boswell",
+                "Buffalo Bills"
             ],
             "positions": [
                 "QB",

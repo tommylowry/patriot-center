@@ -1978,12 +1978,25 @@ class ManagerMetadataManager:
         manager_2_starters.pop("Total_Points")
         
         manager_1_top_scorers = []
+        manager_1_lowest_scorer = {"score": 10000.0}
         for player in manager_1_starters:
             player_dict = self._get_image_url(player, dictionary=True)
-            player_dict.update({
-                "score": manager_1_starters[player]["points"],
-                "position": manager_1_starters[player]["position"]
-            })
+            
+            player_id = self._players_cache[player]["player_id"]
+            first_name = self._player_ids[player_id]['first_name']
+            last_name = self._player_ids[player_id]['last_name']
+            
+            player_dict.update(
+                {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "score": manager_1_starters[player]["points"],
+                    "position": manager_1_starters[player]["position"]
+                }
+            )
+
+            if player_dict["score"] < manager_1_lowest_scorer["score"]:
+                manager_1_lowest_scorer = copy.deepcopy(player_dict)
 
 
             if len(manager_1_top_scorers) == 0:
@@ -2004,13 +2017,25 @@ class ManagerMetadataManager:
         
 
         manager_2_top_scorers = []
+        manager_2_lowest_scorer = {"score": 10000.0}
         for player in manager_2_starters:
             player_dict = self._get_image_url(player, dictionary=True)
-            player_dict.update({
-                "score": manager_2_starters[player]["points"],
-                "position": manager_2_starters[player]["position"]
-            })
+            
+            player_id = self._players_cache[player]["player_id"]
+            first_name = self._player_ids[player_id]['first_name']
+            last_name = self._player_ids[player_id]['last_name']
 
+            player_dict.update(
+                {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "score": manager_2_starters[player]["points"],
+                    "position": manager_2_starters[player]["position"]
+                }
+            )
+
+            if player_dict["score"] < manager_2_lowest_scorer["score"]:
+                manager_2_lowest_scorer = copy.deepcopy(player_dict)
 
             if len(manager_2_top_scorers) == 0:
                 manager_2_top_scorers.append(player_dict)
@@ -2031,7 +2056,9 @@ class ManagerMetadataManager:
 
         matchup_data["manager_1_top_3_scorers"] = manager_1_top_scorers
         matchup_data["manager_2_top_3_scorers"] = manager_2_top_scorers
-    
+        matchup_data['manager_1_lowest_scorer'] = manager_1_lowest_scorer
+        matchup_data['manager_2_lowest_scorer'] = manager_2_lowest_scorer
+        ## add how they did that week, QB1, RB1, below the score
 
     def _get_matchup_card(self, manager_1: str, manager_2: str, year: str, week: str) -> dict:
         """Fetch and return the matchup card data for two managers in a given week."""
@@ -3348,10 +3375,10 @@ class ManagerMetadataManager:
 
 
 
-# Debug code - commented out
-man = ManagerMetadataManager()
-d = man.get_manager_awards("Tommy")
-import json
-pretty_json_string = json.dumps(d, indent=4)
-print(pretty_json_string)
-print("")
+# # Debug code - commented out
+# man = ManagerMetadataManager()
+# d = man._get_matchup_card("Tommy", "Benz", "2025", "1")
+# import json
+# pretty_json_string = json.dumps(d, indent=4)
+# print(pretty_json_string)
+# print("")

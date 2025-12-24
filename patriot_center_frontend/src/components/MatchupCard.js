@@ -17,6 +17,15 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
   const year = matchup.year;
   const manager1TopScorers = matchup.manager_1_top_3_scorers || [];
   const manager2TopScorers = matchup.manager_2_top_3_scorers || [];
+  const manager1LowestScorer = matchup.manager_1_lowest_scorer;
+  const manager2LowestScorer = matchup.manager_2_lowest_scorer;
+
+  // Combine top scorers with lowest scorer
+  const manager1Players = [...manager1TopScorers];
+  if (manager1LowestScorer) manager1Players.push(manager1LowestScorer);
+
+  const manager2Players = [...manager2TopScorers];
+  if (manager2LowestScorer) manager2Players.push(manager2LowestScorer);
 
   const manager1Won = winner === manager1.name;
   const manager2Won = winner === manager2.name;
@@ -24,58 +33,53 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
   return (
     <div style={{
       borderRadius: '8px',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      border: '1px solid var(--border)',
+      maxWidth: '900px',
+      width: '100%'
     }}>
-      {/* Header with game info */}
-      {!hideHeader && week && year && (
-        <div style={{
-          padding: '0.75rem 0 0.5rem 0',
-          textAlign: 'center',
-          fontSize: '0.95rem',
-          fontWeight: 700,
-          letterSpacing: '1.5px',
-          textTransform: 'uppercase',
-          color: 'var(--text)',
-          marginBottom: '0.75rem'
-        }}>
-          {year} Week {week}
-        </div>
-      )}
+      {/* Top Section - Title and Scores */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        gap: '0.75rem',
+        marginBottom: '0.75rem'
+      }}>
+          {/* Title - Popping out */}
+          {!hideHeader && week && year && (
+            <div style={{
+              padding: '0.6rem 1rem 0.4rem 1rem',
+              fontSize: '1rem',
+              fontWeight: 700,
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              color: 'var(--text)',
+              borderLeft: '1px solid var(--border)',
+              borderRight: '1px solid var(--border)',
+              borderBottom: '1px solid var(--border)',
+              background: 'rgba(255, 255, 255, 0.03)'
+            }}>
+              {year} Week {week}
+            </div>
+          )}
 
-      {/* Main matchup area - broadcast style */}
-      <div style={{ padding: '0.75rem' }}>
-        {/* Top Section - Logos, Names and Scores */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
-          marginBottom: '0.75rem'
-        }}>
-          {/* Manager 1 Logo */}
-          <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{ textDecoration: 'none' }}>
-            {manager1.image_url && (
-              <img
-                src={manager1.image_url}
-                alt={manager1.name}
-                style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: `3px solid ${manager1Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)'}`,
-                  boxShadow: manager1Won ? '0 0 20px rgba(46, 204, 113, 0.4)' : 'none'
-                }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-            )}
-          </Link>
-
-          {/* Center - Names and Scores (stacked like NHL broadcast) */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          {/* Scores */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.3rem',
+            minWidth: '200px'
+          }}>
             {/* Manager 1 Row */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0.4rem 0.6rem',
+              borderRadius: '4px',
+              background: manager1Won ? 'rgba(46, 204, 113, 0.12)' : 'transparent'
+            }}>
               <Link
                 to={`/manager/${encodeURIComponent(manager1.name)}`}
                 style={{
@@ -83,27 +87,34 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   fontWeight: 700,
                   letterSpacing: '0.5px',
                   textTransform: 'uppercase',
-                  color: manager1Won ? 'var(--success)' : 'var(--text)',
-                  textDecoration: 'none',
-                  textShadow: manager1Won ? '0 0 15px rgba(46, 204, 113, 0.3)' : 'none'
+                  color: 'var(--text)',
+                  textDecoration: 'none'
                 }}
               >
                 {manager1.name}
               </Link>
               <div style={{
-                fontSize: '1.8rem',
-                fontWeight: 900,
+                fontSize: '2.2rem',
+                fontWeight: 400,
                 lineHeight: 1,
-                color: manager1Won ? 'var(--success)' : 'var(--text)',
-                textShadow: manager1Won ? '0 0 20px rgba(46, 204, 113, 0.4)' : 'none',
-                fontVariantNumeric: 'tabular-nums'
+                color: 'var(--text)',
+                fontVariantNumeric: 'tabular-nums',
+                letterSpacing: '2px',
+                fontFamily: '"7segment", monospace'
               }}>
                 {manager1Score?.toFixed(2)}
               </div>
             </div>
 
             {/* Manager 2 Row */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0.4rem 0.6rem',
+              borderRadius: '4px',
+              background: manager2Won ? 'rgba(46, 204, 113, 0.12)' : 'transparent'
+            }}>
               <Link
                 to={`/manager/${encodeURIComponent(manager2.name)}`}
                 style={{
@@ -111,80 +122,67 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   fontWeight: 700,
                   letterSpacing: '0.5px',
                   textTransform: 'uppercase',
-                  color: manager2Won ? 'var(--success)' : 'var(--text)',
-                  textDecoration: 'none',
-                  textShadow: manager2Won ? '0 0 15px rgba(46, 204, 113, 0.3)' : 'none'
+                  color: 'var(--text)',
+                  textDecoration: 'none'
                 }}
               >
                 {manager2.name}
               </Link>
               <div style={{
-                fontSize: '1.8rem',
-                fontWeight: 900,
+                fontSize: '2.2rem',
+                fontWeight: 400,
                 lineHeight: 1,
-                color: manager2Won ? 'var(--success)' : 'var(--text)',
-                textShadow: manager2Won ? '0 0 20px rgba(46, 204, 113, 0.4)' : 'none',
-                fontVariantNumeric: 'tabular-nums'
+                color: 'var(--text)',
+                fontVariantNumeric: 'tabular-nums',
+                letterSpacing: '2px',
+                fontFamily: '"7segment", monospace'
               }}>
                 {manager2Score?.toFixed(2)}
               </div>
             </div>
           </div>
+      </div>
 
-          {/* Manager 2 Logo */}
-          <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{ textDecoration: 'none' }}>
-            {manager2.image_url && (
-              <img
-                src={manager2.image_url}
-                alt={manager2.name}
-                style={{
-                  width: '60px',
-                  height: '60px',
-                  borderRadius: '50%',
-                  objectFit: 'cover',
-                  border: `3px solid ${manager2Won ? 'var(--success)' : 'rgba(255, 255, 255, 0.1)'}`,
-                  boxShadow: manager2Won ? '0 0 20px rgba(46, 204, 113, 0.4)' : 'none'
-                }}
-                onError={(e) => {
-                  e.target.style.display = 'none';
-                }}
-              />
-            )}
-          </Link>
-        </div>
-
-        {/* Divider Bar */}
-        <div style={{
-          height: '1px',
-          background: 'var(--border)',
-          margin: '0.5rem 0'
-        }} />
-
+      {/* Main matchup area - broadcast style */}
+      <div style={{ padding: '0.75rem' }}>
         {/* Player Stats - Two Column Layout */}
-        {(manager1TopScorers?.length > 0 || manager2TopScorers?.length > 0) && (
+        {(manager1Players?.length > 0 || manager2Players?.length > 0) && (
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr auto 1fr',
-            gap: '1rem'
+            gap: '1rem',
+            marginTop: '1rem'
           }}>
             {/* Manager 1 Stats */}
             <div>
-              <div style={{
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                color: 'var(--muted)',
-                marginBottom: '0.75rem',
-                paddingBottom: '0.5rem',
-                borderBottom: '1px solid var(--border)'
+              <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{
+                textDecoration: 'none',
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '0.75rem'
               }}>
-                {manager1.name}
-              </div>
-              {manager1TopScorers?.slice(0, 3).map((player, i) => (
+                {manager1.image_url && (
+                  <img
+                    src={manager1.image_url}
+                    alt={manager1.name}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                )}
+              </Link>
+              {/* All Players */}
+              {manager1Players?.map((player, i) => (
                 <Link
                   key={i}
-                  to={`/player/${player.slug || encodeURIComponent(player.name.toLowerCase())}`}
+                  to={`/player/${player.slug || encodeURIComponent(player.name?.toLowerCase() || '')}`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -193,7 +191,10 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     fontSize: '0.85rem',
                     color: 'var(--text)',
                     textDecoration: 'none',
-                    borderBottom: i < 2 ? '1px solid rgba(255, 255, 255, 0.05)' : 'none'
+                    borderBottom: i < 2 ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
+                    borderTop: i === 3 ? '4px solid rgba(255, 255, 255, 0.15)' : 'none',
+                    paddingTop: i === 3 ? '0.75rem' : '0.5rem',
+                    minHeight: '52px'
                   }}
                 >
                   {player.image_url && (
@@ -201,8 +202,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       src={player.image_url}
                       alt={player.name}
                       style={{
-                        width: '32px',
-                        height: '32px',
+                        width: '42px',
+                        height: '42px',
                         borderRadius: '4px',
                         objectFit: 'cover',
                         flexShrink: 0
@@ -213,18 +214,51 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     />
                   )}
                   <div style={{
-                    fontWeight: 600,
                     flex: 1,
-                    color: 'var(--text)',
-                    textAlign: 'left'
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.1rem'
                   }}>
-                    {player.name}
+                    {player.first_name && (
+                      <div style={{
+                        fontWeight: 400,
+                        color: 'var(--muted)',
+                        fontSize: '0.8rem'
+                      }}>
+                        {player.first_name}
+                      </div>
+                    )}
+                    {player.last_name && (
+                      <div style={{
+                        fontWeight: 600,
+                        color: 'var(--text)',
+                        fontSize: '0.85rem'
+                      }}>
+                        {player.last_name}
+                      </div>
+                    )}
+                    {player.position && (
+                      <div style={{
+                        fontSize: '0.6rem',
+                        color: 'var(--muted)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        opacity: 0.5
+                      }}>
+                        {player.position}
+                      </div>
+                    )}
                   </div>
                   <div style={{
-                    fontWeight: 700,
-                    color: 'var(--accent)',
-                    minWidth: '45px',
-                    textAlign: 'right'
+                    fontWeight: 400,
+                    color: 'var(--text)',
+                    minWidth: '50px',
+                    textAlign: 'right',
+                    fontSize: '1.3rem',
+                    fontVariantNumeric: 'tabular-nums',
+                    letterSpacing: '1px',
+                    fontFamily: '"7segment", monospace'
                   }}>
                     {player.score?.toFixed(2)}
                   </div>
@@ -241,22 +275,34 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
 
             {/* Manager 2 Stats */}
             <div>
-              <div style={{
-                fontSize: '0.7rem',
-                fontWeight: 700,
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                color: 'var(--muted)',
-                marginBottom: '0.75rem',
-                paddingBottom: '0.5rem',
-                borderBottom: '1px solid var(--border)'
+              <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{
+                textDecoration: 'none',
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '0.75rem'
               }}>
-                {manager2.name}
-              </div>
-              {manager2TopScorers?.slice(0, 3).map((player, i) => (
+                {manager2.image_url && (
+                  <img
+                    src={manager2.image_url}
+                    alt={manager2.name}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '2px solid rgba(255, 255, 255, 0.1)'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                )}
+              </Link>
+              {/* All Players */}
+              {manager2Players?.map((player, i) => (
                 <Link
                   key={i}
-                  to={`/player/${player.slug || encodeURIComponent(player.name.toLowerCase())}`}
+                  to={`/player/${player.slug || encodeURIComponent(player.name?.toLowerCase() || '')}`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -265,16 +311,68 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     fontSize: '0.85rem',
                     color: 'var(--text)',
                     textDecoration: 'none',
-                    borderBottom: i < 2 ? '1px solid rgba(255, 255, 255, 0.05)' : 'none'
+                    borderBottom: i < 2 ? '1px solid rgba(255, 255, 255, 0.05)' : 'none',
+                    borderTop: i === 3 ? '4px solid rgba(255, 255, 255, 0.15)' : 'none',
+                    paddingTop: i === 3 ? '0.75rem' : '0.5rem',
+                    minHeight: '52px'
                   }}
                 >
+                  <div style={{
+                    fontWeight: 400,
+                    color: 'var(--text)',
+                    minWidth: '50px',
+                    textAlign: 'left',
+                    fontSize: '1.3rem',
+                    fontVariantNumeric: 'tabular-nums',
+                    letterSpacing: '1px',
+                    fontFamily: '"7segment", monospace'
+                  }}>
+                    {player.score?.toFixed(2)}
+                  </div>
+                  <div style={{
+                    flex: 1,
+                    textAlign: 'center',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.1rem'
+                  }}>
+                    {player.first_name && (
+                      <div style={{
+                        fontWeight: 400,
+                        color: 'var(--muted)',
+                        fontSize: '0.8rem'
+                      }}>
+                        {player.first_name}
+                      </div>
+                    )}
+                    {player.last_name && (
+                      <div style={{
+                        fontWeight: 600,
+                        color: 'var(--text)',
+                        fontSize: '0.85rem'
+                      }}>
+                        {player.last_name}
+                      </div>
+                    )}
+                    {player.position && (
+                      <div style={{
+                        fontSize: '0.6rem',
+                        color: 'var(--muted)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px',
+                        opacity: 0.5
+                      }}>
+                        {player.position}
+                      </div>
+                    )}
+                  </div>
                   {player.image_url && (
                     <img
                       src={player.image_url}
                       alt={player.name}
                       style={{
-                        width: '32px',
-                        height: '32px',
+                        width: '42px',
+                        height: '42px',
                         borderRadius: '4px',
                         objectFit: 'cover',
                         flexShrink: 0
@@ -284,22 +382,6 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       }}
                     />
                   )}
-                  <div style={{
-                    fontWeight: 600,
-                    flex: 1,
-                    color: 'var(--text)',
-                    textAlign: 'left'
-                  }}>
-                    {player.name}
-                  </div>
-                  <div style={{
-                    fontWeight: 700,
-                    color: 'var(--accent)',
-                    minWidth: '45px',
-                    textAlign: 'right'
-                  }}>
-                    {player.score?.toFixed(2)}
-                  </div>
                 </Link>
               ))}
             </div>

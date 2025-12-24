@@ -7090,5 +7090,32 @@
         "team": "DAL",
         "slug": "malik%20davis",
         "player_id": "8800"
+    },
+    "Pat Bryant": {
+        "full_name": "Pat Bryant",
+        "first_name": "Pat",
+        "last_name": "Bryant",
+        "position": "WR",
+        "team": "DEN",
+        "slug": "pat%20bryant",
+        "player_id": "12492"
+    },
+    "LeQuint Allen": {
+        "full_name": "LeQuint Allen",
+        "first_name": "LeQuint",
+        "last_name": "Allen",
+        "position": "RB",
+        "team": "JAX",
+        "slug": "lequint%20allen",
+        "player_id": "12544"
+    },
+    "Jawhar Jordan": {
+        "full_name": "Jawhar Jordan",
+        "first_name": "Jawhar",
+        "last_name": "Jordan",
+        "position": "RB",
+        "team": "HOU",
+        "slug": "jawhar%20jordan",
+        "player_id": "11588"
     }
 }

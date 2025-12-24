@@ -89,7 +89,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       height: '100px',
                       borderRadius: '50%',
                       objectFit: 'cover',
-                      border: '3px solid rgba(255, 255, 255, 0.1)'
+                      border: '3px solid rgba(255, 255, 255, 0.1)',
+                      boxShadow: manager1Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none'
                     }}
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -110,7 +111,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--text)',
                   fontVariantNumeric: 'tabular-nums',
                   letterSpacing: '2px',
-                  fontFamily: '"7segment", monospace'
+                  fontFamily: '"7segment", monospace',
+                  textShadow: manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
                 }}>
                   {manager1Score?.toFixed(2)}
                 </div>
@@ -227,7 +229,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       height: '100px',
                       borderRadius: '50%',
                       objectFit: 'cover',
-                      border: '3px solid rgba(255, 255, 255, 0.1)'
+                      border: '3px solid rgba(255, 255, 255, 0.1)',
+                      boxShadow: manager2Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none'
                     }}
                     onError={(e) => {
                       e.target.style.display = 'none';
@@ -248,7 +251,8 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--text)',
                   fontVariantNumeric: 'tabular-nums',
                   letterSpacing: '2px',
-                  fontFamily: '"7segment", monospace'
+                  fontFamily: '"7segment", monospace',
+                  textShadow: manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
                 }}>
                   {manager2Score?.toFixed(2)}
                 </div>

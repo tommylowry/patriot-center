@@ -74,23 +74,6 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
           }}>
             {/* Manager 1 Stats */}
             <div>
-              {/* Manager 1 Name */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                marginBottom: '0.5rem'
-              }}>
-                <div style={{
-                  fontSize: '1.75rem',
-                  fontWeight: 400,
-                  fontFamily: '"Doto", monospace',
-                  fontVariationSettings: '"ROND" 100',
-                  color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
-                  textShadow: manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
-                }}>
-                  {manager1.name?.toUpperCase()}
-                </div>
-              </div>
               <Link to={`/manager/${encodeURIComponent(manager1.name)}`} style={{
                 textDecoration: 'none',
                 display: 'flex',
@@ -117,6 +100,21 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   />
                 )}
               </Link>
+              {/* Manager 1 Name */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '0.5rem'
+              }}>
+                <div style={{
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
+                  textShadow: manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
+                }}>
+                  {manager1.name}
+                </div>
+              </div>
               {/* Manager 1 Final Score */}
               <div style={{
                 display: 'flex',
@@ -237,23 +235,6 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
 
             {/* Manager 2 Stats */}
             <div>
-              {/* Manager 2 Name */}
-              <div style={{
-                display: 'flex',
-                justifyContent: 'center',
-                marginBottom: '0.5rem'
-              }}>
-                <div style={{
-                  fontSize: '1.75rem',
-                  fontWeight: 400,
-                  fontFamily: '"Doto", monospace',
-                  fontVariationSettings: '"ROND" 100',
-                  color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
-                  textShadow: manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
-                }}>
-                  {manager2.name?.toUpperCase()}
-                </div>
-              </div>
               <Link to={`/manager/${encodeURIComponent(manager2.name)}`} style={{
                 textDecoration: 'none',
                 display: 'flex',
@@ -280,6 +261,21 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   />
                 )}
               </Link>
+              {/* Manager 2 Name */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'center',
+                marginBottom: '0.5rem'
+              }}>
+                <div style={{
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
+                  textShadow: manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
+                }}>
+                  {manager2.name}
+                </div>
+              </div>
               {/* Manager 2 Final Score */}
               <div style={{
                 display: 'flex',

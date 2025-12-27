@@ -399,25 +399,62 @@ export default function HeadToHeadPage() {
           }}>
             Trades ({totalTrades})
           </h2>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1.5rem'
-          }}>
-            {tradeHistory.map((trade, idx) => (
-              <div key={idx}>
-                <div style={{
-                  fontSize: '0.75rem',
-                  fontWeight: 600,
-                  color: 'var(--muted)',
-                  marginBottom: '0.5rem'
+
+          {/* Render trades chronologically with adaptive layout */}
+          {(() => {
+            const elements = [];
+            let twoManagerBatch = [];
+
+            tradeHistory.forEach((trade, idx) => {
+              const managerCount = (trade.managers_involved || []).length;
+
+              if (managerCount === 2) {
+                // Accumulate 2-manager trades
+                twoManagerBatch.push({ trade, originalIdx: idx });
+              } else {
+                // Flush any accumulated 2-manager trades before rendering 3+ manager trade
+                if (twoManagerBatch.length > 0) {
+                  elements.push(
+                    <div key={`batch-${elements.length}`} style={{
+                      display: 'grid',
+                      gridTemplateColumns: 'repeat(2, 1fr)',
+                      gap: '1.5rem',
+                      marginBottom: '1.5rem'
+                    }}>
+                      {twoManagerBatch.map((item, i) => (
+                        <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                      ))}
+                    </div>
+                  );
+                  twoManagerBatch = [];
+                }
+
+                // Render the 3+ manager trade at full width
+                elements.push(
+                  <div key={`3m-${idx}`} style={{ marginBottom: '1.5rem' }}>
+                    <TradeCard trade={trade} hideHeader={false} />
+                  </div>
+                );
+              }
+            });
+
+            // Flush any remaining 2-manager trades at the end
+            if (twoManagerBatch.length > 0) {
+              elements.push(
+                <div key={`batch-${elements.length}`} style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(2, 1fr)',
+                  gap: '1.5rem'
                 }}>
-                  Week {trade.week} {trade.year}
+                  {twoManagerBatch.map((item, i) => (
+                    <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                  ))}
                 </div>
-                <TradeCard trade={trade} hideHeader={true} />
-              </div>
-            ))}
-          </div>
+              );
+            }
+
+            return elements;
+          })()}
         </div>
       )}
       </div>

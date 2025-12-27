@@ -2179,8 +2179,29 @@ class ManagerMetadataManager:
             old_manager = trans['trade_details'][player]['old_manager'].lower().replace(' ', '_')
             new_manager = trans['trade_details'][player]['new_manager'].lower().replace(' ', '_')
 
-            trade_item[f"{old_manager}_sent"].append(self._get_image_url(player, dictionary=True))
-            trade_item[f"{new_manager}_received"].append(self._get_image_url(player, dictionary=True))
+            player_dict = self._get_image_url(player, dictionary=True)
+
+
+            if player not in self._players_cache:
+                if "FAAB" in player:
+                    first_name = player.split(" ")[0]
+                    last_name =  player.split(" ")[1]
+                elif "Draft Pick" in player:
+                    abridged_name = player.replace(" Draft Pick", "")
+                    abridged_name = abridged_name.replace("Round ", "R")
+                    first_name = abridged_name.split(" ")[0]
+                    last_name  = abridged_name.replace(f"{first_name} ", "")
+            else:
+                player_id = self._players_cache[player]["player_id"]
+                first_name = self._player_ids[player_id]['first_name']
+                last_name = self._player_ids[player_id]['last_name']
+
+            player_dict["first_name"] = first_name
+            player_dict["last_name"]  = last_name
+
+
+            trade_item[f"{old_manager}_sent"].append(copy.deepcopy(player_dict))
+            trade_item[f"{new_manager}_received"].append(copy.deepcopy(player_dict))
         
         trade_item["transaction_id"] = transaction_id
 
@@ -3379,7 +3400,7 @@ class ManagerMetadataManager:
 
 # # Debug code - commented out
 # man = ManagerMetadataManager()
-# d = man._get_matchup_card("Tommy", "Benz", "2025", "1")
+# d = man.get_head_to_head("Tommy", "Owen")
 # import json
 # pretty_json_string = json.dumps(d, indent=4)
 # print(pretty_json_string)

@@ -415,6 +415,26 @@ export function TradeCard({ trade, hideHeader = false }) {
     };
   });
 
+  // Calculate dynamic sizing based on max players in each column
+  const maxSentCount = Math.max(...managerRows.map(row => row.sent.length), 1);
+  const maxReceivedCount = Math.max(...managerRows.map(row => row.received.length), 1);
+
+  // Calculate sizing for sent column (smaller - 1fr)
+  const sentBaseImageSize = 60;
+  const sentBaseFontSize = 0.75;
+  const sentImageSize = Math.max(35, sentBaseImageSize - (maxSentCount - 1) * 8);
+  const sentFirstNameSize = Math.max(0.5, sentBaseFontSize * 0.85 - (maxSentCount - 1) * 0.04);
+  const sentLastNameSize = Math.max(0.6, sentBaseFontSize - (maxSentCount - 1) * 0.04);
+
+  // Calculate sizing for received column (larger - 2fr)
+  // Received players should stay large to be the "star of the show"
+  const receivedBaseImageSize = 80;
+  const receivedBaseFontSize = 0.9;
+  // Only shrink slightly for extreme cases (5+ players)
+  const receivedImageSize = Math.max(65, receivedBaseImageSize - (maxReceivedCount - 1) * 2);
+  const receivedFirstNameSize = Math.max(0.75, receivedBaseFontSize * 0.85 - (maxReceivedCount - 1) * 0.01);
+  const receivedLastNameSize = Math.max(0.85, receivedBaseFontSize - (maxReceivedCount - 1) * 0.01);
+
   return (
     <div style={{
       borderRadius: '8px',
@@ -452,17 +472,17 @@ export function TradeCard({ trade, hideHeader = false }) {
         {/* Header Row */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '120px 1fr 1fr',
+          gridTemplateColumns: '120px 1fr 2fr',
           borderBottom: '1px solid var(--border)',
           paddingBottom: '0.75rem',
           marginBottom: '1rem'
         }}>
           <div></div>
           <div style={{
-            fontSize: '1rem',
+            fontSize: '1.3rem',
             fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: '1.5px',
+            letterSpacing: '2px',
             color: 'var(--muted)',
             textAlign: 'center',
             borderLeft: '1px solid var(--border)',
@@ -471,10 +491,10 @@ export function TradeCard({ trade, hideHeader = false }) {
             Sent
           </div>
           <div style={{
-            fontSize: '1rem',
+            fontSize: '1.3rem',
             fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: '1.5px',
+            letterSpacing: '2px',
             color: 'var(--text)',
             textAlign: 'center',
             borderLeft: '1px solid var(--border)',
@@ -490,7 +510,7 @@ export function TradeCard({ trade, hideHeader = false }) {
             key={idx}
             style={{
               display: 'grid',
-              gridTemplateColumns: '120px 1fr 1fr',
+              gridTemplateColumns: '120px 1fr 2fr',
               borderBottom: idx < managerRows.length - 1 ? '1px solid var(--border)' : 'none',
               paddingBottom: '1.5rem',
               paddingTop: idx > 0 ? '1.5rem' : '0',
@@ -536,11 +556,12 @@ export function TradeCard({ trade, hideHeader = false }) {
             {/* Sent Column - De-emphasized (afterthoughts) */}
             <div style={{
               display: 'flex',
-              gap: '0.75rem',
-              flexWrap: 'wrap',
+              gap: '0.5rem',
+              flexWrap: 'nowrap',
               justifyContent: 'center',
               borderLeft: '1px solid var(--border)',
-              paddingLeft: '1rem'
+              paddingLeft: '1rem',
+              overflow: 'hidden'
             }}>
               {row.sent.map((player, playerIdx) => {
                 const playerName = player.name || 'Unknown';
@@ -552,7 +573,9 @@ export function TradeCard({ trade, hideHeader = false }) {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    gap: '0.5rem',
+                    flex: '1 1 0',
+                    minWidth: 0
                   }}>
                     {isFAAB ? (
                       <>
@@ -561,8 +584,8 @@ export function TradeCard({ trade, hideHeader = false }) {
                             src={player.image_url}
                             alt={playerName}
                             style={{
-                              width: '60px',
-                              height: '60px',
+                              width: `${sentImageSize}px`,
+                              height: `${sentImageSize}px`,
                               borderRadius: '8px',
                               objectFit: 'cover',
                               opacity: 0.4,
@@ -578,24 +601,33 @@ export function TradeCard({ trade, hideHeader = false }) {
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: '0.1rem',
-                          opacity: 0.5
+                          opacity: 0.5,
+                          width: '100%'
                         }}>
                           {player.first_name && (
                             <div style={{
-                              fontSize: '0.65rem',
+                              fontSize: `${sentFirstNameSize}rem`,
                               fontWeight: 400,
                               color: 'var(--muted)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '100%'
                             }}>
                               {player.first_name}
                             </div>
                           )}
                           {player.last_name && (
                             <div style={{
-                              fontSize: '0.75rem',
+                              fontSize: `${sentLastNameSize}rem`,
                               fontWeight: 600,
                               color: 'var(--muted)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '100%'
                             }}>
                               {player.last_name}
                             </div>
@@ -610,7 +642,9 @@ export function TradeCard({ trade, hideHeader = false }) {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.5rem'
+                          gap: '0.5rem',
+                          width: '100%',
+                          minWidth: 0
                         }}
                       >
                         {player.image_url && (
@@ -618,8 +652,8 @@ export function TradeCard({ trade, hideHeader = false }) {
                             src={player.image_url}
                             alt={playerName}
                             style={{
-                              width: '60px',
-                              height: '60px',
+                              width: `${sentImageSize}px`,
+                              height: `${sentImageSize}px`,
                               borderRadius: '8px',
                               objectFit: 'cover',
                               opacity: 0.4,
@@ -635,24 +669,33 @@ export function TradeCard({ trade, hideHeader = false }) {
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: '0.1rem',
-                          opacity: 0.5
+                          opacity: 0.5,
+                          width: '100%'
                         }}>
                           {player.first_name && (
                             <div style={{
-                              fontSize: '0.65rem',
+                              fontSize: `${sentFirstNameSize}rem`,
                               fontWeight: 400,
                               color: 'var(--muted)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '100%'
                             }}>
                               {player.first_name}
                             </div>
                           )}
                           {player.last_name && (
                             <div style={{
-                              fontSize: '0.75rem',
+                              fontSize: `${sentLastNameSize}rem`,
                               fontWeight: 600,
                               color: 'var(--muted)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '100%'
                             }}>
                               {player.last_name}
                             </div>
@@ -669,10 +712,11 @@ export function TradeCard({ trade, hideHeader = false }) {
             <div style={{
               display: 'flex',
               gap: '0.75rem',
-              flexWrap: 'wrap',
+              flexWrap: 'nowrap',
               justifyContent: 'center',
               borderLeft: '1px solid var(--border)',
-              paddingLeft: '1rem'
+              paddingLeft: '1rem',
+              overflow: 'hidden'
             }}>
               {row.received.map((player, playerIdx) => {
                 const playerName = player.name || 'Unknown';
@@ -684,7 +728,9 @@ export function TradeCard({ trade, hideHeader = false }) {
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    gap: '0.5rem',
+                    flex: '1 1 0',
+                    minWidth: 0
                   }}>
                     {isFAAB ? (
                       <>
@@ -693,8 +739,8 @@ export function TradeCard({ trade, hideHeader = false }) {
                             src={player.image_url}
                             alt={playerName}
                             style={{
-                              width: '80px',
-                              height: '80px',
+                              width: `${receivedImageSize}px`,
+                              height: `${receivedImageSize}px`,
                               borderRadius: '8px',
                               objectFit: 'cover'
                             }}
@@ -707,24 +753,33 @@ export function TradeCard({ trade, hideHeader = false }) {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.1rem'
+                          gap: '0.1rem',
+                          width: '100%'
                         }}>
                           {player.first_name && (
                             <div style={{
-                              fontSize: '0.8rem',
+                              fontSize: `${receivedFirstNameSize}rem`,
                               fontWeight: 400,
                               color: 'var(--muted)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '100%'
                             }}>
                               {player.first_name}
                             </div>
                           )}
                           {player.last_name && (
                             <div style={{
-                              fontSize: '0.9rem',
+                              fontSize: `${receivedLastNameSize}rem`,
                               fontWeight: 600,
                               color: 'var(--text)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '100%'
                             }}>
                               {player.last_name}
                             </div>
@@ -739,7 +794,9 @@ export function TradeCard({ trade, hideHeader = false }) {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.5rem'
+                          gap: '0.5rem',
+                          width: '100%',
+                          minWidth: 0
                         }}
                       >
                         {player.image_url && (
@@ -747,8 +804,8 @@ export function TradeCard({ trade, hideHeader = false }) {
                             src={player.image_url}
                             alt={playerName}
                             style={{
-                              width: '80px',
-                              height: '80px',
+                              width: `${receivedImageSize}px`,
+                              height: `${receivedImageSize}px`,
                               borderRadius: '8px',
                               objectFit: 'cover'
                             }}
@@ -761,24 +818,33 @@ export function TradeCard({ trade, hideHeader = false }) {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.1rem'
+                          gap: '0.1rem',
+                          width: '100%'
                         }}>
                           {player.first_name && (
                             <div style={{
-                              fontSize: '0.8rem',
+                              fontSize: `${receivedFirstNameSize}rem`,
                               fontWeight: 400,
                               color: 'var(--muted)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '100%'
                             }}>
                               {player.first_name}
                             </div>
                           )}
                           {player.last_name && (
                             <div style={{
-                              fontSize: '0.9rem',
+                              fontSize: `${receivedLastNameSize}rem`,
                               fontWeight: 600,
                               color: 'var(--accent)',
-                              textAlign: 'center'
+                              textAlign: 'center',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              width: '100%'
                             }}>
                               {player.last_name}
                             </div>

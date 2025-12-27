@@ -447,8 +447,9 @@ export function TradeCard({ trade, hideHeader = false }) {
       {!hideHeader && week && year && (
         <div style={{
           display: 'flex',
-          justifyContent: 'center',
-          marginBottom: '0.25rem'
+          flexDirection: 'column',
+          alignItems: 'center',
+          marginBottom: '0.5rem'
         }}>
           <div style={{
             padding: '0.75rem 1.5rem 0.5rem 1.5rem',
@@ -463,6 +464,14 @@ export function TradeCard({ trade, hideHeader = false }) {
             background: 'rgba(255, 255, 255, 0.03)'
           }}>
             {year} Week {week}
+          </div>
+          <div style={{
+            fontSize: '0.65rem',
+            color: 'var(--muted)',
+            marginTop: '0.5rem',
+            fontStyle: 'italic'
+          }}>
+            Post trade calculations coming soon!
           </div>
         </div>
       )}

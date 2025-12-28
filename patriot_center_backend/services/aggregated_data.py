@@ -15,14 +15,15 @@ Notes:
 - Results are simple dicts suitable for JSON responses.
 - Totals are rounded to two decimals via Decimal normalization (ffWAR to 3).
 """
-from patriot_center_backend.utils.ffWAR_loader import load_or_update_ffWAR_cache
+from patriot_center_backend.utils.player_data_loader import load_player_data_cache
 from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
 from patriot_center_backend.services.players import fetch_players
+from patriot_center_backend.utils import helpers
 
 # Load caches at module import for fast access
-PLAYERS_CACHE = fetch_players()
-FFWAR_CACHE   = load_or_update_ffWAR_cache()
+PLAYERS_CACHE     = fetch_players()
+PLAYER_DATA_CACHE = load_player_data_cache()
 
 def fetch_player_manager_aggregation(player, manager, season=None, week=None):
     """
@@ -141,10 +142,12 @@ def fetch_ffWAR_for_player(player, season=None, week=None):
     season_str = str(season)
     week_str = str(week)
 
-    if season_str in FFWAR_CACHE and week_str in FFWAR_CACHE[season_str]:
-        week_data = FFWAR_CACHE[season_str][week_str]
-        if player in week_data and "ffWAR" in week_data[player]:
-            return week_data[player]["ffWAR"]
+    if season_str in PLAYER_DATA_CACHE and week_str in PLAYER_DATA_CACHE[season_str]:
+        week_data = PLAYER_DATA_CACHE[season_str][week_str]
+        player_id = helpers.get_player_id(player)
+        
+        if player_id in week_data:
+            return week_data[player_id]["ffWAR"]
 
     return 0.0
 
@@ -168,6 +171,7 @@ def _update_player_data(players_dict, player, player_data, manager, year):
     player_dict_item['total_points'] += player_data['points']
     player_dict_item['ffWAR'] += player_data['ffWAR']
     player_dict_item['num_games_started'] += 1
+    player_dict_item['ffWAR_per_game'] = player_dict_item['ffWAR'] / player_dict_item['num_games_started']
 
     # Round to appropriate precision using Decimal for exact rounding
     player_dict_item["total_points"] = float(
@@ -175,6 +179,9 @@ def _update_player_data(players_dict, player, player_data, manager, year):
     )
     player_dict_item["ffWAR"] = float(
         Decimal(player_dict_item["ffWAR"]).quantize(Decimal('0.001')).normalize()
+    )
+    player_dict_item["ffWAR_per_game"] = float(
+        Decimal(player_dict_item["ffWAR_per_game"]).quantize(Decimal('0.001')).normalize()
     )
     players_dict[player] = player_dict_item
 
@@ -207,6 +214,7 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         "total_points": player_data['points'],
         "num_games_started": 1,
         'ffWAR': player_data['ffWAR'],
+        'ffWAR_per_game': player_data['ffWAR'],
         "position": player_data['position'],
         "player_image_endpoint": player_image_endpoint,
         "slug": PLAYERS_CACHE[player],
@@ -232,12 +240,18 @@ def _update_manager_data(managers_dict, manager, raw_item, player, year):
     manager_dict_item['ffWAR'] += raw_item['ffWAR']
     manager_dict_item['num_games_started'] += 1
 
+    manager_dict_item['ffWAR_per_game'] = manager_dict_item['ffWAR'] / manager_dict_item['num_games_started']
+
     manager_dict_item["total_points"] = float(
         Decimal(manager_dict_item["total_points"]).quantize(Decimal('0.01')).normalize()
     )
     manager_dict_item["ffWAR"] = float(
         Decimal(manager_dict_item["ffWAR"]).quantize(Decimal('0.001')).normalize()
     )
+    manager_dict_item["ffWAR_per_game"] = float(
+        Decimal(manager_dict_item["ffWAR_per_game"]).quantize(Decimal('0.001')).normalize()
+    )
+
     managers_dict[manager] = manager_dict_item
 
     # Handle playoff placement if present
@@ -261,6 +275,7 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
         "total_points": raw_item['points'],
         "num_games_started": 1,
         'ffWAR': raw_item['ffWAR'],
+        'ffWAR_per_game': raw_item['ffWAR'],
         "position": raw_item['position'],
         "player_image_endpoint": player_image_endpoint,
         "slug": PLAYERS_CACHE[player],

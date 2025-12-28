@@ -77,6 +77,7 @@ class TestFetchAggregatedPlayers:
         assert result["Amon-Ra St. Brown"]["total_points"] == 40.8
         assert result["Amon-Ra St. Brown"]["num_games_started"] == 2
         assert result["Amon-Ra St. Brown"]["ffWAR"] == 5.6
+        assert result["Amon-Ra St. Brown"]["ffWAR_per_game"] == 2.8
 
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
@@ -191,6 +192,7 @@ class TestFetchAggregatedManagers:
         assert result["Tommy"]["num_games_started"] == 1
         assert result["Tommy"]["ffWAR"] == 2.5
         assert result["Tommy"]["team"] == "DET"
+        assert result["Tommy"]["ffWAR_per_game"] == 2.5
 
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
@@ -256,12 +258,12 @@ class TestFetchFfwarForPlayer:
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Player", season=2024, week=None) == 0.0
 
-    @patch('patriot_center_backend.services.aggregated_data.FFWAR_CACHE', {"2024": {"1": {"Amon-Ra St. Brown": {"ffWAR": 2.345}}}})
+    @patch('patriot_center_backend.services.aggregated_data.PLAYER_DATA_CACHE', {"2024": {"1": {"7547":{"ffWAR": 2.345}}}})
     def test_returns_ffwar_from_cache(self):
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Amon-Ra St. Brown", season=2024, week=1) == 2.345
 
-    @patch('patriot_center_backend.services.aggregated_data.FFWAR_CACHE', {"2024": {"1": {}}})
+    @patch('patriot_center_backend.services.aggregated_data.PLAYER_DATA_CACHE', {"2024": {"1": {}}})
     def test_returns_zero_when_player_not_in_cache(self):
         from patriot_center_backend.services.aggregated_data import fetch_ffWAR_for_player
         assert fetch_ffWAR_for_player("Unknown Player", season=2024, week=1) == 0.0
@@ -301,6 +303,22 @@ class TestDecimalRounding:
 
         result = fetch_aggregated_players(manager="Tommy")
         assert result["Test Player"]["ffWAR"] == 3.580
+
+    @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
+    @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
+    def test_rounds_ffwar_per_game_to_three_decimals(self, mock_ffwar, mock_starters):
+        from patriot_center_backend.services.aggregated_data import fetch_aggregated_players
+
+        mock_starters.return_value = {
+            "2024": {
+                "1": {"Tommy": {"Test Player": {"points": 10.0, "position": "WR", "player_id": "1234"}}},
+                "2": {"Tommy": {"Test Player": {"points": 10.0, "position": "WR", "player_id": "1234"}}}
+            }
+        }
+        mock_ffwar.side_effect = [1.23672318, 2.405862]
+
+        result = fetch_aggregated_players(manager="Tommy")
+        assert result["Test Player"]["ffWAR_per_game"] == 1.821
 
 
 class TestPlayoffPlacement:

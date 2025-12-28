@@ -58,10 +58,10 @@ SLEEPER_API_URL = "https://api.sleeper.app/v1"
 _BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # In season weekly data cache files
-FFWAR_CACHE_FILE               = os.path.join(_BACKEND_DIR, "data", "ffWAR_cache.json")
 PLAYERS_CACHE_FILE             = os.path.join(_BACKEND_DIR, "data", "players_cache.json")
 REPLACEMENT_SCORE_CACHE_FILE   = os.path.join(_BACKEND_DIR, "data", "replacement_score_cache.json")
 STARTERS_CACHE_FILE            = os.path.join(_BACKEND_DIR, "data", "starters_cache.json")
+PLAYERS_DATA_CACHE_FILE        = os.path.join(_BACKEND_DIR, "data", "player_data_cache.json")
 
 # Manager metadata cache file
 MANAGER_METADATA_CACHE_FILE    = os.path.join(_BACKEND_DIR, "data", "manager_metadata_cache.json")
@@ -72,7 +72,6 @@ PLAYER_IDS_CACHE_FILE          = os.path.join(_BACKEND_DIR, "data", "player_ids.
 
 # Options selection and validation cache files
 VALID_OPTIONS_CACHE_FILE       = os.path.join(_BACKEND_DIR, "data", "valid_options_cache.json")
-CURRENT_OPTIONS_SELECTION_FILE = os.path.join(_BACKEND_DIR, "data", "dynamic_data", "current_options_selection.json")
 # -- END FILE PATH CONSTANTS --
 
 

@@ -51,31 +51,30 @@ function HomePage() {
   const [manager, setManager] = useState(null);
   const [positionFilter, setPositionFilter] = useState('ALL');
 
-  // Track if we're initializing from URL to prevent loops
-  const isInitializedRef = useRef(false);
-  const isSyncingRef = useRef(false);
+  // Track if we're syncing from URL to prevent loops
+  const isSyncingFromUrlRef = useRef(false);
 
-  // Sync URL params to state (runs on mount and when back/forward buttons change URL)
+  // Sync state from URL params (runs on mount and when URL changes via back/forward)
   useEffect(() => {
-    isSyncingRef.current = true;
+    isSyncingFromUrlRef.current = true;
 
     const yearParam = searchParams.get('year');
+    const weekParam = searchParams.get('week');
+    const managerParam = searchParams.get('manager');
+    const positionParam = searchParams.get('position');
+
     if (yearParam === 'ALL') {
       setYear(null);
     } else {
       setYear(yearParam || '2025');
     }
-    setWeek(searchParams.get('week') ? parseInt(searchParams.get('week')) : null);
-    setManager(searchParams.get('manager') || null);
-    setPositionFilter(searchParams.get('position') || 'ALL');
+    setWeek(weekParam ? parseInt(weekParam) : null);
+    setManager(managerParam || null);
+    setPositionFilter(positionParam || 'ALL');
 
-    if (!isInitializedRef.current) {
-      isInitializedRef.current = true;
-    }
-
-    // Use setTimeout to ensure state updates have completed before allowing URL sync
+    // Reset flag after state updates have been processed
     setTimeout(() => {
-      isSyncingRef.current = false;
+      isSyncingFromUrlRef.current = false;
     }, 0);
   }, [searchParams]);
 
@@ -84,9 +83,9 @@ function HomePage() {
 
   const { players, loading, error } = useAggregatedPlayers(year, week, manager);
 
-  // Update URL when filters change (after initialization) - creates history entries
+  // Update URL when filters change from user interaction (not from URL sync)
   useEffect(() => {
-    if (!isInitializedRef.current || isSyncingRef.current) return;
+    if (isSyncingFromUrlRef.current) return;
 
     const params = new URLSearchParams();
 
@@ -300,6 +299,11 @@ function HomePage() {
                   <span className="col-header-full">Games Started</span>
                   <span className="col-header-abbr">GS</span>
                   {' '}{sortKey === 'num_games_started' && (sortDir === 'asc' ? '▲' : '▼')}
+                </th>
+                <th align="center" style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR_per_game')}>
+                  <span className="col-header-full">ffWAR/G</span>
+                  <span className="col-header-abbr">WAR/G</span>
+                  {' '}{sortKey === 'ffWAR_per_game' && (sortDir === 'asc' ? '▲' : '▼')}
                 </th>
                 <th align="center" style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR')}>
                   ffWAR {sortKey === 'ffWAR' && (sortDir === 'asc' ? '▲' : '▼')}

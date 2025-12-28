@@ -13,9 +13,43 @@ export default function PlayerPage() {
     const [manager, setManager] = useState(null);  // default: ALL managers
     const [imageError, setImageError] = useState(false);
 
+    // Track if we're syncing from URL to prevent loops
+    const isSyncingFromUrlRef = useRef(false);
+
+    // Sync state from URL params (runs on mount and when URL changes via back/forward)
+    useEffect(() => {
+        isSyncingFromUrlRef.current = true;
+
+        const yearParam = searchParams.get('year');
+        const weekParam = searchParams.get('week');
+        const managerParam = searchParams.get('manager');
+
+        setYear(yearParam && yearParam !== 'ALL' ? parseInt(yearParam) : null);
+        setWeek(weekParam && weekParam !== 'ALL' ? parseInt(weekParam) : null);
+        setManager(managerParam && managerParam !== 'ALL' ? managerParam : null);
+
+        // Reset flag after state updates have been processed
+        setTimeout(() => {
+            isSyncingFromUrlRef.current = false;
+        }, 0);
+    }, [searchParams]);
+
     const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager, slug);
 
-    React.useEffect(() => {
+    // Update URL when filters change from user interaction (not from URL sync)
+    useEffect(() => {
+        if (isSyncingFromUrlRef.current) return;
+
+        const params = new URLSearchParams();
+
+        if (year !== null) params.set('year', String(year));
+        if (week !== null) params.set('week', String(week));
+        if (manager !== null) params.set('manager', manager);
+
+        setSearchParams(params);
+    }, [year, week, manager, setSearchParams]);
+
+    useEffect(() => {
         setWeek(null);
     }, [year]);
 
@@ -91,6 +125,7 @@ export default function PlayerPage() {
             manager: m.manager ?? m.player ?? m.key ?? '',
             total_points: Number(m.total_points ?? m.points ?? 0),
             num_games_started: Number(m.num_games_started ?? m.games_started ?? m.started ?? 0),
+            ffWAR_per_game: Number(m.ffWAR_per_game ?? 0),
             ffWAR: Number(m.ffWAR ?? 0),
             placements: managerPlacements
         };
@@ -444,6 +479,11 @@ export default function PlayerPage() {
                                     <span className="col-header-abbr">GS</span>
                                     {' '}{sortKey === 'num_games_started' && (sortDir === 'asc' ? '▲' : '▼')}
                                 </th>
+                                <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR_per_game')}>
+                                    <span className="col-header-full">ffWAR/G</span>
+                                    <span className="col-header-abbr">WAR/G</span>
+                                    {' '}{sortKey === 'ffWAR_per_game' && (sortDir === 'asc' ? '▲' : '▼')}
+                                </th>
                                 <th style={{ cursor: 'pointer' }} onClick={() => toggleSort('ffWAR')}>
                                     ffWAR {sortKey === 'ffWAR' && (sortDir === 'asc' ? '▲' : '▼')}
                                 </th>
@@ -513,6 +553,7 @@ export default function PlayerPage() {
                                         </td>
                                         <td>{m.total_points}</td>
                                         <td>{m.num_games_started}</td>
+                                        <td>{Number(m.ffWAR_per_game).toFixed(3)}</td>
                                         <td className={warClass}>{m.ffWAR}</td>
                                     </tr>
                                 );

@@ -137,7 +137,8 @@ def _update_players_cache(updated_player_ids_data):
 
     players_cache_copy = copy.deepcopy(players_cache)
     
-    for player in players_cache_copy.values():
+    for player_dict in players_cache_copy.values():
+        player = player_dict["full_name"]
         player_id = players_cache_copy[player]["player_id"]
         player_meta = updated_player_ids_data.get(player_id, {})
 

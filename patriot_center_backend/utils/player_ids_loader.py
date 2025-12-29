@@ -38,11 +38,10 @@ def load_player_ids():
         with open(PLAYER_IDS_CACHE_FILE, "r") as file:
             data = json.load(file)
     except:
-        print("Problem when loading Player Ids cache from file, refreshing data.")
-        data = update_player_ids()
+        raise RuntimeError("Player IDS cache does not exist or is currupted. Investigate why.")
     
     if not data:
-        raise Exception("Player IDs cache is empty; please run update_player_ids() first.")
+        raise RuntimeError("Player IDs cache is empty; please run update_player_ids() first.")
     
     return data
 

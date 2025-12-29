@@ -379,7 +379,11 @@ def fetch_starters_for_week(season, week):
     for manager in managers:
         players_summary_array_per_manager   = []
         positions_summary_array_per_manager = []
-        real_name = USERNAME_TO_REAL_NAME.get(manager['display_name'], "Unknown Manager")
+        
+        if manager['display_name'] not in USERNAME_TO_REAL_NAME:
+            raise ValueError (f"{manager['display_name']} not in {USERNAME_TO_REAL_NAME.keys()}")
+        
+        real_name = USERNAME_TO_REAL_NAME[manager['display_name']]
 
         # Historical correction: In 2019 weeks 1-3, Tommy played under Cody's roster.
         # Reassign those weeks from Cody to Tommy for accurate records.

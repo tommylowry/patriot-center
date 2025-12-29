@@ -645,7 +645,6 @@ class TestGetStartersData:
         assert result["Total_Points"] == 0.0
 
 
-@pytest.mark.usefixtures("use_real_load_or_update_starters")
 @patch('patriot_center_backend.utils.starters_loader.save_cache')
 class TestFetchStartersForWeek:
     """Test fetch_starters_for_week API integration and data mapping."""
@@ -842,8 +841,7 @@ class TestFetchStartersForWeek:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    @patch('patriot_center_backend.utils.starters_loader.MANAGER_METADATA')
-    def test_uses_unknown_manager_for_unmapped_display_names(self, mock_manager_metadata, mock_fetch, mock_playoff_ids, mock_save):
+    def test_uses_unknown_manager_for_unmapped_display_names(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test uses 'Unknown Manager' for display names not in USERNAME_TO_REAL_NAME."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 
@@ -881,7 +879,7 @@ class TestRetroactivelyAssignTeamPlacement:
     @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
     def test_assigns_placements_to_playoff_weeks_2021_plus(self, mock_placement):
         """Test assigns placements to weeks 15-17 for 2021+ seasons."""
-        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player_and_manager_metadata
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
 
         mock_placement.return_value = {"Tommy": 1, "Mike": 2, "Davey": 3}
 
@@ -912,7 +910,7 @@ class TestRetroactivelyAssignTeamPlacement:
             }
         }
 
-        result = retroactively_assign_team_placement_for_player_and_manager_metadata(2024, starters_cache)
+        result = retroactively_assign_team_placement_for_player(2024, starters_cache)
 
         # Verify Tommy (1st place) has placement assigned
         assert result["2024"]["15"]["Tommy"]["Josh Allen"]["placement"] == 1
@@ -930,7 +928,7 @@ class TestRetroactivelyAssignTeamPlacement:
     @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
     def test_assigns_placements_to_playoff_weeks_2019_2020(self, mock_placement):
         """Test assigns placements to weeks 14-16 for 2019/2020 seasons."""
-        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player_and_manager_metadata
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
 
         mock_placement.return_value = {"Tommy": 1}
 
@@ -951,7 +949,7 @@ class TestRetroactivelyAssignTeamPlacement:
             }
         }
 
-        result = retroactively_assign_team_placement_for_player_and_manager_metadata(2020, starters_cache)
+        result = retroactively_assign_team_placement_for_player(2020, starters_cache)
 
         # Verify weeks 14-15 get placements for 2020
         assert result["2020"]["14"]["Tommy"]["Derrick Henry"]["placement"] == 1
@@ -960,7 +958,7 @@ class TestRetroactivelyAssignTeamPlacement:
     @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
     def test_returns_unchanged_cache_when_placement_api_fails(self, mock_placement):
         """Test returns cache unchanged when _get_playoff_placement returns empty dict."""
-        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player_and_manager_metadata
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
 
         mock_placement.return_value = {}  # API failure
 
@@ -975,7 +973,7 @@ class TestRetroactivelyAssignTeamPlacement:
             }
         }
 
-        result = retroactively_assign_team_placement_for_player_and_manager_metadata(2024, starters_cache)
+        result = retroactively_assign_team_placement_for_player(2024, starters_cache)
 
         # Cache should be unchanged
         assert result == starters_cache
@@ -984,7 +982,7 @@ class TestRetroactivelyAssignTeamPlacement:
     @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
     def test_returns_immediately_if_placement_already_assigned(self, mock_placement):
         """Test returns immediately without calling API if placement already exists."""
-        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player_and_manager_metadata
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
 
         mock_placement.return_value = {"Tommy": 1}
 
@@ -999,7 +997,7 @@ class TestRetroactivelyAssignTeamPlacement:
             }
         }
 
-        result = retroactively_assign_team_placement_for_player_and_manager_metadata(2024, starters_cache)
+        result = retroactively_assign_team_placement_for_player(2024, starters_cache)
 
         # Should return immediately without modification
         assert result == starters_cache
@@ -1009,7 +1007,7 @@ class TestRetroactivelyAssignTeamPlacement:
     @patch('patriot_center_backend.utils.starters_loader._get_playoff_placement')
     def test_skips_managers_not_in_placement_dict(self, mock_placement):
         """Test skips managers who didn't place in top 3."""
-        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player_and_manager_metadata
+        from patriot_center_backend.utils.starters_loader import retroactively_assign_team_placement_for_player
 
         mock_placement.return_value = {"Tommy": 1}  # Only Tommy placed
 
@@ -1028,7 +1026,7 @@ class TestRetroactivelyAssignTeamPlacement:
             }
         }
 
-        result = retroactively_assign_team_placement_for_player_and_manager_metadata(2024, starters_cache)
+        result = retroactively_assign_team_placement_for_player(2024, starters_cache)
 
         # Tommy should have placement
         assert result["2024"]["15"]["Tommy"]["Josh Allen"]["placement"] == 1
@@ -1037,8 +1035,6 @@ class TestRetroactivelyAssignTeamPlacement:
         assert "placement" not in result["2024"]["15"]["Other Manager"]["Patrick Mahomes"]
 
 
-@pytest.mark.usefixtures("use_real_load_or_update_starters")
-@patch('patriot_center_backend.utils.starters_loader.MANAGER_METADATA')
 class TestLoadOrUpdateStartersCache:
     """Test update_starters_cache main orchestration."""
 
@@ -1047,7 +1043,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.fetch_starters_for_week')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
-    def test_creates_new_cache_with_baseline_structure(self, mock_fetch, mock_save, mock_load, mock_current, mock_manager_metadata):
+    def test_creates_new_cache_with_baseline_structure(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test initializes new cache with Last_Updated markers."""
         from patriot_center_backend.utils.starters_loader import update_starters_cache
 
@@ -1079,7 +1075,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.fetch_starters_for_week')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
-    def test_resumes_from_last_updated_markers(self, mock_fetch, mock_save, mock_load, mock_current, mock_manager_metadata):
+    def test_resumes_from_last_updated_markers(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test resumes processing from Last_Updated_Season and Last_Updated_Week."""
         from patriot_center_backend.utils.starters_loader import update_starters_cache
 
@@ -1111,7 +1107,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.load_cache')
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
-    def test_skips_when_fully_up_to_date(self, mock_save, mock_load, mock_current, mock_manager_metadata):
+    def test_skips_when_fully_up_to_date(self, mock_save, mock_load, mock_current):
         """Test skips processing when cache is already current."""
         from patriot_center_backend.utils.starters_loader import update_starters_cache
 
@@ -1139,7 +1135,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.fetch_starters_for_week')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2024: "league_123"})
-    def test_caps_current_week_at_17(self, mock_fetch, mock_save, mock_load, mock_current, mock_manager_metadata):
+    def test_caps_current_week_at_17(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test caps current_week at 17 (regular season) even if API returns higher."""
         from patriot_center_backend.utils.starters_loader import update_starters_cache
 
@@ -1158,7 +1154,7 @@ class TestLoadOrUpdateStartersCache:
     @patch('patriot_center_backend.utils.starters_loader.save_cache')
     @patch('patriot_center_backend.utils.starters_loader.fetch_starters_for_week')
     @patch('patriot_center_backend.utils.starters_loader.LEAGUE_IDS', {2019: "id1", 2020: "id2"})
-    def test_processes_2019_and_2020_with_16_week_cap(self, mock_fetch, mock_save, mock_load, mock_current, mock_manager_metadata):
+    def test_processes_2019_and_2020_with_16_week_cap(self, mock_fetch, mock_save, mock_load, mock_current):
         """Test processes 2019 and 2020 with 16-week cap (includes playoffs)."""
         from patriot_center_backend.utils.starters_loader import update_starters_cache
 
@@ -1176,7 +1172,6 @@ class TestLoadOrUpdateStartersCache:
         assert mock_fetch.call_count == 32
 
 
-@pytest.mark.usefixtures("use_real_load_or_update_starters")
 @patch('patriot_center_backend.utils.starters_loader.save_cache')
 class TestRefactoredReturnValues:
     """Comprehensive tests for refactored methods with new multi-value return signatures."""
@@ -1427,8 +1422,7 @@ class TestRefactoredReturnValues:
     })
     @patch('patriot_center_backend.utils.starters_loader._get_relevant_playoff_roster_ids')
     @patch('patriot_center_backend.utils.starters_loader.fetch_sleeper_data')
-    @patch('patriot_center_backend.utils.starters_loader.MANAGER_METADATA')
-    def test_fetch_starters_for_week_aggregates_multiple_managers(self, mock_manager_metadata, mock_fetch, mock_playoff_ids, mock_save):
+    def test_fetch_starters_for_week_aggregates_multiple_managers(self, mock_fetch, mock_playoff_ids, mock_save):
         """Test that fetch_starters_for_week correctly aggregates data from multiple managers."""
         from patriot_center_backend.utils.starters_loader import fetch_starters_for_week
 

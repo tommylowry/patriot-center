@@ -341,12 +341,12 @@ class TestFlaskRoutes:
         """Test aggregated managers with year and week filters."""
         mock_fetch.return_value = sample_aggregated_manager_data
 
-        response = flask_client.get('/get_aggregated_managers/Josh_Allen/2024/5')
+        response = flask_client.get('/get_aggregated_managers/josh%20allen/2024/5')
         assert response.status_code == 200
         # Should pass underscored name as is, parse year and week
         mock_fetch.assert_called_once()
         call_args = mock_fetch.call_args
-        assert call_args[1]['player'] == "Josh Allen"  # Underscores converted to spaces
+        assert call_args[1]['player'] == "Josh Allen"  # %20 converted to spaces
         assert call_args[1]['season'] == 2024
         assert call_args[1]['week'] == 5
 
@@ -769,7 +769,7 @@ class TestPlayerManagerAggregationEndpoint:
             }
         }
 
-        response = flask_client.get('/get_player_manager_aggregation/Christian_McCaffrey/Tommy')
+        response = flask_client.get('/get_player_manager_aggregation/christian%20mccaffrey/Tommy')
         assert response.status_code == 200
         data = json.loads(response.data)
 
@@ -789,7 +789,7 @@ class TestPlayerManagerAggregationEndpoint:
             "Tommy": {"total_points": 30.0, "num_games_started": 2, "ffWAR": 3.5, "position": "WR"}
         }
 
-        response = flask_client.get('/get_player_manager_aggregation/Amon-Ra_St._Brown/Tommy/2024')
+        response = flask_client.get('/get_player_manager_aggregation/amon-ra%20st.%20brown/Tommy/2024')
         assert response.status_code == 200
 
         # Verify season was passed correctly
@@ -806,7 +806,7 @@ class TestPlayerManagerAggregationEndpoint:
             "Tommy": {"total_points": 18.5, "num_games_started": 1, "ffWAR": 2.1, "position": "QB"}
         }
 
-        response = flask_client.get('/get_player_manager_aggregation/Josh_Allen/Tommy/2024/5')
+        response = flask_client.get('/get_player_manager_aggregation/josh%20allen/Tommy/2024/5')
         assert response.status_code == 200
 
         # Verify all parameters were passed
@@ -848,7 +848,7 @@ class TestPlayerManagerAggregationEndpoint:
         """Test player name with apostrophe is properly decoded."""
         mock_fetch.return_value = {"Mike": {"total_points": 20.0, "num_games_started": 1, "ffWAR": 1.5, "position": "RB"}}
 
-        response = flask_client.get('/get_player_manager_aggregation/D%27Andre_Swift/Mike')
+        response = flask_client.get('/get_player_manager_aggregation/d%27andre%20swift/Mike')
         assert response.status_code == 200
 
         # Verify player name was converted correctly

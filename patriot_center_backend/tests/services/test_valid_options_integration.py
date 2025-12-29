@@ -20,7 +20,6 @@ from patriot_center_backend.services.valid_options import (
 )
 
 
-@pytest.mark.usefixtures("use_real_cache_for_integration_tests")
 class TestRealDataInvariants:
     """Test invariants that must ALWAYS hold, regardless of data."""
 
@@ -102,7 +101,6 @@ class TestRealDataInvariants:
                 pass
 
 
-@pytest.mark.usefixtures("use_real_cache_for_integration_tests")
 class TestRealDataPlayerCombinations:
     """Test all player-based filter combinations with real data."""
 
@@ -184,7 +182,6 @@ class TestRealDataPlayerCombinations:
         assert not failures, f"Found {len(failures)} failures:\n" + "\n".join(failures[:10])
 
 
-@pytest.mark.usefixtures("use_real_cache_for_integration_tests")
 class TestRealDataRandomCombinations:
     """Test random filter combinations to catch unexpected edge cases."""
 
@@ -273,7 +270,6 @@ class TestRealDataRandomCombinations:
         assert not failures, f"Found {len(failures)} failures:\n" + "\n".join(failures[:20])
 
 
-@pytest.mark.usefixtures("use_real_cache_for_integration_tests")
 class TestRealDataExhaustiveSmallSets:
     """Test ALL combinations of small data sets."""
 
@@ -323,7 +319,6 @@ class TestRealDataExhaustiveSmallSets:
                 f"Manager {manager} in {most_recent_year} returned no weeks"
 
 
-@pytest.mark.usefixtures("use_real_cache_for_integration_tests")
 class TestRealDataSubsetRelationships:
     """Test that filter combinations create proper subset relationships."""
 
@@ -364,7 +359,6 @@ class TestRealDataSubsetRelationships:
                 f"Player+Year years not subset of Player-only years"
 
 
-@pytest.mark.usefixtures("use_real_cache_for_integration_tests")
 class TestRealDataRegressionSnapshots:
     """Snapshot tests to prevent regressions on known queries."""
 

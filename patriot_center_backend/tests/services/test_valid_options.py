@@ -965,19 +965,6 @@ class TestInternalMethods:
         service._parse_arg("QB")
         assert service._position == "QB"
 
-    def test_parse_arg_player_with_underscores(self, setup_mocks):
-        """Test _parse_arg handles player names with underscores."""
-        service = ValidOptionsService(None, None, None, None)
-        service._parse_arg("Amon-Ra_St._Brown")
-        assert service._player == "Amon-Ra St. Brown"
-
-    def test_parse_arg_player_with_apostrophe_encoding(self, setup_mocks):
-        """Test _parse_arg handles URL-encoded apostrophes."""
-        with patch('patriot_center_backend.services.valid_options.PLAYERS_DATA', {"D'Andre Swift": {"position": "RB"}}):
-            service = ValidOptionsService(None, None, None, None)
-            service._parse_arg("D%27Andre_Swift")
-            assert "D'Andre" in service._player
-
     def test_check_year_and_week_valid(self, setup_mocks):
         """Test _check_year_and_week passes when year is selected with week."""
         service = ValidOptionsService(None, None, None, None)

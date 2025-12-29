@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { usePlayerManagers } from '../hooks/usePlayerManagers';
 import { useValidOptions } from '../hooks/useValidOptions';
 
 export default function PlayerPage() {
     const { playerSlug } = useParams();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const slug = playerSlug || 'amon-ra%20st.%20brown';
 
     const [year, setYear] = useState(null);    // default: ALL years

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useHeadToHead } from '../hooks/useHeadToHead';
 import { MatchupCard } from '../components/MatchupCard';
@@ -15,6 +15,7 @@ export default function HeadToHeadPage() {
   const year = searchParams.get('year');
 
   const { data, loading, error } = useHeadToHead(manager1, manager2, { year });
+  const [activeTab, setActiveTab] = useState('matchups');
 
   if (!manager1 || !manager2) {
     return (
@@ -46,7 +47,9 @@ export default function HeadToHeadPage() {
   const m2 = data.manager_2 || {};
   const overall = data.overall || {};
   const tradesData = data.trades_between || {};
-  const matchupHistory = overall.matchup_history || [];
+
+  // Check multiple possible locations for matchup history
+  const matchupHistory = data.matchup_history || overall.matchup_history || data.matchups || [];
 
   const m1Key = m1.name?.toLowerCase().replace(/\s+/g, '_');
   const m2Key = m2.name?.toLowerCase().replace(/\s+/g, '_');
@@ -76,19 +79,102 @@ export default function HeadToHeadPage() {
 
   return (
     <div className="App" style={{ paddingTop: '1rem' }}>
-      <div style={{ maxWidth: '896px', margin: '0 auto' }}>
-        {/* Two-column layout with managers and their stats */}
+      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+        {/* Five-column layout */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr auto 1fr',
-          gap: '3rem',
-          marginBottom: '3rem',
-          paddingBottom: '2rem',
-          borderBottom: '1px solid var(--border)'
+          gridTemplateColumns: '1fr 1.5fr auto 1.5fr 1fr',
+          gap: '1rem',
+          marginBottom: '1.5rem',
+          paddingBottom: '1rem',
+          alignItems: 'center'
         }}>
-        {/* Manager 1 Side */}
-        <div>
-          {/* Manager 1 Info */}
+          {/* Column 1 - Manager 1 Stats */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+            textAlign: 'left'
+          }}>
+            <div>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '0.25rem'
+              }}>
+                Wins
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: m1Wins > m2Wins ? 'var(--success)' : 'var(--text)'
+              }}>
+                {m1Wins}
+              </div>
+            </div>
+            <div>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '0.25rem'
+              }}>
+                Win %
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: 'var(--text)'
+              }}>
+                {m1WinPct}%
+              </div>
+            </div>
+            <div>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '0.25rem'
+              }}>
+                Avg Win Margin
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: m1AvgMargin > m2AvgMargin ? 'var(--success)' : 'var(--text)'
+              }}>
+                {m1AvgMargin.toFixed(1)}
+              </div>
+            </div>
+            <div>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '0.25rem'
+              }}>
+                Avg PTS/Game
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: (m1PointsFor / totalGames) > (m2PointsFor / totalGames) ? 'var(--success)' : 'var(--text)'
+              }}>
+                {(totalGames > 0 ? m1PointsFor / totalGames : 0).toFixed(1)}
+              </div>
+            </div>
+          </div>
+
+          {/* Column 2 - Manager 1 Image and Name */}
           <Link
             to={`/manager/${encodeURIComponent(m1.name)}`}
             style={{
@@ -96,7 +182,7 @@ export default function HeadToHeadPage() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginBottom: '2rem'
+              gap: '1rem'
             }}
           >
             {m1.image_url && (
@@ -104,12 +190,12 @@ export default function HeadToHeadPage() {
                 src={m1.image_url}
                 alt={m1.name}
                 style={{
-                  width: '100px',
-                  height: '100px',
+                  width: '150px',
+                  height: '150px',
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  border: '3px solid var(--border)',
-                  marginBottom: '1rem'
+                  border: '4px solid var(--border)',
+                  boxShadow: m1Wins > m2Wins ? '0 0 20px rgba(46, 204, 113, 0.3)' : 'none'
                 }}
                 onError={(e) => {
                   e.target.style.display = 'none';
@@ -120,81 +206,62 @@ export default function HeadToHeadPage() {
               fontSize: '1.5rem',
               fontWeight: 700,
               color: 'var(--text)',
-              marginBottom: '0.5rem'
+              textAlign: 'center'
             }}>
               {m1.name}
             </div>
-            <div style={{
-              fontSize: '3rem',
-              fontWeight: 700,
-              color: m1Wins > m2Wins ? 'var(--success)' : 'var(--text)',
-              lineHeight: 1
-            }}>
-              {m1Wins}
-            </div>
-            <div style={{
-              fontSize: '0.75rem',
-              color: 'var(--muted)',
-              fontWeight: 600,
-              marginTop: '0.5rem'
-            }}>
-              {m1WinPct}% WIN RATE
-            </div>
           </Link>
 
-          {/* Manager 1 Stats */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <StatRow
-              label="Avg Margin"
-              value={m1AvgMargin.toFixed(1)}
-              highlight={m1AvgMargin > m2AvgMargin}
-            />
-            <StatRow
-              label="Avg Points/Game"
-              value={(totalGames > 0 ? m1PointsFor / totalGames : 0).toFixed(1)}
-              highlight={(m1PointsFor / totalGames) > (m2PointsFor / totalGames)}
-            />
-          </div>
-        </div>
-
-        {/* Center - VS */}
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: '0 1rem'
-        }}>
+          {/* Column 3 - VS with counts */}
           <div style={{
-            fontSize: '2rem',
-            fontWeight: 700,
-            color: 'var(--muted)',
-            marginBottom: '0.5rem'
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1rem'
           }}>
-            VS
-          </div>
-          <div style={{
-            fontSize: '0.8rem',
-            color: 'var(--muted)',
-            textTransform: 'uppercase',
-            letterSpacing: '1px'
-          }}>
-            {totalGames} {totalGames === 1 ? 'Game' : 'Games'}
-          </div>
-          {ties > 0 && (
             <div style={{
-              fontSize: '0.7rem',
-              color: 'var(--muted)',
-              marginTop: '0.25rem'
+              width: '150px',
+              height: '150px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}>
-              {ties} {ties === 1 ? 'Tie' : 'Ties'}
+              <div style={{
+                fontSize: '3rem',
+                fontWeight: 700,
+                color: 'var(--muted)'
+              }}>
+                vs
+              </div>
             </div>
-          )}
-        </div>
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <div style={{
+                fontSize: '1.2rem',
+                fontWeight: 700,
+                textTransform: 'uppercase'
+              }}>
+                <span style={{ color: 'var(--text)' }}>{totalGames}</span>
+                {' '}
+                <span style={{ color: 'var(--muted)' }}>games</span>
+              </div>
+              <div style={{
+                fontSize: '1.2rem',
+                fontWeight: 700,
+                textTransform: 'uppercase'
+              }}>
+                <span style={{ color: 'var(--text)' }}>{totalTrades}</span>
+                {' '}
+                <span style={{ color: 'var(--muted)' }}>trades</span>
+              </div>
+            </div>
+          </div>
 
-        {/* Manager 2 Side */}
-        <div>
-          {/* Manager 2 Info */}
+          {/* Column 4 - Manager 2 Image and Name */}
           <Link
             to={`/manager/${encodeURIComponent(m2.name)}`}
             style={{
@@ -202,7 +269,7 @@ export default function HeadToHeadPage() {
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
-              marginBottom: '2rem'
+              gap: '1rem'
             }}
           >
             {m2.image_url && (
@@ -210,12 +277,12 @@ export default function HeadToHeadPage() {
                 src={m2.image_url}
                 alt={m2.name}
                 style={{
-                  width: '100px',
-                  height: '100px',
+                  width: '150px',
+                  height: '150px',
                   borderRadius: '50%',
                   objectFit: 'cover',
-                  border: '3px solid var(--border)',
-                  marginBottom: '1rem'
+                  border: '4px solid var(--border)',
+                  boxShadow: m2Wins > m1Wins ? '0 0 20px rgba(46, 204, 113, 0.3)' : 'none'
                 }}
                 onError={(e) => {
                   e.target.style.display = 'none';
@@ -226,267 +293,278 @@ export default function HeadToHeadPage() {
               fontSize: '1.5rem',
               fontWeight: 700,
               color: 'var(--text)',
-              marginBottom: '0.5rem'
+              textAlign: 'center'
             }}>
               {m2.name}
             </div>
-            <div style={{
-              fontSize: '3rem',
-              fontWeight: 700,
-              color: m2Wins > m1Wins ? 'var(--success)' : 'var(--text)',
-              lineHeight: 1
-            }}>
-              {m2Wins}
-            </div>
-            <div style={{
-              fontSize: '0.75rem',
-              color: 'var(--muted)',
-              fontWeight: 600,
-              marginTop: '0.5rem'
-            }}>
-              {m2WinPct}% WIN RATE
-            </div>
           </Link>
 
-          {/* Manager 2 Stats */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <StatRow
-              label="Avg Margin"
-              value={m2AvgMargin.toFixed(1)}
-              highlight={m2AvgMargin > m1AvgMargin}
-            />
-            <StatRow
-              label="Avg Points/Game"
-              value={(totalGames > 0 ? m2PointsFor / totalGames : 0).toFixed(1)}
-              highlight={(m2PointsFor / totalGames) > (m1PointsFor / totalGames)}
-            />
+          {/* Column 5 - Manager 2 Stats */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1rem',
+            textAlign: 'right'
+          }}>
+            <div>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '0.25rem'
+              }}>
+                Wins
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: m2Wins > m1Wins ? 'var(--success)' : 'var(--text)'
+              }}>
+                {m2Wins}
+              </div>
+            </div>
+            <div>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '0.25rem'
+              }}>
+                Win %
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: 'var(--text)'
+              }}>
+                {m2WinPct}%
+              </div>
+            </div>
+            <div>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '0.25rem'
+              }}>
+                Avg Win Margin
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: m2AvgMargin > m1AvgMargin ? 'var(--success)' : 'var(--text)'
+              }}>
+                {m2AvgMargin.toFixed(1)}
+              </div>
+            </div>
+            <div>
+              <div style={{
+                fontSize: '0.7rem',
+                fontWeight: 600,
+                color: 'var(--muted)',
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px',
+                marginBottom: '0.25rem'
+              }}>
+                Avg PTS/Game
+              </div>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 700,
+                color: (m2PointsFor / totalGames) > (m1PointsFor / totalGames) ? 'var(--success)' : 'var(--text)'
+              }}>
+                {(totalGames > 0 ? m2PointsFor / totalGames : 0).toFixed(1)}
+              </div>
+            </div>
           </div>
         </div>
+
+      {/* Tab Navigation */}
+      <div style={{
+        display: 'flex',
+        gap: '2rem',
+        marginBottom: '2rem',
+        borderBottom: '2px solid var(--border)',
+        justifyContent: 'center'
+      }}>
+        <button
+          onClick={() => setActiveTab('matchups')}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '1rem 0',
+            fontSize: '1.1rem',
+            fontWeight: 600,
+            color: activeTab === 'matchups' ? 'var(--text)' : 'var(--muted)',
+            cursor: 'pointer',
+            borderBottom: activeTab === 'matchups' ? '2px solid var(--text)' : '2px solid transparent',
+            marginBottom: '-2px',
+            transition: 'all 0.2s'
+          }}
+        >
+          {year ? `${year} Matchups` : 'All Matchups'} ({matchupHistory.length})
+        </button>
+        <button
+          onClick={() => setActiveTab('trades')}
+          style={{
+            background: 'none',
+            border: 'none',
+            padding: '1rem 0',
+            fontSize: '1.1rem',
+            fontWeight: 600,
+            color: activeTab === 'trades' ? 'var(--text)' : 'var(--muted)',
+            cursor: 'pointer',
+            borderBottom: activeTab === 'trades' ? '2px solid var(--text)' : '2px solid transparent',
+            marginBottom: '-2px',
+            transition: 'all 0.2s'
+          }}
+        >
+          {year ? `${year} Trades` : 'All Trades'} ({totalTrades})
+        </button>
       </div>
 
-      {/* Trades Between */}
-      {totalTrades > 0 && (
-        <div style={{
-          textAlign: 'center',
-          paddingBottom: '2rem',
-          marginBottom: '3rem',
-          borderBottom: '1px solid var(--border)'
-        }}>
-          <div style={{
-            fontSize: '0.7rem',
-            fontWeight: 600,
-            color: 'var(--muted)',
-            marginBottom: '0.5rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
-            Trades Between
-          </div>
-          <div style={{
-            fontSize: '2.5rem',
-            fontWeight: 700,
-            color: 'var(--text)',
-            lineHeight: 1
-          }}>
-            {totalTrades}
-          </div>
+      {/* Matchups Tab */}
+      {activeTab === 'matchups' && (
+        <div style={{ marginBottom: '3rem', minHeight: '400px' }}>
+          {matchupHistory.length > 0 ? (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '1.5rem',
+              alignItems: 'center'
+            }}>
+              {matchupHistory.map((matchup, idx) => {
+                // Check if this matchup is notable
+                const isM1LastWin = m1LastWin && matchup.week === m1LastWin.week && matchup.year === m1LastWin.year;
+                const isM2LastWin = m2LastWin && matchup.week === m2LastWin.week && matchup.year === m2LastWin.year;
+                const isM1BiggestBlowout = m1BiggestBlowout && matchup.week === m1BiggestBlowout.week && matchup.year === m1BiggestBlowout.year;
+                const isM2BiggestBlowout = m2BiggestBlowout && matchup.week === m2BiggestBlowout.week && matchup.year === m2BiggestBlowout.year;
+
+                // Collect all applicable labels
+                const notableLabels = [];
+                if (isM1LastWin) notableLabels.push(`${m1.name}'s Last Win`);
+                if (isM2LastWin) notableLabels.push(`${m2.name}'s Last Win`);
+                if (isM1BiggestBlowout) notableLabels.push(`${m1.name}'s Biggest Blowout`);
+                if (isM2BiggestBlowout) notableLabels.push(`${m2.name}'s Biggest Blowout`);
+
+                const isNotable = notableLabels.length > 0;
+
+                return (
+                  <div key={idx}>
+                    {notableLabels.map((label, labelIdx) => (
+                      <div key={labelIdx} style={{
+                        fontSize: '0.75rem',
+                        fontWeight: 600,
+                        color: 'var(--accent)',
+                        marginBottom: '0.5rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        {label}
+                      </div>
+                    ))}
+                    <div style={{
+                      boxShadow: isNotable ? '0 0 20px rgba(52, 152, 219, 0.4)' : 'none',
+                      borderRadius: '8px'
+                    }}>
+                      <MatchupCard matchup={matchup} showMargin={isM1BiggestBlowout || isM2BiggestBlowout} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '3rem',
+              fontSize: '1.2rem',
+              color: 'var(--muted)'
+            }}>
+              No Matchups
+            </div>
+          )}
         </div>
       )}
 
-      {/* Notable Matchups */}
-      {(m1LastWin || m2LastWin || m1BiggestBlowout || m2BiggestBlowout) && (
-        <div style={{ marginBottom: '3rem' }}>
-          <h2 style={{
-            fontSize: '1.3rem',
-            fontWeight: 700,
-            marginBottom: '1.5rem',
-            color: 'var(--text)'
-          }}>
-            Notable Matchups
-          </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '2rem'
-          }}>
-            {m1LastWin && Object.keys(m1LastWin).length > 0 && (
-              <div>
-                <div style={{
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  color: 'var(--muted)',
-                  marginBottom: '0.75rem'
-                }}>
-                  {m1.name}'s Last Win
-                </div>
-                <MatchupCard matchup={m1LastWin} showMargin={false} />
-              </div>
-            )}
-            {m2LastWin && Object.keys(m2LastWin).length > 0 && (
-              <div>
-                <div style={{
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  color: 'var(--muted)',
-                  marginBottom: '0.75rem'
-                }}>
-                  {m2.name}'s Last Win
-                </div>
-                <MatchupCard matchup={m2LastWin} showMargin={false} />
-              </div>
-            )}
-            {m1BiggestBlowout && Object.keys(m1BiggestBlowout).length > 0 && (
-              <div>
-                <div style={{
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  color: 'var(--muted)',
-                  marginBottom: '0.75rem'
-                }}>
-                  {m1.name}'s Biggest Blowout
-                </div>
-                <MatchupCard matchup={m1BiggestBlowout} showMargin={true} />
-              </div>
-            )}
-            {m2BiggestBlowout && Object.keys(m2BiggestBlowout).length > 0 && (
-              <div>
-                <div style={{
-                  fontSize: '0.8rem',
-                  fontWeight: 600,
-                  color: 'var(--muted)',
-                  marginBottom: '0.75rem'
-                }}>
-                  {m2.name}'s Biggest Blowout
-                </div>
-                <MatchupCard matchup={m2BiggestBlowout} showMargin={true} />
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      {/* Trades Tab */}
+      {activeTab === 'trades' && (
+        <div style={{ marginBottom: '3rem', minHeight: '400px' }}>
+          {tradeHistory.length > 0 ? (
+            <>
+              {/* Render trades chronologically with adaptive layout */}
+              {(() => {
+                const elements = [];
+                let twoManagerBatch = [];
 
-      {/* Matchup History */}
-      {matchupHistory.length > 0 && (
-        <div style={{ marginBottom: '3rem' }}>
-          <h2 style={{
-            fontSize: '1.3rem',
-            fontWeight: 700,
-            marginBottom: '1.5rem',
-            color: 'var(--text)'
-          }}>
-            All Matchups ({matchupHistory.length})
-          </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '1.5rem'
-          }}>
-            {matchupHistory.map((matchup, idx) => (
-              <MatchupCard key={idx} matchup={matchup} />
-            ))}
-          </div>
-        </div>
-      )}
+                tradeHistory.forEach((trade, idx) => {
+                  const managerCount = (trade.managers_involved || []).length;
 
-      {/* Trade History */}
-      {tradeHistory.length > 0 && (
-        <div style={{ marginBottom: '3rem' }}>
-          <h2 style={{
-            fontSize: '1.3rem',
-            fontWeight: 700,
-            marginBottom: '1.5rem',
-            color: 'var(--text)'
-          }}>
-            Trades ({totalTrades})
-          </h2>
+                  if (managerCount === 2) {
+                    // Accumulate 2-manager trades
+                    twoManagerBatch.push({ trade, originalIdx: idx });
+                  } else {
+                    // Flush any accumulated 2-manager trades before rendering 3+ manager trade
+                    if (twoManagerBatch.length > 0) {
+                      elements.push(
+                        <div key={`batch-${elements.length}`} style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gap: '1.5rem',
+                          marginBottom: '1.5rem'
+                        }}>
+                          {twoManagerBatch.map((item) => (
+                            <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                          ))}
+                        </div>
+                      );
+                      twoManagerBatch = [];
+                    }
 
-          {/* Render trades chronologically with adaptive layout */}
-          {(() => {
-            const elements = [];
-            let twoManagerBatch = [];
+                    // Render the 3+ manager trade at full width
+                    elements.push(
+                      <div key={`3m-${idx}`} style={{ marginBottom: '1.5rem' }}>
+                        <TradeCard trade={trade} hideHeader={false} />
+                      </div>
+                    );
+                  }
+                });
 
-            tradeHistory.forEach((trade, idx) => {
-              const managerCount = (trade.managers_involved || []).length;
-
-              if (managerCount === 2) {
-                // Accumulate 2-manager trades
-                twoManagerBatch.push({ trade, originalIdx: idx });
-              } else {
-                // Flush any accumulated 2-manager trades before rendering 3+ manager trade
+                // Flush any remaining 2-manager trades at the end
                 if (twoManagerBatch.length > 0) {
                   elements.push(
                     <div key={`batch-${elements.length}`} style={{
                       display: 'grid',
                       gridTemplateColumns: 'repeat(2, 1fr)',
-                      gap: '1.5rem',
-                      marginBottom: '1.5rem'
+                      gap: '1.5rem'
                     }}>
-                      {twoManagerBatch.map((item, i) => (
+                      {twoManagerBatch.map((item) => (
                         <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
                       ))}
                     </div>
                   );
-                  twoManagerBatch = [];
                 }
 
-                // Render the 3+ manager trade at full width
-                elements.push(
-                  <div key={`3m-${idx}`} style={{ marginBottom: '1.5rem' }}>
-                    <TradeCard trade={trade} hideHeader={false} />
-                  </div>
-                );
-              }
-            });
-
-            // Flush any remaining 2-manager trades at the end
-            if (twoManagerBatch.length > 0) {
-              elements.push(
-                <div key={`batch-${elements.length}`} style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, 1fr)',
-                  gap: '1.5rem'
-                }}>
-                  {twoManagerBatch.map((item, i) => (
-                    <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
-                  ))}
-                </div>
-              );
-            }
-
-            return elements;
-          })()}
+                return elements;
+              })()}
+            </>
+          ) : (
+            <div style={{
+              textAlign: 'center',
+              padding: '3rem',
+              fontSize: '1.2rem',
+              color: 'var(--muted)'
+            }}>
+              No Trades
+            </div>
+          )}
         </div>
       )}
-      </div>
-    </div>
-  );
-}
-
-// StatRow - Individual stat display
-function StatRow({ label, value, highlight }) {
-  return (
-    <div style={{
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      padding: '0.75rem 0',
-      borderBottom: '1px solid var(--border)'
-    }}>
-      <div style={{
-        fontSize: '0.8rem',
-        fontWeight: 600,
-        color: 'var(--muted)',
-        textTransform: 'uppercase',
-        letterSpacing: '0.5px'
-      }}>
-        {label}
-      </div>
-      <div style={{
-        fontSize: '1.5rem',
-        fontWeight: 700,
-        color: highlight ? 'var(--success)' : 'var(--text)'
-      }}>
-        {value}
       </div>
     </div>
   );

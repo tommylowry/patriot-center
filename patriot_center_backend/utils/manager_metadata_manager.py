@@ -1548,6 +1548,7 @@ class ManagerMetadataManager:
                             continue
         
         if list_all_matchups:
+            matchup_history.reverse()
             return copy.deepcopy(matchup_history)
 
 
@@ -3400,7 +3401,7 @@ class ManagerMetadataManager:
 
 # # Debug code - commented out
 # man = ManagerMetadataManager()
-# d = man.get_head_to_head("Tommy", "Owen")
+# d = man._get_head_to_head_overall_from_cache("Tommy", "Owen", None, True)
 # import json
 # pretty_json_string = json.dumps(d, indent=4)
 # print(pretty_json_string)

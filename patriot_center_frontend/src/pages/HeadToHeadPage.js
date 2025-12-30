@@ -179,10 +179,25 @@ export default function HeadToHeadPage() {
             to={`/manager/${encodeURIComponent(m1.name)}`}
             style={{
               textDecoration: 'none',
-              display: 'flex',
+              display: 'inline-flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '1rem'
+              gap: '1rem',
+              border: '1px solid transparent',
+              background: 'transparent',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+              boxSizing: 'border-box',
+              padding: '0.5rem'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--bg)';
+              e.currentTarget.style.borderColor = 'var(--accent)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'transparent';
             }}
           >
             {m1.image_url && (
@@ -266,10 +281,25 @@ export default function HeadToHeadPage() {
             to={`/manager/${encodeURIComponent(m2.name)}`}
             style={{
               textDecoration: 'none',
-              display: 'flex',
+              display: 'inline-flex',
               flexDirection: 'column',
               alignItems: 'center',
-              gap: '1rem'
+              gap: '1rem',
+              border: '1px solid transparent',
+              background: 'transparent',
+              borderRadius: '8px',
+              transition: 'all 0.2s ease',
+              cursor: 'pointer',
+              boxSizing: 'border-box',
+              padding: '0.5rem'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--bg)';
+              e.currentTarget.style.borderColor = 'var(--accent)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.borderColor = 'transparent';
             }}
           >
             {m2.image_url && (

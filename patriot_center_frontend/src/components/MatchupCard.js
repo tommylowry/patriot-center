@@ -74,50 +74,6 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
           }}>
             {/* Manager 1 Stats */}
             <div>
-              <Link
-                to={`/manager/${encodeURIComponent(manager1.name)}`}
-                style={{
-                  textDecoration: 'none',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  marginBottom: '0.5rem'
-                }}
-                onMouseEnter={(e) => {
-                  const img = e.currentTarget.querySelector('img');
-                  if (img) {
-                    img.style.borderColor = 'var(--accent)';
-                    img.style.transition = 'all 0.2s ease';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const img = e.currentTarget.querySelector('img');
-                  if (img) {
-                    img.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  }
-                }}
-              >
-                {manager1.image_url && (
-                  <img
-                    src={manager1.image_url}
-                    alt={manager1.name}
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '3px solid rgba(255, 255, 255, 0.1)',
-                      boxShadow: manager1Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none',
-                      opacity: manager1Won ? 1 : 0.8,
-                      filter: manager1Won ? 'none' : 'grayscale(0.15)',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                )}
-              </Link>
-              {/* Manager 1 Name */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
@@ -126,24 +82,57 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                 <Link
                   to={`/manager/${encodeURIComponent(manager1.name)}`}
                   style={{
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    border: '1px solid transparent',
+                    background: 'transparent',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer',
+                    boxSizing: 'border-box',
+                    padding: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--bg)';
+                    e.currentTarget.style.borderColor = 'var(--accent)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }}
+                >
+                  {manager1.image_url && (
+                    <img
+                      src={manager1.image_url}
+                      alt={manager1.name}
+                      style={{
+                        width: '100px',
+                        height: '100px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '3px solid rgba(255, 255, 255, 0.1)',
+                        boxShadow: manager1Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none',
+                        opacity: manager1Won ? 1 : 0.8,
+                        filter: manager1Won ? 'none' : 'grayscale(0.15)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <div style={{
                     fontSize: '1rem',
                     fontWeight: 400,
                     color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
                     textShadow: manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none',
-                    textDecoration: 'none',
-                    transition: 'all 0.2s ease',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--accent)';
-                    e.currentTarget.style.textShadow = '0 0 8px rgba(59, 130, 246, 0.3), 0 0 15px rgba(59, 130, 246, 0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)';
-                    e.currentTarget.style.textShadow = manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none';
-                  }}
-                >
-                  {manager1.name}
+                    transition: 'all 0.2s ease'
+                  }}>
+                    {manager1.name}
+                  </div>
                 </Link>
               </div>
               {/* Manager 1 Final Score */}
@@ -284,50 +273,6 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
 
             {/* Manager 2 Stats */}
             <div>
-              <Link
-                to={`/manager/${encodeURIComponent(manager2.name)}`}
-                style={{
-                  textDecoration: 'none',
-                  display: 'flex',
-                  justifyContent: 'center',
-                  marginBottom: '0.5rem'
-                }}
-                onMouseEnter={(e) => {
-                  const img = e.currentTarget.querySelector('img');
-                  if (img) {
-                    img.style.borderColor = 'var(--accent)';
-                    img.style.transition = 'all 0.2s ease';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const img = e.currentTarget.querySelector('img');
-                  if (img) {
-                    img.style.borderColor = 'rgba(255, 255, 255, 0.1)';
-                  }
-                }}
-              >
-                {manager2.image_url && (
-                  <img
-                    src={manager2.image_url}
-                    alt={manager2.name}
-                    style={{
-                      width: '100px',
-                      height: '100px',
-                      borderRadius: '50%',
-                      objectFit: 'cover',
-                      border: '3px solid rgba(255, 255, 255, 0.1)',
-                      boxShadow: manager2Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none',
-                      opacity: manager2Won ? 1 : 0.8,
-                      filter: manager2Won ? 'none' : 'grayscale(0.15)',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onError={(e) => {
-                      e.target.style.display = 'none';
-                    }}
-                  />
-                )}
-              </Link>
-              {/* Manager 2 Name */}
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
@@ -336,24 +281,57 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                 <Link
                   to={`/manager/${encodeURIComponent(manager2.name)}`}
                   style={{
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    border: '1px solid transparent',
+                    background: 'transparent',
+                    borderRadius: '8px',
+                    transition: 'all 0.2s ease',
+                    cursor: 'pointer',
+                    boxSizing: 'border-box',
+                    padding: '0.5rem'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--bg)';
+                    e.currentTarget.style.borderColor = 'var(--accent)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }}
+                >
+                  {manager2.image_url && (
+                    <img
+                      src={manager2.image_url}
+                      alt={manager2.name}
+                      style={{
+                        width: '100px',
+                        height: '100px',
+                        borderRadius: '50%',
+                        objectFit: 'cover',
+                        border: '3px solid rgba(255, 255, 255, 0.1)',
+                        boxShadow: manager2Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none',
+                        opacity: manager2Won ? 1 : 0.8,
+                        filter: manager2Won ? 'none' : 'grayscale(0.15)',
+                        transition: 'all 0.2s ease'
+                      }}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                  )}
+                  <div style={{
                     fontSize: '1rem',
                     fontWeight: 400,
                     color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
                     textShadow: manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none',
-                    textDecoration: 'none',
-                    transition: 'all 0.2s ease',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.color = 'var(--accent)';
-                    e.currentTarget.style.textShadow = '0 0 8px rgba(59, 130, 246, 0.3), 0 0 15px rgba(59, 130, 246, 0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.color = manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)';
-                    e.currentTarget.style.textShadow = manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none';
-                  }}
-                >
-                  {manager2.name}
+                    transition: 'all 0.2s ease'
+                  }}>
+                    {manager2.name}
+                  </div>
                 </Link>
               </div>
               {/* Manager 2 Final Score */}

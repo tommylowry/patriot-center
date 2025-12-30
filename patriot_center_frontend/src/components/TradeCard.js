@@ -206,11 +206,7 @@ export function TradeCard({ trade, hideHeader = false }) {
                       flexDirection: 'column',
                       alignItems: 'center',
                       gap: '0.5rem',
-                      borderTop: '1px solid transparent',
-                      borderBottom: '1px solid transparent',
-                      borderLeft: '1px solid transparent',
-                      borderRight: '1px solid var(--border)',
-                      paddingRight: '1.5rem',
+                      border: '1px solid transparent',
                       background: 'transparent',
                       borderRadius: '8px',
                       transition: 'all 0.2s ease',
@@ -219,15 +215,11 @@ export function TradeCard({ trade, hideHeader = false }) {
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'var(--bg)';
-                      e.currentTarget.style.borderTopColor = 'var(--accent)';
-                      e.currentTarget.style.borderBottomColor = 'var(--accent)';
-                      e.currentTarget.style.borderLeftColor = 'var(--accent)';
+                      e.currentTarget.style.borderColor = 'var(--accent)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.borderTopColor = 'transparent';
-                      e.currentTarget.style.borderBottomColor = 'transparent';
-                      e.currentTarget.style.borderLeftColor = 'transparent';
+                      e.currentTarget.style.borderColor = 'transparent';
                     }}
                   >
                     {group.fromManagerImage && (
@@ -267,6 +259,7 @@ export function TradeCard({ trade, hideHeader = false }) {
                     alignItems: 'center',
                     flexWrap: 'nowrap',
                     paddingLeft: '1.5rem',
+                    borderLeft: '1px solid var(--border)',
                     overflow: 'hidden'
                   }}>
                     {group.players.map((player, playerIdx) => {

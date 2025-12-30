@@ -250,8 +250,3 @@ def _recursive_replace(data, old_str, new_str):
     else:
         # Return other types (int, float, bool, etc.) as is
         return data
-
-
-
-player_ids = load_player_ids()
-_update_players_cache(player_ids)

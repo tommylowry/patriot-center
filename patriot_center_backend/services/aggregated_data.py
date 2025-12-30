@@ -306,5 +306,3 @@ def _handle_playoff_placement(aggregation_dict, primary_item, secondary_item, ye
         aggregation_dict[primary_item]["playoff_placement"][secondary_item][year] = placement
     
     return aggregation_dict
-
-fetch_aggregated_managers("Jonathan Taylor")

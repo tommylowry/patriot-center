@@ -20,6 +20,7 @@ from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
 from patriot_center_backend.services.players import fetch_players
 from patriot_center_backend.utils import helpers
+from functools import lru_cache
 
 # Load caches at module import for fast access
 PLAYERS_CACHE     = fetch_players()
@@ -122,6 +123,7 @@ def fetch_aggregated_managers(player, season=None, week=None):
 
     return managers_dict_to_return
 
+@lru_cache(maxsize=10000)
 def fetch_ffWAR_for_player(player, season=None, week=None):
     """
     Lookup ffWAR for a player at a specific season/week granularity.
@@ -305,4 +307,4 @@ def _handle_playoff_placement(aggregation_dict, primary_item, secondary_item, ye
     
     return aggregation_dict
 
-# fetch_aggregated_managers("Jonathan Taylor")
+fetch_aggregated_managers("Jonathan Taylor")

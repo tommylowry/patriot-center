@@ -2,6 +2,12 @@ from patriot_center_backend.utils.player_ids_loader import load_player_ids
 
 PLAYER_IDS_CACHE = load_player_ids()
 
+# In utils/helpers.py
+PLAYER_NAME_TO_ID = {
+    player_info.get("full_name"): pid 
+    for pid, player_info in PLAYER_IDS_CACHE.items()
+}
+
 def get_player_id(player_name):
     """
     Retrieve the player ID for a given player name from the player IDs cache.
@@ -13,10 +19,7 @@ def get_player_id(player_name):
     Returns:
         str or None: The player ID if found, otherwise None.
     """
-    for pid, player_info in PLAYER_IDS_CACHE.items():
-        if player_info.get("full_name") == player_name:
-            return pid
-    return None
+    return PLAYER_NAME_TO_ID.get(player_name)
 
 def get_player_name(player_id):
     """

@@ -490,16 +490,111 @@ export default function ManagerPage() {
                   return parseInt(b.week) - parseInt(a.week);
                 });
 
+                // Group by year for rendering
+                const groupedByYear = {};
+                sortedWeeks.forEach(weekData => {
+                  if (!groupedByYear[weekData.year]) {
+                    groupedByYear[weekData.year] = [];
+                  }
+                  groupedByYear[weekData.year].push(weekData);
+                });
+
+                const years = Object.keys(groupedByYear).sort((a, b) => parseInt(b) - parseInt(a));
+
                 return (
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))',
-                    gap: '1.5rem',
-                    justifyItems: 'center'
-                  }}>
-                    {sortedWeeks.map((weekData, i) => (
-                      <WaiverCard key={i} weekData={weekData} />
-                    ))}
+                  <div>
+                    {years.map((year, yearIdx) => {
+                      const yearWeeks = groupedByYear[year];
+                      const hasOddNumber = yearWeeks.length % 2 === 1;
+
+                      return (
+                        <div key={year}>
+                          {/* Year Separator */}
+                          {yearIdx > 0 && (
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '1rem',
+                              margin: '2rem 0 1.5rem 0'
+                            }}>
+                              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                              <div style={{
+                                fontSize: '1.2rem',
+                                fontWeight: 700,
+                                letterSpacing: '1.5px',
+                                textTransform: 'uppercase',
+                                color: 'var(--text)'
+                              }}>
+                                {year}
+                              </div>
+                              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                            </div>
+                          )}
+
+                          {/* First year doesn't need top margin, just the label */}
+                          {yearIdx === 0 && (
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '1rem',
+                              marginBottom: '1.5rem'
+                            }}>
+                              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                              <div style={{
+                                fontSize: '1.2rem',
+                                fontWeight: 700,
+                                letterSpacing: '1.5px',
+                                textTransform: 'uppercase',
+                                color: 'var(--text)'
+                              }}>
+                                {year}
+                              </div>
+                              <div style={{ flex: 1, height: '1px', background: 'var(--border)' }}></div>
+                            </div>
+                          )}
+
+                          {/* Render cards */}
+                          {hasOddNumber ? (
+                            <>
+                              {/* All but last card in grid */}
+                              {yearWeeks.length > 1 && (
+                                <div style={{
+                                  display: 'grid',
+                                  gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))',
+                                  gap: '1.5rem',
+                                  justifyItems: 'center',
+                                  marginBottom: '1.5rem'
+                                }}>
+                                  {yearWeeks.slice(0, -1).map((weekData, i) => (
+                                    <WaiverCard key={i} weekData={weekData} />
+                                  ))}
+                                </div>
+                              )}
+                              {/* Last card centered */}
+                              <div style={{
+                                display: 'flex',
+                                justifyContent: 'center'
+                              }}>
+                                <div style={{ width: '450px', maxWidth: '100%' }}>
+                                  <WaiverCard weekData={yearWeeks[yearWeeks.length - 1]} />
+                                </div>
+                              </div>
+                            </>
+                          ) : (
+                            <div style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))',
+                              gap: '1.5rem',
+                              justifyItems: 'center'
+                            }}>
+                              {yearWeeks.map((weekData, i) => (
+                                <WaiverCard key={i} weekData={weekData} />
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 );
               })()

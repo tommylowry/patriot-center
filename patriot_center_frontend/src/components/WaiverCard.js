@@ -237,17 +237,25 @@ export function WaiverCard({ weekData }) {
     }}>
       {/* Header */}
       <div style={{
-        padding: '0.75rem 1rem',
-        background: 'var(--bg)',
-        borderBottom: '1px solid var(--border)',
         display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center'
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginBottom: '0.5rem'
       }}>
-        <div style={{ fontSize: '1rem', fontWeight: 600 }}>
-          Week {week} • {year}
+        <div style={{
+          fontSize: '1rem',
+          fontWeight: 700,
+          letterSpacing: '1.5px',
+          textTransform: 'uppercase',
+          color: 'var(--text)'
+        }}>
+          {year} Week {week}
         </div>
-        <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+        <div style={{
+          fontSize: '0.75rem',
+          color: 'var(--muted)',
+          marginTop: '0.25rem'
+        }}>
           {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
         </div>
       </div>

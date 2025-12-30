@@ -248,7 +248,6 @@ export default function ManagerPage() {
       }}>
           {[
             { id: 'overview', label: 'Overview' },
-            { id: 'awards', label: 'Awards' },
             { id: 'transactions', label: 'Transactions' }
           ].map(tab => (
             <button
@@ -297,11 +296,7 @@ export default function ManagerPage() {
           placements={placements}
           headToHead={summary.head_to_head || {}}
           managerName={managerName}
-        />}
-
-        {activeTab === 'awards' && <AwardsTab
           awardsData={awardsData}
-          MatchupCard={MatchupCard}
         />}
 
         {activeTab === 'transactions' && <TransactionsTab
@@ -643,7 +638,7 @@ function formatYearsActive(years) {
 }
 
 // Overview Tab
-function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName }) {
+function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName, awardsData }) {
   // Sort opponents by wins first, then win percentage as tie breaker
   const sortedOpponents = headToHead ? Object.entries(headToHead).sort((a, b) => {
     // First sort by wins (descending)
@@ -669,6 +664,52 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
           <StatRow label="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} />
           <StatRow label="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} />
         </Section>
+
+        {/* Matchup Stats */}
+        {awardsData && (
+          <Section title="Matchup Stats">
+            {awardsData.highest_weekly_score && awardsData.highest_weekly_score.manager_1_score > 0 && (
+              <StatRow
+                label="Highest Score"
+                value={
+                  <span style={{ fontSize: '0.85rem' }}>
+                    {`${awardsData.highest_weekly_score.manager_1_score.toFixed(2)} v ${awardsData.highest_weekly_score.manager_2.name} [${awardsData.highest_weekly_score.year} W${awardsData.highest_weekly_score.week}]`}
+                  </span>
+                }
+              />
+            )}
+            {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.manager_1_score < Infinity && (
+              <StatRow
+                label="Lowest Score"
+                value={
+                  <span style={{ fontSize: '0.85rem' }}>
+                    {`${awardsData.lowest_weekly_score.manager_1_score.toFixed(2)} v ${awardsData.lowest_weekly_score.manager_2.name} [${awardsData.lowest_weekly_score.year} W${awardsData.lowest_weekly_score.week}]`}
+                  </span>
+                }
+              />
+            )}
+            {awardsData.biggest_blowout_win && awardsData.biggest_blowout_win.differential > 0 && (
+              <StatRow
+                label="Best Blowout"
+                value={
+                  <span style={{ fontSize: '0.85rem' }}>
+                    {`+${awardsData.biggest_blowout_win.differential.toFixed(2)} v ${awardsData.biggest_blowout_win.manager_2.name} [${awardsData.biggest_blowout_win.year} W${awardsData.biggest_blowout_win.week}]`}
+                  </span>
+                }
+              />
+            )}
+            {awardsData.biggest_blowout_loss && awardsData.biggest_blowout_loss.differential < 0 && (
+              <StatRow
+                label="Worst Blowout"
+                value={
+                  <span style={{ fontSize: '0.85rem' }}>
+                    {`${awardsData.biggest_blowout_loss.differential.toFixed(2)} v ${awardsData.biggest_blowout_loss.manager_2.name} [${awardsData.biggest_blowout_loss.year} W${awardsData.biggest_blowout_loss.week}]`}
+                  </span>
+                }
+              />
+            )}
+          </Section>
+        )}
 
         {/* Transaction Summary */}
         <Section title="Transactions">

@@ -2102,56 +2102,63 @@ class ManagerMetadataManager:
         # Draft Pick
         if "Draft Pick" in item:
             if dictionary:
+                abridged_name = item.replace(" Draft Pick", "")
+                abridged_name = abridged_name.replace("Round ", "R")
+                first_name = abridged_name.split(" ")[0]
+                last_name  = abridged_name.replace(f"{first_name} ", "")
                 returning_dict["image_url"] = "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
+                returning_dict["first_name"] = first_name
+                returning_dict["last_name"]  = last_name
                 return copy.deepcopy(returning_dict)
             return "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
         
         # FAAB
         if "$" in item:
             if dictionary:
-                returning_dict["image_url"] = "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
+                first_name = item.split(" ")[0]
+                last_name =  item.split(" ")[1]
+                returning_dict["image_url"]  = "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
+                returning_dict["first_name"] = first_name
+                returning_dict["last_name"]  = last_name
                 return copy.deepcopy(returning_dict)
             return "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
-        
-        
-        if item in self._image_urls_cache:
-            if dictionary:
-                returning_dict["image_url"] = self._image_urls_cache[item]
-                return copy.deepcopy(returning_dict)
-            return self._image_urls_cache[item]
         
 
         # Manager
         if item in NAME_TO_MANAGER_USERNAME:
             if dictionary:
-                returning_dict["image_url"] = self._get_current_manager_image_url(item, check_cache=False)
+                returning_dict["image_url"] = self._get_current_manager_image_url(item)
                 return copy.deepcopy(returning_dict)
-            return self._get_current_manager_image_url(item, check_cache=False)
+            return self._get_current_manager_image_url(item)
        
         # Player
         if item in self._players_cache:
             player_id = self._players_cache[item]["player_id"]
+            first_name = self._player_ids[player_id]['first_name']
+            last_name = self._player_ids[player_id]['last_name']
             if player_id.isnumeric():
                 url = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
-                self._image_urls_cache[item] = url
                 if dictionary:
                     returning_dict["image_url"] = url
+                    returning_dict["first_name"] = first_name
+                    returning_dict["last_name"]  = last_name
                     return copy.deepcopy(returning_dict)
                 return url
             else:
                 url = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
-                self._image_urls_cache[item] = url
                 if dictionary:
                     returning_dict["image_url"] = url
+                    returning_dict["first_name"] = first_name
+                    returning_dict["last_name"]  = last_name
                     return copy.deepcopy(returning_dict)
                 return url
 
         print("WARNING: Could not find image URL for item:", item)
         return ""
     
-    def _get_current_manager_image_url(self, manager_name: str, check_cache: bool = True) -> str:
+    def _get_current_manager_image_url(self, manager_name: str) -> str:
         """Fetch and return the current image URL for a manager."""
-        if check_cache and manager_name in self._image_urls_cache:
+        if manager_name in self._image_urls_cache:
             return self._image_urls_cache[manager_name]
 
         user_id = self._cache.get(manager_name, {}).get("summary", {}).get("user_id", "")
@@ -2183,22 +2190,22 @@ class ManagerMetadataManager:
             player_dict = self._get_image_url(player, dictionary=True)
 
 
-            if player not in self._players_cache:
-                if "FAAB" in player:
-                    first_name = player.split(" ")[0]
-                    last_name =  player.split(" ")[1]
-                elif "Draft Pick" in player:
-                    abridged_name = player.replace(" Draft Pick", "")
-                    abridged_name = abridged_name.replace("Round ", "R")
-                    first_name = abridged_name.split(" ")[0]
-                    last_name  = abridged_name.replace(f"{first_name} ", "")
-            else:
-                player_id = self._players_cache[player]["player_id"]
-                first_name = self._player_ids[player_id]['first_name']
-                last_name = self._player_ids[player_id]['last_name']
+            # if player not in self._players_cache:
+            #     if "FAAB" in player:
+            #         first_name = player.split(" ")[0]
+            #         last_name =  player.split(" ")[1]
+            #     elif "Draft Pick" in player:
+            #         abridged_name = player.replace(" Draft Pick", "")
+            #         abridged_name = abridged_name.replace("Round ", "R")
+            #         first_name = abridged_name.split(" ")[0]
+            #         last_name  = abridged_name.replace(f"{first_name} ", "")
+            # else:
+            #     player_id = self._players_cache[player]["player_id"]
+            #     first_name = self._player_ids[player_id]['first_name']
+            #     last_name = self._player_ids[player_id]['last_name']
 
-            player_dict["first_name"] = first_name
-            player_dict["last_name"]  = last_name
+            # player_dict["first_name"] = first_name
+            # player_dict["last_name"]  = last_name
 
 
             trade_item[f"{old_manager}_sent"].append(copy.deepcopy(player_dict))

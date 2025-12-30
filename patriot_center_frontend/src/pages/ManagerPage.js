@@ -8,6 +8,7 @@ import { useHeadToHead } from '../hooks/useHeadToHead';
 import { useAggregatedPlayers } from '../hooks/useAggregatedPlayers';
 import { MatchupCard } from '../components/MatchupCard';
 import { TradeCard } from '../components/TradeCard';
+import { WaiverCard } from '../components/WaiverCard';
 
 /**
  * ManagerPage - Social media style profile view with ALL manager data
@@ -248,7 +249,7 @@ export default function ManagerPage() {
             },
             {
               id: 'adds-drops',
-              label: `Adds & Drops${transactionHistory?.transactions ? ` (${transactionHistory.transactions.filter(t => ['add', 'drop', 'add_and_or_drop'].includes(t.type)).length})` : ''}`
+              label: `Adds & Drops${transactionHistory?.transactions ? ` (${transactionHistory.transactions.filter(t => ['add', 'drop', 'add_and_drop'].includes(t.type)).length})` : ''}`
             }
           ].map(tab => (
             <button
@@ -454,79 +455,51 @@ export default function ManagerPage() {
           <div style={{ marginBottom: '3rem', minHeight: '400px' }}>
             {transactionHistory && transactionHistory.transactions ? (
               (() => {
-                const addsDropsData = transactionHistory.transactions.filter(t => ['add', 'drop', 'add_and_or_drop'].includes(t.type));
-                return addsDropsData.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                    {addsDropsData.map((txn, i) => (
-                      <div key={i} style={{
-                        padding: '1rem',
-                        background: 'var(--bg-alt)',
-                        borderRadius: '8px',
-                        border: '1px solid var(--border)'
-                      }}>
-                        {/* Header */}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          marginBottom: '0.75rem'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                            <span>
-                              {txn.type === 'add' && '➕ Add'}
-                              {txn.type === 'drop' && '➖ Drop'}
-                              {txn.type === 'add_and_or_drop' && '🔄 Add/Drop'}
-                            </span>
-                          </div>
-                          <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                            Week {txn.week} • {txn.year}
-                          </div>
-                        </div>
+                const addsDropsData = transactionHistory.transactions.filter(t => ['add', 'drop', 'add_and_drop'].includes(t.type));
 
-                        {/* Content */}
-                        <div>
-                          {txn.type === 'add' && (
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                              <PlayerLink player={txn.player} showImage={true} />
-                              {txn.faab_spent !== null && txn.faab_spent !== undefined && (
-                                <span style={{ fontSize: '0.9rem', color: 'var(--success)', fontWeight: 700 }}>
-                                  ${txn.faab_spent} FAAB
-                                </span>
-                              )}
-                            </div>
-                          )}
-                          {txn.type === 'drop' && (
-                            <PlayerLink player={txn.player} showImage={true} />
-                          )}
-                          {txn.type === 'add_and_or_drop' && (
-                            <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.95rem' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span style={{ color: 'var(--success)', fontSize: '0.8rem' }}>Added:</span>
-                                <PlayerLink player={txn.added_player} showImage={true} />
-                                {txn.faab_spent !== null && txn.faab_spent !== undefined && (
-                                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                                    (${txn.faab_spent})
-                                  </span>
-                                )}
-                              </div>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                <span style={{ color: 'var(--danger)', fontSize: '0.8rem' }}>Dropped:</span>
-                                <PlayerLink player={txn.dropped_player} showImage={true} />
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
+                if (addsDropsData.length === 0) {
+                  return (
+                    <div style={{
+                      textAlign: 'center',
+                      padding: '3rem',
+                      fontSize: '1.2rem',
+                      color: 'var(--muted)'
+                    }}>
+                      No Adds or Drops
+                    </div>
+                  );
+                }
+
+                // Group transactions by week and year
+                const groupedByWeek = {};
+                addsDropsData.forEach(txn => {
+                  const key = `${txn.year}-W${txn.week}`;
+                  if (!groupedByWeek[key]) {
+                    groupedByWeek[key] = {
+                      year: txn.year,
+                      week: txn.week,
+                      transactions: []
+                    };
+                  }
+                  groupedByWeek[key].transactions.push(txn);
+                });
+
+                // Sort by year (desc) then week (desc)
+                const sortedWeeks = Object.values(groupedByWeek).sort((a, b) => {
+                  if (b.year !== a.year) return parseInt(b.year) - parseInt(a.year);
+                  return parseInt(b.week) - parseInt(a.week);
+                });
+
+                return (
                   <div style={{
-                    textAlign: 'center',
-                    padding: '3rem',
-                    fontSize: '1.2rem',
-                    color: 'var(--muted)'
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))',
+                    gap: '1.5rem',
+                    justifyItems: 'center'
                   }}>
-                    No Adds or Drops
+                    {sortedWeeks.map((weekData, i) => (
+                      <WaiverCard key={i} weekData={weekData} />
+                    ))}
                   </div>
                 );
               })()

@@ -7117,5 +7117,23 @@
         "team": "HOU",
         "slug": "jawhar%20jordan",
         "player_id": "11588"
+    },
+    "Raheim Sanders": {
+        "full_name": "Raheim Sanders",
+        "first_name": "Raheim",
+        "last_name": "Sanders",
+        "position": "RB",
+        "team": "CLE",
+        "slug": "raheim%20sanders",
+        "player_id": "12472"
+    },
+    "Tyler Shough": {
+        "full_name": "Tyler Shough",
+        "first_name": "Tyler",
+        "last_name": "Shough",
+        "position": "QB",
+        "team": "NO",
+        "slug": "tyler%20shough",
+        "player_id": "12545"
     }
 }

@@ -105517,5 +105517,227 @@
         "add": "Tampa Bay Buccaneers",
         "faab_spent": 0,
         "drop": "Carolina Panthers"
+    },
+    "1311076452648628224": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Anthony"
+        ],
+        "types": [
+            "add"
+        ],
+        "players_involved": [
+            "Geno Smith"
+        ],
+        "add": "Geno Smith"
+    },
+    "1310730565426638848": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Lamar Jackson"
+        ],
+        "drop": "Lamar Jackson"
+    },
+    "1310181875171491840": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "add"
+        ],
+        "players_involved": [
+            "Audric Estime"
+        ],
+        "add": "Audric Estime",
+        "faab_spent": 0
+    },
+    "1310135033238941696": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Anthony"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Mack Hollins",
+            "Jawhar Jordan"
+        ],
+        "add": "Mack Hollins",
+        "faab_spent": 0,
+        "drop": "Jawhar Jordan"
+    },
+    "1310082046642647040": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "add"
+        ],
+        "players_involved": [
+            "AJ Barner"
+        ],
+        "add": "AJ Barner",
+        "faab_spent": 0
+    },
+    "1310023488081240064": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Daniel Carlson",
+            "Evan McPherson"
+        ],
+        "add": "Daniel Carlson",
+        "faab_spent": 0,
+        "drop": "Evan McPherson"
+    },
+    "1310022805156298752": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Owen"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Kansas City Chiefs"
+        ],
+        "drop": "Kansas City Chiefs"
+    },
+    "1309964814457536512": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Dallas Cowboys"
+        ],
+        "drop": "Dallas Cowboys"
+    },
+    "1309958481867972608": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Sach"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Cooper Kupp",
+            "Baltimore Ravens"
+        ],
+        "add": "Cooper Kupp",
+        "faab_spent": 2,
+        "drop": "Baltimore Ravens"
+    },
+    "1309702828301758464": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Anthony"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Kyle Williams",
+            "Oronde Gadsden"
+        ],
+        "add": "Kyle Williams",
+        "faab_spent": 0,
+        "drop": "Oronde Gadsden"
+    },
+    "1309673383675326464": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Dallas Cowboys",
+            "Jordan Love"
+        ],
+        "add": "Dallas Cowboys",
+        "faab_spent": 0,
+        "drop": "Jordan Love"
+    },
+    "1309596314266247168": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Anthony"
+        ],
+        "types": [
+            "add",
+            "drop"
+        ],
+        "players_involved": [
+            "Tre Tucker",
+            "Cooper Kupp"
+        ],
+        "add": "Tre Tucker",
+        "faab_spent": 0,
+        "drop": "Cooper Kupp"
+    },
+    "1309566281917169664": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Mark Andrews"
+        ],
+        "drop": "Mark Andrews"
+    },
+    "1309466030841532416": {
+        "year": "2025",
+        "week": "17",
+        "managers_involved": [
+            "Ty"
+        ],
+        "types": [
+            "drop"
+        ],
+        "players_involved": [
+            "Dallas Cowboys"
+        ],
+        "drop": "Dallas Cowboys"
     }
 }

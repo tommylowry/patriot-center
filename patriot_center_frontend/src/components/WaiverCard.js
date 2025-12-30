@@ -119,6 +119,14 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
 }
 
 /**
+ * Relationship indicator colors
+ */
+const RELATIONSHIP_COLORS = {
+  add: '#10b981',  // green for adds
+  drop: '#ef4444'  // red for drops
+};
+
+/**
  * WaiverCard - Weekly waiver card showing all adds/drops for a specific week
  */
 export function WaiverCard({ weekData }) {
@@ -270,18 +278,40 @@ export function WaiverCard({ weekData }) {
               gap: '0.65rem',
               width: '100%'
             }}>
-              {processedAdds.map((txn, i) => (
-                <div key={i}>
-                  <PlayerLinkVertical
-                    player={txn.player}
-                    imageSize={scaledImageSize}
-                    fontSize={`${scaledFontSize}rem`}
-                    faabAmount={txn.faab_spent}
-                    scaleFactor={scaleFactor}
-                  />
-                  {/* TODO: Add relationship indicator for txn.relationshipId */}
-                </div>
-              ))}
+              {processedAdds.map((txn, i) => {
+                const hasRelationship = txn.relationshipId !== null;
+                return (
+                  <div key={i} style={{ position: 'relative' }}>
+                    <PlayerLinkVertical
+                      player={txn.player}
+                      imageSize={scaledImageSize}
+                      fontSize={`${scaledFontSize}rem`}
+                      faabAmount={txn.faab_spent}
+                      scaleFactor={scaleFactor}
+                    />
+                    {hasRelationship && (
+                      <div style={{
+                        position: 'absolute',
+                        right: '-0.75rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '18px',
+                        height: '14px',
+                        background: RELATIONSHIP_COLORS.add,
+                        borderRadius: '3px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '0.7rem',
+                        fontWeight: 700
+                      }}>
+                        +
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -310,17 +340,39 @@ export function WaiverCard({ weekData }) {
               gap: '0.65rem',
               width: '100%'
             }}>
-              {processedDrops.map((txn, i) => (
-                <div key={i}>
-                  <PlayerLinkVertical
-                    player={txn.player}
-                    imageSize={scaledImageSize}
-                    fontSize={`${scaledFontSize}rem`}
-                    scaleFactor={scaleFactor}
-                  />
-                  {/* TODO: Add relationship indicator for txn.relationshipId */}
-                </div>
-              ))}
+              {processedDrops.map((txn, i) => {
+                const hasRelationship = txn.relationshipId !== null;
+                return (
+                  <div key={i} style={{ position: 'relative', paddingLeft: '0.45rem' }}>
+                    <PlayerLinkVertical
+                      player={txn.player}
+                      imageSize={scaledImageSize}
+                      fontSize={`${scaledFontSize}rem`}
+                      scaleFactor={scaleFactor}
+                    />
+                    {hasRelationship && (
+                      <div style={{
+                        position: 'absolute',
+                        left: '-0.75rem',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        width: '18px',
+                        height: '14px',
+                        background: RELATIONSHIP_COLORS.drop,
+                        borderRadius: '3px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: 'white',
+                        fontSize: '0.7rem',
+                        fontWeight: 700
+                      }}>
+                        −
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

@@ -170,7 +170,7 @@ export default function ManagerPage() {
           <div style={{ width: '1px', background: 'var(--border)', flexShrink: 0 }} />
 
           {/* Right - Player Cards and Stats */}
-          <div style={{ flex: '0 0 82%', display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 0, overflow: 'hidden' }}>
             {/* Top Half - Player Cards */}
             <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignContent: 'center', minWidth: 0 }}>
               <PlayerStatCard
@@ -194,10 +194,10 @@ export default function ManagerPage() {
             </div>
 
             {/* Horizontal Divider */}
-            <div style={{ height: '1px', background: 'var(--border)', margin: '0.5rem 0' }} />
+            <div style={{ height: '1px', background: 'var(--border)', margin: '0.5rem 0', maxWidth: '100%' }} />
 
             {/* Bottom Half - Stat Cards */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center', maxWidth: '100%' }}>
               {rankings.worst && (
                 <div style={{
                   fontSize: '0.7rem',

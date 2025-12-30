@@ -244,14 +244,22 @@ def valid_options(arg1, arg2, arg3, arg4):
     response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
     return response, 200
 
-
-@app.route('/get/managers/list', methods=['GET'])
-def list_managers():
+@app.route('/get/managers/list', defaults={'active_only': "true"}, methods=['GET'])
+@app.route('/get/managers/list/<string:active_only>', methods=['GET'])
+def list_managers(active_only):
     """
     Endpoint to list all managers in the system and their top-level info.
     """
+    if active_only.lower() == "true":
+        bool_active_only = True
+    elif active_only.lower() == "false":
+        bool_active_only = False
+    else:
+        return jsonify({"error": f"{active_only} is not acceptable, only true/false."}), 400
+    
+    
     try:
-        data = MANAGER_METADATA_MANAGER.get_managers_list()
+        data = MANAGER_METADATA_MANAGER.get_managers_list(bool_active_only)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

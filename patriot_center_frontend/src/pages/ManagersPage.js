@@ -1,155 +1,161 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useManagersList } from '../hooks/useManagersList';
+import { ManagerCard } from '../components/ManagerCard';
 
 /**
- * ManagerRow component - displays a single manager in the table
- */
-function ManagerRow({ manager }) {
-  return (
-    <tr>
-      <td>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          {manager.image_url && (
-            <img
-              src={manager.image_url}
-              alt={manager.name}
-              style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: '2px solid var(--border)'
-              }}
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
-          )}
-          <Link
-            to={`/manager/${encodeURIComponent(manager.name)}`}
-            style={{
-              color: 'var(--accent)',
-              textDecoration: 'none',
-              fontWeight: 500
-            }}
-          >
-            {manager.name}
-          </Link>
-        </div>
-      </td>
-      <td align="center">{manager.overall_record || '0-0-0'}</td>
-      <td align="center">{manager.total_trades || 0}</td>
-      <td align="center">{manager.years_active ? manager.years_active.join(', ') : '—'}</td>
-    </tr>
-  );
-}
-
-/**
- * ManagersPage - List view of all managers
+ * ManagersPage - Card-based grid view of all managers
  */
 export default function ManagersPage() {
-  const { managers, loading, error } = useManagersList();
+  const [filterActive, setFilterActive] = useState('all'); // 'all' or 'active'
 
-  const [sortKey, setSortKey] = useState('name');
-  const [sortDir, setSortDir] = useState('asc');
+  // Fetch managers with rankings relative to the selected filter
+  const activeOnly = filterActive === 'active';
+  const { managers, loading, error } = useManagersList(activeOnly);
 
-  const toggleSort = (key) => {
-    if (sortKey === key) {
-      setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortKey(key);
-      setSortDir('asc');
-    }
-  };
-
-  const sortedManagers = [...managers].sort((a, b) => {
-    const dir = sortDir === 'asc' ? 1 : -1;
-    let av = a[sortKey];
-    let bv = b[sortKey];
-
-    // Handle special cases for sorting
-    if (sortKey === 'overall_record') {
-      // Extract wins from "W-L-T" format
-      const getWins = (record) => parseInt((record || '0-0-0').split('-')[0]);
-      av = getWins(a.overall_record);
-      bv = getWins(b.overall_record);
-    } else if (sortKey === 'years_active') {
-      // Sort by number of years
-      av = a.years_active ? a.years_active.length : 0;
-      bv = b.years_active ? b.years_active.length : 0;
-    }
-
-    if (typeof av === 'string') av = av.toLowerCase();
-    if (typeof bv === 'string') bv = bv.toLowerCase();
-
-    if (av < bv) return -1 * dir;
-    if (av > bv) return 1 * dir;
-    return 0;
+  // Filter managers (client-side filtering when showing active only)
+  const filteredManagers = managers.filter(manager => {
+    if (filterActive === 'active') return manager.is_active;
+    return true;
   });
+
+  // Sort managers by weight (descending - higher weight = higher on list)
+  const sortedManagers = [...filteredManagers].sort((a, b) => {
+    const weightA = a.weight || 0;
+    const weightB = b.weight || 0;
+    return weightB - weightA; // Descending order
+  });
+
+  const filterOptions = [
+    { key: 'all', label: 'All Managers' },
+    { key: 'active', label: 'Active Only' }
+  ];
 
   return (
     <div className="App" style={{ paddingTop: '1.5rem' }}>
-      <h1 style={{ margin: '0 0 1.5rem 0', fontWeight: 700, fontSize: '2rem' }}>
-        Managers
-      </h1>
+      {/* Page Header */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        marginBottom: '2rem',
+        gap: '0.5rem'
+      }}>
+        <h1 style={{
+          margin: 0,
+          fontWeight: 700,
+          fontSize: '2.5rem',
+          letterSpacing: '1px',
+          textTransform: 'uppercase'
+        }}>
+          Managers
+        </h1>
+        <div style={{
+          fontSize: '0.9rem',
+          color: 'var(--muted)'
+        }}>
+          {managers.length} {managers.length === 1 ? 'manager' : 'managers'} in the league
+        </div>
+      </div>
 
-      {loading && <p>Loading managers...</p>}
-      {error && <p style={{ color: 'var(--danger)' }}>Error: {error}</p>}
+      {loading && (
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
+          Loading managers...
+        </div>
+      )}
+
+      {error && (
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--danger)' }}>
+          Error: {error}
+        </div>
+      )}
 
       {!loading && !error && managers.length === 0 && (
-        <p style={{ color: 'var(--muted)' }}>No managers found.</p>
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
+          No managers found.
+        </div>
       )}
 
       {!loading && managers.length > 0 && (
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => toggleSort('name')}
+        <>
+          {/* Filter Controls */}
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '1.5rem',
+            marginBottom: '2rem',
+            alignItems: 'center'
+          }}>
+            {/* Filter Buttons */}
+            <div style={{
+              display: 'flex',
+              gap: '0.75rem',
+              flexWrap: 'wrap',
+              justifyContent: 'center'
+            }}>
+              {filterOptions.map(option => (
+                <button
+                  key={option.key}
+                  onClick={() => setFilterActive(option.key)}
+                  style={{
+                    padding: '0.6rem 1.25rem',
+                    background: filterActive === option.key
+                      ? 'var(--accent)'
+                      : 'var(--bg-alt)',
+                    color: filterActive === option.key
+                      ? 'white'
+                      : 'var(--text)',
+                    border: '1px solid var(--border)',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (filterActive !== option.key) {
+                      e.currentTarget.style.background = 'var(--bg)';
+                      e.currentTarget.style.borderColor = 'var(--accent)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (filterActive !== option.key) {
+                      e.currentTarget.style.background = 'var(--bg-alt)';
+                      e.currentTarget.style.borderColor = 'var(--border)';
+                    }
+                  }}
                 >
-                  <span className="col-header-full">Manager</span>
-                  <span className="col-header-abbr">Mgr</span>
-                  {' '}{sortKey === 'name' && (sortDir === 'asc' ? '▲' : '▼')}
-                </th>
-                <th
-                  align="center"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => toggleSort('overall_record')}
-                >
-                  <span className="col-header-full">Record</span>
-                  <span className="col-header-abbr">Rec</span>
-                  {' '}{sortKey === 'overall_record' && (sortDir === 'asc' ? '▲' : '▼')}
-                </th>
-                <th
-                  align="center"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => toggleSort('total_trades')}
-                >
-                  <span className="col-header-full">Trades</span>
-                  <span className="col-header-abbr">Tr</span>
-                  {' '}{sortKey === 'total_trades' && (sortDir === 'asc' ? '▲' : '▼')}
-                </th>
-                <th
-                  align="center"
-                  style={{ cursor: 'pointer' }}
-                  onClick={() => toggleSort('years_active')}
-                >
-                  <span className="col-header-full">Years Active</span>
-                  <span className="col-header-abbr">Years</span>
-                  {' '}{sortKey === 'years_active' && (sortDir === 'asc' ? '▲' : '▼')}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {sortedManagers.map((manager, i) => (
-                <ManagerRow key={i} manager={manager} />
+                  {option.label}
+                </button>
               ))}
-            </tbody>
-          </table>
-        </div>
+            </div>
+
+            {/* Results count */}
+            <div style={{
+              fontSize: '0.85rem',
+              color: 'var(--muted)',
+              fontStyle: 'italic'
+            }}>
+              Showing {sortedManagers.length} {sortedManagers.length === 1 ? 'manager' : 'managers'}
+            </div>
+          </div>
+
+          {/* Manager Cards - Full Width Stack */}
+          {sortedManagers.length > 0 && (
+            <div style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '1rem',
+              maxWidth: '1400px',
+              margin: '0 auto'
+            }}>
+              {sortedManagers.map((manager, i) => (
+                <ManagerCard key={i} manager={manager} />
+              ))}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

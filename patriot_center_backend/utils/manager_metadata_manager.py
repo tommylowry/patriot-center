@@ -128,7 +128,7 @@ class ManagerMetadataManager:
 
 
     # ---------- Public Methods for Exporting Data ----------
-    def get_managers_list(self) -> dict:
+    def get_managers_list(self, active_only: bool = True) -> dict:
         """Returns list of all managers with basic info.
         
         EXAMPLE:
@@ -146,19 +146,88 @@ class ManagerMetadataManager:
         }
         
         """
+        current_year = str(max(LEAGUE_IDS.keys()))
+        
+        managers = VALID_OPTIONS_CACHE[current_year]["managers"]
+        if not active_only:
+            managers = list(self._cache.keys())
+        
         managers_list = []
         
-        for manager in self._cache:
+        for manager in managers:
             wins   = self._cache[manager]["summary"]["matchup_data"]["overall"]["wins"]["total"]
             losses = self._cache[manager]["summary"]["matchup_data"]["overall"]["losses"]["total"]
             ties   = self._cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
+
+            ranking_details = self._get_ranking_details_from_cache(manager, manager_summary_usage=True)
+
             manager_item = {
                 "name":           manager,
                 "image_url":      self._get_current_manager_image_url(manager),
                 "years_active":   list(self._cache[manager].get("years", {}).keys()),
                 "total_trades":   self._cache[manager]["summary"]["transactions"]["trades"]["total"],
-                "overall_record": f"{wins}-{losses}-{ties}"
+                "wins":           wins,
+                "losses":         losses,
+                "ties":           ties,
+                "win_percentage": ranking_details['values']['win_percentage']
             }
+
+            placements = {
+                "first_place":  0,
+                "second_place": 0,
+                "third_place":  0
+            }
+            championships       = 0
+            playoff_appearances = ranking_details['values']['playoffs']
+            best_finish         = 4
+            for y in self._cache[manager]['summary']['overall_data']['placement']:
+                if self._cache[manager]['summary']['overall_data']['placement'][y] == 1:
+                    championships += 1
+                    placements['first_place'] += 1
+                if self._cache[manager]['summary']['overall_data']['placement'][y] == 2:
+                    placements['second_place'] += 1
+                if self._cache[manager]['summary']['overall_data']['placement'][y] == 3:
+                    placements['third_place'] += 1
+                if self._cache[manager]['summary']['overall_data']['placement'][y] < best_finish:
+                    best_finish = self._cache[manager]['summary']['overall_data']['placement'][y]
+
+
+            if best_finish == 4:
+                if playoff_appearances > 0:
+                    best_finish = "Playoffs"
+                else:
+                    best_finish = "Never Made Playoffs"
+            
+            # determine how high or low they should go in the list
+            weight = 0
+            weight += placements['first_place'] * 10000
+            weight += placements['second_place'] * 1000
+            weight += placements['third_place'] * 100
+            weight += playoff_appearances * 10
+            weight += ranking_details['values']['average_points_for']
+            manager_item['weight'] = weight
+            
+            manager_item["placements"]           = copy.deepcopy(placements)
+            manager_item["championships"]       = championships
+            manager_item["playoff_appearances"] = ranking_details['values']['playoffs']
+            manager_item["best_finish"]         = best_finish
+
+            manager_item["average_points_for"] = ranking_details['values']['average_points_for']
+
+            manager_item["total_adds"]  = self._cache[manager]['summary']['transactions']['adds']['total']
+            manager_item["total_drops"] = self._cache[manager]['summary']['transactions']['drops']['total']
+
+            manager_item["is_active"] = ranking_details['ranks']['is_active_manager']
+
+            rankings = {
+                "win_percentage":     ranking_details['ranks']['win_percentage'],
+                "average_points_for": ranking_details['ranks']['average_points_for'],
+                "trades":             ranking_details['ranks']['trades'],
+                "playoffs":           ranking_details['ranks']['playoffs']
+            }
+
+            manager_item["rankings"] = copy.deepcopy(rankings)
+
             managers_list.append(manager_item)
         
         return { "managers": managers_list }
@@ -1227,7 +1296,7 @@ class ManagerMetadataManager:
 
         return copy.deepcopy(overall_data)
 
-    def _get_ranking_details_from_cache(self, manager_name: str, year: str = None) -> dict:
+    def _get_ranking_details_from_cache(self, manager_name: str, year: str = None, manager_summary_usage: bool = False, active_only: bool = True) -> dict:       
         returning_dictionary = {
             "best": 1
         }
@@ -1259,6 +1328,9 @@ class ManagerMetadataManager:
         returning_dictionary["is_active_manager"] = True
         if manager_name not in managers:
             returning_dictionary["is_active_manager"] = False
+            managers = list(self._cache.keys())
+        
+        if not active_only:
             managers = list(self._cache.keys())
 
         returning_dictionary["worst"] = len(managers)
@@ -1326,6 +1398,12 @@ class ManagerMetadataManager:
                 else:
                     returning_dictionary[k] = rank
                     break
+        
+        if manager_summary_usage:
+            return {
+                "values": copy.deepcopy(eval_manager_values),
+                "ranks":  copy.deepcopy(returning_dictionary)
+            }
         
         return copy.deepcopy(returning_dictionary)
     
@@ -3389,7 +3467,7 @@ class ManagerMetadataManager:
 
 # # Debug code - commented out
 # man = ManagerMetadataManager()
-# d = man._get_head_to_head_overall_from_cache("Tommy", "Owen", None, True)
+# d = man.get_managers_list()
 # import json
 # pretty_json_string = json.dumps(d, indent=4)
 # print(pretty_json_string)

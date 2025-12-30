@@ -418,7 +418,7 @@ export default function HeadToHeadPage() {
       {/* Tab Navigation */}
       <div style={{
         display: 'flex',
-        gap: '2rem',
+        gap: '0.5rem',
         marginBottom: '2rem',
         borderBottom: '2px solid var(--border)',
         justifyContent: 'center'
@@ -428,14 +428,25 @@ export default function HeadToHeadPage() {
           style={{
             background: 'none',
             border: 'none',
-            padding: '1rem 0',
-            fontSize: '1.1rem',
-            fontWeight: 600,
-            color: activeTab === 'matchups' ? 'var(--text)' : 'var(--muted)',
+            padding: '0.75rem 1.5rem',
+            fontSize: '1rem',
+            fontWeight: activeTab === 'matchups' ? 600 : 400,
+            color: activeTab === 'matchups' ? 'var(--accent)' : 'var(--text)',
             cursor: 'pointer',
-            borderBottom: activeTab === 'matchups' ? '2px solid var(--text)' : '2px solid transparent',
+            borderBottom: activeTab === 'matchups' ? '2px solid var(--accent)' : '2px solid transparent',
             marginBottom: '-2px',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap'
+          }}
+          onMouseEnter={(e) => {
+            if (activeTab !== 'matchups') {
+              e.currentTarget.style.color = 'var(--accent)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (activeTab !== 'matchups') {
+              e.currentTarget.style.color = 'var(--text)';
+            }
           }}
         >
           {year ? `${year} Matchups` : 'All Matchups'} ({matchupHistory.length})
@@ -445,14 +456,25 @@ export default function HeadToHeadPage() {
           style={{
             background: 'none',
             border: 'none',
-            padding: '1rem 0',
-            fontSize: '1.1rem',
-            fontWeight: 600,
-            color: activeTab === 'trades' ? 'var(--text)' : 'var(--muted)',
+            padding: '0.75rem 1.5rem',
+            fontSize: '1rem',
+            fontWeight: activeTab === 'trades' ? 600 : 400,
+            color: activeTab === 'trades' ? 'var(--accent)' : 'var(--text)',
             cursor: 'pointer',
-            borderBottom: activeTab === 'trades' ? '2px solid var(--text)' : '2px solid transparent',
+            borderBottom: activeTab === 'trades' ? '2px solid var(--accent)' : '2px solid transparent',
             marginBottom: '-2px',
-            transition: 'all 0.2s'
+            transition: 'all 0.2s ease',
+            whiteSpace: 'nowrap'
+          }}
+          onMouseEnter={(e) => {
+            if (activeTab !== 'trades') {
+              e.currentTarget.style.color = 'var(--accent)';
+            }
+          }}
+          onMouseLeave={(e) => {
+            if (activeTab !== 'trades') {
+              e.currentTarget.style.color = 'var(--text)';
+            }
           }}
         >
           {year ? `${year} Trades` : 'All Trades'} ({totalTrades})

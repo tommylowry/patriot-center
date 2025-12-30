@@ -262,6 +262,16 @@ export default function ManagerPage() {
                 whiteSpace: 'nowrap',
                 opacity: tab.disabled ? 0.5 : 1
               }}
+              onMouseEnter={(e) => {
+                if (!tab.disabled && activeTab !== tab.id) {
+                  e.currentTarget.style.color = 'var(--accent)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!tab.disabled && activeTab !== tab.id) {
+                  e.currentTarget.style.color = 'var(--text)';
+                }
+              }}
             >
               {tab.label}
             </button>

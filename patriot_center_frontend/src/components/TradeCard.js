@@ -202,12 +202,32 @@ export function TradeCard({ trade, hideHeader = false }) {
                     to={`/manager/${encodeURIComponent(group.fromManager)}`}
                     style={{
                       textDecoration: 'none',
-                      display: 'flex',
+                      display: 'inline-flex',
                       flexDirection: 'column',
                       alignItems: 'center',
                       gap: '0.5rem',
+                      borderTop: '1px solid transparent',
+                      borderBottom: '1px solid transparent',
+                      borderLeft: '1px solid transparent',
                       borderRight: '1px solid var(--border)',
-                      paddingRight: '1.5rem'
+                      paddingRight: '1.5rem',
+                      background: 'transparent',
+                      borderRadius: '8px',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer',
+                      boxSizing: 'border-box'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'var(--bg)';
+                      e.currentTarget.style.borderTopColor = 'var(--accent)';
+                      e.currentTarget.style.borderBottomColor = 'var(--accent)';
+                      e.currentTarget.style.borderLeftColor = 'var(--accent)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.borderTopColor = 'transparent';
+                      e.currentTarget.style.borderBottomColor = 'transparent';
+                      e.currentTarget.style.borderLeftColor = 'transparent';
                     }}
                   >
                     {group.fromManagerImage && (
@@ -322,12 +342,24 @@ export function TradeCard({ trade, hideHeader = false }) {
                               to={`/player/${playerSlug}`}
                               style={{
                                 textDecoration: 'none',
-                                display: 'flex',
+                                display: 'inline-flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
                                 gap: '0.5rem',
-                                width: '100%',
-                                minWidth: 0
+                                border: '1px solid transparent',
+                                background: 'transparent',
+                                borderRadius: '8px',
+                                transition: 'all 0.2s ease',
+                                cursor: 'pointer',
+                                boxSizing: 'border-box'
+                              }}
+                              onMouseEnter={(e) => {
+                                e.currentTarget.style.background = 'var(--bg)';
+                                e.currentTarget.style.borderColor = 'var(--accent)';
+                              }}
+                              onMouseLeave={(e) => {
+                                e.currentTarget.style.background = 'transparent';
+                                e.currentTarget.style.borderColor = 'transparent';
                               }}
                             >
                               {player.image_url && (
@@ -531,10 +563,24 @@ export function TradeCard({ trade, hideHeader = false }) {
               to={`/manager/${encodeURIComponent(row.name)}`}
               style={{
                 textDecoration: 'none',
-                display: 'flex',
+                display: 'inline-flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: '0.5rem',
+                border: '1px solid transparent',
+                background: 'transparent',
+                borderRadius: '8px',
+                transition: 'all 0.2s ease',
+                cursor: 'pointer',
+                boxSizing: 'border-box'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg)';
+                e.currentTarget.style.borderColor = 'var(--accent)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.borderColor = 'transparent';
               }}
             >
               {row.imageUrl && (
@@ -648,12 +694,24 @@ export function TradeCard({ trade, hideHeader = false }) {
                         to={`/player/${playerSlug}`}
                         style={{
                           textDecoration: 'none',
-                          display: 'flex',
+                          display: 'inline-flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: '0.5rem',
-                          width: '100%',
-                          minWidth: 0
+                          border: '1px solid transparent',
+                          background: 'transparent',
+                          borderRadius: '8px',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer',
+                          boxSizing: 'border-box'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--bg)';
+                          e.currentTarget.style.borderColor = 'var(--accent)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.borderColor = 'transparent';
                         }}
                       >
                         {player.image_url && (
@@ -800,12 +858,24 @@ export function TradeCard({ trade, hideHeader = false }) {
                         to={`/player/${playerSlug}`}
                         style={{
                           textDecoration: 'none',
-                          display: 'flex',
+                          display: 'inline-flex',
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: '0.5rem',
-                          width: '100%',
-                          minWidth: 0
+                          border: '1px solid transparent',
+                          background: 'transparent',
+                          borderRadius: '8px',
+                          transition: 'all 0.2s ease',
+                          cursor: 'pointer',
+                          boxSizing: 'border-box'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'var(--bg)';
+                          e.currentTarget.style.borderColor = 'var(--accent)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'transparent';
+                          e.currentTarget.style.borderColor = 'transparent';
                         }}
                       >
                         {player.image_url && (

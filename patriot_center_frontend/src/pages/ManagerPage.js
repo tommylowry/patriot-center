@@ -428,10 +428,10 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
   return (
     <div
       style={{
-        padding: '1rem',
+        padding: '0.5rem',
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.75rem',
+        gap: '0.5rem',
         minWidth: 0,
         overflow: 'hidden'
       }}
@@ -440,19 +440,19 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
         fontSize: '1.25rem',
         fontWeight: 700,
         color: 'var(--text)',
-        textAlign: 'center',
+        textAlign: 'left',
         letterSpacing: '1px'
       }}>
         {title}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {player.player_image_endpoint && (
           <img
             src={player.player_image_endpoint}
             alt={playerName}
             style={{
-              width: '70px',
-              height: '70px',
+              width: '75px',
+              height: '75px',
               borderRadius: '8px',
               objectFit: 'cover',
               flexShrink: 0
@@ -462,7 +462,9 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
             }}
           />
         )}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Vertical Divider */}
+        <div style={{ width: '1px', height: '75px', background: 'var(--border)', flexShrink: 0 }} />
+        <div style={{ minWidth: 0, textAlign: 'left' }}>
           <Link
             to={`/player/${playerSlug}`}
             style={{

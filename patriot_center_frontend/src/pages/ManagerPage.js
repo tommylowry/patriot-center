@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useManagerSummary } from '../hooks/useManagerSummary';
 import { useManagerAwards } from '../hooks/useManagerAwards';
@@ -639,6 +639,8 @@ function formatYearsActive(years) {
 
 // Overview Tab
 function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName, awardsData }) {
+  const [hoveredMatchupId, setHoveredMatchupId] = useState(null);
+
   // Sort opponents by wins first, then win percentage as tie breaker
   const sortedOpponents = headToHead ? Object.entries(headToHead).sort((a, b) => {
     // First sort by wins (descending)
@@ -669,43 +671,45 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         {awardsData && (
           <Section title="Matchup Stats">
             {awardsData.highest_weekly_score && awardsData.highest_weekly_score.manager_1_score > 0 && (
-              <StatRow
+              <HoverableMatchupStat
+                id="highest"
                 label="Highest Score"
-                value={
-                  <span style={{ fontSize: '0.85rem' }}>
-                    {`${awardsData.highest_weekly_score.manager_1_score.toFixed(2)} v ${awardsData.highest_weekly_score.manager_2.name} [${awardsData.highest_weekly_score.year} W${awardsData.highest_weekly_score.week}]`}
-                  </span>
-                }
+                displayText={`${awardsData.highest_weekly_score.manager_1_score.toFixed(2)} v ${awardsData.highest_weekly_score.manager_2.name} [${awardsData.highest_weekly_score.year} W${awardsData.highest_weekly_score.week}]`}
+                matchup={awardsData.highest_weekly_score}
+                hoveredMatchupId={hoveredMatchupId}
+                setHoveredMatchupId={setHoveredMatchupId}
               />
             )}
             {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.manager_1_score < Infinity && (
-              <StatRow
+              <HoverableMatchupStat
+                id="lowest"
                 label="Lowest Score"
-                value={
-                  <span style={{ fontSize: '0.85rem' }}>
-                    {`${awardsData.lowest_weekly_score.manager_1_score.toFixed(2)} v ${awardsData.lowest_weekly_score.manager_2.name} [${awardsData.lowest_weekly_score.year} W${awardsData.lowest_weekly_score.week}]`}
-                  </span>
-                }
+                displayText={`${awardsData.lowest_weekly_score.manager_1_score.toFixed(2)} v ${awardsData.lowest_weekly_score.manager_2.name} [${awardsData.lowest_weekly_score.year} W${awardsData.lowest_weekly_score.week}]`}
+                matchup={awardsData.lowest_weekly_score}
+                hoveredMatchupId={hoveredMatchupId}
+                setHoveredMatchupId={setHoveredMatchupId}
               />
             )}
             {awardsData.biggest_blowout_win && awardsData.biggest_blowout_win.differential > 0 && (
-              <StatRow
+              <HoverableMatchupStat
+                id="blowout-win"
                 label="Best Blowout"
-                value={
-                  <span style={{ fontSize: '0.85rem' }}>
-                    {`+${awardsData.biggest_blowout_win.differential.toFixed(2)} v ${awardsData.biggest_blowout_win.manager_2.name} [${awardsData.biggest_blowout_win.year} W${awardsData.biggest_blowout_win.week}]`}
-                  </span>
-                }
+                displayText={`+${awardsData.biggest_blowout_win.differential.toFixed(2)} v ${awardsData.biggest_blowout_win.manager_2.name} [${awardsData.biggest_blowout_win.year} W${awardsData.biggest_blowout_win.week}]`}
+                matchup={awardsData.biggest_blowout_win}
+                showMargin={true}
+                hoveredMatchupId={hoveredMatchupId}
+                setHoveredMatchupId={setHoveredMatchupId}
               />
             )}
             {awardsData.biggest_blowout_loss && awardsData.biggest_blowout_loss.differential < 0 && (
-              <StatRow
+              <HoverableMatchupStat
+                id="blowout-loss"
                 label="Worst Blowout"
-                value={
-                  <span style={{ fontSize: '0.85rem' }}>
-                    {`${awardsData.biggest_blowout_loss.differential.toFixed(2)} v ${awardsData.biggest_blowout_loss.manager_2.name} [${awardsData.biggest_blowout_loss.year} W${awardsData.biggest_blowout_loss.week}]`}
-                  </span>
-                }
+                displayText={`${awardsData.biggest_blowout_loss.differential.toFixed(2)} v ${awardsData.biggest_blowout_loss.manager_2.name} [${awardsData.biggest_blowout_loss.year} W${awardsData.biggest_blowout_loss.week}]`}
+                matchup={awardsData.biggest_blowout_loss}
+                showMargin={true}
+                hoveredMatchupId={hoveredMatchupId}
+                setHoveredMatchupId={setHoveredMatchupId}
               />
             )}
           </Section>
@@ -1354,6 +1358,129 @@ function StatRow({ label, value, color, small }) {
     }}>
       <span style={{ color: 'var(--muted)' }}>{label}</span>
       <span style={{ fontWeight: 600, color: color || 'var(--text)', opacity: 0.85 }}>{value}</span>
+    </div>
+  );
+}
+
+// HoverableMatchupStat Component - Shows MatchupCard on hover
+function HoverableMatchupStat({ id, label, displayText, matchup, showMargin = false, hoveredMatchupId, setHoveredMatchupId }) {
+  const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 });
+  const textRef = useRef(null);
+  const cardRef = useRef(null);
+  const hideTimeoutRef = useRef(null);
+
+  const isHovered = hoveredMatchupId === id;
+
+  useEffect(() => {
+    if (isHovered && textRef.current && cardRef.current) {
+      const textRect = textRef.current.getBoundingClientRect();
+      const cardRect = cardRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      const spacing = 16; // Space between text and card
+
+      // Calculate available space in each direction
+      const spaceRight = viewportWidth - textRect.right;
+      const spaceLeft = textRect.left;
+      const spaceBelow = viewportHeight - textRect.bottom;
+      const spaceAbove = textRect.top;
+
+      let top = 0;
+      let left = 0;
+
+      // Determine horizontal position (prefer right, then left)
+      if (spaceRight >= cardRect.width + spacing) {
+        // Position to the right
+        left = textRect.right + spacing;
+        top = textRect.top + (textRect.height / 2) - (cardRect.height / 2);
+      } else if (spaceLeft >= cardRect.width + spacing) {
+        // Position to the left
+        left = textRect.left - cardRect.width - spacing;
+        top = textRect.top + (textRect.height / 2) - (cardRect.height / 2);
+      } else if (spaceBelow >= cardRect.height + spacing) {
+        // Position below
+        top = textRect.bottom + spacing;
+        left = textRect.left + (textRect.width / 2) - (cardRect.width / 2);
+      } else {
+        // Position above
+        top = textRect.top - cardRect.height - spacing;
+        left = textRect.left + (textRect.width / 2) - (cardRect.width / 2);
+      }
+
+      // Ensure card stays within viewport bounds
+      top = Math.max(spacing, Math.min(top, viewportHeight - cardRect.height - spacing));
+      left = Math.max(spacing, Math.min(left, viewportWidth - cardRect.width - spacing));
+
+      setCardPosition({ top, left });
+    }
+  }, [isHovered]);
+
+  return (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '0.25rem 0',
+      fontSize: '0.95rem',
+      position: 'relative'
+    }}>
+      <span style={{ color: 'var(--muted)' }}>{label}</span>
+      <span
+        ref={textRef}
+        style={{
+          fontWeight: 600,
+          color: 'var(--text)',
+          opacity: 0.85,
+          fontSize: '0.85rem',
+          cursor: 'pointer',
+          textDecoration: isHovered ? 'underline' : 'none',
+          transition: 'text-decoration 0.2s ease'
+        }}
+        onMouseEnter={() => {
+          if (hideTimeoutRef.current) {
+            clearTimeout(hideTimeoutRef.current);
+          }
+          setHoveredMatchupId(id);
+        }}
+        onMouseLeave={() => {
+          hideTimeoutRef.current = setTimeout(() => {
+            setHoveredMatchupId(null);
+          }, 300);
+        }}
+      >
+        {displayText}
+      </span>
+
+      {/* Hovering MatchupCard */}
+      {isHovered && matchup && (
+        <div
+          ref={cardRef}
+          onMouseEnter={() => {
+            if (hideTimeoutRef.current) {
+              clearTimeout(hideTimeoutRef.current);
+            }
+            setHoveredMatchupId(id);
+          }}
+          onMouseLeave={() => {
+            setHoveredMatchupId(null);
+          }}
+          style={{
+            position: 'fixed',
+            top: `${cardPosition.top}px`,
+            left: `${cardPosition.left}px`,
+            zIndex: 9999,
+            pointerEvents: 'auto',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(20, 20, 30, 0.92)',
+            border: '2px solid var(--accent)',
+            transition: 'opacity 0.2s ease',
+            opacity: cardPosition.top === 0 ? 0 : 1,
+          }}>
+          <MatchupCard matchup={matchup} showMargin={showMargin} />
+        </div>
+      )}
     </div>
   );
 }

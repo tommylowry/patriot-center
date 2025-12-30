@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 /**
  * PlayerLinkVertical - Helper component to display player with image on left, name on right (vertically stacked)
  */
-function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faabAmount = null }) {
+function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faabAmount = null, scaleFactor = 1 }) {
   const playerName = typeof player === 'string' ? player : player?.name || 'Unknown';
   const playerSlug = typeof player === 'object' && player?.slug ? player.slug : encodeURIComponent(playerName.toLowerCase());
   const imageUrl = typeof player === 'object' ? player?.image_url : null;
@@ -19,7 +19,7 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
   const shouldLink = !isFAAB && !isDraftPick;
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
       {imageUrl && (
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <img
@@ -38,21 +38,21 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
           {faabAmount !== null && faabAmount !== undefined && (
             <div style={{
               position: 'absolute',
-              bottom: '-4px',
-              right: '-6px',
+              bottom: `${-4 * scaleFactor}px`,
+              right: `${-6 * scaleFactor}px`,
               background: 'tan',
               color: 'black',
               clipPath: 'polygon(20% 0%, 100% 0%, 100% 100%, 20% 100%, 0% 50%)',
-              padding: '3px 6px 3px 8px',
+              padding: `${3 * scaleFactor}px ${6 * scaleFactor}px ${3 * scaleFactor}px ${8 * scaleFactor}px`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '0.6rem',
+              fontSize: `${0.6 * scaleFactor}rem`,
               fontWeight: 700,
-              border: '2px solid var(--card-bg)',
+              border: `${2 * scaleFactor}px solid var(--card-bg)`,
               boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-              minWidth: '24px',
-              height: '18px'
+              minWidth: `${24 * scaleFactor}px`,
+              height: `${18 * scaleFactor}px`
             }}>
               ${faabAmount}
             </div>
@@ -68,7 +68,9 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
             display: 'flex',
             flexDirection: 'column',
             gap: '0.1rem',
-            transition: 'color 0.2s ease'
+            transition: 'color 0.2s ease',
+            flex: 1,
+            alignItems: 'center'
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.color = 'var(--accent)';
@@ -94,7 +96,7 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
           )}
         </Link>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', flex: 1, alignItems: 'center' }}>
           {firstName && (
             <div style={{ fontSize: `${parseFloat(fontSize) * 0.85}rem`, fontWeight: 400, color: 'var(--muted)', opacity: 0.7 }}>
               {firstName}
@@ -176,6 +178,48 @@ export function WaiverCard({ weekData }) {
   // Don't render if no transactions
   if (activeColumns === 0) return null;
 
+  // Calculate optimal scaling based on longest last name
+  const allPlayers = [
+    ...processedAdds.map(a => a.player),
+    ...processedDrops.map(d => d.player)
+  ];
+
+  const longestLastName = allPlayers.reduce((longest, player) => {
+    const lastName = typeof player === 'object' ? player?.last_name : null;
+    if (!lastName) return longest;
+    return lastName.length > longest.length ? lastName : longest;
+  }, '');
+
+  // Calculate dimensions
+  const cardWidth = 450; // maxWidth
+  const contentPadding = 32; // 1rem * 2 (left + right)
+  const availableWidth = cardWidth - contentPadding;
+  const columnWidth = availableWidth / activeColumns;
+  const columnPadding = 24; // 0.75rem * 2 (left + right padding between columns)
+  const usableColumnWidth = columnWidth - columnPadding;
+
+  // Base dimensions
+  const baseImageSize = 45;
+  const baseFontSize = 0.9; // rem
+  const baseGap = 8; // 0.5rem gap between image and text
+
+  // Available space for text (accounting for image and gap)
+  const availableForText = usableColumnWidth - baseImageSize - baseGap;
+
+  // Estimate character width at base font size (0.6 is average for most fonts)
+  const baseCharWidth = baseFontSize * 16 * 0.6;
+  const estimatedNameWidth = longestLastName.length * baseCharWidth;
+
+  // Calculate scale factor to use 85% of available space
+  const targetUsage = 0.85;
+  const scaleFactor = estimatedNameWidth > 0
+    ? Math.min(Math.max((availableForText * targetUsage) / estimatedNameWidth, 0.8), 1.4)
+    : 1;
+
+  // Apply scaled dimensions
+  const scaledImageSize = Math.round(baseImageSize * scaleFactor);
+  const scaledFontSize = parseFloat((baseFontSize * scaleFactor).toFixed(2));
+
   return (
     <div style={{
       borderRadius: '12px',
@@ -185,7 +229,7 @@ export function WaiverCard({ weekData }) {
     }}>
       {/* Header */}
       <div style={{
-        padding: '1rem 1.5rem',
+        padding: '0.75rem 1rem',
         background: 'var(--bg)',
         borderBottom: '1px solid var(--border)',
         display: 'flex',
@@ -202,21 +246,20 @@ export function WaiverCard({ weekData }) {
 
       {/* Content - 2 column layout (Adds and Drops) */}
       <div style={{
-        padding: '1.5rem',
+        padding: '1rem',
         display: 'grid',
         gridTemplateColumns: `repeat(${activeColumns}, 1fr)`,
-        gap: '0',
-        minHeight: '200px'
+        gap: '0'
       }}>
         {/* Adds Column */}
         {hasAdds && (
-          <div style={{ display: 'flex', flexDirection: 'column', paddingRight: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', paddingRight: '0.75rem' }}>
             <div style={{
               fontSize: '1rem',
               fontWeight: 700,
               color: 'var(--text)',
-              marginBottom: '1rem',
-              paddingBottom: '0.75rem',
+              marginBottom: '0.75rem',
+              paddingBottom: '0.5rem',
               borderBottom: '1px solid var(--border)'
             }}>
               Adds ({processedAdds.length})
@@ -224,16 +267,17 @@ export function WaiverCard({ weekData }) {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '1rem',
+              gap: '0.65rem',
               width: '100%'
             }}>
               {processedAdds.map((txn, i) => (
                 <div key={i}>
                   <PlayerLinkVertical
                     player={txn.player}
-                    imageSize={45}
-                    fontSize="0.9rem"
+                    imageSize={scaledImageSize}
+                    fontSize={`${scaledFontSize}rem`}
                     faabAmount={txn.faab_spent}
+                    scaleFactor={scaleFactor}
                   />
                   {/* TODO: Add relationship indicator for txn.relationshipId */}
                 </div>
@@ -247,15 +291,15 @@ export function WaiverCard({ weekData }) {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            paddingLeft: hasAdds ? '1rem' : '0',
+            paddingLeft: hasAdds ? '0.75rem' : '0',
             borderLeft: hasAdds ? '1px solid var(--border)' : 'none'
           }}>
             <div style={{
               fontSize: '1rem',
               fontWeight: 700,
               color: 'var(--text)',
-              marginBottom: '1rem',
-              paddingBottom: '0.75rem',
+              marginBottom: '0.75rem',
+              paddingBottom: '0.5rem',
               borderBottom: '1px solid var(--border)'
             }}>
               Drops ({processedDrops.length})
@@ -263,15 +307,16 @@ export function WaiverCard({ weekData }) {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '1rem',
+              gap: '0.65rem',
               width: '100%'
             }}>
               {processedDrops.map((txn, i) => (
                 <div key={i}>
                   <PlayerLinkVertical
                     player={txn.player}
-                    imageSize={45}
-                    fontSize="0.9rem"
+                    imageSize={scaledImageSize}
+                    fontSize={`${scaledFontSize}rem`}
+                    scaleFactor={scaleFactor}
                   />
                   {/* TODO: Add relationship indicator for txn.relationshipId */}
                 </div>

@@ -563,18 +563,54 @@ export default function HeadToHeadPage() {
                   } else {
                     // Flush any accumulated 2-manager trades before rendering 3+ manager trade
                     if (twoManagerBatch.length > 0) {
-                      elements.push(
-                        <div key={`batch-${elements.length}`} style={{
-                          display: 'grid',
-                          gridTemplateColumns: 'repeat(2, 1fr)',
-                          gap: '1.5rem',
-                          marginBottom: '1.5rem'
-                        }}>
-                          {twoManagerBatch.map((item) => (
-                            <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
-                          ))}
-                        </div>
-                      );
+                      const hasOddNumber = twoManagerBatch.length % 2 === 1;
+
+                      if (hasOddNumber) {
+                        // Render all but the last trade in a grid
+                        const allButLast = twoManagerBatch.slice(0, -1);
+                        const lastTrade = twoManagerBatch[twoManagerBatch.length - 1];
+
+                        if (allButLast.length > 0) {
+                          elements.push(
+                            <div key={`batch-${elements.length}`} style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(2, 1fr)',
+                              gap: '1.5rem',
+                              marginBottom: '1.5rem'
+                            }}>
+                              {allButLast.map((item) => (
+                                <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                              ))}
+                            </div>
+                          );
+                        }
+
+                        // Center the last trade
+                        elements.push(
+                          <div key={`batch-${elements.length}`} style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            marginBottom: '1.5rem'
+                          }}>
+                            <div style={{ width: '50%' }}>
+                              <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} />
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        elements.push(
+                          <div key={`batch-${elements.length}`} style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: '1.5rem',
+                            marginBottom: '1.5rem'
+                          }}>
+                            {twoManagerBatch.map((item) => (
+                              <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                            ))}
+                          </div>
+                        );
+                      }
                       twoManagerBatch = [];
                     }
 
@@ -589,17 +625,52 @@ export default function HeadToHeadPage() {
 
                 // Flush any remaining 2-manager trades at the end
                 if (twoManagerBatch.length > 0) {
-                  elements.push(
-                    <div key={`batch-${elements.length}`} style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(2, 1fr)',
-                      gap: '1.5rem'
-                    }}>
-                      {twoManagerBatch.map((item) => (
-                        <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
-                      ))}
-                    </div>
-                  );
+                  const hasOddNumber = twoManagerBatch.length % 2 === 1;
+
+                  if (hasOddNumber) {
+                    // Render all but the last trade in a grid
+                    const allButLast = twoManagerBatch.slice(0, -1);
+                    const lastTrade = twoManagerBatch[twoManagerBatch.length - 1];
+
+                    if (allButLast.length > 0) {
+                      elements.push(
+                        <div key={`batch-${elements.length}`} style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gap: '1.5rem',
+                          marginBottom: '1.5rem'
+                        }}>
+                          {allButLast.map((item) => (
+                            <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    // Center the last trade
+                    elements.push(
+                      <div key={`batch-${elements.length}`} style={{
+                        display: 'flex',
+                        justifyContent: 'center'
+                      }}>
+                        <div style={{ width: '50%' }}>
+                          <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} />
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    elements.push(
+                      <div key={`batch-${elements.length}`} style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '1.5rem'
+                      }}>
+                        {twoManagerBatch.map((item) => (
+                          <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                        ))}
+                      </div>
+                    );
+                  }
                 }
 
                 return elements;

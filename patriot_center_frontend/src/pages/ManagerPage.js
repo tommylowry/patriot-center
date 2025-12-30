@@ -18,16 +18,13 @@ export default function ManagerPage() {
   const [year] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [transactionPage, setTransactionPage] = useState(0);
-  const [typeFilter, setTypeFilter] = useState('all');
-  const transactionsPerPage = 20;
 
   // Fetch data from ALL endpoints
   const { summary, loading: summaryLoading, error: summaryError } = useManagerSummary(managerName, { year });
   const { awards, loading: awardsLoading } = useManagerAwards(managerName);
   const { transactions: transactionHistory, loading: transactionsLoading } = useManagerTransactions(
     managerName,
-    { year, type: typeFilter === 'all' ? undefined : typeFilter, limit: transactionsPerPage, offset: transactionPage * transactionsPerPage }
+    { limit: 10000 } // Fetch all transactions (no pagination)
   );
   const { yearlyData, loading: yearlyLoading } = useManagerYearlyData(managerName, year);
 
@@ -88,9 +85,6 @@ export default function ManagerPage() {
     else if (p.placement === 3) acc.bronze++;
     return acc;
   }, { gold: 0, silver: 0, bronze: 0 });
-
-  // Pagination controls
-  const totalPages = transactionHistory ? Math.ceil(transactionHistory.total_count / transactionsPerPage) : 0;
 
   return (
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
@@ -248,7 +242,14 @@ export default function ManagerPage() {
       }}>
           {[
             { id: 'overview', label: 'Overview' },
-            { id: 'transactions', label: 'Transactions' }
+            {
+              id: 'trades',
+              label: `Trades${transactionHistory?.transactions ? ` (${transactionHistory.transactions.filter(t => t.type === 'trade').length})` : ''}`
+            },
+            {
+              id: 'adds-drops',
+              label: `Adds & Drops${transactionHistory?.transactions ? ` (${transactionHistory.transactions.filter(t => ['add', 'drop', 'add_and_or_drop'].includes(t.type)).length})` : ''}`
+            }
           ].map(tab => (
             <button
               key={tab.id}
@@ -299,15 +300,241 @@ export default function ManagerPage() {
           awardsData={awardsData}
         />}
 
-        {activeTab === 'transactions' && <TransactionsTab
-          transactionHistory={transactionHistory}
-          transactionPage={transactionPage}
-          setTransactionPage={setTransactionPage}
-          totalPages={totalPages}
-          transactionsPerPage={transactionsPerPage}
-          typeFilter={typeFilter}
-          setTypeFilter={setTypeFilter}
-        />}
+        {activeTab === 'trades' && (
+          <div style={{ marginBottom: '3rem', minHeight: '400px' }}>
+            {transactionHistory && transactionHistory.transactions ? (
+              (() => {
+                const tradesData = transactionHistory.transactions.filter(t => t.type === 'trade');
+
+                if (tradesData.length === 0) {
+                  return (
+                    <div style={{
+                      textAlign: 'center',
+                      padding: '3rem',
+                      fontSize: '1.2rem',
+                      color: 'var(--muted)'
+                    }}>
+                      No Trades
+                    </div>
+                  );
+                }
+
+                // Adaptive layout: 2-manager trades in 2-column grid, 3+ manager trades at full width
+                const elements = [];
+                let twoManagerBatch = [];
+
+                tradesData.forEach((trade, idx) => {
+                  const managerCount = (trade.managers_involved || []).length;
+
+                  if (managerCount === 2) {
+                    // Accumulate 2-manager trades
+                    twoManagerBatch.push({ trade, originalIdx: idx });
+                  } else {
+                    // Flush any accumulated 2-manager trades before rendering 3+ manager trade
+                    if (twoManagerBatch.length > 0) {
+                      const hasOddNumber = twoManagerBatch.length % 2 === 1;
+
+                      if (hasOddNumber) {
+                        // Render all but the last trade in a grid
+                        const allButLast = twoManagerBatch.slice(0, -1);
+                        const lastTrade = twoManagerBatch[twoManagerBatch.length - 1];
+
+                        if (allButLast.length > 0) {
+                          elements.push(
+                            <div key={`batch-${elements.length}`} style={{
+                              display: 'grid',
+                              gridTemplateColumns: 'repeat(2, 1fr)',
+                              gap: '1.5rem',
+                              marginBottom: '1.5rem'
+                            }}>
+                              {allButLast.map((item) => (
+                                <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                              ))}
+                            </div>
+                          );
+                        }
+
+                        // Center the last trade
+                        elements.push(
+                          <div key={`batch-${elements.length}`} style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            marginBottom: '1.5rem'
+                          }}>
+                            <div style={{ width: '50%' }}>
+                              <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} />
+                            </div>
+                          </div>
+                        );
+                      } else {
+                        elements.push(
+                          <div key={`batch-${elements.length}`} style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: '1.5rem',
+                            marginBottom: '1.5rem'
+                          }}>
+                            {twoManagerBatch.map((item) => (
+                              <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                            ))}
+                          </div>
+                        );
+                      }
+                      twoManagerBatch = [];
+                    }
+
+                    // Render the 3+ manager trade at full width
+                    elements.push(
+                      <div key={`3m-${idx}`} style={{ marginBottom: '1.5rem' }}>
+                        <TradeCard trade={trade} hideHeader={false} />
+                      </div>
+                    );
+                  }
+                });
+
+                // Flush any remaining 2-manager trades at the end
+                if (twoManagerBatch.length > 0) {
+                  const hasOddNumber = twoManagerBatch.length % 2 === 1;
+
+                  if (hasOddNumber) {
+                    // Render all but the last trade in a grid
+                    const allButLast = twoManagerBatch.slice(0, -1);
+                    const lastTrade = twoManagerBatch[twoManagerBatch.length - 1];
+
+                    if (allButLast.length > 0) {
+                      elements.push(
+                        <div key={`batch-${elements.length}`} style={{
+                          display: 'grid',
+                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gap: '1.5rem',
+                          marginBottom: '1.5rem'
+                        }}>
+                          {allButLast.map((item) => (
+                            <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                          ))}
+                        </div>
+                      );
+                    }
+
+                    // Center the last trade
+                    elements.push(
+                      <div key={`batch-${elements.length}`} style={{
+                        display: 'flex',
+                        justifyContent: 'center'
+                      }}>
+                        <div style={{ width: '50%' }}>
+                          <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} />
+                        </div>
+                      </div>
+                    );
+                  } else {
+                    elements.push(
+                      <div key={`batch-${elements.length}`} style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gap: '1.5rem'
+                      }}>
+                        {twoManagerBatch.map((item) => (
+                          <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                        ))}
+                      </div>
+                    );
+                  }
+                }
+
+                return elements;
+              })()
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>Loading trades...</div>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'adds-drops' && (
+          <div style={{ marginBottom: '3rem', minHeight: '400px' }}>
+            {transactionHistory && transactionHistory.transactions ? (
+              (() => {
+                const addsDropsData = transactionHistory.transactions.filter(t => ['add', 'drop', 'add_and_or_drop'].includes(t.type));
+                return addsDropsData.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {addsDropsData.map((txn, i) => (
+                      <div key={i} style={{
+                        padding: '1rem',
+                        background: 'var(--bg-alt)',
+                        borderRadius: '8px',
+                        border: '1px solid var(--border)'
+                      }}>
+                        {/* Header */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          marginBottom: '0.75rem'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                            <span>
+                              {txn.type === 'add' && '➕ Add'}
+                              {txn.type === 'drop' && '➖ Drop'}
+                              {txn.type === 'add_and_or_drop' && '🔄 Add/Drop'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                            Week {txn.week} • {txn.year}
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div>
+                          {txn.type === 'add' && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                              <PlayerLink player={txn.player} showImage={true} />
+                              {txn.faab_spent !== null && txn.faab_spent !== undefined && (
+                                <span style={{ fontSize: '0.9rem', color: 'var(--success)', fontWeight: 700 }}>
+                                  ${txn.faab_spent} FAAB
+                                </span>
+                              )}
+                            </div>
+                          )}
+                          {txn.type === 'drop' && (
+                            <PlayerLink player={txn.player} showImage={true} />
+                          )}
+                          {txn.type === 'add_and_or_drop' && (
+                            <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.95rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ color: 'var(--success)', fontSize: '0.8rem' }}>Added:</span>
+                                <PlayerLink player={txn.added_player} showImage={true} />
+                                {txn.faab_spent !== null && txn.faab_spent !== undefined && (
+                                  <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                                    (${txn.faab_spent})
+                                  </span>
+                                )}
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                <span style={{ color: 'var(--danger)', fontSize: '0.8rem' }}>Dropped:</span>
+                                <PlayerLink player={txn.dropped_player} showImage={true} />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '3rem',
+                    fontSize: '1.2rem',
+                    color: 'var(--muted)'
+                  }}>
+                    No Adds or Drops
+                  </div>
+                );
+              })()
+            ) : (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>Loading adds & drops...</div>
+            )}
+          </div>
+        )}
 
         {activeTab === 'weekly' && year && yearlyData && <WeeklyTab
           yearlyData={yearlyData}
@@ -1076,177 +1303,6 @@ function AwardsTab({ awardsData, MatchupCard }) {
           )}
         </div>
       )}
-    </div>
-  );
-}
-
-// Transactions Tab - SportsCenter Style with Filters
-function TransactionsTab({ transactionHistory, transactionPage, setTransactionPage, totalPages, transactionsPerPage, typeFilter, setTypeFilter }) {
-  // Reset to page 0 when filter changes
-  React.useEffect(() => {
-    setTransactionPage(0);
-  }, [typeFilter, setTransactionPage]);
-
-  if (!transactionHistory) {
-    return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>Loading transactions...</div>;
-  }
-
-  if (!transactionHistory.transactions || transactionHistory.transactions.length === 0) {
-    return <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>
-      <p>No transactions found</p>
-      <p style={{ fontSize: '0.85rem', marginTop: '0.5rem' }}>Total count: {transactionHistory.total_count || 0}</p>
-    </div>;
-  }
-
-  return (
-    <div>
-      {/* Filters and Pagination Bar */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1.5rem',
-        padding: '1rem',
-        background: 'linear-gradient(135deg, var(--bg-alt) 0%, var(--bg) 100%)',
-        borderRadius: '8px',
-        border: '1px solid var(--border)',
-        flexWrap: 'wrap',
-        gap: '1rem'
-      }}>
-        {/* Filter Buttons */}
-        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-          {['all', 'trade', 'add', 'drop', 'add_and_or_drop'].map(type => (
-            <button
-              key={type}
-              onClick={() => setTypeFilter(type)}
-              style={{
-                padding: '0.5rem 1rem',
-                background: typeFilter === type ? 'var(--accent)' : 'var(--bg)',
-                color: typeFilter === type ? 'white' : 'var(--text)',
-                border: '1px solid var(--border)',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '0.85rem',
-                fontWeight: typeFilter === type ? 600 : 400,
-                textTransform: 'capitalize'
-              }}
-            >
-              {type === 'all' && 'All'}
-              {type === 'trade' && '🔄 Trades'}
-              {type === 'add' && '➕ Adds'}
-              {type === 'drop' && '➖ Drops'}
-              {type === 'add_and_or_drop' && '🔄 Add/Drop'}
-            </button>
-          ))}
-        </div>
-
-        {/* Pagination */}
-        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginRight: '0.5rem' }}>
-            {transactionPage * transactionsPerPage + 1}-{Math.min((transactionPage + 1) * transactionsPerPage, transactionHistory.total_count)} of {transactionHistory.total_count}
-          </div>
-          <button
-            onClick={() => setTransactionPage(Math.max(0, transactionPage - 1))}
-            disabled={transactionPage === 0}
-            style={{
-              padding: '0.5rem 0.75rem',
-              background: transactionPage === 0 ? 'var(--bg)' : 'var(--accent)',
-              color: transactionPage === 0 ? 'var(--muted)' : 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: transactionPage === 0 ? 'not-allowed' : 'pointer',
-              fontSize: '0.85rem'
-            }}
-          >
-            ←
-          </button>
-          <div style={{ padding: '0.5rem 0.75rem', background: 'var(--bg)', borderRadius: '6px', fontSize: '0.85rem', minWidth: '80px', textAlign: 'center' }}>
-            {transactionPage + 1} / {totalPages}
-          </div>
-          <button
-            onClick={() => setTransactionPage(Math.min(totalPages - 1, transactionPage + 1))}
-            disabled={transactionPage >= totalPages - 1}
-            style={{
-              padding: '0.5rem 0.75rem',
-              background: transactionPage >= totalPages - 1 ? 'var(--bg)' : 'var(--accent)',
-              color: transactionPage >= totalPages - 1 ? 'var(--muted)' : 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: transactionPage >= totalPages - 1 ? 'not-allowed' : 'pointer',
-              fontSize: '0.85rem'
-            }}
-          >
-            →
-          </button>
-        </div>
-      </div>
-
-      {/* Transaction Feed */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-        {transactionHistory.transactions.map((txn, i) => (
-          <div key={i} style={{
-            paddingBottom: '1rem',
-            borderBottom: '1px solid var(--border)'
-          }}>
-            {/* Header */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: '0.75rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
-                <span>
-                  {txn.type === 'trade' && '🔄 Trade'}
-                  {txn.type === 'add' && '➕ Add'}
-                  {txn.type === 'drop' && '➖ Drop'}
-                  {txn.type === 'add_and_or_drop' && '🔄 Add/Drop'}
-                </span>
-              </div>
-              <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                Week {txn.week} • {txn.year}
-              </div>
-            </div>
-
-            {/* Content */}
-            <div>
-              {txn.type === 'trade' && (
-                <TradeCard trade={txn} />
-              )}
-              {txn.type === 'add' && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                  <PlayerLink player={txn.player} showImage={true} />
-                  {txn.faab_spent !== null && txn.faab_spent !== undefined && (
-                    <span style={{ fontSize: '0.9rem', color: 'var(--success)', fontWeight: 700 }}>
-                      ${txn.faab_spent} FAAB
-                    </span>
-                  )}
-                </div>
-              )}
-              {txn.type === 'drop' && (
-                <PlayerLink player={txn.player} showImage={true} />
-              )}
-              {txn.type === 'add_and_or_drop' && (
-                <div style={{ display: 'flex', gap: '1.5rem', fontSize: '0.95rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: 'var(--success)', fontSize: '0.8rem' }}>Added:</span>
-                    <PlayerLink player={txn.added_player} showImage={true} />
-                    {txn.faab_spent !== null && txn.faab_spent !== undefined && (
-                      <span style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                        (${txn.faab_spent})
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ color: 'var(--danger)', fontSize: '0.8rem' }}>Dropped:</span>
-                    <PlayerLink player={txn.dropped_player} showImage={true} />
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }

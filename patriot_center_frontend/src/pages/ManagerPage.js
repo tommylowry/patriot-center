@@ -640,6 +640,7 @@ function formatYearsActive(years) {
 // Overview Tab
 function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName, awardsData }) {
   const [hoveredMatchupId, setHoveredMatchupId] = useState(null);
+  const hideTimeoutRef = useRef(null);
 
   // Sort opponents by wins first, then win percentage as tie breaker
   const sortedOpponents = headToHead ? Object.entries(headToHead).sort((a, b) => {
@@ -669,7 +670,14 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
         {/* Matchup Stats */}
         {awardsData && (
-          <Section title="Matchup Stats">
+          <Section title={
+            <>
+              Matchup Stats{' '}
+              <span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.6, letterSpacing: '0px' }}>
+                (hover for details)
+              </span>
+            </>
+          }>
             {awardsData.highest_weekly_score && awardsData.highest_weekly_score.manager_1_score > 0 && (
               <HoverableMatchupStat
                 id="highest"
@@ -678,6 +686,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 matchup={awardsData.highest_weekly_score}
                 hoveredMatchupId={hoveredMatchupId}
                 setHoveredMatchupId={setHoveredMatchupId}
+                hideTimeoutRef={hideTimeoutRef}
               />
             )}
             {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.manager_1_score < Infinity && (
@@ -688,6 +697,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 matchup={awardsData.lowest_weekly_score}
                 hoveredMatchupId={hoveredMatchupId}
                 setHoveredMatchupId={setHoveredMatchupId}
+                hideTimeoutRef={hideTimeoutRef}
               />
             )}
             {awardsData.biggest_blowout_win && awardsData.biggest_blowout_win.differential > 0 && (
@@ -699,6 +709,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 showMargin={true}
                 hoveredMatchupId={hoveredMatchupId}
                 setHoveredMatchupId={setHoveredMatchupId}
+                hideTimeoutRef={hideTimeoutRef}
               />
             )}
             {awardsData.biggest_blowout_loss && awardsData.biggest_blowout_loss.differential < 0 && (
@@ -710,6 +721,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 showMargin={true}
                 hoveredMatchupId={hoveredMatchupId}
                 setHoveredMatchupId={setHoveredMatchupId}
+                hideTimeoutRef={hideTimeoutRef}
               />
             )}
           </Section>
@@ -1363,11 +1375,10 @@ function StatRow({ label, value, color, small }) {
 }
 
 // HoverableMatchupStat Component - Shows MatchupCard on hover
-function HoverableMatchupStat({ id, label, displayText, matchup, showMargin = false, hoveredMatchupId, setHoveredMatchupId }) {
+function HoverableMatchupStat({ id, label, displayText, matchup, showMargin = false, hoveredMatchupId, setHoveredMatchupId, hideTimeoutRef }) {
   const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 });
   const textRef = useRef(null);
   const cardRef = useRef(null);
-  const hideTimeoutRef = useRef(null);
 
   const isHovered = hoveredMatchupId === id;
 
@@ -1434,8 +1445,8 @@ function HoverableMatchupStat({ id, label, displayText, matchup, showMargin = fa
           opacity: 0.85,
           fontSize: '0.85rem',
           cursor: 'pointer',
-          textDecoration: isHovered ? 'underline' : 'none',
-          transition: 'text-decoration 0.2s ease'
+          borderBottom: isHovered ? '1px solid var(--text)' : '1px dotted rgba(255, 255, 255, 0.4)',
+          transition: 'border-bottom 0.2s ease'
         }}
         onMouseEnter={() => {
           if (hideTimeoutRef.current) {

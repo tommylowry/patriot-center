@@ -96,7 +96,7 @@ export default function ManagerPage() {
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
       {/* Profile Info Section */}
       <div style={{ padding: '2rem' }}>
-        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', width: '896px', maxWidth: '896px', margin: '0 auto 1rem auto' }}>
+        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', width: '1000px', maxWidth: '1000px', margin: '0 auto 1rem auto' }}>
           {/* Left - Profile Picture and Info */}
           <div style={{ flex: '0 0 18%', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
             {/* Profile Picture with Medal */}
@@ -137,19 +137,19 @@ export default function ManagerPage() {
                   {medalCounts.gold > 0 && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <span style={{ fontSize: '1.25rem' }}>🥇</span>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>×{medalCounts.gold}</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.gold}</span>
                     </div>
                   )}
                   {medalCounts.silver > 0 && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <span style={{ fontSize: '1.25rem' }}>🥈</span>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>×{medalCounts.silver}</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.silver}</span>
                     </div>
                   )}
                   {medalCounts.bronze > 0 && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                       <span style={{ fontSize: '1.25rem' }}>🥉</span>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700 }}>×{medalCounts.bronze}</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.bronze}</span>
                     </div>
                   )}
                 </div>
@@ -165,6 +165,9 @@ export default function ManagerPage() {
               {formatRecord(overall.wins || 0, overall.losses || 0, overall.ties || 0)}
             </div>
           </div>
+
+          {/* Vertical Divider */}
+          <div style={{ width: '1px', background: 'var(--border)', flexShrink: 0 }} />
 
           {/* Right - Player Cards and Stats */}
           <div style={{ flex: '0 0 82%', display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 0, overflow: 'hidden' }}>
@@ -189,6 +192,9 @@ export default function ManagerPage() {
                 additionalInfo={topPlayers.mostStarted ? `${topPlayers.mostStarted.ffWAR?.toFixed(3)} ffWAR` : null}
               />
             </div>
+
+            {/* Horizontal Divider */}
+            <div style={{ height: '1px', background: 'var(--border)', margin: '0.5rem 0' }} />
 
             {/* Bottom Half - Stat Cards */}
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center' }}>
@@ -234,8 +240,8 @@ export default function ManagerPage() {
         gap: '0.5rem',
         borderBottom: '2px solid var(--border)',
         marginBottom: '2rem',
-        width: '896px',
-        maxWidth: '896px',
+        width: '1000px',
+        maxWidth: '1000px',
         margin: '0 auto 2rem auto',
         overflowX: 'auto',
         justifyContent: 'center'
@@ -279,6 +285,7 @@ export default function ManagerPage() {
       </div>
 
       {/* Tab Content */}
+      <div style={{ width: '1000px', maxWidth: '1000px', margin: '0 auto' }}>
         {activeTab === 'overview' && <OverviewTab
           overall={overall}
           regularSeason={regularSeason}
@@ -313,6 +320,7 @@ export default function ManagerPage() {
           MatchupCard={MatchupCard}
         />}
       </div>
+      </div>
     </div>
   );
 }
@@ -329,7 +337,7 @@ function StatCard({ title, value, color }) {
       textAlign: 'center'
     }}>
       <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginBottom: '0.5rem', textTransform: 'uppercase' }}>{title}</div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: color || 'var(--text)' }}>{value}</div>
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: color || 'var(--text)', opacity: 0.85 }}>{value}</div>
     </div>
   );
 }
@@ -360,7 +368,7 @@ function RankedStatCard({ title, value, color, rank, worst }) {
       gap: '0.25rem'
     }}>
       <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>{title}</div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: displayColor }}>{value}</div>
+      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: displayColor, opacity: 0.85 }}>{value}</div>
       {rank && worst && (
         <div style={{
           width: '28px',
@@ -402,7 +410,12 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
   }
 
   const playerName = player.key || player.name;
-  const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
+
+  // The backend flattens nested objects using dot notation
+  const playerSlug = player["slug.slug"] || player.slug || encodeURIComponent(playerName.toLowerCase());
+  const firstName = player["slug.first_name"] || playerName.split(' ')[0] || playerName;
+  const lastName = player["slug.last_name"] || playerName.split(' ').slice(1).join(' ') || '';
+
   const statValue = stat === 'num_games_started' ? player[stat] : (player[stat]?.toFixed(3) || player[stat] || 0);
 
   // Determine stat value color based on title
@@ -413,37 +426,22 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
   };
 
   return (
-    <Link
-      to={`/player/${playerSlug}`}
+    <div
       style={{
         padding: '1rem',
-        background: 'var(--bg-alt)',
-        borderRadius: '8px',
-        border: '1px solid var(--border)',
         display: 'flex',
         flexDirection: 'column',
         gap: '0.75rem',
-        textDecoration: 'none',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease',
         minWidth: 0,
         overflow: 'hidden'
       }}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.background = 'var(--bg)';
-        e.currentTarget.style.borderColor = 'var(--accent)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.background = 'var(--bg-alt)';
-        e.currentTarget.style.borderColor = 'var(--border)';
-      }}
     >
       <div style={{
-        fontSize: '0.9rem',
-        fontWeight: 600,
+        fontSize: '1.25rem',
+        fontWeight: 700,
         color: 'var(--text)',
         textAlign: 'center',
-        letterSpacing: '0.5px'
+        letterSpacing: '1px'
       }}>
         {title}
       </div>
@@ -465,20 +463,32 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
           />
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{
-            fontWeight: 600,
-            fontSize: '0.95rem',
-            color: 'var(--accent)',
-            overflow: 'hidden',
-            wordBreak: 'break-word',
-            lineHeight: '1.2'
-          }}>
-            {playerName}
-          </div>
+          <Link
+            to={`/player/${playerSlug}`}
+            style={{
+              fontWeight: 600,
+              fontSize: '0.95rem',
+              color: 'var(--text)',
+              textDecoration: 'none',
+              overflow: 'hidden',
+              lineHeight: '1.2',
+              display: 'block',
+              transition: 'color 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--accent)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--text)';
+            }}
+          >
+            <div>{firstName}</div>
+            <div>{lastName}</div>
+          </Link>
           <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
             {player.position} • {player.team}
           </div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: '0.25rem' }}>
+          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: '0.25rem', opacity: 0.85 }}>
             {statValue}
           </div>
           {additionalInfo && (
@@ -488,7 +498,7 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
           )}
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
 
@@ -527,15 +537,22 @@ function PlayerLink({ player, showImage = true }) {
         <Link
           to={`/player/${playerSlug}`}
           style={{
-            color: 'var(--accent)',
+            color: 'var(--text)',
             textDecoration: 'none',
-            fontWeight: 500
+            fontWeight: 600,
+            transition: 'color 0.2s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.color = 'var(--accent)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.color = 'var(--text)';
           }}
         >
           {playerName}
         </Link>
       ) : (
-        <span style={{ fontWeight: 500, color: 'var(--text)' }}>
+        <span style={{ fontWeight: 600, color: 'var(--text)', opacity: 0.7 }}>
           {playerName}
         </span>
       )}
@@ -570,9 +587,16 @@ function ManagerLink({ manager, showImage = true }) {
       <Link
         to={`/manager/${encodeURIComponent(managerName)}`}
         style={{
-          color: 'var(--accent)',
+          color: 'var(--text)',
           textDecoration: 'none',
-          fontWeight: 500
+          fontWeight: 600,
+          transition: 'color 0.2s ease'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.color = 'var(--accent)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.color = 'var(--text)';
         }}
       >
         {managerName}
@@ -633,9 +657,9 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
   }) : [];
 
   return (
-    <div style={{ display: 'flex', gap: '1rem' }}>
+    <div style={{ display: 'flex', gap: '2rem' }}>
       {/* Left Side - 2 Column Flowing Grid */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(200px, 1fr))', gap: '0.5rem 1rem', alignContent: 'start', minWidth: '600px', maxWidth: '600px' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(200px, 1fr))', gap: '0.5rem 1rem', alignContent: 'start', minWidth: '680px', maxWidth: '680px' }}>
         {/* Season Stats */}
         <Section title="Season Stats">
           <StatRow label="Regular Season" value={formatRecord(regularSeason.wins || 0, regularSeason.losses || 0, regularSeason.ties || 0)} />
@@ -653,8 +677,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         </Section>
 
         {/* Placement History */}
-        {placements.length > 0 && (
-          <Section title="Placements">
+        <Section title="Placements">
+          {placements.length > 0 ? (
             <div>
               {placements.sort((a, b) => b.year - a.year).map((p, i) => (
                 <div key={i} style={{
@@ -665,7 +689,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                   borderBottom: i < placements.length - 1 ? '1px solid var(--border)' : 'none'
                 }}>
                   <span>{p.year}</span>
-                  <span style={{ fontWeight: 700 }}>
+                  <span style={{ fontWeight: 700, opacity: 0.85 }}>
                     {p.placement === 1 && '🥇 Champion'}
                     {p.placement === 2 && '🥈 Runner-up'}
                     {p.placement === 3 && '🥉 3rd Place'}
@@ -674,8 +698,12 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 </div>
               ))}
             </div>
-          </Section>
-        )}
+          ) : (
+            <div style={{ fontSize: '0.9rem', color: 'var(--muted)', fontStyle: 'italic' }}>
+              Manager has never won 1st, 2nd, or 3rd.
+            </div>
+          )}
+        </Section>
 
         {/* Top Trade Partners */}
         {trades.top_trade_partners && trades.top_trade_partners.length > 0 && (
@@ -683,7 +711,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
             {trades.top_trade_partners.slice(0, 5).map((partner, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                 <ManagerLink manager={partner} />
-                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>{partner.count} trades</span>
+                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right', opacity: 0.85 }}>{partner.count} trades</span>
               </div>
             ))}
           </Section>
@@ -695,7 +723,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
             {adds.top_players_added.slice(0, 5).map((player, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                 <PlayerLink player={player} />
-                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
+                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right', opacity: 0.85 }}>×{player.count}</span>
               </div>
             ))}
           </Section>
@@ -707,7 +735,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
             {drops.top_players_dropped.slice(0, 5).map((player, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                 <PlayerLink player={player} />
-                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
+                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right', opacity: 0.85 }}>×{player.count}</span>
               </div>
             ))}
           </Section>
@@ -720,7 +748,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
               <div key={i} style={{ marginBottom: '0.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                   <PlayerLink player={player} />
-                  <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right', opacity: 0.85 }}>×{player.count}</span>
                 </div>
                 {player.from && player.from.length > 0 && (
                   <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
@@ -746,7 +774,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
               <div key={i} style={{ marginBottom: '0.5rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                   <PlayerLink player={player} />
-                  <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>×{player.count}</span>
+                  <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right', opacity: 0.85 }}>×{player.count}</span>
                 </div>
                 {player.to && player.to.length > 0 && (
                   <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', paddingLeft: '0.5rem', display: 'flex', flexWrap: 'wrap', gap: '0.5rem', alignItems: 'center' }}>
@@ -771,7 +799,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
             {faab.biggest_acquisitions.map((bid, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.25rem 0', fontSize: '0.95rem' }}>
                 <PlayerLink player={bid} />
-                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right' }}>${bid.amount}</span>
+                <span style={{ fontWeight: 600, color: 'var(--text)', textAlign: 'right', opacity: 0.85 }}>${bid.amount}</span>
               </div>
             ))}
           </Section>
@@ -790,9 +818,9 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
       {/* Right Sidebar - Head-to-Head */}
       {sortedOpponents.length > 0 && (
         <div style={{ width: '280px', flexShrink: 0 }}>
-          <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700 }}>Head-to-Head</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-            {sortedOpponents.map(([opponentKey, data]) => {
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700, letterSpacing: '1px' }}>Head-to-Head</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              {sortedOpponents.map(([opponentKey, data]) => {
               const opponent = data.opponent || { name: opponentKey };
               const totalGames = data.wins + data.losses + data.ties;
               const winPct = totalGames > 0 ? ((data.wins / totalGames) * 100).toFixed(1) : '0.0';
@@ -860,11 +888,18 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
-                          color: 'var(--accent)',
+                          color: 'var(--text)',
                           textDecoration: 'none',
-                          display: 'block'
+                          display: 'block',
+                          transition: 'color 0.2s ease'
                         }}
                         onClick={(e) => e.stopPropagation()}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.color = 'var(--accent)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.color = 'var(--text)';
+                        }}
                       >
                         {opponent.name}
                       </Link>
@@ -873,7 +908,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                         {' • '}
                         <span style={{
                           fontWeight: 600,
-                          color: parseFloat(winPct) >= 50 ? 'var(--success)' : 'var(--danger)'
+                          color: parseFloat(winPct) >= 50 ? 'var(--success)' : 'var(--danger)',
+                          opacity: 0.85
                         }}>
                           {winPct}%
                         </span>
@@ -951,7 +987,7 @@ function AwardsTab({ awardsData, MatchupCard }) {
               <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', fontWeight: 600 }}>
                 💰 Biggest FAAB Bid
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.5rem', opacity: 0.85 }}>
                 ${awardsData.biggest_faab_bid.amount}
               </div>
               <div style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>
@@ -971,7 +1007,7 @@ function AwardsTab({ awardsData, MatchupCard }) {
               <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginBottom: '0.75rem', fontWeight: 600 }}>
                 🔄 Most Trades (Single Season)
               </div>
-              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--accent)', marginBottom: '0.5rem' }}>
+              <div style={{ fontSize: '2.5rem', fontWeight: 700, color: 'var(--text)', marginBottom: '0.5rem', opacity: 0.85 }}>
                 {awardsData.most_trades_in_year.count}
               </div>
               <div style={{ fontSize: '0.9rem', color: 'var(--muted)' }}>
@@ -1172,7 +1208,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
 
   return (
     <div>
-      <h3 style={{ marginBottom: '1.5rem' }}>Week-by-Week Breakdown for {year}</h3>
+      <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '1px' }}>Week-by-Week Breakdown for {year}</h3>
 
       {/* Weekly Matchups in 2-column grid */}
       {validWeeklyScores.length > 0 && (
@@ -1193,7 +1229,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
         <Section title="🔄 Trades by Week" style={{ marginTop: '2rem' }}>
           {tradesByWeek.filter(w => w.trades && w.trades.length > 0).map((weekData, i) => (
             <div key={i} style={{ marginBottom: '1rem' }}>
-              <div style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--accent)' }}>Week {weekData.week}</div>
+              <div style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text)' }}>Week {weekData.week}</div>
               {weekData.trades.map((trade, j) => (
                 <div key={j} style={{
                   paddingBottom: '0.75rem',
@@ -1257,7 +1293,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
 function Section({ title, children, style }) {
   return (
     <div style={{ ...style }}>
-      <h3 style={{ marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>{title}</h3>
+      <h3 style={{ marginBottom: '0.75rem', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '1px' }}>{title}</h3>
       {children}
     </div>
   );
@@ -1274,7 +1310,7 @@ function StatRow({ label, value, color, small }) {
       fontSize: small ? '0.85rem' : '0.95rem'
     }}>
       <span style={{ color: 'var(--muted)' }}>{label}</span>
-      <span style={{ fontWeight: 600, color: color || 'var(--text)' }}>{value}</span>
+      <span style={{ fontWeight: 600, color: color || 'var(--text)', opacity: 0.85 }}>{value}</span>
     </div>
   );
 }

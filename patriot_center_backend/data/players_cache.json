@@ -4798,5 +4798,13 @@
         "position": "WR",
         "team": "NYJ",
         "slug": "Adonai_Mitchell"
+    },
+    "Tyler Shough": {
+        "full_name": "Tyler Shough",
+        "first_name": "Tyler",
+        "last_name": "Shough",
+        "position": "QB",
+        "team": "NO",
+        "slug": "Tyler_Shough"
     }
 }

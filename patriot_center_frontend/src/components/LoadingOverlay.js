@@ -1,7 +1,11 @@
-import React from 'react';
-import { useLoading } from '../contexts/LoadingContext';
+// import React from 'react';
+// import { useLoading } from '../contexts/LoadingContext';
 
 export const LoadingOverlay = () => {
+  // Loading overlay disabled - API is now fast enough!
+  return null;
+
+  /* Original loading overlay - commented out for now
   const { isLoading } = useLoading();
 
   if (!isLoading) return null;
@@ -50,4 +54,5 @@ export const LoadingOverlay = () => {
       </div>
     </>
   );
+  */
 };

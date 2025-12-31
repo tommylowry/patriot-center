@@ -430,7 +430,7 @@ export default function ManagerPage() {
         width: isMobile ? '100%' : '1000px',
         maxWidth: isMobile ? '100%' : '1000px',
         margin: '0 auto',
-        padding: isMobile ? '0 0.5rem' : '0'
+        padding: isMobile ? '0 1rem' : '0'
       }}>
         {activeTab === 'overview' && <OverviewTab
           overall={overall}
@@ -1097,7 +1097,14 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
   }) : [];
 
   return (
-    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '1.5rem' : '2rem' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
+      gap: isMobile ? '1.5rem' : '2rem',
+      width: '100%',
+      maxWidth: '100%',
+      overflow: 'hidden'
+    }}>
       {/* Left Side - 2 Column Flowing Grid */}
       <div style={{
         flex: 1,
@@ -1105,8 +1112,9 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(200px, 1fr))',
         gap: isMobile ? '1rem' : '0.5rem 3rem',
         alignContent: 'start',
-        minWidth: isMobile ? 'auto' : '680px',
-        maxWidth: isMobile ? '100%' : '680px'
+        minWidth: isMobile ? '0' : '680px',
+        maxWidth: isMobile ? '100%' : '680px',
+        width: isMobile ? '100%' : 'auto'
       }}>
         {/* Season Stats */}
         <Section title="Season Stats">
@@ -1121,9 +1129,11 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
           <Section title={
             <>
               Matchup Stats{' '}
-              <span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.6, letterSpacing: '0px' }}>
-                (hover for details)
-              </span>
+              {!isMobile && (
+                <span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.6, letterSpacing: '0px' }}>
+                  (hover for details)
+                </span>
+              )}
             </>
           }>
             {awardsData.highest_weekly_score && awardsData.highest_weekly_score.manager_1_score > 0 && (
@@ -1135,6 +1145,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 hoveredMatchupId={hoveredMatchupId}
                 setHoveredMatchupId={setHoveredMatchupId}
                 hideTimeoutRef={hideTimeoutRef}
+                isMobile={isMobile}
+                managerName={managerName}
               />
             )}
             {awardsData.lowest_weekly_score && awardsData.lowest_weekly_score.manager_1_score < Infinity && (
@@ -1146,6 +1158,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 hoveredMatchupId={hoveredMatchupId}
                 setHoveredMatchupId={setHoveredMatchupId}
                 hideTimeoutRef={hideTimeoutRef}
+                isMobile={isMobile}
+                managerName={managerName}
               />
             )}
             {awardsData.biggest_blowout_win && awardsData.biggest_blowout_win.differential > 0 && (
@@ -1158,6 +1172,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 hoveredMatchupId={hoveredMatchupId}
                 setHoveredMatchupId={setHoveredMatchupId}
                 hideTimeoutRef={hideTimeoutRef}
+                isMobile={isMobile}
+                managerName={managerName}
               />
             )}
             {awardsData.biggest_blowout_loss && awardsData.biggest_blowout_loss.differential < 0 && (
@@ -1170,6 +1186,8 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                 hoveredMatchupId={hoveredMatchupId}
                 setHoveredMatchupId={setHoveredMatchupId}
                 hideTimeoutRef={hideTimeoutRef}
+                isMobile={isMobile}
+                managerName={managerName}
               />
             )}
           </Section>
@@ -1635,8 +1653,8 @@ function StatRow({ label, value, color, small }) {
   );
 }
 
-// HoverableMatchupStat Component - Shows MatchupCard on hover
-function HoverableMatchupStat({ id, label, displayText, matchup, showMargin = false, hoveredMatchupId, setHoveredMatchupId, hideTimeoutRef }) {
+// HoverableMatchupStat Component - Shows MatchupCard on hover (desktop) or navigates to matchup page (mobile)
+function HoverableMatchupStat({ id, label, displayText, matchup, showMargin = false, hoveredMatchupId, setHoveredMatchupId, hideTimeoutRef, isMobile = false, managerName }) {
   const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 });
   const textRef = useRef(null);
   const cardRef = useRef(null);
@@ -1688,6 +1706,40 @@ function HoverableMatchupStat({ id, label, displayText, matchup, showMargin = fa
     }
   }, [isHovered]);
 
+  // Construct matchup URL for mobile
+  const matchupUrl = matchup ? `/matchup?year=${matchup.year}&week=${matchup.week}&manager1=${encodeURIComponent(managerName)}&manager2=${encodeURIComponent(matchup.manager_2.name)}` : '#';
+
+  // Mobile version: clickable link
+  if (isMobile) {
+    return (
+      <Link
+        to={matchupUrl}
+        state={{ matchup, showMargin }}
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '0.25rem 0',
+          fontSize: '0.95rem',
+          textDecoration: 'none'
+        }}
+      >
+        <span style={{ color: 'var(--muted)' }}>{label}</span>
+        <span
+          style={{
+            fontWeight: 600,
+            color: 'var(--accent)',
+            opacity: 0.9,
+            fontSize: '0.85rem'
+          }}
+        >
+          {displayText} →
+        </span>
+      </Link>
+    );
+  }
+
+  // Desktop version: hover behavior
   return (
     <div style={{
       display: 'flex',

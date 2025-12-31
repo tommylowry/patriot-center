@@ -8,6 +8,7 @@ import PlayerPage from './pages/PlayerPage';
 import ManagersPage from './pages/ManagersPage';
 import ManagerPage from './pages/ManagerPage';
 import HeadToHeadPage from './pages/HeadToHeadPage';
+import MatchupPage from './pages/MatchupPage';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
 import { LoadingProvider } from './contexts/LoadingContext';
@@ -336,6 +337,7 @@ function App() {
             <Route path="/managers" element={<ManagersPage />} />
             <Route path="/manager/:managerName" element={<ManagerPage />} />
             <Route path="/head-to-head" element={<HeadToHeadPage />} />
+            <Route path="/matchup" element={<MatchupPage />} />
           </Routes>
         </Layout>
       </Router>

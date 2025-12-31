@@ -330,7 +330,8 @@ function App() {
         <ScrollToTop />
         <Layout>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<ManagersPage />} />
+            <Route path="/players" element={<HomePage />} />
             <Route path="/player/:playerSlug" element={<PlayerPage />} />
             <Route path="/managers" element={<ManagersPage />} />
             <Route path="/manager/:managerName" element={<ManagerPage />} />

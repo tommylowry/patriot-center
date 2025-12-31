@@ -5,12 +5,11 @@ import SearchBar from './SearchBar';
 /**
  * CRITICAL NAVIGATION PATTERN:
  *
- * - "Patriot Center Database" title and "Players" tab use plain <a> tags (NOT React Router <Link>)
- * - This ensures they ALWAYS navigate to /?year=2025 with a full page reload
- * - React Router Links don't work properly when already on the same route
+ * - "Patriot Center Database" title uses React Router <Link> to navigate to home (Managers page)
+ * - "Players" tab uses plain <a> tag to ensure full page reload to /players?year=2025
  * - "Managers" tab uses React Router <Link> since it's a different route (/managers)
  *
- * DO NOT change these to React Router Links - it will break navigation!
+ * DO NOT change the Players <a> tag to React Router Link - it will break navigation!
  */
 export default function Layout({ children }) {
     const location = useLocation();
@@ -34,8 +33,8 @@ export default function Layout({ children }) {
                 }}>
                     {/* Centered Title */}
                     <div style={{ flex: 1 }} className="layout-spacer" />
-                    <a
-                        href="/?year=2025"
+                    <Link
+                        to="/"
                         className="layout-title"
                         style={{
                             textDecoration: 'none',
@@ -46,7 +45,7 @@ export default function Layout({ children }) {
                         }}
                     >
                         Patriot Center Database
-                    </a>
+                    </Link>
                     {/* Search Bar on Right */}
                     <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }} className="layout-search-container">
                         <SearchBar />
@@ -62,13 +61,13 @@ export default function Layout({ children }) {
                     borderTop: '1px solid var(--border)'
                 }}>
                     <a
-                        href="/?year=2025"
+                        href="/players?year=2025"
                         style={{
                             padding: '0.75rem 1.5rem',
                             textDecoration: 'none',
                             color: 'var(--text)',
                             fontWeight: 500,
-                            borderBottom: location.pathname === '/' ? '2px solid var(--accent)' : '2px solid transparent',
+                            borderBottom: location.pathname === '/players' ? '2px solid var(--accent)' : '2px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                     >
@@ -81,7 +80,7 @@ export default function Layout({ children }) {
                             textDecoration: 'none',
                             color: 'var(--text)',
                             fontWeight: 500,
-                            borderBottom: location.pathname === '/managers' ? '2px solid var(--accent)' : '2px solid transparent',
+                            borderBottom: (location.pathname === '/' || location.pathname === '/managers') ? '2px solid var(--accent)' : '2px solid transparent',
                             transition: 'all 0.2s ease'
                         }}
                     >

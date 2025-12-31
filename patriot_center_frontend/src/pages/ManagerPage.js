@@ -287,76 +287,83 @@ export default function ManagerPage() {
 
           {/* Right - Player Cards and Stats */}
           <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: isMobile ? '0.75rem' : '0.5rem', minWidth: 0, overflow: 'hidden' }}>
-            {/* Top Half - Player Cards */}
-            <div style={{
-              flex: 1,
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: isMobile ? '0.5rem' : '1rem',
-              alignContent: 'center',
-              minWidth: 0
-            }}>
-              <PlayerStatCard
-                title="Highest ffWAR"
-                player={topPlayers.highest}
-                stat="ffWAR"
-                additionalInfo={topPlayers.highest ? `${topPlayers.highest.num_games_started} starts` : null}
-                isMobile={isMobile}
-              />
-              <PlayerStatCard
-                title="Lowest ffWAR"
-                player={topPlayers.lowest}
-                stat="ffWAR"
-                additionalInfo={topPlayers.lowest ? `${topPlayers.lowest.num_games_started} starts` : null}
-                isMobile={isMobile}
-              />
-              <PlayerStatCard
-                title="Most Started"
-                player={topPlayers.mostStarted}
-                stat="num_games_started"
-                additionalInfo={topPlayers.mostStarted ? `${topPlayers.mostStarted.ffWAR?.toFixed(3)} ffWAR` : null}
-                isMobile={isMobile}
-              />
-            </div>
-
-            {/* Horizontal Divider */}
-            <div style={{ height: '1px', background: 'var(--border)', margin: isMobile ? '0.5rem 0' : '0.5rem 0', maxWidth: '100%' }} />
-
-            {/* Bottom Half - Stat Cards */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: isMobile ? '0.75rem' : '0.5rem', justifyContent: 'center', maxWidth: '100%' }}>
-              {rankings.worst && (
-                <div style={{
-                  fontSize: isMobile ? '0.65rem' : '0.7rem',
-                  color: 'var(--muted)',
-                  textAlign: 'center',
-                  letterSpacing: '0.3px'
-                }}>
-                  {year
-                    ? `Note: circle tiles reflect ranking among the ${rankings.worst} managers of the ${year} season`
-                    : isActiveManager
-                      ? `Note: circle tiles reflect ranking among the ${rankings.worst} active managers`
-                      : `Note: circle tiles reflect ranking among the ${rankings.worst} managers all time`
-                  }
-                </div>
-              )}
+            {/* Top Half - Player Cards (desktop: always shown, mobile: only on overview tab) */}
+            {(!isMobile || activeTab === 'overview') && (
               <div style={{
+                flex: 1,
                 display: 'grid',
-                gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
-                gap: isMobile ? '0.75rem' : '1rem'
+                gridTemplateColumns: 'repeat(3, 1fr)',
+                gap: isMobile ? '0.5rem' : '1rem',
+                alignContent: 'center',
+                minWidth: 0
               }}>
-                <RankedStatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} rank={rankings.win_percentage} worst={rankings.worst} isMobile={isMobile} />
-              <RankedStatCard title="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} rank={rankings.average_points_for} worst={rankings.worst} isMobile={isMobile} />
-              <RankedStatCard title="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} rank={rankings.average_points_against} worst={rankings.worst} isMobile={isMobile} />
-              <RankedStatCard
-                title="AVG Diff"
-                value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)}
-                rank={rankings.average_points_differential}
-                worst={rankings.worst}
-                isMobile={isMobile}
-              />
-              <RankedStatCard title="Trades" value={trades.total || 0} rank={rankings.trades} worst={rankings.worst} isMobile={isMobile} />
-              <RankedStatCard title="Playoffs" value={playoffAppearances} rank={rankings.playoffs} worst={rankings.worst} isMobile={isMobile} />
+                <PlayerStatCard
+                  title="Highest ffWAR"
+                  player={topPlayers.highest}
+                  stat="ffWAR"
+                  additionalInfo={topPlayers.highest ? `${topPlayers.highest.num_games_started} starts` : null}
+                  isMobile={isMobile}
+                />
+                <PlayerStatCard
+                  title="Lowest ffWAR"
+                  player={topPlayers.lowest}
+                  stat="ffWAR"
+                  additionalInfo={topPlayers.lowest ? `${topPlayers.lowest.num_games_started} starts` : null}
+                  isMobile={isMobile}
+                />
+                <PlayerStatCard
+                  title="Most Started"
+                  player={topPlayers.mostStarted}
+                  stat="num_games_started"
+                  additionalInfo={topPlayers.mostStarted ? `${topPlayers.mostStarted.ffWAR?.toFixed(3)} ffWAR` : null}
+                  isMobile={isMobile}
+                />
+              </div>
+            )}
+
+            {/* Horizontal Divider (desktop: always shown, mobile: only on overview tab) */}
+            {(!isMobile || activeTab === 'overview') && (
+              <div style={{ height: '1px', background: 'var(--border)', margin: isMobile ? '0.5rem 0' : '0.5rem 0', maxWidth: '100%' }} />
+            )}
+
+            {/* Bottom Half - Stat Cards (desktop: always shown, mobile: only on overview tab) */}
+            {(!isMobile || activeTab === 'overview') && (
+              <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: isMobile ? '0.75rem' : '0.5rem', justifyContent: 'center', maxWidth: '100%' }}>
+                {rankings.worst && (
+                  <div style={{
+                    fontSize: isMobile ? '0.65rem' : '0.7rem',
+                    color: 'var(--muted)',
+                    textAlign: 'center',
+                    letterSpacing: '0.3px'
+                  }}>
+                    {year
+                      ? `Note: circle tiles reflect ranking among the ${rankings.worst} managers of the ${year} season`
+                      : isActiveManager
+                        ? `Note: circle tiles reflect ranking among the ${rankings.worst} active managers`
+                        : `Note: circle tiles reflect ranking among the ${rankings.worst} managers all time`
+                    }
+                  </div>
+                )}
+                <div style={{
+                  display: 'grid',
+                  gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
+                  gap: isMobile ? '0.75rem' : '1rem'
+                }}>
+                  <RankedStatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} rank={rankings.win_percentage} worst={rankings.worst} isMobile={isMobile} />
+                <RankedStatCard title="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} rank={rankings.average_points_for} worst={rankings.worst} isMobile={isMobile} />
+                <RankedStatCard title="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} rank={rankings.average_points_against} worst={rankings.worst} isMobile={isMobile} />
+                <RankedStatCard
+                  title="AVG Diff"
+                  value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)}
+                  rank={rankings.average_points_differential}
+                  worst={rankings.worst}
+                  isMobile={isMobile}
+                />
+                <RankedStatCard title="Trades" value={trades.total || 0} rank={rankings.trades} worst={rankings.worst} isMobile={isMobile} />
+                <RankedStatCard title="Playoffs" value={playoffAppearances} rank={rankings.playoffs} worst={rankings.worst} isMobile={isMobile} />
+              </div>
             </div>
+            )}
           </div>
         </div>
       </div>
@@ -748,7 +755,6 @@ export default function ManagerPage() {
           year={year}
           MatchupCard={MatchupCard}
         />}
-      </div>
       </div>
     </div>
   );

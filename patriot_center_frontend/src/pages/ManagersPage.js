@@ -1,12 +1,47 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useManagersList } from '../hooks/useManagersList';
 
 /**
  * ManagersPage - Card-based grid view of all managers
+ *
+ * URL SYNC PATTERN:
+ * - Filter changes create new history entries (no replace: true)
+ * - Back button undoes filter changes
+ * - URL params sync bidirectionally with component state
  */
 export default function ManagersPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [filterActive, setFilterActive] = useState('active'); // 'all' or 'active'
+
+  // Track if we're syncing from URL to prevent loops
+  const isSyncingFromUrlRef = useRef(false);
+
+  // Sync state from URL params (runs on mount and when URL changes via back/forward)
+  useEffect(() => {
+    isSyncingFromUrlRef.current = true;
+
+    const filterParam = searchParams.get('filter');
+    setFilterActive(filterParam === 'all' ? 'all' : 'active');
+
+    // Reset flag after state updates have been processed
+    setTimeout(() => {
+      isSyncingFromUrlRef.current = false;
+    }, 0);
+  }, [searchParams]);
+
+  // Update URL when filter changes from user interaction
+  useEffect(() => {
+    if (isSyncingFromUrlRef.current) return;
+
+    const params = new URLSearchParams();
+    if (filterActive === 'all') {
+      params.set('filter', 'all');
+    }
+    // Don't set param for 'active' - it's the default
+
+    setSearchParams(params); // No replace: true - creates new history entries
+  }, [filterActive, setSearchParams]);
 
   // Fetch managers with rankings relative to the selected filter
   const activeOnly = filterActive === 'active';

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { useHeadToHead } from '../hooks/useHeadToHead';
 import { MatchupCard } from '../components/MatchupCard';
@@ -7,15 +7,56 @@ import { TradeCard } from '../components/TradeCard';
 /**
  * HeadToHeadPage - Clean, flowing head-to-head rivalry page
  * Minimal boxes, clean aesthetic inspired by Overview page
+ *
+ * URL SYNC PATTERN:
+ * - Tab changes create new history entries (no replace: true)
+ * - Back button undoes tab changes
+ * - URL params sync bidirectionally with component state
  */
 export default function HeadToHeadPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const manager1 = searchParams.get('manager1');
   const manager2 = searchParams.get('manager2');
   const year = searchParams.get('year');
 
   const { data, loading, error } = useHeadToHead(manager1, manager2, { year });
   const [activeTab, setActiveTab] = useState('matchups');
+
+  // Track if we're syncing from URL to prevent loops
+  const isSyncingFromUrlRef = useRef(false);
+
+  // Sync state from URL params (runs on mount and when URL changes via back/forward)
+  useEffect(() => {
+    isSyncingFromUrlRef.current = true;
+
+    const tabParam = searchParams.get('tab');
+    const validTabs = ['matchups', 'trades'];
+    setActiveTab(validTabs.includes(tabParam) ? tabParam : 'matchups');
+
+    // Reset flag after state updates have been processed
+    setTimeout(() => {
+      isSyncingFromUrlRef.current = false;
+    }, 0);
+  }, [searchParams]);
+
+  // Update URL when tab changes from user interaction
+  useEffect(() => {
+    if (isSyncingFromUrlRef.current) return;
+
+    const params = new URLSearchParams();
+    // Preserve existing params
+    if (manager1) params.set('manager1', manager1);
+    if (manager2) params.set('manager2', manager2);
+    if (year) params.set('year', year);
+
+    // Add tab param if not default
+    if (activeTab !== 'matchups') {
+      params.set('tab', activeTab);
+    }
+    // Don't set param for 'matchups' - it's the default
+
+    setSearchParams(params); // No replace: true - creates new history entries
+  }, [activeTab, manager1, manager2, year, setSearchParams]);
 
   if (!manager1 || !manager2) {
     return (

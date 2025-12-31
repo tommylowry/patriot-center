@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useManagerSummary } from '../hooks/useManagerSummary';
 import { useManagerAwards } from '../hooks/useManagerAwards';
 import { useManagerTransactions } from '../hooks/useManagerTransactions';
@@ -12,13 +12,49 @@ import { WaiverCard } from '../components/WaiverCard';
 
 /**
  * ManagerPage - Social media style profile view with ALL manager data
+ *
+ * URL SYNC PATTERN:
+ * - Tab changes create new history entries (no replace: true)
+ * - Back button undoes tab changes
+ * - URL params sync bidirectionally with component state
  */
 export default function ManagerPage() {
   const { managerName } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [year] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+
+  // Track if we're syncing from URL to prevent loops
+  const isSyncingFromUrlRef = useRef(false);
+
+  // Sync state from URL params (runs on mount and when URL changes via back/forward)
+  useEffect(() => {
+    isSyncingFromUrlRef.current = true;
+
+    const tabParam = searchParams.get('tab');
+    const validTabs = ['overview', 'trades', 'adds-drops'];
+    setActiveTab(validTabs.includes(tabParam) ? tabParam : 'overview');
+
+    // Reset flag after state updates have been processed
+    setTimeout(() => {
+      isSyncingFromUrlRef.current = false;
+    }, 0);
+  }, [searchParams]);
+
+  // Update URL when tab changes from user interaction
+  useEffect(() => {
+    if (isSyncingFromUrlRef.current) return;
+
+    const params = new URLSearchParams();
+    if (activeTab !== 'overview') {
+      params.set('tab', activeTab);
+    }
+    // Don't set param for 'overview' - it's the default
+
+    setSearchParams(params); // No replace: true - creates new history entries
+  }, [activeTab, setSearchParams]);
 
   // Fetch data from ALL endpoints
   const { summary, loading: summaryLoading, error: summaryError } = useManagerSummary(managerName, { year });

@@ -21,9 +21,18 @@ export default function HeadToHeadPage() {
 
   const { data, loading, error } = useHeadToHead(manager1, manager2, { year });
   const [activeTab, setActiveTab] = useState('matchups');
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // Track if we're syncing from URL to prevent loops
   const isSyncingFromUrlRef = useRef(false);
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
 
   // Sync state from URL params (runs on mount and when URL changes via back/forward)
   useEffect(() => {
@@ -120,8 +129,9 @@ export default function HeadToHeadPage() {
 
   return (
     <div className="App" style={{ paddingTop: '1rem' }}>
-      <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-        {/* Five-column layout */}
+      <div style={{ maxWidth: '1400px', width: isMobile ? '100%' : 'auto', margin: '0 auto', padding: isMobile ? '0 0.5rem' : '0', overflow: 'hidden' }}>
+        {/* Header - Desktop: Five-column layout, Mobile: Compact vertical */}
+        {!isMobile ? (
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1.5fr auto 1.5fr 1fr',
@@ -455,6 +465,212 @@ export default function HeadToHeadPage() {
             </div>
           </div>
         </div>
+        ) : (
+          /* Mobile Header Layout */
+          <div style={{ marginBottom: '1.5rem' }}>
+            {/* Manager Images and VS - Horizontal */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr auto 1fr',
+              gap: '0.75rem',
+              alignItems: 'center',
+              marginBottom: '1rem'
+            }}>
+              {/* Manager 1 */}
+              <Link
+                to={`/manager/${encodeURIComponent(m1.name)}`}
+                style={{
+                  textDecoration: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                {m1.image_url && (
+                  <img
+                    src={m1.image_url}
+                    alt={m1.name}
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '3px solid var(--border)',
+                      boxShadow: m1Wins > m2Wins ? '0 0 15px rgba(46, 204, 113, 0.3)' : 'none'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                )}
+                <div style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: 'var(--text)',
+                  textAlign: 'center'
+                }}>
+                  {m1.name}
+                </div>
+              </Link>
+
+              {/* VS */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <div style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 700,
+                  color: 'var(--muted)'
+                }}>
+                  vs
+                </div>
+                <div style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'var(--text)',
+                  textAlign: 'center'
+                }}>
+                  {totalGames}
+                  <span style={{ color: 'var(--muted)' }}> games</span>
+                </div>
+                <div style={{
+                  fontSize: '0.75rem',
+                  fontWeight: 600,
+                  color: 'var(--text)',
+                  textAlign: 'center'
+                }}>
+                  {totalTrades}
+                  <span style={{ color: 'var(--muted)' }}> trades</span>
+                </div>
+              </div>
+
+              {/* Manager 2 */}
+              <Link
+                to={`/manager/${encodeURIComponent(m2.name)}`}
+                style={{
+                  textDecoration: 'none',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                {m2.image_url && (
+                  <img
+                    src={m2.image_url}
+                    alt={m2.name}
+                    style={{
+                      width: '80px',
+                      height: '80px',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      border: '3px solid var(--border)',
+                      boxShadow: m2Wins > m1Wins ? '0 0 15px rgba(46, 204, 113, 0.3)' : 'none'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                )}
+                <div style={{
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  color: 'var(--text)',
+                  textAlign: 'center'
+                }}>
+                  {m2.name}
+                </div>
+              </Link>
+            </div>
+
+            {/* Stats - Two columns */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: '1fr 1fr',
+              gap: '0.75rem',
+              paddingTop: '0.5rem',
+              borderTop: '1px solid var(--border)'
+            }}>
+              {/* Manager 1 Stats */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem'
+              }}>
+                <div style={{
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  color: 'var(--muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  textAlign: 'center',
+                  marginBottom: '0.25rem'
+                }}>
+                  {m1.name}
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>Wins</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: m1Wins > m2Wins ? 'var(--success)' : 'var(--text)' }}>{m1Wins}</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>Win %</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)' }}>{m1WinPct}%</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>Avg Margin</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: m1AvgMargin > m2AvgMargin ? 'var(--success)' : 'var(--text)' }}>{m1AvgMargin.toFixed(1)}</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>Avg PTS</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: (m1PointsFor / totalGames) > (m2PointsFor / totalGames) ? 'var(--success)' : 'var(--text)' }}>
+                    {(totalGames > 0 ? m1PointsFor / totalGames : 0).toFixed(1)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Manager 2 Stats */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.5rem'
+              }}>
+                <div style={{
+                  fontSize: '0.65rem',
+                  fontWeight: 700,
+                  color: 'var(--muted)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  textAlign: 'center',
+                  marginBottom: '0.25rem'
+                }}>
+                  {m2.name}
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>Wins</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: m2Wins > m1Wins ? 'var(--success)' : 'var(--text)' }}>{m2Wins}</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>Win %</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text)' }}>{m2WinPct}%</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>Avg Margin</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: m2AvgMargin > m1AvgMargin ? 'var(--success)' : 'var(--text)' }}>{m2AvgMargin.toFixed(1)}</div>
+                </div>
+                <div style={{ textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.6rem', color: 'var(--muted)', marginBottom: '0.1rem' }}>Avg PTS</div>
+                  <div style={{ fontSize: '1.1rem', fontWeight: 700, color: (m2PointsFor / totalGames) > (m1PointsFor / totalGames) ? 'var(--success)' : 'var(--text)' }}>
+                    {(totalGames > 0 ? m2PointsFor / totalGames : 0).toFixed(1)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
       {/* Tab Navigation */}
       <div style={{
@@ -522,13 +738,20 @@ export default function HeadToHeadPage() {
         </button>
       </div>
 
+      {/* Tab Content Container */}
+      <div style={{
+        width: isMobile ? '100%' : '1000px',
+        maxWidth: isMobile ? '100%' : '1000px',
+        margin: '0 auto',
+        padding: isMobile ? '0 0.5rem' : '0'
+      }}>
       {/* Matchups Tab */}
       {activeTab === 'matchups' && (
         <div style={{ marginBottom: '3rem', minHeight: '400px' }}>
           {matchupHistory.length > 0 ? (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, 1fr)',
+              gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
               gap: '1.5rem',
               alignItems: 'center'
             }}>
@@ -566,7 +789,7 @@ export default function HeadToHeadPage() {
                       boxShadow: isNotable ? '0 0 20px rgba(52, 152, 219, 0.4)' : 'none',
                       borderRadius: '8px'
                     }}>
-                      <MatchupCard matchup={matchup} showMargin={isM1BiggestBlowout || isM2BiggestBlowout} />
+                      <MatchupCard matchup={matchup} showMargin={isM1BiggestBlowout || isM2BiggestBlowout} isMobile={isMobile} />
                     </div>
                   </div>
                 );
@@ -615,26 +838,26 @@ export default function HeadToHeadPage() {
                           elements.push(
                             <div key={`batch-${elements.length}`} style={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(2, 1fr)',
+                              gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
                               gap: '1.5rem',
                               marginBottom: '1.5rem'
                             }}>
                               {allButLast.map((item) => (
-                                <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                                <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} isMobile={isMobile} />
                               ))}
                             </div>
                           );
                         }
 
-                        // Center the last trade
+                        // Center the last trade (only on desktop)
                         elements.push(
                           <div key={`batch-${elements.length}`} style={{
                             display: 'flex',
                             justifyContent: 'center',
                             marginBottom: '1.5rem'
                           }}>
-                            <div style={{ width: '50%' }}>
-                              <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} />
+                            <div style={{ width: isMobile ? '100%' : '70%' }}>
+                              <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} isMobile={isMobile} />
                             </div>
                           </div>
                         );
@@ -642,12 +865,12 @@ export default function HeadToHeadPage() {
                         elements.push(
                           <div key={`batch-${elements.length}`} style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
                             gap: '1.5rem',
                             marginBottom: '1.5rem'
                           }}>
                             {twoManagerBatch.map((item) => (
-                              <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                              <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} isMobile={isMobile} />
                             ))}
                           </div>
                         );
@@ -658,7 +881,7 @@ export default function HeadToHeadPage() {
                     // Render the 3+ manager trade at full width
                     elements.push(
                       <div key={`3m-${idx}`} style={{ marginBottom: '1.5rem' }}>
-                        <TradeCard trade={trade} hideHeader={false} />
+                        <TradeCard trade={trade} hideHeader={false} isMobile={isMobile} />
                       </div>
                     );
                   }
@@ -677,25 +900,25 @@ export default function HeadToHeadPage() {
                       elements.push(
                         <div key={`batch-${elements.length}`} style={{
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(2, 1fr)',
+                          gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
                           gap: '1.5rem',
                           marginBottom: '1.5rem'
                         }}>
                           {allButLast.map((item) => (
-                            <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                            <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} isMobile={isMobile} />
                           ))}
                         </div>
                       );
                     }
 
-                    // Center the last trade
+                    // Center the last trade (only on desktop)
                     elements.push(
                       <div key={`batch-${elements.length}`} style={{
                         display: 'flex',
                         justifyContent: 'center'
                       }}>
-                        <div style={{ width: '50%' }}>
-                          <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} />
+                        <div style={{ width: isMobile ? '100%' : '70%' }}>
+                          <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} isMobile={isMobile} />
                         </div>
                       </div>
                     );
@@ -703,11 +926,11 @@ export default function HeadToHeadPage() {
                     elements.push(
                       <div key={`batch-${elements.length}`} style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(2, 1fr)',
+                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
                         gap: '1.5rem'
                       }}>
                         {twoManagerBatch.map((item) => (
-                          <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                          <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} isMobile={isMobile} />
                         ))}
                       </div>
                     );
@@ -730,6 +953,7 @@ export default function HeadToHeadPage() {
         </div>
       )}
       </div>
+    </div>
     </div>
   );
 }

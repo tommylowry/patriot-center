@@ -76,7 +76,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
         borderRadius: '8px',
         overflow: 'hidden',
         border: '1px solid var(--border)',
-        maxWidth: '900px',
+        maxWidth: '1200px',
         width: '100%'
       }}>
         {/* Header */}
@@ -135,7 +135,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
             const managerColumnWidth = dynamicManagerImageSize + (isMobile ? 15 : 25);
 
             // Calculate available width for players
-            const totalCardWidth = isMobile ? 375 : 900; // Typical mobile width
+            const totalCardWidth = isMobile ? 375 : 1200; // Typical mobile width
             const padding = isMobile ? 24 : 48;
             const availablePlayerWidth = totalCardWidth - managerColumnWidth - padding;
             const gapSpace = Math.max(0, (maxPlayerCount - 1) * (isMobile ? 6 : 10));

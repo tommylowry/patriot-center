@@ -186,7 +186,8 @@ def _update_players_cache(player_meta, players_cache):
             "last_name": player_meta.get("last_name", ""),
             "position": player_meta.get("position", ""),
             "team": player_meta.get("team", ""),
-            "slug": slug
+            "slug": slug,
+            "player_id": player_meta.get("player_id", "")
         }
         save_cache(PLAYERS_CACHE_FILE, players_cache)
 
@@ -488,6 +489,8 @@ def get_starters_data(sleeper_response_matchups,
                     players_summary_array.append(player_name)
                 if player_position not in positions_summary_array:
                     positions_summary_array.append(player_position)
+                
+                player_meta['player_id'] = player_id
 
                 _update_players_cache(player_meta, players_cache)
 
@@ -549,3 +552,5 @@ def retroactively_assign_team_placement_for_player(season, starters_cache):
                         starters_cache[season_str][week][manager][player]['placement'] = placements[manager]
     
     return starters_cache
+
+update_starters_cache()

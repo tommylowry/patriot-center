@@ -73,15 +73,17 @@ def update_starters_cache():
         # Early exit if fully up to date (prevents unnecessary API calls).
         if last_updated_season == int(current_season):
             if last_updated_week == current_week:
+                
+                # Week 17 is the final playoff week; assign final placements if reached.
+                if current_week == 17:
+                    cache = retroactively_assign_team_placement_for_player(year, cache)
+                
                 break
-            # Week 17 is the final playoff week; assign final placements if reached.
-            if current_week == 17:
-                retroactively_assign_team_placement_for_player(year, cache)
 
         # For completed seasons, retroactively assign placements if not already done.
         # Skip the first season in LEAGUE_IDS since it may not have prior data.
         elif year != list(LEAGUE_IDS.keys())[0]:
-                retroactively_assign_team_placement_for_player(year-1, cache)
+            retroactively_assign_team_placement_for_player(year-1, cache)
 
         year = int(year)
         max_weeks = _get_max_weeks(year, current_season, current_week)
@@ -501,6 +503,8 @@ def retroactively_assign_team_placement_for_player(season, starters_cache):
     placements = _get_playoff_placement(season)
     if not placements:
         return starters_cache
+    
+    print(f"Placements found: {placements}, retroactively applying placements.")
     
     weeks = ['15', '16', '17']
     if season <= 2020:

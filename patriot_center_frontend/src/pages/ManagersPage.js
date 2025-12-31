@@ -13,9 +13,17 @@ import { useManagersList } from '../hooks/useManagersList';
 export default function ManagersPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [filterActive, setFilterActive] = useState('active'); // 'all' or 'active'
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // Track if we're syncing from URL to prevent loops
   const isSyncingFromUrlRef = useRef(false);
+
+  // Responsive window width tracking
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Sync state from URL params (runs on mount and when URL changes via back/forward)
   useEffect(() => {
@@ -66,6 +74,10 @@ export default function ManagersPage() {
     { key: 'all', label: 'All Time Managers' }
   ];
 
+  // Responsive breakpoints
+  const isMobile = windowWidth < 768;
+  const isTablet = windowWidth >= 768 && windowWidth < 1024;
+
   // Determine rank color based on dynamic thirds
   const getRankCircleColor = (r, w) => {
     if (!r || !w) return 'var(--text)';
@@ -113,12 +125,12 @@ export default function ManagersPage() {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        marginBottom: '2rem'
+        marginBottom: isMobile ? '1.5rem' : '2rem'
       }}>
         <h1 style={{
           margin: 0,
           fontWeight: 700,
-          fontSize: '2.5rem',
+          fontSize: isMobile ? '2rem' : '2.5rem',
           letterSpacing: '1px'
         }}>
           Managers
@@ -154,20 +166,20 @@ export default function ManagersPage() {
               display: 'flex',
               justifyContent: 'center',
               borderBottom: '1px solid var(--border)',
-              marginBottom: '1.5rem'
+              marginBottom: isMobile ? '1rem' : '1.5rem'
             }}>
               {filterOptions.map(option => (
                 <button
                   key={option.key}
                   onClick={() => setFilterActive(option.key)}
                   style={{
-                    padding: '0.75rem 1.5rem',
+                    padding: isMobile ? '0.5rem 1rem' : '0.75rem 1.5rem',
                     background: 'none',
                     border: 'none',
                     borderBottom: filterActive === option.key ? '2px solid var(--accent)' : '2px solid transparent',
                     color: filterActive === option.key ? 'var(--accent)' : 'var(--text)',
                     cursor: 'pointer',
-                    fontSize: '1rem',
+                    fontSize: isMobile ? '0.9rem' : '1rem',
                     fontWeight: filterActive === option.key ? 600 : 400,
                     transition: 'all 0.2s ease',
                     whiteSpace: 'nowrap'
@@ -190,11 +202,11 @@ export default function ManagersPage() {
 
             {/* Results count */}
             <div style={{
-              fontSize: '0.85rem',
+              fontSize: isMobile ? '0.75rem' : '0.85rem',
               color: 'var(--muted)',
               fontStyle: 'italic',
               textAlign: 'center',
-              marginBottom: '2rem'
+              marginBottom: isMobile ? '1rem' : '2rem'
             }}>
               Showing {sortedManagers.length} {sortedManagers.length === 1 ? 'manager' : 'managers'}
             </div>
@@ -203,8 +215,9 @@ export default function ManagersPage() {
             {sortedManagers.length > 0 && (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(2, 1fr)',
-                gap: '1rem'
+                gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+                gap: isMobile ? '0.75rem' : '1rem',
+                padding: isMobile ? '0 0.5rem' : '0'
               }}>
               {sortedManagers.map((manager, i) => {
                 const {
@@ -251,7 +264,7 @@ export default function ManagersPage() {
                       background: 'var(--card-bg)',
                       transition: 'all 0.2s ease',
                       display: 'flex',
-                      minHeight: '140px',
+                      minHeight: isMobile ? '120px' : '140px',
                       textDecoration: 'none',
                       cursor: 'pointer'
                     }}
@@ -276,23 +289,23 @@ export default function ManagersPage() {
                   >
                     {/* Left Section: Image, Name, Years, Record */}
                     <div style={{
-                      padding: '0.75rem',
+                      padding: isMobile ? '0.5rem' : '0.75rem',
                       display: 'flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '0.375rem',
+                      gap: isMobile ? '0.25rem' : '0.375rem',
                       background: 'rgba(255, 255, 255, 0.02)',
                       borderRight: '1px solid var(--border)',
-                      minWidth: '150px',
+                      minWidth: isMobile ? '120px' : '150px',
                       flexShrink: 0
                     }}>
                       {/* Profile Picture with Medal */}
-                      <div style={{ position: 'relative', marginBottom: '0.75rem' }}>
+                      <div style={{ position: 'relative', marginBottom: isMobile ? '0.5rem' : '0.75rem' }}>
                         <div style={{
-                          width: '105px',
-                          height: '105px',
+                          width: isMobile ? '80px' : '105px',
+                          height: isMobile ? '80px' : '105px',
                           borderRadius: '50%',
-                          border: '3px solid var(--border)',
+                          border: isMobile ? '2px solid var(--border)' : '3px solid var(--border)',
                           background: 'var(--bg-alt)',
                           overflow: 'hidden',
                           transition: 'border-color 0.2s ease',
@@ -318,33 +331,33 @@ export default function ManagersPage() {
                         {(medalCounts.gold > 0 || medalCounts.silver > 0 || medalCounts.bronze > 0) && (
                           <div style={{
                             position: 'absolute',
-                            bottom: '-8px',
+                            bottom: isMobile ? '-6px' : '-8px',
                             left: '50%',
                             transform: 'translateX(-50%)',
                             display: 'flex',
-                            gap: '0.375rem',
+                            gap: isMobile ? '0.25rem' : '0.375rem',
                             background: 'var(--bg)',
-                            padding: '0.375rem 0.5rem',
+                            padding: isMobile ? '0.25rem 0.375rem' : '0.375rem 0.5rem',
                             borderRadius: '15px',
                             border: '1.5px solid var(--border)',
                             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                           }}>
                             {medalCounts.gold > 0 && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                                <span style={{ fontSize: '0.95rem' }}>🥇</span>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.85, color: 'var(--text)' }}>×{medalCounts.gold}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
+                                <span style={{ fontSize: isMobile ? '0.8rem' : '0.95rem' }}>🥇</span>
+                                <span style={{ fontSize: isMobile ? '0.6rem' : '0.7rem', fontWeight: 700, opacity: 0.85, color: 'var(--text)' }}>×{medalCounts.gold}</span>
                               </div>
                             )}
                             {medalCounts.silver > 0 && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                                <span style={{ fontSize: '0.95rem' }}>🥈</span>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.85, color: 'var(--text)' }}>×{medalCounts.silver}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
+                                <span style={{ fontSize: isMobile ? '0.8rem' : '0.95rem' }}>🥈</span>
+                                <span style={{ fontSize: isMobile ? '0.6rem' : '0.7rem', fontWeight: 700, opacity: 0.85, color: 'var(--text)' }}>×{medalCounts.silver}</span>
                               </div>
                             )}
                             {medalCounts.bronze > 0 && (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                                <span style={{ fontSize: '0.95rem' }}>🥉</span>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 700, opacity: 0.85, color: 'var(--text)' }}>×{medalCounts.bronze}</span>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.15rem' }}>
+                                <span style={{ fontSize: isMobile ? '0.8rem' : '0.95rem' }}>🥉</span>
+                                <span style={{ fontSize: isMobile ? '0.6rem' : '0.7rem', fontWeight: 700, opacity: 0.85, color: 'var(--text)' }}>×{medalCounts.bronze}</span>
                               </div>
                             )}
                           </div>
@@ -353,8 +366,8 @@ export default function ManagersPage() {
 
                       {/* Manager Name */}
                       <div style={{
-                        margin: '0.375rem 0 0.375rem 0',
-                        fontSize: '1.5rem',
+                        margin: isMobile ? '0.25rem 0 0.25rem 0' : '0.375rem 0 0.375rem 0',
+                        fontSize: isMobile ? '1.1rem' : '1.5rem',
                         fontWeight: 700,
                         color: isChampion ? goldColor : 'var(--text)',
                         textAlign: 'center',
@@ -366,16 +379,16 @@ export default function ManagersPage() {
                       {/* Years Active */}
                       <div style={{
                         color: 'var(--muted)',
-                        fontSize: '0.71rem',
+                        fontSize: isMobile ? '0.65rem' : '0.71rem',
                         textAlign: 'center',
-                        marginBottom: '0.375rem'
+                        marginBottom: isMobile ? '0.25rem' : '0.375rem'
                       }}>
                         {yearsText}
                       </div>
                       {seasonsText && (
                         <div style={{
                           color: 'var(--muted)',
-                          fontSize: '0.71rem',
+                          fontSize: isMobile ? '0.65rem' : '0.71rem',
                           textAlign: 'center'
                         }}>
                           {seasonsText}
@@ -385,7 +398,7 @@ export default function ManagersPage() {
                       {/* Record */}
                       <div style={{
                         color: 'var(--text)',
-                        fontSize: '1.125rem',
+                        fontSize: isMobile ? '1rem' : '1.125rem',
                         fontWeight: 700,
                         textAlign: 'center'
                       }}>
@@ -408,17 +421,17 @@ export default function ManagersPage() {
                     {/* Right Section: Stats */}
                     <div style={{
                       flex: 1,
-                      padding: '1rem',
+                      padding: isMobile ? '0.5rem' : '1rem',
                       display: 'flex',
                       flexDirection: 'column',
-                      gap: '0.5rem'
+                      gap: isMobile ? '0.375rem' : '0.5rem'
                     }}>
                       {/* Top Section - 1/3 space: Seasons, Best, Adds, Drops */}
                       <div style={{
                         flex: 1,
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
-                        gap: '0.5rem 1.5rem',
+                        gap: isMobile ? '0.375rem 0.75rem' : '0.5rem 1.5rem',
                         alignItems: 'start'
                       }}>
                         <div style={{
@@ -426,10 +439,10 @@ export default function ManagersPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.25rem'
+                          gap: isMobile ? '0.15rem' : '0.25rem'
                         }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Seasons</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>
+                          <div style={{ fontSize: isMobile ? '0.55rem' : '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Seasons</div>
+                          <div style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, color: 'var(--text)' }}>
                             {years_active.length}
                           </div>
                         </div>
@@ -440,11 +453,11 @@ export default function ManagersPage() {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '0.25rem'
+                            gap: isMobile ? '0.15rem' : '0.25rem'
                           }}>
-                            <div style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Best Finish</div>
+                            <div style={{ fontSize: isMobile ? '0.55rem' : '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Best Finish</div>
                             <div style={{
-                              fontSize: '1.25rem',
+                              fontSize: isMobile ? '1rem' : '1.25rem',
                               fontWeight: 700,
                               color: best_finish === 1 ? goldColor
                                     : best_finish === 2 ? '#909090'
@@ -468,10 +481,10 @@ export default function ManagersPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.25rem'
+                          gap: isMobile ? '0.15rem' : '0.25rem'
                         }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Adds</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>
+                          <div style={{ fontSize: isMobile ? '0.55rem' : '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Adds</div>
+                          <div style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, color: 'var(--text)' }}>
                             {total_adds}
                           </div>
                         </div>
@@ -481,10 +494,10 @@ export default function ManagersPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.25rem'
+                          gap: isMobile ? '0.15rem' : '0.25rem'
                         }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Drops</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)' }}>
+                          <div style={{ fontSize: isMobile ? '0.55rem' : '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Drops</div>
+                          <div style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, color: 'var(--text)' }}>
                             {total_drops}
                           </div>
                         </div>
@@ -495,7 +508,7 @@ export default function ManagersPage() {
                         flex: 2,
                         display: 'grid',
                         gridTemplateColumns: '1fr 1fr',
-                        gap: '1rem 1.5rem',
+                        gap: isMobile ? '0.5rem 0.75rem' : '1rem 1.5rem',
                         alignItems: 'start'
                       }}>
                         {/* Win % */}
@@ -504,20 +517,20 @@ export default function ManagersPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.25rem'
+                          gap: isMobile ? '0.15rem' : '0.25rem'
                         }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Win %</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: getRankCircleColor(rankings.win_percentage, rankings.worst), opacity: 0.85 }}>
+                          <div style={{ fontSize: isMobile ? '0.55rem' : '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Win %</div>
+                          <div style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, color: getRankCircleColor(rankings.win_percentage, rankings.worst), opacity: 0.85 }}>
                             {win_percentage.toFixed(1)}%
                           </div>
                           {rankings.win_percentage && rankings.worst && (
                             <div style={{
-                              width: '24px',
-                              height: '24px',
+                              width: isMobile ? '20px' : '24px',
+                              height: isMobile ? '20px' : '24px',
                               borderRadius: '50%',
                               background: getRankCircleColor(rankings.win_percentage, rankings.worst),
                               color: '#000000',
-                              fontSize: '0.75rem',
+                              fontSize: isMobile ? '0.65rem' : '0.75rem',
                               fontWeight: 700,
                               display: 'flex',
                               alignItems: 'center',
@@ -534,20 +547,20 @@ export default function ManagersPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.25rem'
+                          gap: isMobile ? '0.15rem' : '0.25rem'
                         }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>PPG</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: getRankCircleColor(rankings.average_points_for, rankings.worst), opacity: 0.85 }}>
+                          <div style={{ fontSize: isMobile ? '0.55rem' : '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>PPG</div>
+                          <div style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, color: getRankCircleColor(rankings.average_points_for, rankings.worst), opacity: 0.85 }}>
                             {average_points_for.toFixed(1)}
                           </div>
                           {rankings.average_points_for && rankings.worst && (
                             <div style={{
-                              width: '24px',
-                              height: '24px',
+                              width: isMobile ? '20px' : '24px',
+                              height: isMobile ? '20px' : '24px',
                               borderRadius: '50%',
                               background: getRankCircleColor(rankings.average_points_for, rankings.worst),
                               color: '#000000',
-                              fontSize: '0.75rem',
+                              fontSize: isMobile ? '0.65rem' : '0.75rem',
                               fontWeight: 700,
                               display: 'flex',
                               alignItems: 'center',
@@ -564,20 +577,20 @@ export default function ManagersPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.25rem'
+                          gap: isMobile ? '0.15rem' : '0.25rem'
                         }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Playoffs</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: getRankCircleColor(rankings.playoffs, rankings.worst), opacity: 0.85 }}>
+                          <div style={{ fontSize: isMobile ? '0.55rem' : '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Playoffs</div>
+                          <div style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, color: getRankCircleColor(rankings.playoffs, rankings.worst), opacity: 0.85 }}>
                             {playoff_appearances}
                           </div>
                           {rankings.playoffs && rankings.worst && (
                             <div style={{
-                              width: '24px',
-                              height: '24px',
+                              width: isMobile ? '20px' : '24px',
+                              height: isMobile ? '20px' : '24px',
                               borderRadius: '50%',
                               background: getRankCircleColor(rankings.playoffs, rankings.worst),
                               color: '#000000',
-                              fontSize: '0.75rem',
+                              fontSize: isMobile ? '0.65rem' : '0.75rem',
                               fontWeight: 700,
                               display: 'flex',
                               alignItems: 'center',
@@ -594,20 +607,20 @@ export default function ManagersPage() {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.25rem'
+                          gap: isMobile ? '0.15rem' : '0.25rem'
                         }}>
-                          <div style={{ fontSize: '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Trades</div>
-                          <div style={{ fontSize: '1.25rem', fontWeight: 700, color: getRankCircleColor(rankings.trades, rankings.worst), opacity: 0.85 }}>
+                          <div style={{ fontSize: isMobile ? '0.55rem' : '0.65rem', color: 'var(--muted)', textTransform: 'uppercase' }}>Trades</div>
+                          <div style={{ fontSize: isMobile ? '1rem' : '1.25rem', fontWeight: 700, color: getRankCircleColor(rankings.trades, rankings.worst), opacity: 0.85 }}>
                             {total_trades}
                           </div>
                           {rankings.trades && rankings.worst && (
                             <div style={{
-                              width: '24px',
-                              height: '24px',
+                              width: isMobile ? '20px' : '24px',
+                              height: isMobile ? '20px' : '24px',
                               borderRadius: '50%',
                               background: getRankCircleColor(rankings.trades, rankings.worst),
                               color: '#000000',
-                              fontSize: '0.75rem',
+                              fontSize: isMobile ? '0.65rem' : '0.75rem',
                               fontWeight: 700,
                               display: 'flex',
                               alignItems: 'center',

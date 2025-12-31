@@ -178,8 +178,11 @@ def _update_players_cache(player_meta, players_cache):
     """
 
     if player_meta.get("full_name") not in players_cache:
-        slug = player_meta.get("full_name", "").replace(" ", "_")
+        
+        slug = player_meta.get("full_name", "").lower()
+        slug = slug.replace(" ", "%20")
         slug = slug.replace("'", "%27")
+        
         players_cache[player_meta["full_name"]] = {
             "full_name": player_meta.get("full_name", ""),
             "first_name": player_meta.get("first_name", ""),
@@ -552,5 +555,3 @@ def retroactively_assign_team_placement_for_player(season, starters_cache):
                         starters_cache[season_str][week][manager][player]['placement'] = placements[manager]
     
     return starters_cache
-
-update_starters_cache()

@@ -1081,6 +1081,7 @@ function formatYearsActive(years) {
 function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName, awardsData, isMobile }) {
   const [hoveredMatchupId, setHoveredMatchupId] = useState(null);
   const hideTimeoutRef = useRef(null);
+  const navigate = useNavigate();
 
   // Sort opponents by wins first, then win percentage as tie breaker
   const sortedOpponents = headToHead ? Object.entries(headToHead).sort((a, b) => {
@@ -1116,6 +1117,62 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         maxWidth: isMobile ? '100%' : '680px',
         width: isMobile ? '100%' : 'auto'
       }}>
+        {/* Head-to-Head Dropdown (Mobile Only) */}
+        {isMobile && sortedOpponents.length > 0 && (
+          <div style={{
+            gridColumn: '1 / -1',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '0.5rem',
+            alignItems: 'center',
+            marginBottom: '0.5rem'
+          }}>
+            <div style={{
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              color: 'var(--text)',
+              textAlign: 'center'
+            }}>
+              See Head-to-Head Details
+            </div>
+            <select
+              onChange={(e) => {
+                const selectedIndex = parseInt(e.target.value, 10);
+                if (selectedIndex >= 0 && sortedOpponents[selectedIndex]) {
+                  const [opponentKey, data] = sortedOpponents[selectedIndex];
+                  const opponent = data.opponent || { name: opponentKey };
+                  navigate(`/head-to-head?manager1=${encodeURIComponent(managerName)}&manager2=${encodeURIComponent(opponent.name)}`);
+                }
+              }}
+              defaultValue=""
+              style={{
+                padding: '0.5rem 1rem',
+                fontSize: '0.85rem',
+                color: 'var(--text)',
+                background: 'var(--bg-alt)',
+                border: '1px solid var(--border)',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                outline: 'none',
+                minWidth: '200px',
+                maxWidth: '90%',
+                textAlign: 'center'
+              }}
+            >
+              <option value="" disabled>Select an opponent</option>
+              {sortedOpponents.map(([opponentKey, data], index) => {
+                const opponent = data.opponent || { name: opponentKey };
+                const record = formatRecord(data.wins, data.losses, data.ties);
+                return (
+                  <option key={opponentKey} value={index}>
+                    {opponent.name} ({record})
+                  </option>
+                );
+              })}
+            </select>
+          </div>
+        )}
+
         {/* Season Stats */}
         <Section title="Season Stats">
           <StatRow label="Regular Season" value={formatRecord(regularSeason.wins || 0, regularSeason.losses || 0, regularSeason.ties || 0)} />
@@ -1340,9 +1397,9 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         )}
       </div>
 
-      {/* Right Sidebar - Head-to-Head */}
-      {sortedOpponents.length > 0 && (
-        <div style={{ width: isMobile ? '100%' : '280px', flexShrink: 0 }}>
+      {/* Right Sidebar - Head-to-Head (Desktop Only) */}
+      {!isMobile && sortedOpponents.length > 0 && (
+        <div style={{ width: '280px', flexShrink: 0 }}>
             <h3 style={{ marginBottom: isMobile ? '0.75rem' : '1rem', fontSize: isMobile ? '1.1rem' : '1.25rem', fontWeight: 700, letterSpacing: '1px' }}>Head-to-Head</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.5rem' : '0.75rem' }}>
               {sortedOpponents.map(([opponentKey, data]) => {

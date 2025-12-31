@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import SearchBar from './SearchBar';
 
@@ -13,6 +13,42 @@ import SearchBar from './SearchBar';
  */
 export default function Layout({ children }) {
     const location = useLocation();
+    const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const lastScrollY = useRef(0);
+    const ticking = useRef(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!ticking.current) {
+                window.requestAnimationFrame(() => {
+                    const currentScrollY = window.scrollY;
+
+                    // Only apply scroll behavior if we've scrolled past 50px from top
+                    if (currentScrollY > 50) {
+                        if (currentScrollY > lastScrollY.current) {
+                            // Scrolling down - hide header
+                            setIsHeaderVisible(false);
+                        } else {
+                            // Scrolling up - show header
+                            setIsHeaderVisible(true);
+                        }
+                    } else {
+                        // Always show header when near top of page
+                        setIsHeaderVisible(true);
+                    }
+
+                    lastScrollY.current = currentScrollY;
+                    ticking.current = false;
+                });
+
+                ticking.current = true;
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
     return (
         <div style={{ position: 'relative', minHeight: '100vh' }}>
             {/* Header with Title and Search Bar */}
@@ -22,9 +58,12 @@ export default function Layout({ children }) {
                 zIndex: 100,
                 backgroundColor: 'var(--bg)',
                 borderBottom: '1px solid var(--border)',
-                paddingBottom: 0
+                paddingBottom: 0,
+                transform: isHeaderVisible ? 'translateY(0)' : 'translateY(-100%)',
+                transition: 'transform 0.3s ease-in-out'
             }}>
-                <div style={{
+                {/* Title and Search Row */}
+                <div className="title-search-row" style={{
                     padding: '1rem 2rem',
                     display: 'flex',
                     justifyContent: 'space-between',
@@ -46,10 +85,15 @@ export default function Layout({ children }) {
                     >
                         Patriot Center Database
                     </Link>
-                    {/* Search Bar on Right */}
-                    <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }} className="layout-search-container">
+                    {/* Search Bar on Right (Desktop) */}
+                    <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }} className="layout-search-container-desktop">
                         <SearchBar />
                     </div>
+                </div>
+
+                {/* Search Bar Below Title (Mobile Only) */}
+                <div className="layout-search-container-mobile" style={{ display: 'none' }}>
+                    <SearchBar />
                 </div>
 
                 {/* Navigation Tabs */}
@@ -96,11 +140,9 @@ export default function Layout({ children }) {
 
             <style jsx>{`
                 @media (max-width: 768px) {
-                    .layout-header {
-                        flex-direction: column !important;
-                        padding: 1rem !important;
-                        gap: 1rem !important;
-                        align-items: stretch !important;
+                    .title-search-row {
+                        padding: 0.75rem 1rem !important;
+                        justify-content: center !important;
                     }
 
                     .layout-spacer {
@@ -113,8 +155,18 @@ export default function Layout({ children }) {
                         white-space: normal !important;
                     }
 
-                    .layout-search-container {
-                        justify-content: center !important;
+                    .layout-search-container-desktop {
+                        display: none !important;
+                    }
+
+                    .layout-search-container-mobile {
+                        display: block !important;
+                        padding: 0 1rem 0.75rem 1rem;
+                        width: 100%;
+                    }
+
+                    .nav-tabs {
+                        padding: 0 1rem !important;
                     }
                 }
             `}</style>

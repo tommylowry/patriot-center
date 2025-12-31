@@ -504,8 +504,6 @@ def retroactively_assign_team_placement_for_player(season, starters_cache):
     if not placements:
         return starters_cache
     
-    print(f"Placements found: {placements}, retroactively applying placements.")
-    
     weeks = ['15', '16', '17']
     if season <= 2020:
         weeks = ['14', '15', '16']
@@ -520,6 +518,8 @@ def retroactively_assign_team_placement_for_player(season, starters_cache):
                         # placement already assigned
                         if "placement" in starters_cache[season_str][week][manager][player]:
                             return starters_cache
+                        
+                        print(f"New placements found: {placements}, retroactively applying placements.")
                         
                         starters_cache[season_str][week][manager][player]['placement'] = placements[manager]
     

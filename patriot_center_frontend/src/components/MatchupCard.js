@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
  * MatchupCard - Sports broadcast style matchup display
  * Inspired by hockey/football broadcast graphics with team logos, scores, and player stats
  */
-export function MatchupCard({ matchup, showMargin = false, hideHeader = false }) {
+export function MatchupCard({ matchup, showMargin = false, hideHeader = false, isMobile = false }) {
   if (!matchup) return null;
 
   const manager1 = matchup.manager_1 || {};
@@ -32,7 +32,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
 
   return (
     <div style={{
-      borderRadius: '8px',
+      borderRadius: isMobile ? '6px' : '8px',
       overflow: 'hidden',
       border: '1px solid var(--border)',
       maxWidth: '900px',
@@ -43,13 +43,13 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
         <div style={{
           display: 'flex',
           justifyContent: 'center',
-          marginBottom: '0.25rem'
+          marginBottom: isMobile ? '0.15rem' : '0.25rem'
         }}>
           <div style={{
-            padding: '0.6rem 1rem 0.4rem 1rem',
-            fontSize: '1rem',
+            padding: isMobile ? '0.4rem 0.75rem 0.3rem 0.75rem' : '0.6rem 1rem 0.4rem 1rem',
+            fontSize: isMobile ? '0.85rem' : '1rem',
             fontWeight: 700,
-            letterSpacing: '1.5px',
+            letterSpacing: isMobile ? '1px' : '1.5px',
             textTransform: 'uppercase',
             color: 'var(--text)',
             borderLeft: '1px solid var(--border)',
@@ -63,21 +63,21 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
       )}
 
       {/* Main matchup area - broadcast style */}
-      <div style={{ padding: '0.75rem' }}>
+      <div style={{ padding: isMobile ? '0.5rem' : '0.75rem' }}>
         {/* Player Stats - Two Column Layout */}
         {(manager1Players?.length > 0 || manager2Players?.length > 0) && (
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1fr auto 1fr',
-            gap: '1rem',
-            marginTop: '0.25rem'
+            gap: isMobile ? '0.5rem' : '1rem',
+            marginTop: isMobile ? '0.15rem' : '0.25rem'
           }}>
             {/* Manager 1 Stats */}
             <div>
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
-                marginBottom: '0.5rem'
+                marginBottom: isMobile ? '0.35rem' : '0.5rem'
               }}>
                 <Link
                   to={`/manager/${encodeURIComponent(manager1.name)}`}
@@ -86,14 +86,14 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     display: 'inline-flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '0.5rem',
+                    gap: isMobile ? '0.35rem' : '0.5rem',
                     border: '1px solid transparent',
                     background: 'transparent',
-                    borderRadius: '8px',
+                    borderRadius: isMobile ? '6px' : '8px',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer',
                     boxSizing: 'border-box',
-                    padding: '0.5rem'
+                    padding: isMobile ? '0.35rem' : '0.5rem'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = 'var(--bg)';
@@ -109,11 +109,11 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       src={manager1.image_url}
                       alt={manager1.name}
                       style={{
-                        width: '100px',
-                        height: '100px',
+                        width: isMobile ? '60px' : '100px',
+                        height: isMobile ? '60px' : '100px',
                         borderRadius: '50%',
                         objectFit: 'cover',
-                        border: '3px solid rgba(255, 255, 255, 0.1)',
+                        border: isMobile ? '2px solid rgba(255, 255, 255, 0.1)' : '3px solid rgba(255, 255, 255, 0.1)',
                         boxShadow: manager1Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none',
                         opacity: manager1Won ? 1 : 0.8,
                         filter: manager1Won ? 'none' : 'grayscale(0.15)',
@@ -125,7 +125,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     />
                   )}
                   <div style={{
-                    fontSize: '1rem',
+                    fontSize: isMobile ? '0.8rem' : '1rem',
                     fontWeight: 400,
                     color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
                     textShadow: manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none',
@@ -139,15 +139,15 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
-                marginBottom: '0.75rem'
+                marginBottom: isMobile ? '0.5rem' : '0.75rem'
               }}>
                 <div style={{
-                  fontSize: '2.5rem',
+                  fontSize: isMobile ? '1.8rem' : '2.5rem',
                   fontWeight: 400,
                   lineHeight: 1,
                   color: manager1Won ? 'rgba(46, 204, 113, 1)' : 'rgba(255, 255, 255, 0.4)',
                   fontVariantNumeric: 'tabular-nums',
-                  letterSpacing: '2px',
+                  letterSpacing: isMobile ? '1px' : '2px',
                   fontFamily: '"7segment", monospace',
                   textShadow: manager1Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
                 }}>
@@ -162,20 +162,20 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.5rem 0.5rem',
-                    margin: '0 -0.5rem',
-                    paddingTop: i === 3 ? '0.75rem' : '0.5rem',
-                    fontSize: '0.85rem',
+                    gap: isMobile ? '0.3rem' : '0.5rem',
+                    padding: isMobile ? '0.35rem 0.35rem' : '0.5rem 0.5rem',
+                    margin: isMobile ? '0 -0.35rem' : '0 -0.5rem',
+                    paddingTop: i === 3 ? (isMobile ? '0.5rem' : '0.75rem') : (isMobile ? '0.35rem' : '0.5rem'),
+                    fontSize: isMobile ? '0.75rem' : '0.85rem',
                     color: 'var(--text)',
                     textDecoration: 'none',
                     borderBottom: i < 2 ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid transparent',
-                    borderTop: i === 0 || i === 3 ? '4px solid rgba(255, 255, 255, 0.15)' : '1px solid transparent',
+                    borderTop: i === 0 || i === 3 ? (isMobile ? '3px solid rgba(255, 255, 255, 0.15)' : '4px solid rgba(255, 255, 255, 0.15)') : '1px solid transparent',
                     borderLeft: '1px solid transparent',
                     borderRight: '1px solid transparent',
-                    minHeight: '52px',
+                    minHeight: isMobile ? '40px' : '52px',
                     background: 'transparent',
-                    borderRadius: '8px',
+                    borderRadius: isMobile ? '6px' : '8px',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer'
                   }}
@@ -196,9 +196,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       src={player.image_url}
                       alt={player.name}
                       style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '4px',
+                        width: isMobile ? '30px' : '42px',
+                        height: isMobile ? '30px' : '42px',
+                        borderRadius: isMobile ? '3px' : '4px',
                         objectFit: 'cover',
                         flexShrink: 0,
                         opacity: manager1Won ? 1 : 0.8,
@@ -214,13 +214,13 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     textAlign: 'center',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0.1rem'
+                    gap: isMobile ? '0.05rem' : '0.1rem'
                   }}>
                     {player.first_name && (
                       <div style={{
                         fontWeight: 400,
                         color: 'var(--muted)',
-                        fontSize: '0.8rem',
+                        fontSize: isMobile ? '0.65rem' : '0.8rem',
                         opacity: manager1Won ? 1 : 0.6
                       }}>
                         {player.first_name}
@@ -230,7 +230,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       <div style={{
                         fontWeight: 600,
                         color: manager1Won ? 'var(--text)' : 'var(--muted)',
-                        fontSize: '0.85rem',
+                        fontSize: isMobile ? '0.7rem' : '0.85rem',
                         opacity: manager1Won ? 1 : 0.7
                       }}>
                         {player.last_name}
@@ -238,10 +238,10 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     )}
                     {player.position && (
                       <div style={{
-                        fontSize: '0.6rem',
+                        fontSize: isMobile ? '0.5rem' : '0.6rem',
                         color: 'var(--muted)',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
+                        letterSpacing: isMobile ? '0.3px' : '0.5px',
                         opacity: manager1Won ? 0.5 : 0.4
                       }}>
                         {player.position}
@@ -251,11 +251,11 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   <div style={{
                     fontWeight: 400,
                     color: manager1Won ? 'var(--text)' : 'rgba(255, 255, 255, 0.5)',
-                    minWidth: '55px',
+                    minWidth: isMobile ? '45px' : '55px',
                     textAlign: 'right',
-                    fontSize: '1.5rem',
+                    fontSize: isMobile ? '1.1rem' : '1.5rem',
                     fontVariantNumeric: 'tabular-nums',
-                    letterSpacing: '1px',
+                    letterSpacing: isMobile ? '0.5px' : '1px',
                     fontFamily: '"7segment", monospace'
                   }}>
                     {player.score?.toFixed(2)}
@@ -276,7 +276,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
-                marginBottom: '0.5rem'
+                marginBottom: isMobile ? '0.35rem' : '0.5rem'
               }}>
                 <Link
                   to={`/manager/${encodeURIComponent(manager2.name)}`}
@@ -285,14 +285,14 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     display: 'inline-flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    gap: '0.5rem',
+                    gap: isMobile ? '0.35rem' : '0.5rem',
                     border: '1px solid transparent',
                     background: 'transparent',
-                    borderRadius: '8px',
+                    borderRadius: isMobile ? '6px' : '8px',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer',
                     boxSizing: 'border-box',
-                    padding: '0.5rem'
+                    padding: isMobile ? '0.35rem' : '0.5rem'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = 'var(--bg)';
@@ -308,11 +308,11 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       src={manager2.image_url}
                       alt={manager2.name}
                       style={{
-                        width: '100px',
-                        height: '100px',
+                        width: isMobile ? '60px' : '100px',
+                        height: isMobile ? '60px' : '100px',
                         borderRadius: '50%',
                         objectFit: 'cover',
-                        border: '3px solid rgba(255, 255, 255, 0.1)',
+                        border: isMobile ? '2px solid rgba(255, 255, 255, 0.1)' : '3px solid rgba(255, 255, 255, 0.1)',
                         boxShadow: manager2Won ? '0 0 12px rgba(46, 204, 113, 0.4), 0 0 24px rgba(46, 204, 113, 0.2)' : 'none',
                         opacity: manager2Won ? 1 : 0.8,
                         filter: manager2Won ? 'none' : 'grayscale(0.15)',
@@ -324,7 +324,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     />
                   )}
                   <div style={{
-                    fontSize: '1rem',
+                    fontSize: isMobile ? '0.8rem' : '1rem',
                     fontWeight: 400,
                     color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'var(--muted)',
                     textShadow: manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none',
@@ -338,15 +338,15 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
               <div style={{
                 display: 'flex',
                 justifyContent: 'center',
-                marginBottom: '0.75rem'
+                marginBottom: isMobile ? '0.5rem' : '0.75rem'
               }}>
                 <div style={{
-                  fontSize: '2.5rem',
+                  fontSize: isMobile ? '1.8rem' : '2.5rem',
                   fontWeight: 400,
                   lineHeight: 1,
                   color: manager2Won ? 'rgba(46, 204, 113, 1)' : 'rgba(255, 255, 255, 0.4)',
                   fontVariantNumeric: 'tabular-nums',
-                  letterSpacing: '2px',
+                  letterSpacing: isMobile ? '1px' : '2px',
                   fontFamily: '"7segment", monospace',
                   textShadow: manager2Won ? '0 0 8px rgba(46, 204, 113, 0.3), 0 0 15px rgba(46, 204, 113, 0.15)' : 'none'
                 }}>
@@ -361,20 +361,20 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   style={{
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '0.5rem',
-                    padding: '0.5rem 0.5rem',
-                    margin: '0 -0.5rem',
-                    paddingTop: i === 3 ? '0.75rem' : '0.5rem',
-                    fontSize: '0.85rem',
+                    gap: isMobile ? '0.3rem' : '0.5rem',
+                    padding: isMobile ? '0.35rem 0.35rem' : '0.5rem 0.5rem',
+                    margin: isMobile ? '0 -0.35rem' : '0 -0.5rem',
+                    paddingTop: i === 3 ? (isMobile ? '0.5rem' : '0.75rem') : (isMobile ? '0.35rem' : '0.5rem'),
+                    fontSize: isMobile ? '0.75rem' : '0.85rem',
                     color: 'var(--text)',
                     textDecoration: 'none',
                     borderBottom: i < 2 ? '1px solid rgba(255, 255, 255, 0.05)' : '1px solid transparent',
-                    borderTop: i === 0 || i === 3 ? '4px solid rgba(255, 255, 255, 0.15)' : '1px solid transparent',
+                    borderTop: i === 0 || i === 3 ? (isMobile ? '3px solid rgba(255, 255, 255, 0.15)' : '4px solid rgba(255, 255, 255, 0.15)') : '1px solid transparent',
                     borderLeft: '1px solid transparent',
                     borderRight: '1px solid transparent',
-                    minHeight: '52px',
+                    minHeight: isMobile ? '40px' : '52px',
                     background: 'transparent',
-                    borderRadius: '8px',
+                    borderRadius: isMobile ? '6px' : '8px',
                     transition: 'all 0.2s ease',
                     cursor: 'pointer'
                   }}
@@ -393,11 +393,11 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                   <div style={{
                     fontWeight: 400,
                     color: manager2Won ? 'var(--text)' : 'rgba(255, 255, 255, 0.5)',
-                    minWidth: '55px',
+                    minWidth: isMobile ? '45px' : '55px',
                     textAlign: 'left',
-                    fontSize: '1.5rem',
+                    fontSize: isMobile ? '1.1rem' : '1.5rem',
                     fontVariantNumeric: 'tabular-nums',
-                    letterSpacing: '1px',
+                    letterSpacing: isMobile ? '0.5px' : '1px',
                     fontFamily: '"7segment", monospace'
                   }}>
                     {player.score?.toFixed(2)}
@@ -407,13 +407,13 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     textAlign: 'center',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0.1rem'
+                    gap: isMobile ? '0.05rem' : '0.1rem'
                   }}>
                     {player.first_name && (
                       <div style={{
                         fontWeight: 400,
                         color: 'var(--muted)',
-                        fontSize: '0.8rem',
+                        fontSize: isMobile ? '0.65rem' : '0.8rem',
                         opacity: manager2Won ? 1 : 0.6
                       }}>
                         {player.first_name}
@@ -423,7 +423,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       <div style={{
                         fontWeight: 600,
                         color: manager2Won ? 'var(--text)' : 'var(--muted)',
-                        fontSize: '0.85rem',
+                        fontSize: isMobile ? '0.7rem' : '0.85rem',
                         opacity: manager2Won ? 1 : 0.7
                       }}>
                         {player.last_name}
@@ -431,10 +431,10 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                     )}
                     {player.position && (
                       <div style={{
-                        fontSize: '0.6rem',
+                        fontSize: isMobile ? '0.5rem' : '0.6rem',
                         color: 'var(--muted)',
                         textTransform: 'uppercase',
-                        letterSpacing: '0.5px',
+                        letterSpacing: isMobile ? '0.3px' : '0.5px',
                         opacity: manager2Won ? 0.5 : 0.4
                       }}>
                         {player.position}
@@ -446,9 +446,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
                       src={player.image_url}
                       alt={player.name}
                       style={{
-                        width: '42px',
-                        height: '42px',
-                        borderRadius: '4px',
+                        width: isMobile ? '30px' : '42px',
+                        height: isMobile ? '30px' : '42px',
+                        borderRadius: isMobile ? '3px' : '4px',
                         objectFit: 'cover',
                         flexShrink: 0,
                         opacity: manager2Won ? 1 : 0.8,
@@ -468,14 +468,14 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false })
         {/* Margin Info */}
         {showMargin && matchup.differential !== undefined && (
           <div style={{
-            marginTop: '1rem',
-            paddingTop: '1rem',
+            marginTop: isMobile ? '0.75rem' : '1rem',
+            paddingTop: isMobile ? '0.75rem' : '1rem',
             borderTop: '1px solid var(--border)',
             textAlign: 'center',
-            fontSize: '0.75rem',
+            fontSize: isMobile ? '0.65rem' : '0.75rem',
             color: 'var(--muted)',
             fontWeight: 600,
-            letterSpacing: '0.5px'
+            letterSpacing: isMobile ? '0.3px' : '0.5px'
           }}>
             MARGIN: {Math.abs(matchup.differential).toFixed(2)} pts
           </div>

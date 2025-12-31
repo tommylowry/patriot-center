@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { MatchupCard } from '../components/MatchupCard';
 
@@ -10,7 +10,15 @@ export default function MatchupPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const location = useLocation();
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const isMobile = windowWidth < 768;
   const year = searchParams.get('year');
   const week = searchParams.get('week');
 
@@ -75,18 +83,6 @@ export default function MatchupPage() {
         </button>
       </div>
 
-      {/* Matchup title */}
-      <div style={{
-        textAlign: 'center',
-        marginBottom: '1.5rem',
-        fontSize: '1.5rem',
-        fontWeight: 700,
-        color: 'var(--text)',
-        padding: '0 1rem'
-      }}>
-        {year} Week {week}
-      </div>
-
       {/* Matchup card */}
       <div style={{
         display: 'flex',
@@ -95,8 +91,8 @@ export default function MatchupPage() {
         maxWidth: '100%',
         overflow: 'hidden'
       }}>
-        <div style={{ width: '100%', maxWidth: '450px' }}>
-          <MatchupCard matchup={matchup} showMargin={showMargin} />
+        <div style={{ width: '100%', maxWidth: isMobile ? '100%' : '450px' }}>
+          <MatchupCard matchup={matchup} showMargin={showMargin} isMobile={isMobile} />
         </div>
       </div>
     </div>

@@ -25,9 +25,17 @@ export default function ManagerPage() {
   const [year] = useState(null);
   const [imageError, setImageError] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
 
   // Track if we're syncing from URL to prevent loops
   const isSyncingFromUrlRef = useRef(false);
+
+  // Responsive window width tracking
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Sync state from URL params (runs on mount and when URL changes via back/forward)
   useEffect(() => {
@@ -126,20 +134,38 @@ export default function ManagerPage() {
   const isChampion = medalCounts.gold > 0;
   const goldColor = '#C9A433';
 
+  // Responsive breakpoints
+  const isMobile = windowWidth < 768;
+  const isTablet = windowWidth >= 768 && windowWidth < 1024;
+
   return (
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
       {/* Profile Info Section */}
-      <div style={{ padding: '2rem' }}>
-        <div style={{ display: 'flex', gap: '2rem', marginBottom: '1rem', width: '1000px', maxWidth: '1000px', margin: '0 auto 1rem auto' }}>
+      <div style={{ padding: isMobile ? '1rem' : '2rem' }}>
+        <div style={{
+          display: 'flex',
+          flexDirection: isMobile ? 'column' : 'row',
+          gap: isMobile ? '1rem' : '2rem',
+          marginBottom: '1rem',
+          width: isMobile ? '100%' : '1000px',
+          maxWidth: isMobile ? '100%' : '1000px',
+          margin: '0 auto 1rem auto'
+        }}>
           {/* Left - Profile Picture and Info */}
-          <div style={{ flex: '0 0 18%', display: 'flex', flexDirection: 'column', alignItems: 'center', minWidth: 0 }}>
+          <div style={{
+            flex: isMobile ? '1' : '0 0 18%',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            minWidth: 0
+          }}>
             {/* Profile Picture with Medal */}
-            <div style={{ position: 'relative', marginBottom: '1rem' }}>
+            <div style={{ position: 'relative', marginBottom: isMobile ? '0.75rem' : '1rem' }}>
               <div style={{
-                width: '140px',
-                height: '140px',
+                width: isMobile ? '120px' : '140px',
+                height: isMobile ? '120px' : '140px',
                 borderRadius: '50%',
-                border: '4px solid var(--border)',
+                border: isMobile ? '3px solid var(--border)' : '4px solid var(--border)',
                 background: 'var(--bg-alt)',
                 overflow: 'hidden',
                 boxShadow: isChampion ? `0 0 20px ${goldColor}` : 'none'
@@ -158,33 +184,33 @@ export default function ManagerPage() {
               {(medalCounts.gold > 0 || medalCounts.silver > 0 || medalCounts.bronze > 0) && (
                 <div style={{
                   position: 'absolute',
-                  bottom: '-10px',
+                  bottom: isMobile ? '-8px' : '-10px',
                   left: '50%',
                   transform: 'translateX(-50%)',
                   display: 'flex',
-                  gap: '0.5rem',
+                  gap: isMobile ? '0.375rem' : '0.5rem',
                   background: 'var(--bg)',
-                  padding: '0.5rem 0.75rem',
+                  padding: isMobile ? '0.375rem 0.5rem' : '0.5rem 0.75rem',
                   borderRadius: '20px',
                   border: '2px solid var(--border)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
                 }}>
                   {medalCounts.gold > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <span style={{ fontSize: '1.25rem' }}>🥇</span>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.gold}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                      <span style={{ fontSize: isMobile ? '1rem' : '1.25rem' }}>🥇</span>
+                      <span style={{ fontSize: isMobile ? '0.75rem' : '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.gold}</span>
                     </div>
                   )}
                   {medalCounts.silver > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <span style={{ fontSize: '1.25rem' }}>🥈</span>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.silver}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                      <span style={{ fontSize: isMobile ? '1rem' : '1.25rem' }}>🥈</span>
+                      <span style={{ fontSize: isMobile ? '0.75rem' : '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.silver}</span>
                     </div>
                   )}
                   {medalCounts.bronze > 0 && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-                      <span style={{ fontSize: '1.25rem' }}>🥉</span>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.bronze}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                      <span style={{ fontSize: isMobile ? '1rem' : '1.25rem' }}>🥉</span>
+                      <span style={{ fontSize: isMobile ? '0.75rem' : '0.9rem', fontWeight: 700, opacity: 0.85 }}>×{medalCounts.bronze}</span>
                     </div>
                   )}
                 </div>
@@ -194,54 +220,113 @@ export default function ManagerPage() {
             {/* Manager Info */}
             <h1 style={{
               margin: '0.5rem 0 0.5rem 0',
-              fontSize: '2rem',
+              fontSize: isMobile ? '1.75rem' : '2rem',
               textAlign: 'center',
               color: isChampion ? goldColor : 'var(--text)',
               textShadow: isChampion ? '0 0 8px rgba(201, 164, 51, 0.5)' : 'none'
             }}>{managerName}</h1>
-            <div style={{ color: 'var(--muted)', fontSize: '0.95rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+            <div style={{ color: 'var(--muted)', fontSize: isMobile ? '0.85rem' : '0.95rem', marginBottom: '0.5rem', textAlign: 'center' }}>
               {formatYearsActive(yearsActive)}
             </div>
-            <div style={{ color: 'var(--text)', fontSize: '1.5rem', fontWeight: 700, textAlign: 'center' }}>
+            <div style={{ color: 'var(--text)', fontSize: isMobile ? '1.25rem' : '1.5rem', fontWeight: 700, textAlign: 'center' }}>
               {formatRecord(overall.wins || 0, overall.losses || 0, overall.ties || 0)}
             </div>
           </div>
 
           {/* Vertical Divider */}
-          <div style={{ width: '1px', background: 'var(--border)', flexShrink: 0 }} />
+          {!isMobile && <div style={{ width: '1px', background: 'var(--border)', flexShrink: 0 }} />}
+
+          {/* Mobile Tab Navigation - appears after manager info */}
+          {isMobile && (
+            <div style={{
+              display: 'flex',
+              gap: '0.25rem',
+              borderBottom: '2px solid var(--border)',
+              marginBottom: '1rem',
+              overflowX: 'auto',
+              justifyContent: 'center'
+            }}>
+              {[
+                { id: 'overview', label: 'Overview' },
+                { id: 'trades', label: `Trades${transactionHistory?.transactions ? ` (${transactionHistory.transactions.filter(t => t.type === 'trade').length})` : ''}` },
+                { id: 'adds-drops', label: `Adds & Drops${transactionHistory?.transactions ? ` (${transactionHistory.transactions.filter(t => ['add', 'drop', 'add_and_drop'].includes(t.type)).length})` : ''}` }
+              ].map(tab => (
+                <button
+                  key={tab.id}
+                  onClick={() => !tab.disabled && setActiveTab(tab.id)}
+                  disabled={tab.disabled}
+                  style={{
+                    padding: '0.5rem 0.75rem',
+                    background: 'none',
+                    border: 'none',
+                    borderBottom: activeTab === tab.id ? '2px solid var(--accent)' : '2px solid transparent',
+                    color: tab.disabled ? 'var(--muted)' : activeTab === tab.id ? 'var(--accent)' : 'var(--text)',
+                    cursor: tab.disabled ? 'not-allowed' : 'pointer',
+                    fontSize: '0.85rem',
+                    fontWeight: activeTab === tab.id ? 600 : 400,
+                    transition: 'all 0.2s ease',
+                    whiteSpace: 'nowrap',
+                    opacity: tab.disabled ? 0.5 : 1
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!tab.disabled && activeTab !== tab.id) {
+                      e.currentTarget.style.color = 'var(--accent)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!tab.disabled && activeTab !== tab.id) {
+                      e.currentTarget.style.color = 'var(--text)';
+                    }
+                  }}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Right - Player Cards and Stats */}
-          <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ flex: '1', display: 'flex', flexDirection: 'column', gap: isMobile ? '0.75rem' : '0.5rem', minWidth: 0, overflow: 'hidden' }}>
             {/* Top Half - Player Cards */}
-            <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', alignContent: 'center', minWidth: 0 }}>
+            <div style={{
+              flex: 1,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: isMobile ? '0.5rem' : '1rem',
+              alignContent: 'center',
+              minWidth: 0
+            }}>
               <PlayerStatCard
                 title="Highest ffWAR"
                 player={topPlayers.highest}
                 stat="ffWAR"
                 additionalInfo={topPlayers.highest ? `${topPlayers.highest.num_games_started} starts` : null}
+                isMobile={isMobile}
               />
               <PlayerStatCard
                 title="Lowest ffWAR"
                 player={topPlayers.lowest}
                 stat="ffWAR"
                 additionalInfo={topPlayers.lowest ? `${topPlayers.lowest.num_games_started} starts` : null}
+                isMobile={isMobile}
               />
               <PlayerStatCard
                 title="Most Started"
                 player={topPlayers.mostStarted}
                 stat="num_games_started"
                 additionalInfo={topPlayers.mostStarted ? `${topPlayers.mostStarted.ffWAR?.toFixed(3)} ffWAR` : null}
+                isMobile={isMobile}
               />
             </div>
 
             {/* Horizontal Divider */}
-            <div style={{ height: '1px', background: 'var(--border)', margin: '0.5rem 0', maxWidth: '100%' }} />
+            <div style={{ height: '1px', background: 'var(--border)', margin: isMobile ? '0.5rem 0' : '0.5rem 0', maxWidth: '100%' }} />
 
             {/* Bottom Half - Stat Cards */}
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.5rem', justifyContent: 'center', maxWidth: '100%' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: isMobile ? '0.75rem' : '0.5rem', justifyContent: 'center', maxWidth: '100%' }}>
               {rankings.worst && (
                 <div style={{
-                  fontSize: '0.7rem',
+                  fontSize: isMobile ? '0.65rem' : '0.7rem',
                   color: 'var(--muted)',
                   textAlign: 'center',
                   letterSpacing: '0.3px'
@@ -256,36 +341,38 @@ export default function ManagerPage() {
               )}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(6, 1fr)',
-                gap: '1rem'
+                gridTemplateColumns: isMobile ? 'repeat(3, 1fr)' : 'repeat(6, 1fr)',
+                gap: isMobile ? '0.75rem' : '1rem'
               }}>
-                <RankedStatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} rank={rankings.win_percentage} worst={rankings.worst} />
-              <RankedStatCard title="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} rank={rankings.average_points_for} worst={rankings.worst} />
-              <RankedStatCard title="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} rank={rankings.average_points_against} worst={rankings.worst} />
+                <RankedStatCard title="Win %" value={`${overall.win_percentage?.toFixed(1) || 0}%`} rank={rankings.win_percentage} worst={rankings.worst} isMobile={isMobile} />
+              <RankedStatCard title="AVG PF" value={overall.average_points_for?.toFixed(2) || 0} rank={rankings.average_points_for} worst={rankings.worst} isMobile={isMobile} />
+              <RankedStatCard title="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} rank={rankings.average_points_against} worst={rankings.worst} isMobile={isMobile} />
               <RankedStatCard
                 title="AVG Diff"
                 value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)}
                 rank={rankings.average_points_differential}
                 worst={rankings.worst}
+                isMobile={isMobile}
               />
-              <RankedStatCard title="Trades" value={trades.total || 0} rank={rankings.trades} worst={rankings.worst} />
-              <RankedStatCard title="Playoffs" value={playoffAppearances} rank={rankings.playoffs} worst={rankings.worst} />
+              <RankedStatCard title="Trades" value={trades.total || 0} rank={rankings.trades} worst={rankings.worst} isMobile={isMobile} />
+              <RankedStatCard title="Playoffs" value={playoffAppearances} rank={rankings.playoffs} worst={rankings.worst} isMobile={isMobile} />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tab Navigation */}
-      <div style={{
+      {/* Desktop Tab Navigation */}
+      {!isMobile && <div style={{
         display: 'flex',
-        gap: '0.5rem',
+        gap: isMobile ? '0.25rem' : '0.5rem',
         borderBottom: '2px solid var(--border)',
-        marginBottom: '2rem',
-        width: '1000px',
-        maxWidth: '1000px',
-        margin: '0 auto 2rem auto',
+        marginBottom: isMobile ? '1rem' : '2rem',
+        width: isMobile ? '100%' : '1000px',
+        maxWidth: isMobile ? '100%' : '1000px',
+        margin: isMobile ? '0 auto 1rem auto' : '0 auto 2rem auto',
         overflowX: 'auto',
-        justifyContent: 'center'
+        justifyContent: 'center',
+        padding: isMobile ? '0 0.5rem' : '0'
       }}>
           {[
             { id: 'overview', label: 'Overview' },
@@ -303,13 +390,13 @@ export default function ManagerPage() {
               onClick={() => !tab.disabled && setActiveTab(tab.id)}
               disabled={tab.disabled}
               style={{
-                padding: '0.75rem 1.5rem',
+                padding: isMobile ? '0.5rem 0.75rem' : '0.75rem 1.5rem',
                 background: 'none',
                 border: 'none',
                 borderBottom: activeTab === tab.id ? '2px solid var(--accent)' : '2px solid transparent',
                 color: tab.disabled ? 'var(--muted)' : activeTab === tab.id ? 'var(--accent)' : 'var(--text)',
                 cursor: tab.disabled ? 'not-allowed' : 'pointer',
-                fontSize: '1rem',
+                fontSize: isMobile ? '0.85rem' : '1rem',
                 fontWeight: activeTab === tab.id ? 600 : 400,
                 transition: 'all 0.2s ease',
                 whiteSpace: 'nowrap',
@@ -329,10 +416,15 @@ export default function ManagerPage() {
               {tab.label}
             </button>
           ))}
-      </div>
+      </div>}
 
       {/* Tab Content */}
-      <div style={{ width: '1000px', maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{
+        width: isMobile ? '100%' : '1000px',
+        maxWidth: isMobile ? '100%' : '1000px',
+        margin: '0 auto',
+        padding: isMobile ? '0 0.5rem' : '0'
+      }}>
         {activeTab === 'overview' && <OverviewTab
           overall={overall}
           regularSeason={regularSeason}
@@ -345,6 +437,7 @@ export default function ManagerPage() {
           headToHead={summary.head_to_head || {}}
           managerName={managerName}
           awardsData={awardsData}
+          isMobile={isMobile}
         />}
 
         {activeTab === 'trades' && (
@@ -390,12 +483,12 @@ export default function ManagerPage() {
                           elements.push(
                             <div key={`batch-${elements.length}`} style={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(2, 1fr)',
-                              gap: '1.5rem',
-                              marginBottom: '1.5rem'
+                              gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+                              gap: isMobile ? '1rem' : '1.5rem',
+                              marginBottom: isMobile ? '1rem' : '1.5rem'
                             }}>
                               {allButLast.map((item) => (
-                                <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                                <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} isMobile={isMobile} />
                               ))}
                             </div>
                           );
@@ -406,10 +499,10 @@ export default function ManagerPage() {
                           <div key={`batch-${elements.length}`} style={{
                             display: 'flex',
                             justifyContent: 'center',
-                            marginBottom: '1.5rem'
+                            marginBottom: isMobile ? '1rem' : '1.5rem'
                           }}>
-                            <div style={{ width: '50%' }}>
-                              <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} />
+                            <div style={{ width: isMobile ? '100%' : '50%' }}>
+                              <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} isMobile={isMobile} />
                             </div>
                           </div>
                         );
@@ -417,12 +510,12 @@ export default function ManagerPage() {
                         elements.push(
                           <div key={`batch-${elements.length}`} style={{
                             display: 'grid',
-                            gridTemplateColumns: 'repeat(2, 1fr)',
-                            gap: '1.5rem',
-                            marginBottom: '1.5rem'
+                            gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+                            gap: isMobile ? '1rem' : '1.5rem',
+                            marginBottom: isMobile ? '1rem' : '1.5rem'
                           }}>
                             {twoManagerBatch.map((item) => (
-                              <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                              <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} isMobile={isMobile} />
                             ))}
                           </div>
                         );
@@ -432,8 +525,8 @@ export default function ManagerPage() {
 
                     // Render the 3+ manager trade at full width
                     elements.push(
-                      <div key={`3m-${idx}`} style={{ marginBottom: '1.5rem' }}>
-                        <TradeCard trade={trade} hideHeader={false} />
+                      <div key={`3m-${idx}`} style={{ marginBottom: isMobile ? '1rem' : '1.5rem' }}>
+                        <TradeCard trade={trade} hideHeader={false} isMobile={isMobile} />
                       </div>
                     );
                   }
@@ -452,12 +545,12 @@ export default function ManagerPage() {
                       elements.push(
                         <div key={`batch-${elements.length}`} style={{
                           display: 'grid',
-                          gridTemplateColumns: 'repeat(2, 1fr)',
-                          gap: '1.5rem',
-                          marginBottom: '1.5rem'
+                          gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+                          gap: isMobile ? '1rem' : '1.5rem',
+                          marginBottom: isMobile ? '1rem' : '1.5rem'
                         }}>
                           {allButLast.map((item) => (
-                            <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                            <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} isMobile={isMobile} />
                           ))}
                         </div>
                       );
@@ -469,8 +562,8 @@ export default function ManagerPage() {
                         display: 'flex',
                         justifyContent: 'center'
                       }}>
-                        <div style={{ width: '50%' }}>
-                          <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} />
+                        <div style={{ width: isMobile ? '100%' : '50%' }}>
+                          <TradeCard key={`2m-${lastTrade.originalIdx}`} trade={lastTrade.trade} hideHeader={false} isMobile={isMobile} />
                         </div>
                       </div>
                     );
@@ -478,11 +571,11 @@ export default function ManagerPage() {
                     elements.push(
                       <div key={`batch-${elements.length}`} style={{
                         display: 'grid',
-                        gridTemplateColumns: 'repeat(2, 1fr)',
-                        gap: '1.5rem'
+                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)',
+                        gap: isMobile ? '1rem' : '1.5rem'
                       }}>
                         {twoManagerBatch.map((item) => (
-                          <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} />
+                          <TradeCard key={`2m-${item.originalIdx}`} trade={item.trade} hideHeader={false} isMobile={isMobile} />
                         ))}
                       </div>
                     );
@@ -606,13 +699,13 @@ export default function ManagerPage() {
                               {yearWeeks.length > 1 && (
                                 <div style={{
                                   display: 'grid',
-                                  gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))',
-                                  gap: '1.5rem',
+                                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(450px, 1fr))',
+                                  gap: isMobile ? '1rem' : '1.5rem',
                                   justifyItems: 'center',
-                                  marginBottom: '1.5rem'
+                                  marginBottom: isMobile ? '1rem' : '1.5rem'
                                 }}>
                                   {yearWeeks.slice(0, -1).map((weekData, i) => (
-                                    <WaiverCard key={i} weekData={weekData} />
+                                    <WaiverCard key={i} weekData={weekData} isMobile={isMobile} />
                                   ))}
                                 </div>
                               )}
@@ -621,20 +714,20 @@ export default function ManagerPage() {
                                 display: 'flex',
                                 justifyContent: 'center'
                               }}>
-                                <div style={{ width: '450px', maxWidth: '100%' }}>
-                                  <WaiverCard weekData={yearWeeks[yearWeeks.length - 1]} />
+                                <div style={{ width: isMobile ? '100%' : '450px', maxWidth: '100%' }}>
+                                  <WaiverCard weekData={yearWeeks[yearWeeks.length - 1]} isMobile={isMobile} />
                                 </div>
                               </div>
                             </>
                           ) : (
                             <div style={{
                               display: 'grid',
-                              gridTemplateColumns: 'repeat(auto-fill, minmax(450px, 1fr))',
-                              gap: '1.5rem',
+                              gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(450px, 1fr))',
+                              gap: isMobile ? '1rem' : '1.5rem',
                               justifyItems: 'center'
                             }}>
                               {yearWeeks.map((weekData, i) => (
-                                <WaiverCard key={i} weekData={weekData} />
+                                <WaiverCard key={i} weekData={weekData} isMobile={isMobile} />
                               ))}
                             </div>
                           )}
@@ -679,7 +772,7 @@ function StatCard({ title, value, color }) {
 }
 
 // Ranked Stat Card Component - Shows stat with ranking among active managers
-function RankedStatCard({ title, value, color, rank, worst }) {
+function RankedStatCard({ title, value, color, rank, worst, isMobile }) {
   // Determine rank color based on dynamic thirds
   const getRankColor = (r, w) => {
     if (!r || !w) return 'var(--text)';
@@ -701,18 +794,18 @@ function RankedStatCard({ title, value, color, rank, worst }) {
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
-      gap: '0.25rem'
+      gap: isMobile ? '0.15rem' : '0.25rem'
     }}>
-      <div style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>{title}</div>
-      <div style={{ fontSize: '1.5rem', fontWeight: 700, color: displayColor, opacity: 0.85 }}>{value}</div>
+      <div style={{ fontSize: isMobile ? '0.6rem' : '0.75rem', color: 'var(--muted)', textTransform: 'uppercase' }}>{title}</div>
+      <div style={{ fontSize: isMobile ? '1.1rem' : '1.5rem', fontWeight: 700, color: displayColor, opacity: 0.85 }}>{value}</div>
       {rank && worst && (
         <div style={{
-          width: '28px',
-          height: '28px',
+          width: isMobile ? '22px' : '28px',
+          height: isMobile ? '22px' : '28px',
           borderRadius: '50%',
           background: rankColor,
           color: textColor,
-          fontSize: '0.85rem',
+          fontSize: isMobile ? '0.7rem' : '0.85rem',
           fontWeight: 700,
           display: 'flex',
           alignItems: 'center',
@@ -726,21 +819,21 @@ function RankedStatCard({ title, value, color, rank, worst }) {
 }
 
 // Player Stat Card Component - Shows player with their key stat
-function PlayerStatCard({ title, player, stat, additionalInfo }) {
+function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
   if (!player) {
     return (
       <div style={{
-        padding: '1rem',
+        padding: isMobile ? '0.5rem' : '1rem',
         background: 'var(--bg-alt)',
         borderRadius: '8px',
         border: '1px solid var(--border)',
         textAlign: 'center',
-        minHeight: '120px',
+        minHeight: isMobile ? '80px' : '120px',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center'
       }}>
-        <div style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Loading...</div>
+        <div style={{ color: 'var(--muted)', fontSize: isMobile ? '0.7rem' : '0.85rem' }}>Loading...</div>
       </div>
     );
   }
@@ -764,31 +857,31 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
   return (
     <div
       style={{
-        padding: '0.5rem',
+        padding: isMobile ? '0.25rem' : '0.5rem',
         display: 'flex',
         flexDirection: 'column',
-        gap: '0.5rem',
+        gap: isMobile ? '0.25rem' : '0.5rem',
         minWidth: 0,
         overflow: 'hidden'
       }}
     >
       <div style={{
-        fontSize: '1.25rem',
+        fontSize: isMobile ? '0.7rem' : '1.25rem',
         fontWeight: 700,
         color: 'var(--text)',
         textAlign: 'left',
-        letterSpacing: '1px'
+        letterSpacing: isMobile ? '0.5px' : '1px'
       }}>
         {title}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.25rem' : '0.5rem' }}>
         {player.player_image_endpoint && (
           <img
             src={player.player_image_endpoint}
             alt={playerName}
             style={{
-              width: '75px',
-              height: '75px',
+              width: isMobile ? '50px' : '75px',
+              height: isMobile ? '50px' : '75px',
               borderRadius: '8px',
               objectFit: 'cover',
               flexShrink: 0
@@ -799,13 +892,13 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
           />
         )}
         {/* Vertical Divider */}
-        <div style={{ width: '1px', height: '75px', background: 'var(--border)', flexShrink: 0 }} />
-        <div style={{ minWidth: 0, textAlign: 'left' }}>
+        {player.player_image_endpoint && <div style={{ width: '1px', height: isMobile ? '50px' : '75px', background: 'var(--border)', flexShrink: 0 }} />}
+        <div style={{ minWidth: 0, textAlign: 'left', width: '100%' }}>
           <Link
             to={`/player/${playerSlug}`}
             style={{
               fontWeight: 600,
-              fontSize: '0.95rem',
+              fontSize: isMobile ? '0.65rem' : '0.95rem',
               color: 'var(--text)',
               textDecoration: 'none',
               overflow: 'hidden',
@@ -823,14 +916,14 @@ function PlayerStatCard({ title, player, stat, additionalInfo }) {
             <div>{firstName}</div>
             <div>{lastName}</div>
           </Link>
-          <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+          <div style={{ fontSize: isMobile ? '0.55rem' : '0.8rem', color: 'var(--muted)' }}>
             {player.position} • {player.team}
           </div>
-          <div style={{ fontSize: '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: '0.25rem', opacity: 0.85 }}>
+          <div style={{ fontSize: isMobile ? '0.9rem' : '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: isMobile ? '0.15rem' : '0.25rem', opacity: 0.85 }}>
             {statValue}
           </div>
           {additionalInfo && (
-            <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem' }}>
+            <div style={{ fontSize: isMobile ? '0.55rem' : '0.75rem', color: 'var(--muted)', marginTop: isMobile ? '0.15rem' : '0.25rem' }}>
               {additionalInfo}
             </div>
           )}
@@ -979,7 +1072,7 @@ function formatYearsActive(years) {
 }
 
 // Overview Tab
-function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName, awardsData }) {
+function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, faab, placements, headToHead, managerName, awardsData, isMobile }) {
   const [hoveredMatchupId, setHoveredMatchupId] = useState(null);
   const hideTimeoutRef = useRef(null);
 
@@ -998,9 +1091,17 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
   }) : [];
 
   return (
-    <div style={{ display: 'flex', gap: '2rem' }}>
+    <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: isMobile ? '1.5rem' : '2rem' }}>
       {/* Left Side - 2 Column Flowing Grid */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(200px, 1fr))', gap: '0.5rem 3rem', alignContent: 'start', minWidth: '680px', maxWidth: '680px' }}>
+      <div style={{
+        flex: 1,
+        display: 'grid',
+        gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(200px, 1fr))',
+        gap: isMobile ? '1rem' : '0.5rem 3rem',
+        alignContent: 'start',
+        minWidth: isMobile ? 'auto' : '680px',
+        maxWidth: isMobile ? '100%' : '680px'
+      }}>
         {/* Season Stats */}
         <Section title="Season Stats">
           <StatRow label="Regular Season" value={formatRecord(regularSeason.wins || 0, regularSeason.losses || 0, regularSeason.ties || 0)} />
@@ -1217,9 +1318,9 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
 
       {/* Right Sidebar - Head-to-Head */}
       {sortedOpponents.length > 0 && (
-        <div style={{ width: '280px', flexShrink: 0 }}>
-            <h3 style={{ marginBottom: '1rem', fontSize: '1.25rem', fontWeight: 700, letterSpacing: '1px' }}>Head-to-Head</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div style={{ width: isMobile ? '100%' : '280px', flexShrink: 0 }}>
+            <h3 style={{ marginBottom: isMobile ? '0.75rem' : '1rem', fontSize: isMobile ? '1.1rem' : '1.25rem', fontWeight: 700, letterSpacing: '1px' }}>Head-to-Head</h3>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? '0.5rem' : '0.75rem' }}>
               {sortedOpponents.map(([opponentKey, data]) => {
               const opponent = data.opponent || { name: opponentKey };
               const totalGames = data.wins + data.losses + data.ties;
@@ -1449,7 +1550,7 @@ function WeeklyTab({ yearlyData, year, MatchupCard }) {
                   marginBottom: '0.75rem',
                   borderBottom: j < weekData.trades.length - 1 ? '1px solid var(--border)' : 'none'
                 }}>
-                  <TradeCard trade={trade} />
+                  <TradeCard trade={trade} isMobile={isMobile} />
                 </div>
               ))}
             </div>

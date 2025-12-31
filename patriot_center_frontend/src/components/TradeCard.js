@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
  * TradeCard - Visual trade card showing player movement between managers
  * Layout: All managers on left/right with connecting arrows to player batches
  */
-export function TradeCard({ trade, hideHeader = false }) {
+export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
   if (!trade) return null;
 
   const managersInvolved = trade.managers_involved || [];
@@ -85,13 +85,13 @@ export function TradeCard({ trade, hideHeader = false }) {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            marginBottom: '0.5rem'
+            marginBottom: isMobile ? '0.25rem' : '0.5rem'
           }}>
             <div style={{
-              padding: '0.6rem 1rem 0.4rem 1rem',
-              fontSize: '1rem',
+              padding: isMobile ? '0.4rem 0.75rem 0.3rem 0.75rem' : '0.6rem 1rem 0.4rem 1rem',
+              fontSize: isMobile ? '0.75rem' : '1rem',
               fontWeight: 700,
-              letterSpacing: '1.5px',
+              letterSpacing: isMobile ? '1px' : '1.5px',
               textTransform: 'uppercase',
               color: 'var(--text)',
               borderLeft: '1px solid var(--border)',
@@ -101,19 +101,21 @@ export function TradeCard({ trade, hideHeader = false }) {
             }}>
               {year} Week {week}
             </div>
-            <div style={{
-              fontSize: '0.65rem',
-              color: 'var(--muted)',
-              marginTop: '0.5rem',
-              fontStyle: 'italic'
-            }}>
-              Post trade calculations coming soon!
-            </div>
+            {!isMobile && (
+              <div style={{
+                fontSize: '0.65rem',
+                color: 'var(--muted)',
+                marginTop: '0.5rem',
+                fontStyle: 'italic'
+              }}>
+                Post trade calculations coming soon!
+              </div>
+            )}
           </div>
         )}
 
         {/* Trade Content */}
-        <div style={{ padding: '1.5rem' }}>
+        <div style={{ padding: isMobile ? '0.75rem' : '1.5rem' }}>
           {(() => {
             // Calculate sizing ONCE for the entire trade to ensure consistency across all managers
             const allPlayers = movementGroups.flatMap(g => g.players);
@@ -123,24 +125,24 @@ export function TradeCard({ trade, hideHeader = false }) {
               1
             );
 
-            // Base sizes
-            const basePlayerImageSize = 70;
-            const baseManagerImageSize = 70;
-            const baseFontSize = 0.85;
+            // Base sizes - smaller on mobile
+            const basePlayerImageSize = isMobile ? 45 : 70;
+            const baseManagerImageSize = isMobile ? 45 : 70;
+            const baseFontSize = isMobile ? 0.65 : 0.85;
 
             // Manager image shrinks based on the MAXIMUM player count across all groups
-            const dynamicManagerImageSize = Math.max(35, baseManagerImageSize - (maxPlayerCount - 1) * 12);
-            const managerColumnWidth = dynamicManagerImageSize + 25;
+            const dynamicManagerImageSize = Math.max(isMobile ? 30 : 35, baseManagerImageSize - (maxPlayerCount - 1) * (isMobile ? 8 : 12));
+            const managerColumnWidth = dynamicManagerImageSize + (isMobile ? 15 : 25);
 
             // Calculate available width for players
-            const totalCardWidth = 900;
-            const padding = 48;
+            const totalCardWidth = isMobile ? 375 : 900; // Typical mobile width
+            const padding = isMobile ? 24 : 48;
             const availablePlayerWidth = totalCardWidth - managerColumnWidth - padding;
-            const gapSpace = Math.max(0, (maxPlayerCount - 1) * 10);
+            const gapSpace = Math.max(0, (maxPlayerCount - 1) * (isMobile ? 6 : 10));
             const availablePerPlayer = (availablePlayerWidth - gapSpace) / maxPlayerCount;
 
             // Dynamic player image size
-            const dynamicPlayerImageSize = Math.min(basePlayerImageSize, Math.max(35, availablePerPlayer * 0.40));
+            const dynamicPlayerImageSize = Math.min(basePlayerImageSize, Math.max(isMobile ? 28 : 35, availablePerPlayer * 0.40));
 
             // Dynamic font size based on LONGEST name across ALL players
             const textWidthPerPlayer = availablePerPlayer - dynamicPlayerImageSize - 8;
@@ -148,13 +150,13 @@ export function TradeCard({ trade, hideHeader = false }) {
             const referenceTextWidth = 120;
             const spaceScaleFactor = textWidthPerPlayer / referenceTextWidth;
 
-            const minFontSize = 0.55;
-            const maxFontSize = 1.2;
+            const minFontSize = isMobile ? 0.45 : 0.55;
+            const maxFontSize = isMobile ? 0.9 : 1.2;
             const calculatedFontSize = baseFontSize * nameScaleFactor * spaceScaleFactor;
             const dynamicFontSize = Math.max(minFontSize, Math.min(maxFontSize, calculatedFontSize));
 
             // Minimize vertical spacing between trade directions
-            const verticalGap = 0.75;
+            const verticalGap = isMobile ? 0.5 : 0.75;
 
             // Calculate manager name font size separately to ensure manager names always fit
             // Get longest manager name
@@ -175,9 +177,9 @@ export function TradeCard({ trade, hideHeader = false }) {
             const calculatedManagerFontSize = managerNameWidth / (maxManagerNameLength * 0.7 * 16);
 
             const managerNameFontSize = Math.min(
-              0.85, // Max size for aesthetics
+              isMobile ? 0.65 : 0.85, // Max size for aesthetics
               Math.max(
-                0.45, // Min size for readability - lower to handle extreme cases
+                isMobile ? 0.4 : 0.45, // Min size for readability - lower to handle extreme cases
                 calculatedManagerFontSize
               )
             );
@@ -205,7 +207,7 @@ export function TradeCard({ trade, hideHeader = false }) {
                       display: 'inline-flex',
                       flexDirection: 'column',
                       alignItems: 'center',
-                      gap: '0.5rem',
+                      gap: isMobile ? '0.25rem' : '0.5rem',
                       border: '1px solid transparent',
                       background: 'transparent',
                       borderRadius: '8px',
@@ -254,11 +256,11 @@ export function TradeCard({ trade, hideHeader = false }) {
                   {/* Right: Players batch */}
                   <div style={{
                     display: 'flex',
-                    gap: '0.75rem',
+                    gap: isMobile ? '0.4rem' : '0.75rem',
                     justifyContent: 'space-evenly',
                     alignItems: 'center',
                     flexWrap: 'nowrap',
-                    paddingLeft: '1.5rem',
+                    paddingLeft: isMobile ? '0.5rem' : '1.5rem',
                     borderLeft: '1px solid var(--border)',
                     overflow: 'hidden'
                   }}>
@@ -272,7 +274,7 @@ export function TradeCard({ trade, hideHeader = false }) {
                           display: 'flex',
                           flexDirection: 'column',
                           alignItems: 'center',
-                          gap: '0.5rem',
+                          gap: isMobile ? '0.25rem' : '0.5rem',
                           flex: '1 1 0',
                           minWidth: 0
                         }}>
@@ -338,7 +340,7 @@ export function TradeCard({ trade, hideHeader = false }) {
                                 display: 'inline-flex',
                                 flexDirection: 'column',
                                 alignItems: 'center',
-                                gap: '0.5rem',
+                                gap: isMobile ? '0.25rem' : '0.5rem',
                                 border: '1px solid transparent',
                                 background: 'transparent',
                                 borderRadius: '8px',
@@ -444,21 +446,21 @@ export function TradeCard({ trade, hideHeader = false }) {
   const maxSentCount = Math.max(...managerRows.map(row => row.sent.length), 1);
   const maxReceivedCount = Math.max(...managerRows.map(row => row.received.length), 1);
 
-  // Calculate sizing for sent column (smaller - 1fr)
-  const sentBaseImageSize = 60;
-  const sentBaseFontSize = 0.75;
-  const sentImageSize = Math.max(35, sentBaseImageSize - (maxSentCount - 1) * 8);
-  const sentFirstNameSize = Math.max(0.5, sentBaseFontSize * 0.85 - (maxSentCount - 1) * 0.04);
-  const sentLastNameSize = Math.max(0.6, sentBaseFontSize - (maxSentCount - 1) * 0.04);
+  // Calculate sizing for sent column (smaller - 1fr) - reduced on mobile
+  const sentBaseImageSize = isMobile ? 40 : 60;
+  const sentBaseFontSize = isMobile ? 0.6 : 0.75;
+  const sentImageSize = Math.max(isMobile ? 28 : 35, sentBaseImageSize - (maxSentCount - 1) * (isMobile ? 6 : 8));
+  const sentFirstNameSize = Math.max(isMobile ? 0.4 : 0.5, sentBaseFontSize * 0.85 - (maxSentCount - 1) * 0.04);
+  const sentLastNameSize = Math.max(isMobile ? 0.5 : 0.6, sentBaseFontSize - (maxSentCount - 1) * 0.04);
 
-  // Calculate sizing for received column (larger - 2fr)
+  // Calculate sizing for received column (larger - 2fr) - reduced on mobile
   // Received players should stay large to be the "star of the show"
-  const receivedBaseImageSize = 80;
-  const receivedBaseFontSize = 0.9;
+  const receivedBaseImageSize = isMobile ? 55 : 80;
+  const receivedBaseFontSize = isMobile ? 0.7 : 0.9;
   // Only shrink slightly for extreme cases (5+ players)
-  const receivedImageSize = Math.max(65, receivedBaseImageSize - (maxReceivedCount - 1) * 2);
-  const receivedFirstNameSize = Math.max(0.75, receivedBaseFontSize * 0.85 - (maxReceivedCount - 1) * 0.01);
-  const receivedLastNameSize = Math.max(0.85, receivedBaseFontSize - (maxReceivedCount - 1) * 0.01);
+  const receivedImageSize = Math.max(isMobile ? 45 : 65, receivedBaseImageSize - (maxReceivedCount - 1) * 2);
+  const receivedFirstNameSize = Math.max(isMobile ? 0.6 : 0.75, receivedBaseFontSize * 0.85 - (maxReceivedCount - 1) * 0.01);
+  const receivedLastNameSize = Math.max(isMobile ? 0.65 : 0.85, receivedBaseFontSize - (maxReceivedCount - 1) * 0.01);
 
   return (
     <div style={{
@@ -474,13 +476,13 @@ export function TradeCard({ trade, hideHeader = false }) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          marginBottom: '0.5rem'
+          marginBottom: isMobile ? '0.25rem' : '0.5rem'
         }}>
           <div style={{
-            padding: '0.75rem 1.5rem 0.5rem 1.5rem',
-            fontSize: '1.15rem',
+            padding: isMobile ? '0.5rem 1rem 0.4rem 1rem' : '0.75rem 1.5rem 0.5rem 1.5rem',
+            fontSize: isMobile ? '0.85rem' : '1.15rem',
             fontWeight: 700,
-            letterSpacing: '1.5px',
+            letterSpacing: isMobile ? '1px' : '1.5px',
             textTransform: 'uppercase',
             color: 'var(--text)',
             borderLeft: '1px solid var(--border)',
@@ -490,49 +492,51 @@ export function TradeCard({ trade, hideHeader = false }) {
           }}>
             {year} Week {week}
           </div>
-          <div style={{
-            fontSize: '0.65rem',
-            color: 'var(--muted)',
-            marginTop: '0.5rem',
-            fontStyle: 'italic'
-          }}>
-            Post trade calculations coming soon!
-          </div>
+          {!isMobile && (
+            <div style={{
+              fontSize: '0.65rem',
+              color: 'var(--muted)',
+              marginTop: '0.5rem',
+              fontStyle: 'italic'
+            }}>
+              Post trade calculations coming soon!
+            </div>
+          )}
         </div>
       )}
 
       {/* Trade Content - Table Format */}
-      <div style={{ padding: '1.5rem' }}>
+      <div style={{ padding: isMobile ? '0.75rem' : '1.5rem' }}>
         {/* Header Row */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '120px 1fr 2fr',
+          gridTemplateColumns: isMobile ? '65px 1fr 2fr' : '120px 1fr 2fr',
           borderBottom: '1px solid var(--border)',
-          paddingBottom: '0.75rem',
-          marginBottom: '1rem'
+          paddingBottom: isMobile ? '0.5rem' : '0.75rem',
+          marginBottom: isMobile ? '0.75rem' : '1rem'
         }}>
           <div></div>
           <div style={{
-            fontSize: '1.3rem',
+            fontSize: isMobile ? '0.7rem' : '1.3rem',
             fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: '2px',
+            letterSpacing: isMobile ? '1px' : '2px',
             color: 'var(--muted)',
             textAlign: 'center',
             borderLeft: '1px solid var(--border)',
-            paddingLeft: '1rem'
+            paddingLeft: isMobile ? '0.5rem' : '1rem'
           }}>
             Sent
           </div>
           <div style={{
-            fontSize: '1.3rem',
+            fontSize: isMobile ? '0.7rem' : '1.3rem',
             fontWeight: 700,
             textTransform: 'uppercase',
-            letterSpacing: '2px',
+            letterSpacing: isMobile ? '1px' : '2px',
             color: 'var(--text)',
             textAlign: 'center',
             borderLeft: '1px solid var(--border)',
-            paddingLeft: '1rem'
+            paddingLeft: isMobile ? '0.5rem' : '1rem'
           }}>
             Received
           </div>
@@ -544,10 +548,10 @@ export function TradeCard({ trade, hideHeader = false }) {
             key={idx}
             style={{
               display: 'grid',
-              gridTemplateColumns: '120px 1fr 2fr',
+              gridTemplateColumns: isMobile ? '65px 1fr 2fr' : '120px 1fr 2fr',
               borderBottom: idx < managerRows.length - 1 ? '1px solid var(--border)' : 'none',
-              paddingBottom: '1.5rem',
-              paddingTop: idx > 0 ? '1.5rem' : '0',
+              paddingBottom: isMobile ? '0.75rem' : '1.5rem',
+              paddingTop: idx > 0 ? (isMobile ? '0.75rem' : '1.5rem') : '0',
               alignItems: 'center'
             }}
           >
@@ -559,7 +563,7 @@ export function TradeCard({ trade, hideHeader = false }) {
                 display: 'inline-flex',
                 flexDirection: 'column',
                 alignItems: 'center',
-                gap: '0.5rem',
+                gap: isMobile ? '0.25rem' : '0.5rem',
                 border: '1px solid transparent',
                 background: 'transparent',
                 borderRadius: '8px',
@@ -581,8 +585,8 @@ export function TradeCard({ trade, hideHeader = false }) {
                   src={row.imageUrl}
                   alt={row.name}
                   style={{
-                    width: '85px',
-                    height: '85px',
+                    width: isMobile ? '55px' : '85px',
+                    height: isMobile ? '55px' : '85px',
                     borderRadius: '50%',
                     objectFit: 'cover'
                   }}
@@ -592,10 +596,14 @@ export function TradeCard({ trade, hideHeader = false }) {
                 />
               )}
               <div style={{
-                fontSize: '0.85rem',
+                fontSize: isMobile ? '0.5rem' : '0.85rem',
                 fontWeight: 600,
                 color: 'var(--text)',
-                textAlign: 'center'
+                textAlign: 'center',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                maxWidth: '100%'
               }}>
                 {row.name}
               </div>
@@ -604,11 +612,11 @@ export function TradeCard({ trade, hideHeader = false }) {
             {/* Sent Column - De-emphasized (afterthoughts) */}
             <div style={{
               display: 'flex',
-              gap: '0.5rem',
+              gap: isMobile ? '0.25rem' : '0.5rem',
               flexWrap: 'nowrap',
               justifyContent: 'center',
               borderLeft: '1px solid var(--border)',
-              paddingLeft: '1rem',
+              paddingLeft: isMobile ? '0.5rem' : '1rem',
               overflow: 'hidden'
             }}>
               {row.sent.map((player, playerIdx) => {
@@ -771,11 +779,11 @@ export function TradeCard({ trade, hideHeader = false }) {
             {/* Received Column */}
             <div style={{
               display: 'flex',
-              gap: '0.75rem',
+              gap: isMobile ? '0.4rem' : '0.75rem',
               flexWrap: 'nowrap',
               justifyContent: 'center',
               borderLeft: '1px solid var(--border)',
-              paddingLeft: '1rem',
+              paddingLeft: isMobile ? '0.5rem' : '1rem',
               overflow: 'hidden'
             }}>
               {row.received.map((player, playerIdx) => {

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 /**
  * PlayerLinkVertical - Helper component to display player with image on left, name on right (vertically stacked)
  */
-function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faabAmount = null, scaleFactor = 1 }) {
+function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faabAmount = null, scaleFactor = 1, isMobile = false }) {
   const playerName = typeof player === 'string' ? player : player?.name || 'Unknown';
   const playerSlug = typeof player === 'object' && player?.slug ? player.slug : encodeURIComponent(playerName.toLowerCase());
   const imageUrl = typeof player === 'object' ? player?.image_url : null;
@@ -38,21 +38,23 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
           {faabAmount !== null && faabAmount !== undefined && (
             <div style={{
               position: 'absolute',
-              bottom: `${-4 * scaleFactor}px`,
-              right: `${-6 * scaleFactor}px`,
+              bottom: isMobile ? `${-3 * scaleFactor}px` : `${-4 * scaleFactor}px`,
+              right: isMobile ? `${-4 * scaleFactor}px` : `${-6 * scaleFactor}px`,
               background: 'tan',
               color: 'black',
               clipPath: 'polygon(20% 0%, 100% 0%, 100% 100%, 20% 100%, 0% 50%)',
-              padding: `${3 * scaleFactor}px ${6 * scaleFactor}px ${3 * scaleFactor}px ${8 * scaleFactor}px`,
+              padding: isMobile
+                ? `${2 * scaleFactor}px ${4 * scaleFactor}px ${2 * scaleFactor}px ${6 * scaleFactor}px`
+                : `${3 * scaleFactor}px ${6 * scaleFactor}px ${3 * scaleFactor}px ${8 * scaleFactor}px`,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: `${0.6 * scaleFactor}rem`,
+              fontSize: isMobile ? `${0.5 * scaleFactor}rem` : `${0.6 * scaleFactor}rem`,
               fontWeight: 700,
-              border: `${2 * scaleFactor}px solid var(--card-bg)`,
+              border: isMobile ? `${1.5 * scaleFactor}px solid var(--card-bg)` : `${2 * scaleFactor}px solid var(--card-bg)`,
               boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-              minWidth: `${24 * scaleFactor}px`,
-              height: `${18 * scaleFactor}px`
+              minWidth: isMobile ? `${20 * scaleFactor}px` : `${24 * scaleFactor}px`,
+              height: isMobile ? `${14 * scaleFactor}px` : `${18 * scaleFactor}px`
             }}>
               ${faabAmount}
             </div>
@@ -129,7 +131,7 @@ const RELATIONSHIP_COLORS = {
 /**
  * WaiverCard - Weekly waiver card showing all adds/drops for a specific week
  */
-export function WaiverCard({ weekData }) {
+export function WaiverCard({ weekData, isMobile = false }) {
   if (!weekData) return null;
 
   const { year, week, transactions } = weekData;
@@ -198,18 +200,18 @@ export function WaiverCard({ weekData }) {
     return lastName.length > longest.length ? lastName : longest;
   }, '');
 
-  // Calculate dimensions
-  const cardWidth = 450; // maxWidth
-  const contentPadding = 32; // 1rem * 2 (left + right)
+  // Calculate dimensions - reduced for mobile
+  const cardWidth = isMobile ? 375 : 450; // maxWidth
+  const contentPadding = isMobile ? 16 : 32;
   const availableWidth = cardWidth - contentPadding;
   const columnWidth = availableWidth / activeColumns;
-  const columnPadding = 24; // 0.75rem * 2 (left + right padding between columns)
+  const columnPadding = isMobile ? 12 : 24;
   const usableColumnWidth = columnWidth - columnPadding;
 
-  // Base dimensions
-  const baseImageSize = 45;
-  const baseFontSize = 0.9; // rem
-  const baseGap = 8; // 0.5rem gap between image and text
+  // Base dimensions - reduced for mobile
+  const baseImageSize = isMobile ? 35 : 45;
+  const baseFontSize = isMobile ? 0.75 : 0.9; // rem
+  const baseGap = isMobile ? 6 : 8; // gap between image and text
 
   // Available space for text (accounting for image and gap)
   const availableForText = usableColumnWidth - baseImageSize - baseGap;
@@ -220,8 +222,10 @@ export function WaiverCard({ weekData }) {
 
   // Calculate scale factor to use 85% of available space
   const targetUsage = 0.85;
+  const minScale = 0.8;
+  const maxScale = 1.4;
   const scaleFactor = estimatedNameWidth > 0
-    ? Math.min(Math.max((availableForText * targetUsage) / estimatedNameWidth, 0.8), 1.4)
+    ? Math.min(Math.max((availableForText * targetUsage) / estimatedNameWidth, minScale), maxScale)
     : 1;
 
   // Apply scaled dimensions
@@ -240,42 +244,46 @@ export function WaiverCard({ weekData }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        marginBottom: '0.5rem'
+        marginBottom: isMobile ? '0.35rem' : '0.5rem'
       }}>
         <div style={{
-          fontSize: '1rem',
+          fontSize: isMobile ? '0.85rem' : '1rem',
           fontWeight: 700,
-          letterSpacing: '1.5px',
+          letterSpacing: isMobile ? '1px' : '1.5px',
           textTransform: 'uppercase',
           color: 'var(--text)'
         }}>
           {year} Week {week}
         </div>
         <div style={{
-          fontSize: '0.75rem',
+          fontSize: isMobile ? '0.65rem' : '0.75rem',
           color: 'var(--muted)',
-          marginTop: '0.25rem'
+          marginTop: isMobile ? '0.2rem' : '0.25rem'
         }}>
           {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
         </div>
       </div>
 
-      {/* Content - 2 column layout (Adds and Drops) */}
+      {/* Content - 2 column layout (Adds and Drops) side by side */}
       <div style={{
-        padding: '1rem',
+        padding: isMobile ? '0.65rem' : '1rem',
         display: 'grid',
         gridTemplateColumns: `repeat(${activeColumns}, 1fr)`,
         gap: '0'
       }}>
         {/* Adds Column */}
         {hasAdds && (
-          <div style={{ display: 'flex', flexDirection: 'column', paddingRight: '0.75rem' }}>
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            paddingRight: isMobile ? '0.5rem' : '0.75rem'
+          }}>
             <div style={{
-              fontSize: '1rem',
+              fontSize: isMobile ? '0.85rem' : '1rem',
               fontWeight: 700,
               color: 'var(--text)',
-              marginBottom: '0.75rem',
-              paddingBottom: '0.5rem',
+              marginBottom: isMobile ? '0.5rem' : '0.75rem',
+              paddingBottom: isMobile ? '0.35rem' : '0.5rem',
               borderBottom: '1px solid var(--border)'
             }}>
               Adds ({processedAdds.length})
@@ -283,7 +291,7 @@ export function WaiverCard({ weekData }) {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '0.65rem',
+              gap: isMobile ? '0.5rem' : '0.65rem',
               width: '100%'
             }}>
               {processedAdds.map((txn, i) => {
@@ -296,22 +304,23 @@ export function WaiverCard({ weekData }) {
                       fontSize={`${scaledFontSize}rem`}
                       faabAmount={txn.faab_spent}
                       scaleFactor={scaleFactor}
+                      isMobile={isMobile}
                     />
                     {hasRelationship && (
                       <div style={{
                         position: 'absolute',
-                        right: '-0.75rem',
+                        right: isMobile ? '-0.4rem' : '-0.75rem',
                         top: '50%',
                         transform: 'translateY(-50%)',
-                        width: '18px',
-                        height: '14px',
+                        width: isMobile ? '16px' : '18px',
+                        height: isMobile ? '12px' : '14px',
                         background: RELATIONSHIP_COLORS.add,
                         borderRadius: '3px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: 'white',
-                        fontSize: '0.7rem',
+                        fontSize: isMobile ? '0.6rem' : '0.7rem',
                         fontWeight: 700
                       }}>
                         +
@@ -329,15 +338,15 @@ export function WaiverCard({ weekData }) {
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            paddingLeft: hasAdds ? '0.75rem' : '0',
+            paddingLeft: hasAdds ? (isMobile ? '0.5rem' : '0.75rem') : '0',
             borderLeft: hasAdds ? '1px solid var(--border)' : 'none'
           }}>
             <div style={{
-              fontSize: '1rem',
+              fontSize: isMobile ? '0.85rem' : '1rem',
               fontWeight: 700,
               color: 'var(--text)',
-              marginBottom: '0.75rem',
-              paddingBottom: '0.5rem',
+              marginBottom: isMobile ? '0.5rem' : '0.75rem',
+              paddingBottom: isMobile ? '0.35rem' : '0.5rem',
               borderBottom: '1px solid var(--border)'
             }}>
               Drops ({processedDrops.length})
@@ -345,7 +354,7 @@ export function WaiverCard({ weekData }) {
             <div style={{
               display: 'flex',
               flexDirection: 'column',
-              gap: '0.65rem',
+              gap: isMobile ? '0.5rem' : '0.65rem',
               width: '100%'
             }}>
               {processedDrops.map((txn, i) => {
@@ -357,22 +366,23 @@ export function WaiverCard({ weekData }) {
                       imageSize={scaledImageSize}
                       fontSize={`${scaledFontSize}rem`}
                       scaleFactor={scaleFactor}
+                      isMobile={isMobile}
                     />
                     {hasRelationship && (
                       <div style={{
                         position: 'absolute',
-                        left: '-0.75rem',
+                        left: isMobile ? '-0.4rem' : '-0.75rem',
                         top: '50%',
                         transform: 'translateY(-50%)',
-                        width: '18px',
-                        height: '14px',
+                        width: isMobile ? '16px' : '18px',
+                        height: isMobile ? '12px' : '14px',
                         background: RELATIONSHIP_COLORS.drop,
                         borderRadius: '3px',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                         color: 'white',
-                        fontSize: '0.7rem',
+                        fontSize: isMobile ? '0.6rem' : '0.7rem',
                         fontWeight: 700
                       }}>
                         −

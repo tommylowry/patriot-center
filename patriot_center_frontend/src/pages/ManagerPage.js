@@ -1000,7 +1000,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
   return (
     <div style={{ display: 'flex', gap: '2rem' }}>
       {/* Left Side - 2 Column Flowing Grid */}
-      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(200px, 1fr))', gap: '0.5rem 1rem', alignContent: 'start', minWidth: '680px', maxWidth: '680px' }}>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(200px, 1fr))', gap: '0.5rem 3rem', alignContent: 'start', minWidth: '680px', maxWidth: '680px' }}>
         {/* Season Stats */}
         <Section title="Season Stats">
           <StatRow label="Regular Season" value={formatRecord(regularSeason.wins || 0, regularSeason.losses || 0, regularSeason.ties || 0)} />

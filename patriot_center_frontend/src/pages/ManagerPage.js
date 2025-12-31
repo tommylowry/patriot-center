@@ -87,6 +87,9 @@ export default function ManagerPage() {
     return acc;
   }, { gold: 0, silver: 0, bronze: 0 });
 
+  const isChampion = medalCounts.gold > 0;
+  const goldColor = '#C9A433';
+
   return (
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
       {/* Profile Info Section */}
@@ -102,7 +105,8 @@ export default function ManagerPage() {
                 borderRadius: '50%',
                 border: '4px solid var(--border)',
                 background: 'var(--bg-alt)',
-                overflow: 'hidden'
+                overflow: 'hidden',
+                boxShadow: isChampion ? `0 0 20px ${goldColor}` : 'none'
               }}>
                 {avatarUrl && !imageError && (
                   <img
@@ -152,7 +156,13 @@ export default function ManagerPage() {
             </div>
 
             {/* Manager Info */}
-            <h1 style={{ margin: '0.5rem 0 0.5rem 0', fontSize: '2rem', textAlign: 'center' }}>{managerName}</h1>
+            <h1 style={{
+              margin: '0.5rem 0 0.5rem 0',
+              fontSize: '2rem',
+              textAlign: 'center',
+              color: isChampion ? goldColor : 'var(--text)',
+              textShadow: isChampion ? '0 0 8px rgba(201, 164, 51, 0.5)' : 'none'
+            }}>{managerName}</h1>
             <div style={{ color: 'var(--muted)', fontSize: '0.95rem', marginBottom: '0.5rem', textAlign: 'center' }}>
               {formatYearsActive(yearsActive)}
             </div>
@@ -1210,11 +1220,7 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                    <Link
-                      to={`/manager/${encodeURIComponent(opponent.name)}`}
-                      style={{ flexShrink: 0, display: 'flex', justifyContent: 'center' }}
-                      onClick={(e) => e.stopPropagation()}
-                    >
+                    <div style={{ flexShrink: 0, display: 'flex', justifyContent: 'center' }}>
                       {opponent.image_url && (
                         <img
                           src={opponent.image_url}
@@ -1224,39 +1230,27 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
                             height: '64px',
                             borderRadius: '50%',
                             objectFit: 'cover',
-                            border: '2px solid var(--border)',
-                            cursor: 'pointer'
+                            border: '2px solid var(--border)'
                           }}
                           onError={(e) => {
                             e.target.style.display = 'none';
                           }}
                         />
                       )}
-                    </Link>
+                    </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <Link
-                        to={`/manager/${encodeURIComponent(opponent.name)}`}
+                      <div
                         style={{
                           fontWeight: 600,
                           fontSize: '1rem',
                           overflow: 'hidden',
                           textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
-                          color: 'var(--text)',
-                          textDecoration: 'none',
-                          display: 'block',
-                          transition: 'color 0.2s ease'
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.color = 'var(--accent)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.color = 'var(--text)';
+                          color: 'var(--text)'
                         }}
                       >
                         {opponent.name}
-                      </Link>
+                      </div>
                       <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
                         <span>{formatRecord(data.wins, data.losses, data.ties)}</span>
                         {' • '}

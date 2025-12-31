@@ -22,7 +22,7 @@ export function useManagersList(activeOnly = false) {
       startLoading();
       setError(null);
       try {
-        const endpoint = `/get/managers/list/${activeOnly}`;
+        const endpoint = `/get/managers/list/${activeOnly}?v=2`;
         const data = await apiGet(endpoint);
         if (isMounted) {
           setManagers(data.managers || []);
@@ -52,7 +52,7 @@ export function useManagersList(activeOnly = false) {
     startLoading();
     setError(null);
     try {
-      const endpoint = `/get/managers/list/${activeOnly}`;
+      const endpoint = `/get/managers/list/${activeOnly}?v=2`;
       const data = await apiGet(endpoint);
       setManagers(data.managers || []);
     } catch (e) {

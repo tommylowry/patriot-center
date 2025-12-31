@@ -159,7 +159,7 @@ class ManagerMetadataManager:
             losses = self._cache[manager]["summary"]["matchup_data"]["overall"]["losses"]["total"]
             ties   = self._cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
 
-            ranking_details = self._get_ranking_details_from_cache(manager, manager_summary_usage=True)
+            ranking_details = self._get_ranking_details_from_cache(manager, manager_summary_usage=True, active_only=active_only)
 
             manager_item = {
                 "name":           manager,
@@ -223,7 +223,9 @@ class ManagerMetadataManager:
                 "win_percentage":     ranking_details['ranks']['win_percentage'],
                 "average_points_for": ranking_details['ranks']['average_points_for'],
                 "trades":             ranking_details['ranks']['trades'],
-                "playoffs":           ranking_details['ranks']['playoffs']
+                "playoffs":           ranking_details['ranks']['playoffs'],
+                "best":               ranking_details['ranks']['best'],
+                "worst":              ranking_details['ranks']['worst']
             }
 
             manager_item["rankings"] = copy.deepcopy(rankings)

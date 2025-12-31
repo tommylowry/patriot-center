@@ -52,7 +52,7 @@ def index():
             "/get_aggregated_managers/<player>",
             "/valid_options",
             "/players/list",
-            "/get/managers/list",
+            "/get/managers/list/<active_only>",
             "/api/managers/<manager_name>/summary",
             "/api/managers/<manager_name>/yearly/<year>",
             "/api/managers/<manager_name>/head-to-head/<opponent_name>",
@@ -244,7 +244,6 @@ def valid_options(arg1, arg2, arg3, arg4):
     response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
     return response, 200
 
-@app.route('/get/managers/list', defaults={'active_only': "true"}, methods=['GET'])
 @app.route('/get/managers/list/<string:active_only>', methods=['GET'])
 def list_managers(active_only):
     """

@@ -120,6 +120,8 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
             // Calculate sizing ONCE for the entire trade to ensure consistency across all managers
             const allPlayers = movementGroups.flatMap(g => g.players);
             const maxPlayerCount = Math.max(...movementGroups.map(g => g.players.length), 1);
+            // On mobile with grid layout (>3 players), cap sizing at 3 players per row since grid wraps
+            const effectiveMaxPlayerCount = (isMobile && maxPlayerCount > 3) ? 3 : maxPlayerCount;
             const maxLastNameLength = Math.max(
               ...allPlayers.map(p => (p.last_name || '').length),
               1
@@ -131,15 +133,15 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
             const baseFontSize = isMobile ? 0.65 : 0.85;
 
             // Manager image shrinks based on the MAXIMUM player count across all groups
-            const dynamicManagerImageSize = Math.max(isMobile ? 30 : 35, baseManagerImageSize - (maxPlayerCount - 1) * (isMobile ? 8 : 12));
+            const dynamicManagerImageSize = Math.max(isMobile ? 30 : 35, baseManagerImageSize - (effectiveMaxPlayerCount - 1) * (isMobile ? 8 : 12));
             const managerColumnWidth = dynamicManagerImageSize + (isMobile ? 15 : 25);
 
             // Calculate available width for players
             const totalCardWidth = isMobile ? 375 : 1200; // Typical mobile width
             const padding = isMobile ? 24 : 48;
             const availablePlayerWidth = totalCardWidth - managerColumnWidth - padding;
-            const gapSpace = Math.max(0, (maxPlayerCount - 1) * (isMobile ? 6 : 10));
-            const availablePerPlayer = (availablePlayerWidth - gapSpace) / maxPlayerCount;
+            const gapSpace = Math.max(0, (effectiveMaxPlayerCount - 1) * (isMobile ? 6 : 10));
+            const availablePerPlayer = (availablePlayerWidth - gapSpace) / effectiveMaxPlayerCount;
 
             // Dynamic player image size
             const dynamicPlayerImageSize = Math.min(basePlayerImageSize, Math.max(isMobile ? 28 : 35, availablePerPlayer * 0.40));
@@ -282,7 +284,9 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                           <div key={`wrapper-${playerIdx}`} style={{
                             gridColumn: '1 / -1',
                             display: 'flex',
-                            justifyContent: 'center',
+                            justifyContent: 'space-evenly',
+                            alignItems: 'center',
+                            flexWrap: 'nowrap',
                             gap: isMobile ? '0.4rem' : '0.75rem'
                           }}>
                             {leftoverPlayers.map((p, idx) => {
@@ -296,8 +300,8 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                                   flexDirection: 'column',
                                   alignItems: 'center',
                                   gap: isMobile ? '0.25rem' : '0.5rem',
-                                  minWidth: 0,
-                                  flex: '0 0 auto'
+                                  flex: '1 1 0',
+                                  minWidth: 0
                                 }}>
                                   {pIsFAAB ? (
                                     <>

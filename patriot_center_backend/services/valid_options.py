@@ -209,11 +209,11 @@ class ValidOptionsService:
                 self._manager = arg
             
             # Check if arg is a player
-            elif arg.replace("_", " ").replace("%27", "'") in PLAYERS_DATA:
+            elif arg in PLAYERS_DATA:
                 
                 if self._player_selected():
                     raise ValueError("Multiple player arguments provided.")
-                self._player = arg.replace("_", " ").replace("%27", "'")
+                self._player = arg
             
             elif arg in ["QB", "RB", "WR", "TE", "K", "DEF"]:
                 if self._position_selected():
@@ -1002,3 +1002,8 @@ class ValidOptionsService:
 
         # In a given year and week, the manager can only be the selected manager
         self._managers_list = list([self._manager])
+
+
+# option = ValidOptionsService("jonathan taylor", None, None, None)
+# valid_options = option.get_valid_options()
+# print(valid_options)

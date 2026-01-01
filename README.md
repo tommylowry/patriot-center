@@ -138,7 +138,7 @@ Returns statistics for a specific player-manager pairing.
 
 #### Player List
 ```
-GET /players/list
+GET /options/list
 ```
 Returns metadata for all players in the system (names, positions, teams, slugs).
 

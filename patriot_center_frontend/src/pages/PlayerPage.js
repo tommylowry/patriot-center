@@ -1,6 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useParams, useNavigate, useSearchParams } from "react-router-dom";
-import { displayFromSlug } from '../components/player/PlayerNameFormatter';
+import React, { useState, useEffect, useRef } from "react";
+import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { usePlayerManagers } from '../hooks/usePlayerManagers';
 import { useValidOptions } from '../hooks/useValidOptions';
 
@@ -8,8 +7,7 @@ export default function PlayerPage() {
     const { playerSlug } = useParams();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const slug = playerSlug || 'Amon-Ra_St._Brown'; // default capitalized
-    const displayName = displayFromSlug(slug);
+    const slug = playerSlug || 'amon-ra%20st.%20brown';
 
     const [year, setYear] = useState(null);    // default: ALL years
     const [week, setWeek] = useState(null);      // default: ALL weeks
@@ -62,8 +60,9 @@ export default function PlayerPage() {
     // Fetch filtered data for the table
     const { managers, loading, error } = usePlayerManagers(slug, { year, week, manager });
 
-    // Extract player image URL from first manager object
+    // Extract player data from first manager object
     const playerImageUrl = managers?.[0]?.player_image_endpoint;
+    const displayName = managers?.[0]?.player || allTimeManagers?.[0]?.player || decodeURIComponent(slug);
 
     // Reset image error when player changes
     React.useEffect(() => {
@@ -500,7 +499,20 @@ export default function PlayerPage() {
                                     <tr key={i}>
                                         <td>
                                             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                                                <span>{m.manager || '—'}</span>
+                                                {m.manager ? (
+                                                    <Link
+                                                        to={`/manager/${encodeURIComponent(m.manager)}`}
+                                                        style={{
+                                                            color: 'var(--accent)',
+                                                            textDecoration: 'none',
+                                                            fontWeight: 500
+                                                        }}
+                                                    >
+                                                        {m.manager}
+                                                    </Link>
+                                                ) : (
+                                                    <span>—</span>
+                                                )}
                                                 {hasPlacements && (
                                                     <div style={{ display: 'flex', gap: '0.15rem' }}>
                                                         {/* Show one ribbon per year for 1st place */}

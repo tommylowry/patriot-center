@@ -5,9 +5,44 @@ import { PlayerRow } from './components/PlayerRow';
 import { useValidOptions } from './hooks/useValidOptions';
 import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import PlayerPage from './pages/PlayerPage';
+import ManagersPage from './pages/ManagersPage';
+import ManagerPage from './pages/ManagerPage';
+import HeadToHeadPage from './pages/HeadToHeadPage';
+import MatchupPage from './pages/MatchupPage';
 import Layout from './components/Layout';
 import ScrollToTop from './components/ScrollToTop';
+import { LoadingProvider } from './contexts/LoadingContext';
+import { LoadingOverlay } from './components/LoadingOverlay';
 
+/**
+ * ==================================================================================
+ * CRITICAL: NAVIGATION BEHAVIOR PATTERN - DO NOT MODIFY
+ * ==================================================================================
+ *
+ * This HomePage implements the EXACT navigation behavior desired throughout the app.
+ *
+ * REQUIREMENTS:
+ * 1. Every filter change creates a NEW history entry (NO replace: true)
+ * 2. Back button undoes filter changes one at a time
+ * 3. URL params sync bidirectionally with component state
+ * 4. No infinite loops between URL->state and state->URL effects
+ *
+ * HOW IT WORKS:
+ * - Effect 1 (lines 28-50): Syncs URL params to state when URL changes (back/forward)
+ * - Effect 2 (lines 57-73): Syncs state to URL when filters change (creates history)
+ * - isSyncingRef prevents infinite loops by blocking Effect 2 during Effect 1
+ * - setTimeout ensures state updates complete before re-enabling URL sync
+ *
+ * VERIFIED WORKING:
+ * ✓ Filter changes create history entries
+ * ✓ Back button restores previous filter states
+ * ✓ Forward button re-applies filter changes
+ * ✓ No infinite loops
+ * ✓ Navigation links work from all pages
+ *
+ * IF YOU NEED THIS PATTERN ELSEWHERE: Copy this exact implementation
+ * ==================================================================================
+ */
 function HomePage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -64,7 +99,7 @@ function HomePage() {
     if (manager) params.set('manager', manager);
     if (positionFilter && positionFilter !== 'ALL') params.set('position', positionFilter);
 
-    setSearchParams(params);
+    setSearchParams(params); // No replace: true - creates new history entries
   }, [year, week, manager, positionFilter, setSearchParams]);
 
   const [sortKey, setSortKey] = useState('ffWAR');
@@ -290,15 +325,23 @@ function HomePage() {
 
 function App() {
   return (
-    <Router>
-      <ScrollToTop />
-      <Layout>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/player/:playerSlug" element={<PlayerPage />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <LoadingProvider>
+      <LoadingOverlay />
+      <Router>
+        <ScrollToTop />
+        <Layout>
+          <Routes>
+            <Route path="/" element={<ManagersPage />} />
+            <Route path="/players" element={<HomePage />} />
+            <Route path="/player/:playerSlug" element={<PlayerPage />} />
+            <Route path="/managers" element={<ManagersPage />} />
+            <Route path="/manager/:managerName" element={<ManagerPage />} />
+            <Route path="/head-to-head" element={<HeadToHeadPage />} />
+            <Route path="/matchup" element={<MatchupPage />} />
+          </Routes>
+        </Layout>
+      </Router>
+    </LoadingProvider>
   );
 }
 

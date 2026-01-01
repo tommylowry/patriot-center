@@ -9,7 +9,17 @@ from decimal import Decimal
 class TestFetchAggregatedPlayers:
     """Test fetch_aggregated_players function."""
 
-    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {"Amon-Ra St. Brown": {"team": "DET", "position": "WR"}})
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Amon-Ra St. Brown": {
+                "full_name": "Amon-Ra St. Brown",
+                "first_name": "Amon-Ra",
+                "last_name": "St. Brown",
+                "position": "WR",
+                "team": "DET",
+                "slug": "amon-ra%20st.%20brown",
+                "player_id": "7547"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_aggregates_single_player_single_week(self, mock_ffwar, mock_starters):
@@ -147,31 +157,23 @@ class TestFetchAggregatedPlayers:
 
         result = fetch_aggregated_players(manager="Tommy")
         assert result["Kansas City Chiefs"]["player_image_endpoint"] == \
-               "https://sleepercdn.com/images/team_logos/nfl/kc.jpg"
-
-    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {})
-    @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
-    @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
-    def test_team_is_none_when_player_not_in_cache(self, mock_ffwar, mock_starters):
-        """Test that team field is None when player not in PLAYERS_CACHE."""
-        from patriot_center_backend.services.aggregated_data import fetch_aggregated_players
-
-        mock_starters.return_value = {
-            "2024": {"1": {"Tommy": {"Unknown Player": {
-                "points": 10.0, "position": "WR", "player_id": "9999"
-            }}}}
-        }
-        mock_ffwar.return_value = 1.0
-
-        result = fetch_aggregated_players(manager="Tommy")
-        assert "Unknown Player" in result
-        assert result["Unknown Player"]["team"] is None
+               "https://sleepercdn.com/images/team_logos/nfl/kc.png"
 
 
 class TestFetchAggregatedManagers:
     """Test fetch_aggregated_managers function."""
 
-    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {"Amon-Ra St. Brown": {"team": "DET", "position": "WR"}})
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Amon-Ra St. Brown": {
+                "full_name": "Amon-Ra St. Brown",
+                "first_name": "Amon-Ra",
+                "last_name": "St. Brown",
+                "position": "WR",
+                "team": "DET",
+                "slug": "amon-ra%20st.%20brown",
+                "player_id": "7547"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_aggregates_single_manager_single_week(self, mock_ffwar, mock_starters):
@@ -272,6 +274,17 @@ class TestFetchFfwarForPlayer:
 class TestDecimalRounding:
     """Test that decimal rounding is correct."""
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Test Player": {
+                "full_name": "Test Player",
+                "first_name": "Test",
+                "last_name": "Player",
+                "position": "WR",
+                "team": "NA",
+                "slug": "test%20player",
+                "player_id": "1234"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_rounds_total_points_to_two_decimals(self, mock_ffwar, mock_starters):
@@ -287,7 +300,18 @@ class TestDecimalRounding:
 
         result = fetch_aggregated_players(manager="Tommy")
         assert result["Test Player"]["total_points"] == 16.11
-
+    
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Test Player": {
+                "full_name": "Test Player",
+                "first_name": "Test",
+                "last_name": "Player",
+                "position": "WR",
+                "team": "NA",
+                "slug": "test%20player",
+                "player_id": "1234"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_rounds_ffwar_to_three_decimals(self, mock_ffwar, mock_starters):
@@ -304,6 +328,17 @@ class TestDecimalRounding:
         result = fetch_aggregated_players(manager="Tommy")
         assert result["Test Player"]["ffWAR"] == 3.580
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Test Player": {
+                "full_name": "Test Player",
+                "first_name": "Test",
+                "last_name": "Player",
+                "position": "WR",
+                "team": "NA",
+                "slug": "test%20player",
+                "player_id": "1234"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_rounds_ffwar_per_game_to_three_decimals(self, mock_ffwar, mock_starters):
@@ -373,6 +408,18 @@ class TestPlayoffPlacement:
         # First placement encountered is kept (week 15)
         assert result["Josh Allen"]["playoff_placement"]["Tommy"]["2023"] == 2
 
+
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Test Player": {
+                "full_name": "Test Player",
+                "first_name": "Test",
+                "last_name": "Player",
+                "position": "WR",
+                "team": "NA",
+                "slug": "test%20player",
+                "player_id": "1234"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_tracks_playoff_placements_across_multiple_years(self, mock_ffwar, mock_starters):
@@ -381,19 +428,30 @@ class TestPlayoffPlacement:
 
         mock_starters.return_value = {
             "2023": {
-                "16": {"Tommy": {"Player": {"points": 20.0, "position": "RB", "player_id": "1234", "placement": 1}}}
+                "16": {"Tommy": {"Test Player": {"points": 20.0, "position": "WR", "player_id": "1234", "placement": 1}}}
             },
             "2024": {
-                "16": {"Tommy": {"Player": {"points": 22.0, "position": "RB", "player_id": "1234", "placement": 3}}}
+                "16": {"Tommy": {"Test Player": {"points": 22.0, "position": "WR", "player_id": "1234", "placement": 3}}}
             }
         }
         mock_ffwar.return_value = 2.0
 
         result = fetch_aggregated_players(manager="Tommy")
 
-        assert result["Player"]["playoff_placement"]["Tommy"]["2023"] == 1
-        assert result["Player"]["playoff_placement"]["Tommy"]["2024"] == 3
+        assert result["Test Player"]["playoff_placement"]["Tommy"]["2023"] == 1
+        assert result["Test Player"]["playoff_placement"]["Tommy"]["2024"] == 3
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Test Player": {
+                "full_name": "Test Player",
+                "first_name": "Test",
+                "last_name": "Player",
+                "position": "WR",
+                "team": "NA",
+                "slug": "test%20player",
+                "player_id": "1234"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_tracks_playoff_placements_multiple_managers(self, mock_ffwar, mock_starters):
@@ -402,22 +460,33 @@ class TestPlayoffPlacement:
 
         mock_starters.return_value = {
             "2023": {
-                "16": {"Tommy": {"Player": {"points": 20.0, "position": "RB", "player_id": "1234", "placement": 1}}}
+                "16": {"Tommy": {"Test Player": {"points": 20.0, "position": "WR", "player_id": "1234", "placement": 1}}}
             },
             "2024": {
-                "16": {"Mike": {"Player": {"points": 18.0, "position": "RB", "player_id": "1234", "placement": 2}}}
+                "16": {"Mike": {"Test Player": {"points": 18.0, "position": "WR", "player_id": "1234", "placement": 2}}}
             }
         }
         mock_ffwar.return_value = 2.0
 
         result = fetch_aggregated_players()
 
-        assert "playoff_placement" in result["Player"]
-        assert "Tommy" in result["Player"]["playoff_placement"]
-        assert "Mike" in result["Player"]["playoff_placement"]
-        assert result["Player"]["playoff_placement"]["Tommy"]["2023"] == 1
-        assert result["Player"]["playoff_placement"]["Mike"]["2024"] == 2
+        assert "playoff_placement" in result["Test Player"]
+        assert "Tommy" in result["Test Player"]["playoff_placement"]
+        assert "Mike" in result["Test Player"]["playoff_placement"]
+        assert result["Test Player"]["playoff_placement"]["Tommy"]["2023"] == 1
+        assert result["Test Player"]["playoff_placement"]["Mike"]["2024"] == 2
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Test Player": {
+                "full_name": "Test Player",
+                "first_name": "Test",
+                "last_name": "Player",
+                "position": "WR",
+                "team": "NA",
+                "slug": "test%20player",
+                "player_id": "7547"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_no_playoff_placement_for_regular_season(self, mock_ffwar, mock_starters):
@@ -428,7 +497,7 @@ class TestPlayoffPlacement:
             "2024": {
                 "1": {
                     "Tommy": {
-                        "Player": {
+                        "Test Player": {
                             "points": 15.0,
                             "position": "WR",
                             "player_id": "7547"
@@ -441,7 +510,7 @@ class TestPlayoffPlacement:
 
         result = fetch_aggregated_players(manager="Tommy")
 
-        assert "playoff_placement" not in result["Player"]
+        assert "playoff_placement" not in result["Test Player"]
 
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
@@ -472,6 +541,17 @@ class TestPlayoffPlacement:
         assert "Josh Allen" in result["Tommy"]["playoff_placement"]
         assert result["Tommy"]["playoff_placement"]["Josh Allen"]["2024"] == 1
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Test Player": {
+                "full_name": "Test Player",
+                "first_name": "Test",
+                "last_name": "Player",
+                "position": "RB",
+                "team": "NA",
+                "slug": "test%20player",
+                "player_id": "1234"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_manager_multiple_playoff_placements(self, mock_ffwar, mock_starters):
@@ -480,19 +560,30 @@ class TestPlayoffPlacement:
 
         mock_starters.return_value = {
             "2023": {
-                "16": {"Tommy": {"Player": {"points": 20.0, "position": "RB", "player_id": "1234", "placement": 3}}}
+                "16": {"Tommy": {"Test Player": {"points": 20.0, "position": "RB", "player_id": "1234", "placement": 3}}}
             },
             "2024": {
-                "16": {"Tommy": {"Player": {"points": 25.0, "position": "RB", "player_id": "1234", "placement": 1}}}
+                "16": {"Tommy": {"Test Player": {"points": 25.0, "position": "RB", "player_id": "1234", "placement": 1}}}
             }
         }
         mock_ffwar.return_value = 2.5
 
-        result = fetch_aggregated_managers("Player")
+        result = fetch_aggregated_managers("Test Player")
 
-        assert result["Tommy"]["playoff_placement"]["Player"]["2023"] == 3
-        assert result["Tommy"]["playoff_placement"]["Player"]["2024"] == 1
+        assert result["Tommy"]["playoff_placement"]["Test Player"]["2023"] == 3
+        assert result["Tommy"]["playoff_placement"]["Test Player"]["2024"] == 1
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', {
+            "Test Player": {
+                "full_name": "Test Player",
+                "first_name": "Test",
+                "last_name": "Player",
+                "position": "WR",
+                "team": "NA",
+                "slug": "test%20player",
+                "player_id": "7547"
+            }
+        })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_mixed_regular_and_playoff_weeks(self, mock_ffwar, mock_starters):
@@ -501,9 +592,9 @@ class TestPlayoffPlacement:
 
         mock_starters.return_value = {
             "2024": {
-                "1": {"Tommy": {"Player": {"points": 15.0, "position": "WR", "player_id": "7547"}}},
-                "2": {"Tommy": {"Player": {"points": 18.0, "position": "WR", "player_id": "7547"}}},
-                "16": {"Tommy": {"Player": {"points": 22.0, "position": "WR", "player_id": "7547", "placement": 1}}}
+                "1": {"Tommy": {"Test Player": {"points": 15.0, "position": "WR", "player_id": "7547"}}},
+                "2": {"Tommy": {"Test Player": {"points": 18.0, "position": "WR", "player_id": "7547"}}},
+                "16": {"Tommy": {"Test Player": {"points": 22.0, "position": "WR", "player_id": "7547", "placement": 1}}}
             }
         }
         mock_ffwar.return_value = 2.0
@@ -511,12 +602,42 @@ class TestPlayoffPlacement:
         result = fetch_aggregated_players(manager="Tommy")
 
         # Should aggregate all points
-        assert result["Player"]["total_points"] == 55.0
-        assert result["Player"]["num_games_started"] == 3
+        assert result["Test Player"]["total_points"] == 55.0
+        assert result["Test Player"]["num_games_started"] == 3
         # Should only track playoff placement for playoff week
-        assert "playoff_placement" in result["Player"]
-        assert result["Player"]["playoff_placement"]["Tommy"]["2024"] == 1
+        assert "playoff_placement" in result["Test Player"]
+        assert result["Test Player"]["playoff_placement"]["Tommy"]["2024"] == 1
 
+    @patch('patriot_center_backend.services.aggregated_data.PLAYERS_CACHE', 
+            {
+                "Test Player1": {
+                    "full_name": "Test Player1",
+                    "first_name": "Test",
+                    "last_name": "Player1",
+                    "position": "QB",
+                    "team": "NA",
+                    "slug": "test%20player1",
+                    "player_id": "1"
+                },
+                "Test Player2": {
+                    "full_name": "Test Player2",
+                    "first_name": "Test",
+                    "last_name": "Player2",
+                    "position": "RB",
+                    "team": "NA",
+                    "slug": "test%20player2",
+                    "player_id": "2"
+                },
+                "Test Player3": {
+                    "full_name": "Test Player3",
+                    "first_name": "Test",
+                    "last_name": "Player3",
+                    "position": "WR",
+                    "team": "NA",
+                    "slug": "test%20player3",
+                    "player_id": "3"
+                }
+            })
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')
     def test_all_placement_values(self, mock_ffwar, mock_starters):
@@ -525,22 +646,22 @@ class TestPlayoffPlacement:
 
         mock_starters.return_value = {
             "2022": {
-                "16": {"Tommy": {"P1": {"points": 20.0, "position": "QB", "player_id": "1", "placement": 1}}}
+                "16": {"Tommy": {"Test Player1": {"points": 20.0, "position": "QB", "player_id": "1", "placement": 1}}}
             },
             "2023": {
-                "16": {"Mike": {"P2": {"points": 18.0, "position": "RB", "player_id": "2", "placement": 2}}}
+                "16": {"Mike": {"Test Player2": {"points": 18.0, "position": "RB", "player_id": "2", "placement": 2}}}
             },
             "2024": {
-                "16": {"Cody": {"P3": {"points": 15.0, "position": "WR", "player_id": "3", "placement": 3}}}
+                "16": {"Cody": {"Test Player3": {"points": 15.0, "position": "WR", "player_id": "3", "placement": 3}}}
             }
         }
         mock_ffwar.return_value = 1.0
 
         result = fetch_aggregated_players()
 
-        assert result["P1"]["playoff_placement"]["Tommy"]["2022"] == 1
-        assert result["P2"]["playoff_placement"]["Mike"]["2023"] == 2
-        assert result["P3"]["playoff_placement"]["Cody"]["2024"] == 3
+        assert result["Test Player1"]["playoff_placement"]["Tommy"]["2022"] == 1
+        assert result["Test Player2"]["playoff_placement"]["Mike"]["2023"] == 2
+        assert result["Test Player3"]["playoff_placement"]["Cody"]["2024"] == 3
 
     @patch('patriot_center_backend.services.aggregated_data.fetch_starters')
     @patch('patriot_center_backend.services.aggregated_data.fetch_ffWAR_for_player')

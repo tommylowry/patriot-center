@@ -6,7 +6,6 @@ export function displayFromSlug(slug) {
   if (!slug) return '';
   const decoded = decodeURIComponent(slug);
   return decoded
-    .replace(/_/g, ' ')
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 

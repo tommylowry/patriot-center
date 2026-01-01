@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { apiGet, sanitizeManager } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 function buildAggregatedPlayersPath(year, manager, week) {
   const seg = [];
@@ -19,15 +20,20 @@ export function useAggregatedPlayers(year, week, manager) {
   const [players, setPlayers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   const fetchData = useCallback(() => {
     setLoading(true);
+    startLoading();
     setError(null);
     getAggregatedPlayers(year, week, manager)
       .then(setPlayers)
       .catch(e => { setError(e.message); setPlayers([]); })
-      .finally(() => setLoading(false));
-  }, [year, week, manager]);
+      .finally(() => {
+        setLoading(false);
+        stopLoading();
+      });
+  }, [year, week, manager, startLoading, stopLoading]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
 

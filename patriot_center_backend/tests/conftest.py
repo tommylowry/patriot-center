@@ -353,7 +353,7 @@ def sample_defenses_in_sleeper_data():
 
 @pytest.fixture
 def sample_players_list():
-    """Sample player list data for testing /players/list endpoint."""
+    """Sample player list data for testing /options/list endpoint."""
     return {
         "7547": {
             "full_name": "Amon-Ra St. Brown",

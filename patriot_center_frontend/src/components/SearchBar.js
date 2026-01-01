@@ -10,25 +10,38 @@ export default function SearchBar() {
     const navigate = useNavigate();
     const { players, loading } = usePlayersList();
 
-    // Filter players based on query
-    const filteredPlayers = React.useMemo(() => {
+    // Filter options (players and managers) based on query
+    const filteredOptions = React.useMemo(() => {
         if (!query.trim() || loading) return [];
 
         const lowerQuery = query.toLowerCase();
 
         return players
-            .filter(player => {
-                const firstName = (player.first_name || '').toLowerCase();
-                const lastName = (player.last_name || '').toLowerCase();
+            .filter(option => {
+                const fullName = (option.full_name || '').toLowerCase();
 
-                // Match only if query appears at the beginning of first or last name
+                // For managers (no first_name/last_name), only check full_name
+                if (option.type === 'manager') {
+                    return fullName.startsWith(lowerQuery);
+                }
+
+                // For players, check first_name, last_name, or full_name
+                const firstName = (option.first_name || '').toLowerCase();
+                const lastName = (option.last_name || '').toLowerCase();
+
                 return firstName.startsWith(lowerQuery) ||
                        lastName.startsWith(lowerQuery) ||
-                       (player.full_name || '').toLowerCase().startsWith(lowerQuery);
+                       fullName.startsWith(lowerQuery);
             })
-            .slice(0, 10) // Limit to 10 results
             .sort((a, b) => {
-                // Prioritize matches that start with the query
+                // FIRST PRIORITY: Managers ALWAYS come before players
+                const aIsManager = a.type === 'manager';
+                const bIsManager = b.type === 'manager';
+
+                if (aIsManager && !bIsManager) return -1;
+                if (!aIsManager && bIsManager) return 1;
+
+                // SECOND PRIORITY: Within same type, prioritize exact matches
                 const aFullName = (a.full_name || '').toLowerCase();
                 const bFullName = (b.full_name || '').toLowerCase();
                 const aFirstName = (a.first_name || '').toLowerCase();
@@ -50,9 +63,10 @@ export default function SearchBar() {
                 if (aStartsWithLast && !bStartsWithLast) return -1;
                 if (!aStartsWithLast && bStartsWithLast) return 1;
 
-                // Otherwise sort alphabetically
+                // THIRD PRIORITY: Sort alphabetically
                 return aFullName.localeCompare(bFullName);
-            });
+            })
+            .slice(0, 10); // Limit to 10 results AFTER sorting
     }, [query, players, loading]);
 
     // Close dropdown when clicking outside
@@ -67,19 +81,19 @@ export default function SearchBar() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
-    // Reset selected index when filtered players change
+    // Reset selected index when filtered options change
     useEffect(() => {
         setSelectedIndex(0);
-    }, [filteredPlayers.length]);
+    }, [filteredOptions.length]);
 
     // Handle keyboard navigation
     const handleKeyDown = (e) => {
-        if (!isOpen || filteredPlayers.length === 0) return;
+        if (!isOpen || filteredOptions.length === 0) return;
 
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                setSelectedIndex(prev => Math.min(prev + 1, filteredPlayers.length - 1));
+                setSelectedIndex(prev => Math.min(prev + 1, filteredOptions.length - 1));
                 break;
             case 'ArrowUp':
                 e.preventDefault();
@@ -87,8 +101,8 @@ export default function SearchBar() {
                 break;
             case 'Enter':
                 e.preventDefault();
-                if (filteredPlayers[selectedIndex]) {
-                    selectPlayer(filteredPlayers[selectedIndex]);
+                if (filteredOptions[selectedIndex]) {
+                    selectOption(filteredOptions[selectedIndex]);
                 }
                 break;
             case 'Escape':
@@ -101,9 +115,16 @@ export default function SearchBar() {
         }
     };
 
-    const selectPlayer = (player) => {
-        if (!player.slug) return;
-        navigate(`/player/${player.slug}`);
+    const selectOption = (option) => {
+        if (!option.slug) return;
+
+        // Navigate based on type
+        if (option.type === 'manager') {
+            navigate(`/manager/${option.slug}`);
+        } else {
+            navigate(`/player/${option.slug}`);
+        }
+
         setQuery('');
         setIsOpen(false);
     };
@@ -140,7 +161,7 @@ export default function SearchBar() {
         <div ref={searchRef} className="search-bar-wrapper" style={{ position: 'relative', width: '300px', maxWidth: '100%' }}>
             <input
                 type="text"
-                placeholder="Search players..."
+                placeholder="Search players or managers..."
                 value={query}
                 onChange={handleInputChange}
                 onKeyDown={handleKeyDown}
@@ -160,7 +181,7 @@ export default function SearchBar() {
                 onMouseLeave={(e) => !isOpen && (e.target.style.borderColor = 'var(--border)')}
             />
 
-            {isOpen && filteredPlayers.length > 0 && (
+            {isOpen && filteredOptions.length > 0 && (
                 <div style={{
                     position: 'absolute',
                     top: '100%',
@@ -175,37 +196,46 @@ export default function SearchBar() {
                     overflowY: 'auto',
                     zIndex: 1000
                 }}>
-                    {filteredPlayers.map((player, index) => (
+                    {filteredOptions.map((option, index) => (
                         <div
-                            key={player.slug || index}
-                            onClick={() => selectPlayer(player)}
+                            key={option.slug || index}
+                            onClick={() => selectOption(option)}
                             onMouseEnter={() => setSelectedIndex(index)}
                             style={{
                                 padding: '0.75rem 1rem',
                                 cursor: 'pointer',
                                 backgroundColor: index === selectedIndex ? 'var(--accent)' : 'transparent',
                                 color: index === selectedIndex ? 'white' : 'var(--text)',
-                                borderBottom: index < filteredPlayers.length - 1 ? '1px solid var(--border)' : 'none',
+                                borderBottom: index < filteredOptions.length - 1 ? '1px solid var(--border)' : 'none',
                                 transition: 'background-color 0.15s'
                             }}
                         >
                             <div style={{ fontWeight: 500, marginBottom: '0.15rem' }}>
-                                {highlightMatch(player.full_name || '', query)}
+                                {highlightMatch(option.full_name || '', query)}
                             </div>
-                            {player.position && (
+                            {option.type === 'manager' ? (
                                 <div style={{
                                     fontSize: '0.8rem',
                                     opacity: 0.8
                                 }}>
-                                    {player.position}{player.team ? ` • ${player.team}` : ''}
+                                    Manager
                                 </div>
+                            ) : (
+                                option.position && (
+                                    <div style={{
+                                        fontSize: '0.8rem',
+                                        opacity: 0.8
+                                    }}>
+                                        {option.position}{option.team ? ` • ${option.team}` : ''}
+                                    </div>
+                                )
                             )}
                         </div>
                     ))}
                 </div>
             )}
 
-            {isOpen && query.trim().length > 0 && filteredPlayers.length === 0 && !loading && (
+            {isOpen && query.trim().length > 0 && filteredOptions.length === 0 && !loading && (
                 <div style={{
                     position: 'absolute',
                     top: '100%',
@@ -220,7 +250,7 @@ export default function SearchBar() {
                     textAlign: 'center',
                     zIndex: 1000
                 }}>
-                    No players found
+                    No results found
                 </div>
             )}
 

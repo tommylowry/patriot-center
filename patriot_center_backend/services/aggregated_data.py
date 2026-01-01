@@ -20,6 +20,7 @@ from patriot_center_backend.services.managers import fetch_starters
 from decimal import Decimal
 from patriot_center_backend.services.players import fetch_players
 from patriot_center_backend.utils import helpers
+from functools import lru_cache
 
 # Load caches at module import for fast access
 PLAYERS_CACHE     = fetch_players()
@@ -103,6 +104,9 @@ def fetch_aggregated_managers(player, season=None, week=None):
     """
     raw_dict = fetch_starters(season=season, week=week)
     managers_dict_to_return = {}
+    
+    if not raw_dict:
+        return managers_dict_to_return
 
     for year, weeks in raw_dict.items():
         for week, managers in weeks.items():
@@ -119,6 +123,7 @@ def fetch_aggregated_managers(player, season=None, week=None):
 
     return managers_dict_to_return
 
+@lru_cache(maxsize=10000)
 def fetch_ffWAR_for_player(player, season=None, week=None):
     """
     Lookup ffWAR for a player at a specific season/week granularity.
@@ -201,10 +206,11 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
     # Determine image URL based on player type
     # Numeric IDs = individual players (use player headshot)
     # String IDs = team defenses (use team logo)
-    if player_data['player_id'].isnumeric():
-        player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_data['player_id']}.jpg"
+    player_id = PLAYERS_CACHE.get(player, {}).get("player_id", None)
+    if player_id.isnumeric():
+        player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
     else:
-        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_data['player_id'].lower()}.jpg"
+        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
 
     players_dict[player] = {
         "total_points": player_data['points'],
@@ -213,6 +219,7 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         'ffWAR_per_game': player_data['ffWAR'],
         "position": player_data['position'],
         "player_image_endpoint": player_image_endpoint,
+        "slug": PLAYERS_CACHE[player],
         "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 
@@ -259,19 +266,21 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
     """
     Create initial aggregation record for a manager with a single player appearance.
     """
-    
-    if raw_item['player_id'].isnumeric():
-        player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{raw_item['player_id']}.jpg"
+    player_id = PLAYERS_CACHE.get(player, {}).get("player_id", None)
+    if player_id.isnumeric():
+        player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
     else:
-        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{raw_item['player_id'].lower()}.png"
+        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
 
     managers_dict[manager] = {
+        "player": player,  # Include the player name
         "total_points": raw_item['points'],
         "num_games_started": 1,
         'ffWAR': raw_item['ffWAR'],
         'ffWAR_per_game': raw_item['ffWAR'],
         "position": raw_item['position'],
         "player_image_endpoint": player_image_endpoint,
+        "slug": PLAYERS_CACHE[player],
         "team": PLAYERS_CACHE.get(player, {}).get("team", None)
     }
 

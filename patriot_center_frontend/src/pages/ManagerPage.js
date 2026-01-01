@@ -944,20 +944,22 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
         // Mobile: Original structure with div wrapper and separate link on name
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.25rem' : '0.5rem' }}>
           {player.player_image_endpoint && (
-            <img
-              src={player.player_image_endpoint}
-              alt={playerName}
-              style={{
-                width: isMobile ? '50px' : '75px',
-                height: isMobile ? '50px' : '75px',
-                borderRadius: '8px',
-                objectFit: 'cover',
-                flexShrink: 0
-              }}
-              onError={(e) => {
-                e.target.style.display = 'none';
-              }}
-            />
+            <Link to={`/player/${playerSlug}`} style={{ flexShrink: 0 }}>
+              <img
+                src={player.player_image_endpoint}
+                alt={playerName}
+                style={{
+                  width: isMobile ? '50px' : '75px',
+                  height: isMobile ? '50px' : '75px',
+                  borderRadius: '8px',
+                  objectFit: 'cover',
+                  cursor: 'pointer'
+                }}
+                onError={(e) => {
+                  e.target.style.display = 'none';
+                }}
+              />
+            </Link>
           )}
           {/* Vertical Divider */}
           {player.player_image_endpoint && <div style={{ width: '1px', height: isMobile ? '50px' : '75px', background: 'var(--border)', flexShrink: 0 }} />}

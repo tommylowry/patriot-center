@@ -12,7 +12,7 @@ export function usePlayersList() {
     let active = true;
     startLoading();
 
-    apiGet('/players/list')
+    apiGet('/options/list')
       .then(data => {
         if (!active) return;
         // Data comes as list of records with 'name' field (player ID) and other fields

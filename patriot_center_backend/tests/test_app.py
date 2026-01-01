@@ -374,18 +374,18 @@ class TestErrorHandling:
 
 
 class TestListPlayersEndpoint:
-    """Test /players/list endpoint functionality."""
+    """Test /options/list endpoint functionality."""
 
     def test_list_players_returns_success(self, flask_client, mock_fetch_players, sample_players_list):
-        """Test that /players/list returns 200 status code."""
+        """Test that /options/list returns 200 status code."""
         mock_fetch_players.return_value = sample_players_list
-        response = flask_client.get('/players/list')
+        response = flask_client.get('/options/list')
         assert response.status_code == 200
 
     def test_list_players_default_format_returns_list(self, flask_client, mock_fetch_players, sample_players_list):
         """Test that default format returns a list of records."""
         mock_fetch_players.return_value = sample_players_list
-        response = flask_client.get('/players/list')
+        response = flask_client.get('/options/list')
         data = json.loads(response.data)
 
         assert isinstance(data, list)
@@ -397,7 +397,7 @@ class TestListPlayersEndpoint:
     def test_list_players_json_format(self, flask_client, mock_fetch_players, sample_players_list):
         """Test that format=json returns raw dictionary."""
         mock_fetch_players.return_value = sample_players_list
-        response = flask_client.get('/players/list?format=json')
+        response = flask_client.get('/options/list?format=json')
         data = json.loads(response.data)
 
         assert isinstance(data, dict)
@@ -407,7 +407,7 @@ class TestListPlayersEndpoint:
     def test_list_players_empty_cache(self, flask_client, mock_fetch_players, empty_players_list):
         """Test that empty player cache returns empty list."""
         mock_fetch_players.return_value = empty_players_list
-        response = flask_client.get('/players/list')
+        response = flask_client.get('/options/list')
         data = json.loads(response.data)
 
         assert response.status_code == 200
@@ -417,7 +417,7 @@ class TestListPlayersEndpoint:
     def test_list_players_calls_fetch_players_service(self, flask_client, mock_fetch_players, sample_players_list):
         """Test that endpoint calls the fetch_players service."""
         mock_fetch_players.return_value = sample_players_list
-        flask_client.get('/players/list')
+        flask_client.get('/options/list')
 
         # Verify the service was called
         mock_fetch_players.assert_called_once()
@@ -425,7 +425,7 @@ class TestListPlayersEndpoint:
     def test_list_players_uses_to_records_with_name_key(self, flask_client, mock_fetch_players, sample_players_list):
         """Test that _to_records is called with key_name='name'."""
         mock_fetch_players.return_value = sample_players_list
-        response = flask_client.get('/players/list')
+        response = flask_client.get('/options/list')
         data = json.loads(response.data)
 
         # Verify each record has 'name' field (from key_name parameter)
@@ -436,16 +436,16 @@ class TestListPlayersEndpoint:
             assert first_record['name'] in sample_players_list.keys()
 
     def test_list_players_cors_headers(self, flask_client, mock_fetch_players, sample_players_list):
-        """Test that CORS headers are set for /players/list."""
+        """Test that CORS headers are set for /options/list."""
         mock_fetch_players.return_value = sample_players_list
-        response = flask_client.get('/players/list')
+        response = flask_client.get('/options/list')
 
         assert 'Access-Control-Allow-Origin' in response.headers
 
     def test_list_players_content_type_json(self, flask_client, mock_fetch_players, sample_players_list):
         """Test that response content type is JSON."""
         mock_fetch_players.return_value = sample_players_list
-        response = flask_client.get('/players/list')
+        response = flask_client.get('/options/list')
 
         assert 'application/json' in response.content_type
 
@@ -507,7 +507,7 @@ class TestPlayersIntegration:
         """Test that endpoint properly integrates with service layer."""
         mock_fetch_players.return_value = sample_players_list
 
-        response = flask_client.get('/players/list')
+        response = flask_client.get('/options/list')
         data = json.loads(response.data)
 
         # Verify service was called
@@ -529,7 +529,7 @@ class TestPlayersIntegration:
         }
         mock_fetch_players.return_value = test_data
 
-        response = flask_client.get('/players/list')
+        response = flask_client.get('/options/list')
         data = json.loads(response.data)
 
         # Verify transformation happened
@@ -542,7 +542,7 @@ class TestPlayersIntegration:
         """Test that format=json returns raw data without transformation."""
         mock_fetch_players.return_value = sample_players_list
 
-        response = flask_client.get('/players/list?format=json')
+        response = flask_client.get('/options/list?format=json')
         data = json.loads(response.data)
 
         # Should return raw dict, not transformed to list

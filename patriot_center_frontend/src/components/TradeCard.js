@@ -190,8 +190,9 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                 flexDirection: 'column',
                 gap: `${verticalGap}rem`
               }}>
-                {movementGroups.map((group, idx) => (
-                <div key={idx} style={{
+                {movementGroups.map((group, idx) => {
+                  return (
+                    <div key={idx} style={{
                   display: 'grid',
                   gridTemplateColumns: `${managerColumnWidth}px 1fr`,
                   alignItems: 'center',
@@ -255,11 +256,12 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
 
                   {/* Right: Players batch */}
                   <div style={{
-                    display: 'flex',
+                    display: isMobile && group.players.length > 3 ? 'grid' : 'flex',
+                    gridTemplateColumns: isMobile && group.players.length > 3 ? 'repeat(3, 1fr)' : undefined,
                     gap: isMobile ? '0.4rem' : '0.75rem',
-                    justifyContent: 'space-evenly',
-                    alignItems: 'center',
-                    flexWrap: 'nowrap',
+                    justifyContent: isMobile && group.players.length > 3 ? undefined : 'space-evenly',
+                    alignItems: isMobile && group.players.length > 3 ? undefined : 'center',
+                    flexWrap: isMobile && group.players.length > 3 ? undefined : 'nowrap',
                     paddingLeft: isMobile ? '0.5rem' : '1.5rem',
                     borderLeft: '1px solid var(--border)',
                     overflow: 'hidden'
@@ -268,6 +270,178 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                       const playerName = player.name || 'Unknown';
                       const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
                       const isFAAB = playerName.includes('FAAB');
+                      const remainder = isMobile && group.players.length > 3 ? group.players.length % 3 : 0;
+                      const isLastAndSingle = remainder === 1 && playerIdx === group.players.length - 1;
+                      const isFirstOfTwoLeftover = remainder === 2 && playerIdx === group.players.length - 2;
+                      const isSecondOfTwoLeftover = remainder === 2 && playerIdx === group.players.length - 1;
+
+                      // For 2 leftovers, create a wrapper for both players
+                      if (isFirstOfTwoLeftover) {
+                        const leftoverPlayers = [player, group.players[playerIdx + 1]];
+                        return (
+                          <div key={`wrapper-${playerIdx}`} style={{
+                            gridColumn: '1 / -1',
+                            display: 'flex',
+                            justifyContent: 'center',
+                            gap: isMobile ? '0.4rem' : '0.75rem'
+                          }}>
+                            {leftoverPlayers.map((p, idx) => {
+                              const pName = p.name || 'Unknown';
+                              const pSlug = p.slug || encodeURIComponent(pName.toLowerCase());
+                              const pIsFAAB = pName.includes('FAAB');
+
+                              return (
+                                <div key={playerIdx + idx} style={{
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  gap: isMobile ? '0.25rem' : '0.5rem',
+                                  minWidth: 0,
+                                  flex: '0 0 auto'
+                                }}>
+                                  {pIsFAAB ? (
+                                    <>
+                                      {p.image_url && (
+                                        <img
+                                          src={p.image_url}
+                                          alt={pName}
+                                          style={{
+                                            width: `${dynamicPlayerImageSize}px`,
+                                            height: `${dynamicPlayerImageSize}px`,
+                                            borderRadius: '8px',
+                                            objectFit: 'cover'
+                                          }}
+                                          onError={(e) => {
+                                            e.target.style.display = 'none';
+                                          }}
+                                        />
+                                      )}
+                                      <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '0.1rem',
+                                        width: '100%'
+                                      }}>
+                                        {p.first_name && (
+                                          <div style={{
+                                            fontSize: `${dynamicFontSize * 0.9}rem`,
+                                            fontWeight: 400,
+                                            color: 'var(--muted)',
+                                            textAlign: 'center',
+                                            width: '100%',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                          }}>
+                                            {p.first_name}
+                                          </div>
+                                        )}
+                                        {p.last_name && (
+                                          <div style={{
+                                            fontSize: `${dynamicFontSize}rem`,
+                                            fontWeight: 600,
+                                            color: 'var(--text)',
+                                            textAlign: 'center',
+                                            width: '100%',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                          }}>
+                                            {p.last_name}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </>
+                                  ) : (
+                                    <Link
+                                      to={`/player/${pSlug}`}
+                                      style={{
+                                        textDecoration: 'none',
+                                        display: 'inline-flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: isMobile ? '0.25rem' : '0.5rem',
+                                        border: '1px solid transparent',
+                                        background: 'transparent',
+                                        borderRadius: '8px',
+                                        transition: 'all 0.2s ease',
+                                        cursor: 'pointer',
+                                        boxSizing: 'border-box'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        e.currentTarget.style.background = 'var(--bg)';
+                                        e.currentTarget.style.borderColor = 'var(--accent)';
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        e.currentTarget.style.background = 'transparent';
+                                        e.currentTarget.style.borderColor = 'transparent';
+                                      }}
+                                    >
+                                      {p.image_url && (
+                                        <img
+                                          src={p.image_url}
+                                          alt={pName}
+                                          style={{
+                                            width: `${dynamicPlayerImageSize}px`,
+                                            height: `${dynamicPlayerImageSize}px`,
+                                            borderRadius: '8px',
+                                            objectFit: 'cover'
+                                          }}
+                                          onError={(e) => {
+                                            e.target.style.display = 'none';
+                                          }}
+                                        />
+                                      )}
+                                      <div style={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        gap: '0.1rem',
+                                        width: '100%'
+                                      }}>
+                                        {p.first_name && (
+                                          <div style={{
+                                            fontSize: `${dynamicFontSize * 0.9}rem`,
+                                            fontWeight: 400,
+                                            color: 'var(--muted)',
+                                            textAlign: 'center',
+                                            width: '100%',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                          }}>
+                                            {p.first_name}
+                                          </div>
+                                        )}
+                                        {p.last_name && (
+                                          <div style={{
+                                            fontSize: `${dynamicFontSize}rem`,
+                                            fontWeight: 600,
+                                            color: 'var(--accent)',
+                                            textAlign: 'center',
+                                            width: '100%',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis',
+                                            whiteSpace: 'nowrap'
+                                          }}>
+                                            {p.last_name}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </Link>
+                                  )}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        );
+                      }
+
+                      // Skip the second player of a 2-leftover pair as it's rendered in the wrapper
+                      if (isSecondOfTwoLeftover) {
+                        return null;
+                      }
 
                       return (
                         <div key={playerIdx} style={{
@@ -275,8 +449,11 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                           flexDirection: 'column',
                           alignItems: 'center',
                           gap: isMobile ? '0.25rem' : '0.5rem',
-                          flex: '1 1 0',
-                          minWidth: 0
+                          flex: (isMobile && group.players.length > 3) ? undefined : '1 1 0',
+                          minWidth: 0,
+                          gridColumn: isLastAndSingle ? '1 / -1' : undefined,
+                          justifySelf: isLastAndSingle ? 'center' : undefined,
+                          maxWidth: isLastAndSingle ? '33%' : undefined
                         }}>
                           {isFAAB ? (
                             <>
@@ -415,7 +592,8 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                     })}
                   </div>
                 </div>
-                ))}
+                  );
+                })}
               </div>
             );
           })()}
@@ -552,7 +730,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
               borderBottom: idx < managerRows.length - 1 ? '1px solid var(--border)' : 'none',
               paddingBottom: isMobile ? '0.75rem' : '1.5rem',
               paddingTop: idx > 0 ? (isMobile ? '0.75rem' : '1.5rem') : '0',
-              alignItems: 'center'
+              alignItems: 'stretch'
             }}
           >
             {/* Manager Column */}
@@ -560,9 +738,10 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
               to={`/manager/${encodeURIComponent(row.name)}`}
               style={{
                 textDecoration: 'none',
-                display: 'inline-flex',
+                display: 'flex',
                 flexDirection: 'column',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: isMobile ? '0.25rem' : '0.5rem',
                 border: '1px solid transparent',
                 background: 'transparent',
@@ -611,10 +790,13 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
 
             {/* Sent Column - De-emphasized (afterthoughts) */}
             <div style={{
-              display: 'flex',
-              gap: isMobile ? '0.25rem' : '0.5rem',
-              flexWrap: 'nowrap',
-              justifyContent: 'center',
+              display: isMobile ? 'grid' : 'flex',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : undefined,
+              gap: isMobile ? '0.5rem' : '0.5rem',
+              flexWrap: isMobile ? undefined : 'nowrap',
+              justifyContent: isMobile ? undefined : 'center',
+              alignContent: isMobile ? 'center' : undefined,
+              alignItems: isMobile ? undefined : 'center',
               borderLeft: '1px solid var(--border)',
               paddingLeft: isMobile ? '0.5rem' : '1rem',
               overflow: 'hidden'
@@ -623,6 +805,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                 const playerName = player.name || 'Unknown';
                 const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
                 const isFAAB = playerName.includes('FAAB');
+                const isLastAndOdd = isMobile && playerIdx === row.sent.length - 1 && row.sent.length % 2 === 1;
 
                 return (
                   <div key={playerIdx} style={{
@@ -630,8 +813,10 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                     flexDirection: 'column',
                     alignItems: 'center',
                     gap: '0.5rem',
-                    flex: '1 1 0',
-                    minWidth: 0
+                    flex: isMobile ? undefined : '1 1 0',
+                    minWidth: 0,
+                    gridColumn: isLastAndOdd ? '1 / -1' : undefined,
+                    justifySelf: isLastAndOdd ? 'center' : undefined
                   }}>
                     {isFAAB ? (
                       <>
@@ -778,10 +963,13 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
 
             {/* Received Column */}
             <div style={{
-              display: 'flex',
-              gap: isMobile ? '0.4rem' : '0.75rem',
-              flexWrap: 'nowrap',
-              justifyContent: 'center',
+              display: isMobile ? 'grid' : 'flex',
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : undefined,
+              gap: isMobile ? '0.5rem' : '0.75rem',
+              flexWrap: isMobile ? undefined : 'nowrap',
+              justifyContent: isMobile ? undefined : 'center',
+              alignContent: isMobile ? 'center' : undefined,
+              alignItems: isMobile ? undefined : 'center',
               borderLeft: '1px solid var(--border)',
               paddingLeft: isMobile ? '0.5rem' : '1rem',
               overflow: 'hidden'
@@ -790,6 +978,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                 const playerName = player.name || 'Unknown';
                 const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
                 const isFAAB = playerName.includes('FAAB');
+                const isLastAndOdd = isMobile && playerIdx === row.received.length - 1 && row.received.length % 2 === 1;
 
                 return (
                   <div key={playerIdx} style={{
@@ -797,8 +986,10 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                     flexDirection: 'column',
                     alignItems: 'center',
                     gap: '0.5rem',
-                    flex: '1 1 0',
-                    minWidth: 0
+                    flex: isMobile ? undefined : '1 1 0',
+                    minWidth: 0,
+                    gridColumn: isLastAndOdd ? '1 / -1' : undefined,
+                    justifySelf: isLastAndOdd ? 'center' : undefined
                   }}>
                     {isFAAB ? (
                       <>

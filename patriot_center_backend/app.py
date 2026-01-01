@@ -31,7 +31,7 @@ CORS(app, resources={
     r"/get_aggregated_players*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_aggregated_managers*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/players/list": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/options/list": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/valid_options*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_player_manager_aggregation*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get/managers/list": {"origins": ["https://patriotcenter.netlify.app"]},
@@ -51,7 +51,7 @@ def index():
             "/get_aggregated_players",
             "/get_aggregated_managers/<player>",
             "/valid_options",
-            "/players/list",
+            "/options/list",
             "/get/managers/list/<active_only>",
             "/api/managers/<manager_name>/summary",
             "/api/managers/<manager_name>/yearly/<year>",
@@ -203,19 +203,26 @@ def get_player_manager_aggregation(player, manager, year, week):
     response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
     return response, 200
 
-@app.route('/players/list', methods=['GET'])
+@app.route('/options/list', methods=['GET'])
 def list_players():
     """
     Endpoint to list all players in the system.
     """
     from patriot_center_backend.services.players import fetch_players
-    players_data = fetch_players()
+    data = fetch_players()
+    for manager in  NAME_TO_MANAGER_USERNAME.keys():
+        data [manager] = {
+            "type":      "manager",
+            "name":      manager,
+            "full_name": manager,
+            "slug":      manager
+        }
     if request.args.get("format") == "json":
-        response = jsonify(players_data)
+        response = jsonify(data)
         response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
         return response, 200
     
-    response = jsonify(_to_records(players_data, key_name="name"))
+    response = jsonify(_to_records(data, key_name="name"))
     response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
     return response, 200
 

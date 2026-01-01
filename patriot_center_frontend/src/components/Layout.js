@@ -14,11 +14,28 @@ import SearchBar from './SearchBar';
 export default function Layout({ children }) {
     const location = useLocation();
     const [isHeaderVisible, setIsHeaderVisible] = useState(true);
+    const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
     const lastScrollY = useRef(0);
     const ticking = useRef(false);
 
+    // Track window width for mobile detection
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
+
     useEffect(() => {
         const handleScroll = () => {
+            // Only apply scroll behavior on mobile
+            if (!isMobile) {
+                setIsHeaderVisible(true);
+                return;
+            }
+
             if (!ticking.current) {
                 window.requestAnimationFrame(() => {
                     const currentScrollY = window.scrollY;
@@ -47,7 +64,7 @@ export default function Layout({ children }) {
 
         window.addEventListener('scroll', handleScroll, { passive: true });
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [isMobile]);
 
     return (
         <div style={{ position: 'relative', minHeight: '100vh' }}>

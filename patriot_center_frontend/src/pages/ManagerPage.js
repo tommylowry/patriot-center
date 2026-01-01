@@ -826,6 +826,73 @@ function RankedStatCard({ title, value, color, rank, worst, isMobile }) {
 
 // Player Stat Card Component - Shows player with their key stat
 function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
+  // ALL HOOKS MUST COME FIRST (Rules of Hooks)
+  const textContainerRef = React.useRef(null);
+  const [fontSize, setFontSize] = React.useState(isMobile ? '0.65rem' : '0.95rem');
+
+  // Extract values with optional chaining before useEffect
+  const playerName = player?.key || player?.name || '';
+  const playerSlug = player?.["slug.slug"] || player?.slug || (playerName ? encodeURIComponent(playerName.toLowerCase()) : '');
+  const firstName = player?.["slug.first_name"] || (playerName ? playerName.split(' ')[0] : '') || '';
+  const lastName = player?.["slug.last_name"] || (playerName ? playerName.split(' ').slice(1).join(' ') : '') || '';
+  const statValue = stat === 'num_games_started' ? player?.[stat] : (player?.[stat]?.toFixed(3) || player?.[stat] || 0);
+
+  // Dynamically calculate font size based on actual text width measurement
+  React.useEffect(() => {
+    if (!isMobile || !textContainerRef.current || !firstName) {
+      setFontSize(isMobile ? '0.65rem' : '0.95rem');
+      return;
+    }
+
+    const calculateFontSize = () => {
+      const container = textContainerRef.current;
+      if (!container) return;
+
+      // Use requestAnimationFrame to ensure layout is complete
+      requestAnimationFrame(() => {
+        // Get actual available width from the container
+        const availableWidthPx = container.offsetWidth;
+
+        if (availableWidthPx === 0) return; // Not rendered yet
+
+        // Create canvas to measure actual text width
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        // Base font size to test with
+        const baseFontSizePx = 0.65 * 16; // 0.65rem in px
+        context.font = `600 ${baseFontSizePx}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+
+        // Measure actual pixel width of BOTH lines at base font size
+        const firstNameWidth = context.measureText(firstName).width;
+        const lastNameWidth = context.measureText(lastName).width;
+
+        // Use whichever line is actually wider in pixels
+        const maxTextWidth = Math.max(firstNameWidth, lastNameWidth);
+
+        // Calculate required font size to fit with 8% safety buffer
+        const requiredFontSizePx = (baseFontSizePx * availableWidthPx) / maxTextWidth * 0.92;
+
+        // Use the smaller of base size or required size, with minimum of 5px
+        const minFontSizePx = 5;
+        const finalFontSizePx = Math.max(minFontSizePx, Math.min(baseFontSizePx, requiredFontSizePx));
+
+        setFontSize(`${finalFontSizePx / 16}rem`);
+      });
+    };
+
+    // Calculate with a slight delay to ensure DOM is ready
+    const timeoutId = setTimeout(calculateFontSize, 10);
+
+    // Recalculate on window resize
+    window.addEventListener('resize', calculateFontSize);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', calculateFontSize);
+    };
+  }, [isMobile, firstName, lastName]);
+
+  // CONDITIONAL RETURNS COME AFTER ALL HOOKS
   if (!player) {
     return (
       <div style={{
@@ -843,15 +910,6 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
       </div>
     );
   }
-
-  const playerName = player.key || player.name;
-
-  // The backend flattens nested objects using dot notation
-  const playerSlug = player["slug.slug"] || player.slug || encodeURIComponent(playerName.toLowerCase());
-  const firstName = player["slug.first_name"] || playerName.split(' ')[0] || playerName;
-  const lastName = player["slug.last_name"] || playerName.split(' ').slice(1).join(' ') || '';
-
-  const statValue = stat === 'num_games_started' ? player[stat] : (player[stat]?.toFixed(3) || player[stat] || 0);
 
   // Determine stat value color based on title
   const getStatValueColor = () => {
@@ -899,18 +957,19 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
         )}
         {/* Vertical Divider */}
         {player.player_image_endpoint && <div style={{ width: '1px', height: isMobile ? '50px' : '75px', background: 'var(--border)', flexShrink: 0 }} />}
-        <div style={{ minWidth: 0, textAlign: 'left', width: '100%' }}>
+        <div ref={textContainerRef} style={{ minWidth: 0, textAlign: 'left', width: '100%' }}>
           <Link
             to={`/player/${playerSlug}`}
             style={{
               fontWeight: 600,
-              fontSize: isMobile ? '0.65rem' : '0.95rem',
+              fontSize: fontSize,
               color: 'var(--text)',
               textDecoration: 'none',
-              overflow: 'hidden',
               lineHeight: '1.2',
               display: 'block',
-              transition: 'color 0.2s ease'
+              transition: 'color 0.2s ease',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.color = 'var(--accent)';
@@ -919,17 +978,17 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
               e.currentTarget.style.color = 'var(--text)';
             }}
           >
-            <div>{firstName}</div>
-            <div>{lastName}</div>
+            <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{firstName}</div>
+            <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{lastName}</div>
           </Link>
-          <div style={{ fontSize: isMobile ? '0.55rem' : '0.8rem', color: 'var(--muted)' }}>
+          <div style={{ fontSize: isMobile ? '0.45rem' : '0.8rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
             {player.position} • {player.team}
           </div>
-          <div style={{ fontSize: isMobile ? '0.9rem' : '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: isMobile ? '0.15rem' : '0.25rem', opacity: 0.85 }}>
+          <div style={{ fontSize: isMobile ? '0.75rem' : '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: isMobile ? '0.15rem' : '0.25rem', opacity: 0.85 }}>
             {statValue}
           </div>
           {additionalInfo && (
-            <div style={{ fontSize: isMobile ? '0.55rem' : '0.75rem', color: 'var(--muted)', marginTop: isMobile ? '0.15rem' : '0.25rem' }}>
+            <div style={{ fontSize: isMobile ? '0.45rem' : '0.75rem', color: 'var(--muted)', marginTop: isMobile ? '0.15rem' : '0.25rem', whiteSpace: 'nowrap' }}>
               {additionalInfo}
             </div>
           )}

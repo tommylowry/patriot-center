@@ -8,7 +8,7 @@ and are used by services that need player metadata or validation information.
 from patriot_center_backend.utils.cache_utils import load_cache
 from patriot_center_backend.constants import PLAYERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
 
-def fetch_players():
+def fetch_players(api=False):
     """
     Retrieve the complete player metadata cache.
 
@@ -24,7 +24,11 @@ def fetch_players():
             - team (str): NFL team abbreviation
             - slug (str): URL-friendly player identifier
     """
-    return load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
+    cache = load_cache(PLAYERS_CACHE_FILE, initialize_with_last_updated_info=False)
+    if api:
+        for player in cache:
+            cache[player]['type'] = 'player'
+    return cache
 
 def fetch_valid_options_cache():
     """

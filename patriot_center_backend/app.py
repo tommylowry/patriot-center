@@ -17,8 +17,13 @@ The API supports two response formats:
 """
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 
+from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
+from patriot_center_backend.utils.cache_utils import slug_to_player_name
+from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+
+
+MANAGER_METADATA_MANAGER = ManagerMetadataManager()
 app = Flask(__name__)
 
 # Configure CORS for production (Netlify frontend)
@@ -26,9 +31,12 @@ CORS(app, resources={
     r"/get_aggregated_players*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_aggregated_managers*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/players/list": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/options/list": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/valid_options*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_player_manager_aggregation*": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/get/managers/list": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/api/managers/*": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/slug_to_player_name/*": {"origins": ["https://patriotcenter.netlify.app"]},
 })
 CORS(app)  # Enable CORS for all routes during development
 
@@ -43,7 +51,14 @@ def index():
             "/get_aggregated_players",
             "/get_aggregated_managers/<player>",
             "/valid_options",
-            "/players/list",
+            "/options/list",
+            "/get/managers/list/<active_only>",
+            "/api/managers/<manager_name>/summary",
+            "/api/managers/<manager_name>/yearly/<year>",
+            "/api/managers/<manager_name>/head-to-head/<opponent_name>",
+            "/api/managers/<manager_name>/transactions",
+            "/api/managers/<manager_name>/awards",
+            "/slug_to_player_name/<slug>",
             "/ping",
             "/health"
         ]
@@ -88,8 +103,13 @@ def get_starters(arg1, arg2, arg3):
 
     # Return either nested JSON or flattened records based on format parameter
     if request.args.get("format") == "json":
-        return jsonify(data), 200
-    return jsonify(_to_records(data)), 200
+        response = jsonify(data)
+        response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+        return response, 200
+    
+    response = jsonify(_to_records(data))
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
 
 @app.route('/get_aggregated_players', defaults={'arg1': None, 'arg2': None, 'arg3': None}, methods=['GET'])
 @app.route('/get_aggregated_players/<string:arg1>', defaults={'arg2': None, 'arg3': None}, methods=['GET'])
@@ -114,8 +134,13 @@ def get_aggregated_players(arg1, arg2, arg3):
 
     data = fetch_aggregated_players(season=year, manager=manager, week=week)
     if request.args.get("format") == "json":
-        return jsonify(data), 200
-    return jsonify(_to_records(data)), 200
+        response = jsonify(data)
+        response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+        return response, 200
+    
+    response = jsonify(_to_records(data))
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
 
 @app.route('/get_aggregated_managers/<string:player>', defaults={'arg2': None, 'arg3': None}, methods=['GET'])
 @app.route('/get_aggregated_managers/<string:player>/<string:arg2>', defaults={'arg3': None}, methods=['GET'])
@@ -133,17 +158,22 @@ def get_aggregated_managers(player, arg2, arg3):
     """
     from patriot_center_backend.services.aggregated_data import fetch_aggregated_managers
 
+    player = slug_to_player_name(player)  # Convert slug to player name
+
     try:
         year, week, _ = parse_arguments(arg2, arg3, None)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    player = player.replace("_", " ").replace("%27", "'")
-
     data = fetch_aggregated_managers(player=player, season=year, week=week)
     if request.args.get("format") == "json":
-        return jsonify(data), 200
-    return jsonify(_to_records(data, key_name="player")), 200
+        response = jsonify(data)
+        response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+        return response, 200
+    
+    response = jsonify(_to_records(data, key_name="manager"))
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
 
 @app.route('/get_player_manager_aggregation/<string:player>/<string:manager>', defaults={'year': None, 'week': None}, methods=['GET'])
 @app.route('/get_player_manager_aggregation/<string:player>/<string:manager>/<string:year>', defaults={'week': None}, methods=['GET'])
@@ -161,23 +191,40 @@ def get_player_manager_aggregation(player, manager, year, week):
     """
     from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
 
-    player = player.replace("_", " ").replace("%27", "'")
+    player = slug_to_player_name(player)  # Convert slug to player name
 
     data = fetch_player_manager_aggregation(player=player, manager=manager, season=year, week=week)
     if request.args.get("format") == "json":
-        return jsonify(data), 200
-    return jsonify(_to_records(data, key_name="manager")), 200
+        response = jsonify(data)
+        response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+        return response, 200
+    
+    response = jsonify(_to_records(data, key_name="manager"))
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
 
-@app.route('/players/list', methods=['GET'])
+@app.route('/options/list', methods=['GET'])
 def list_players():
     """
     Endpoint to list all players in the system.
     """
     from patriot_center_backend.services.players import fetch_players
-    players_data = fetch_players()
+    data = fetch_players()
+    for manager in  NAME_TO_MANAGER_USERNAME.keys():
+        data [manager] = {
+            "type":      "manager",
+            "name":      manager,
+            "full_name": manager,
+            "slug":      manager
+        }
     if request.args.get("format") == "json":
-        return jsonify(players_data), 200
-    return jsonify(_to_records(players_data, key_name="name")), 200
+        response = jsonify(data)
+        response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+        return response, 200
+    
+    response = jsonify(_to_records(data, key_name="name"))
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
 
 @app.route('/valid_options', defaults={'arg1': None, 'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
 @app.route('/valid_options/<string:arg1>', defaults={'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
@@ -189,13 +236,201 @@ def valid_options(arg1, arg2, arg3, arg4):
     Endpoint to validate provided season, week, manager, player, and position combinations.
     """
     from patriot_center_backend.services.valid_options import ValidOptionsService
+
+    arg1 = slug_to_player_name(arg1)
+    arg2 = slug_to_player_name(arg2)
+    arg3 = slug_to_player_name(arg3)
+    arg4 = slug_to_player_name(arg4)
+
     try:
         options = ValidOptionsService(arg1, arg2, arg3, arg4)
         data = options.get_valid_options()
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
-    return jsonify(data), 200
+    response = jsonify(data)
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
 
+@app.route('/get/managers/list/<string:active_only>', methods=['GET'])
+def list_managers(active_only):
+    """
+    Endpoint to list all managers in the system and their top-level info.
+    """
+    if active_only.lower() == "true":
+        bool_active_only = True
+    elif active_only.lower() == "false":
+        bool_active_only = False
+    else:
+        return jsonify({"error": f"{active_only} is not acceptable, only true/false."}), 400
+    
+    
+    try:
+        data = MANAGER_METADATA_MANAGER.get_managers_list(bool_active_only)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+    response = jsonify(data)
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
+
+
+@app.route('/api/managers/<string:manager_name>/summary', defaults={'year': None}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/summary/<string:year>', methods=['GET'])
+def manager_summary(manager_name, year):
+    """
+    Endpoint to get a summary of a specific manager's performance.
+
+    Args:
+        manager_name (str): The name of the manager.
+        year (str | None): Optional year to filter the summary.
+
+    Returns:
+        Flask Response: JSON payload (manager summary or error).
+    """
+    try:
+        data = MANAGER_METADATA_MANAGER.get_manager_summary(manager_name, year)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    response = jsonify(data)
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
+
+
+@app.route('/api/managers/<string:manager_name>/yearly/<string:year>', methods=['GET'])
+def manager_yearly_data(manager_name, year):
+    """
+    Endpoint to get detailed yearly data for a specific manager.
+
+    Args:
+        manager_name (str): The name of the manager.
+        year (str): The year to filter the details.
+
+    Returns:
+        Flask Response: JSON payload (manager yearly details or error).
+    """
+    try:
+        data = MANAGER_METADATA_MANAGER.get_manager_yearly_data(manager_name, year)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    response = jsonify(data)
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
+
+
+@app.route('/api/managers/<string:manager_name>/head-to-head/<string:opponent_name>', defaults={'year': None}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/head-to-head/<string:opponent_name>/<string:year>', methods=['GET'])
+def manager_head_to_head(manager_name, opponent_name, year):
+    """
+    Endpoint to get head-to-head statistics between two managers.
+
+    Args:
+        manager_name (str): The name of the first manager.
+        opponent_name (str): The name of the opponent manager.
+        year (str | None): Optional year to filter the head-to-head stats.
+
+    Returns:
+        Flask Response: JSON payload (head-to-head stats or error).
+    """
+    try:
+        data = MANAGER_METADATA_MANAGER.get_head_to_head(manager_name, opponent_name, year)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    response = jsonify(data)
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
+
+
+@app.route('/api/managers/<string:manager_name>/transactions', defaults={'year': None, 'type': None, 'limit': 50, 'offset': 0}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>', defaults={'type': None, 'limit': 50, 'offset': 0}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>', defaults={'limit': 50, 'offset': 0}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>/<int:limit>', defaults={'offset': 0}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>/<int:limit>/<int:offset>', methods=['GET'])
+def manager_transactions(manager_name, year, type, limit, offset):
+    """
+    Endpoint to get transaction history for a specific manager.
+
+    Args:
+        manager_name (str): The name of the manager.
+        year (str | None): Optional year to filter transactions.
+        type (str | None): Optional transaction type to filter.
+        limit (int): Number of records to return.
+        offset (int): Offset for pagination.
+
+    Returns:
+        Flask Response: JSON payload (transaction history or error).
+    """
+    # Convert 'all' strings to None for proper filtering
+    if year == 'all':
+        year = None
+    if type == 'all':
+        type = None
+
+    try:
+        data = MANAGER_METADATA_MANAGER.get_manager_transactions(manager_name, year, type, limit, offset)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    response = jsonify(data)
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
+
+
+@app.route('/api/managers/<string:manager_name>/awards', methods=['GET'])
+def manager_awards(manager_name):
+    """
+    Endpoint to get awards and recognitions for a specific manager.
+
+    Args:
+        manager_name (str): The name of the manager.
+
+    Returns:
+        Flask Response: JSON payload (manager awards or error).
+    """
+    try:
+        data = MANAGER_METADATA_MANAGER.get_manager_awards(manager_name)
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    response = jsonify(data)
+    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+    return response, 200
+
+
+@app.route('/slug_to_player_name/<string:slug>', methods=['GET'])
+def slug_to_player_name_endpoint(slug):
+    """
+    Convert a slug string to a player name.
+
+    Args:
+        slug (str): The slug string (e.g., "john%20doe").
+
+    Returns:
+        Flask Response: JSON payload with player name or error.
+    """
+    try:
+        player_name = slug_to_player_name(slug)
+        response = jsonify({"player_name": player_name})
+        response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
+        return response, 200
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+
+    
 # /update_caches endpoint removed - cache updates now handled by GitHub Actions
 # See .github/workflows/update-cache.yml
 

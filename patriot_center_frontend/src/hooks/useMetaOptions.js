@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { fetchOptions } from '../services/options';
+import { useLoading } from '../contexts/LoadingContext';
 
 export function useMetaOptions() {
   const [years, setYears] = useState([]);
   const [weeksByYear, setWeeksByYear] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   useEffect(() => {
     let active = true;
     setLoading(true);
+    startLoading();
     setError(null);
     fetchOptions()
       .then(json => {
@@ -26,9 +29,12 @@ export function useMetaOptions() {
         }
       })
       .catch(e => active && setError(e.message))
-      .finally(() => setLoading(false));
+      .finally(() => {
+        if (active) setLoading(false);
+        stopLoading();
+      });
     return () => { active = false; };
-  }, []);
+  }, [startLoading, stopLoading]);
 
   return { years, weeksByYear, loading, error };
 }

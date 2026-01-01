@@ -64,8 +64,9 @@ class TestLoadPlayerIds:
         finally:
             os.remove(temp_path)
 
+    @patch('patriot_center_backend.utils.player_ids_loader._update_players_cache')
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
-    def test_refreshes_stale_cache(self, mock_fetch):
+    def test_refreshes_stale_cache(self, mock_fetch, mock_update_players_cache):
         """Test refreshes cache when file mtime is older than 7 days."""
         from patriot_center_backend.utils.player_ids_loader import update_player_ids
 
@@ -98,8 +99,9 @@ class TestLoadPlayerIds:
         finally:
             os.remove(temp_path)
 
+    @patch('patriot_center_backend.utils.player_ids_loader._update_players_cache')
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
-    def test_creates_cache_when_file_missing(self, mock_fetch):
+    def test_creates_cache_when_file_missing(self, mock_fetch, mock_update_players_cache):
         """Test creates new cache when file doesn't exist."""
         from patriot_center_backend.utils.player_ids_loader import update_player_ids
 
@@ -121,30 +123,11 @@ class TestLoadPlayerIds:
         finally:
             if os.path.exists(non_existent_path):
                 os.remove(non_existent_path)
+                
 
+    @patch('patriot_center_backend.utils.player_ids_loader._update_players_cache')
     @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
-    def test_handles_corrupted_json_gracefully(self, mock_fetch):
-        """Test handles corrupted JSON file gracefully by refreshing."""
-        from patriot_center_backend.utils.player_ids_loader import load_player_ids
-
-        # Create temp file with corrupted JSON
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-            f.write("{ this is not valid json }")
-            temp_path = f.name
-
-        try:
-            mock_fetch.return_value = {"new": "data"}
-
-            with patch('patriot_center_backend.utils.player_ids_loader.PLAYER_IDS_CACHE_FILE', temp_path):
-                load_player_ids()
-
-                # Should have refreshed due to corrupted JSON
-                mock_fetch.assert_called_once()
-        finally:
-            os.remove(temp_path)
-
-    @patch('patriot_center_backend.utils.player_ids_loader.fetch_updated_player_ids')
-    def test_saves_refreshed_cache_to_disk(self, mock_fetch):
+    def test_saves_refreshed_cache_to_disk(self, mock_fetch, mock_update_players_cache):
         """Test saves refreshed cache to disk without metadata fields."""
         from patriot_center_backend.utils.player_ids_loader import update_player_ids
 

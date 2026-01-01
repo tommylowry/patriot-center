@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import { apiGet } from '../config/api';
+import { useLoading } from '../contexts/LoadingContext';
 
 export function usePlayerManagers(playerSlug, { year = null, week = null, manager = null } = {}) {
   const [managers, setManagers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { startLoading, stopLoading } = useLoading();
 
   useEffect(() => {
     if (!playerSlug) return;
     let active = true;
     setLoading(true);
+    startLoading();
     setError(null);
 
     // Use the new endpoint when manager is specified
@@ -25,7 +28,10 @@ export function usePlayerManagers(playerSlug, { year = null, week = null, manage
           setManagers(Array.isArray(data) ? data : []);
         })
         .catch(e => active && setError(e.message))
-        .finally(() => active && setLoading(false));
+        .finally(() => {
+          if (active) setLoading(false);
+          stopLoading();
+        });
     } else {
       const segments = [playerSlug];
       if (year != null) segments.push(String(year));
@@ -38,11 +44,14 @@ export function usePlayerManagers(playerSlug, { year = null, week = null, manage
           setManagers(Array.isArray(data) ? data : []);
         })
         .catch(e => active && setError(e.message))
-        .finally(() => active && setLoading(false));
+        .finally(() => {
+          if (active) setLoading(false);
+          stopLoading();
+        });
     }
 
     return () => { active = false; };
-  }, [playerSlug, year, week, manager]);
+  }, [playerSlug, year, week, manager, startLoading, stopLoading]);
 
   return { managers, loading, error };
 }

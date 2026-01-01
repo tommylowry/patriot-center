@@ -15,13 +15,16 @@ Notes:
 - Import-time execution at bottom warms the cache for downstream consumers.
 """
 from decimal import Decimal
+import copy
 
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
+from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
 
 PLAYER_IDS = load_player_ids()
+MANAGER_METADATA = ManagerMetadataManager()
 
 def load_starters_cache():
     """
@@ -100,6 +103,11 @@ def update_starters_cache():
         print(f"Updating starters cache for season {year}, weeks: {list(weeks_to_update)}")
 
         for week in weeks_to_update:
+
+            # Final week; assign final placements if reached.
+            if week == max_weeks:
+                retroactively_assign_team_placement_for_player(year, cache)
+
             cache.setdefault(str(year), {})
             valid_options_cache.setdefault(str(year), {})
 
@@ -133,13 +141,18 @@ def update_starters_cache():
 
             cache[str(year)][str(week)] = week_data
 
+            MANAGER_METADATA.cache_week_data(str(year), str(week))
+
             # Advance progress markers (enables resumable incremental updates).
             cache['Last_Updated_Season'] = str(year)
             cache['Last_Updated_Week'] = week
             print(f"  Starters cache updated internally for season {year}, week {week}")
 
+
     save_cache(STARTERS_CACHE_FILE, cache)
     save_cache(VALID_OPTIONS_CACHE_FILE, valid_options_cache)
+    MANAGER_METADATA.save()
+
     cache.pop("Last_Updated_Season", None)
     cache.pop("Last_Updated_Week", None)
     return cache
@@ -165,15 +178,19 @@ def _update_players_cache(player_meta, players_cache):
     """
 
     if player_meta.get("full_name") not in players_cache:
-        slug = player_meta.get("full_name", "").replace(" ", "_")
+        
+        slug = player_meta.get("full_name", "").lower()
+        slug = slug.replace(" ", "%20")
         slug = slug.replace("'", "%27")
+        
         players_cache[player_meta["full_name"]] = {
             "full_name": player_meta.get("full_name", ""),
             "first_name": player_meta.get("first_name", ""),
             "last_name": player_meta.get("last_name", ""),
             "position": player_meta.get("position", ""),
             "team": player_meta.get("team", ""),
-            "slug": slug
+            "slug": slug,
+            "player_id": player_meta.get("player_id", "")
         }
         save_cache(PLAYERS_CACHE_FILE, players_cache)
 
@@ -367,7 +384,11 @@ def fetch_starters_for_week(season, week):
     for manager in managers:
         players_summary_array_per_manager   = []
         positions_summary_array_per_manager = []
-        real_name = USERNAME_TO_REAL_NAME.get(manager['display_name'], "Unknown Manager")
+        
+        if manager['display_name'] not in USERNAME_TO_REAL_NAME:
+            raise ValueError (f"{manager['display_name']} not in {USERNAME_TO_REAL_NAME.keys()}")
+        
+        real_name = USERNAME_TO_REAL_NAME[manager['display_name']]
 
         # Historical correction: In 2019 weeks 1-3, Tommy played under Cody's roster.
         # Reassign those weeks from Cody to Tommy for accurate records.
@@ -380,6 +401,9 @@ def fetch_starters_for_week(season, week):
             # Hardcode roster_id=4 as a known correction for this mismatch.
             if int(season) == 2024 and real_name == "Davey":
                 roster_id = 4
+        
+        # Initialize manager metadata for this season/week before skipping playoff filtering.
+        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id, playoff_roster_ids, sleeper_response_matchups[0])
 
         if not roster_id:
             continue  # Skip unresolved roster
@@ -468,6 +492,8 @@ def get_starters_data(sleeper_response_matchups,
                     players_summary_array.append(player_name)
                 if player_position not in positions_summary_array:
                     positions_summary_array.append(player_position)
+                
+                player_meta['player_id'] = player_id
 
                 _update_players_cache(player_meta, players_cache)
 
@@ -504,6 +530,8 @@ def retroactively_assign_team_placement_for_player(season, starters_cache):
     if not placements:
         return starters_cache
     
+    MANAGER_METADATA.set_playoff_placements(placements, str(season))
+
     weeks = ['15', '16', '17']
     if season <= 2020:
         weeks = ['14', '15', '16']

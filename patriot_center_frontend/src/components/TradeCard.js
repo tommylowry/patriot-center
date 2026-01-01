@@ -101,16 +101,14 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
             }}>
               {year} Week {week}
             </div>
-            {!isMobile && (
-              <div style={{
-                fontSize: '0.65rem',
-                color: 'var(--muted)',
-                marginTop: '0.5rem',
-                fontStyle: 'italic'
-              }}>
-                Post trade calculations coming soon!
-              </div>
-            )}
+            <div style={{
+              fontSize: isMobile ? '0.55rem' : '0.65rem',
+              color: 'var(--muted)',
+              marginTop: isMobile ? '0.35rem' : '0.5rem',
+              fontStyle: 'italic'
+            }}>
+              Post trade calculations coming soon!
+            </div>
           </div>
         )}
 

@@ -18,8 +18,98 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
                       /\d{4}\s+(1st|2nd|3rd|4th|5th|6th|7th)\s+round/i.test(playerName);
   const shouldLink = !isFAAB && !isDraftPick;
 
+  if (!shouldLink) {
+    // For FAAB and draft picks, render without Link wrapper
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        {imageUrl && (
+          <div style={{ position: 'relative', flexShrink: 0 }}>
+            <img
+              src={imageUrl}
+              alt={playerName}
+              style={{
+                width: `${imageSize}px`,
+                height: `${imageSize}px`,
+                borderRadius: '8px',
+                objectFit: 'cover'
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+            {faabAmount !== null && faabAmount !== undefined && (
+              <div style={{
+                position: 'absolute',
+                bottom: isMobile ? `${-3 * scaleFactor}px` : `${-4 * scaleFactor}px`,
+                right: isMobile ? `${-4 * scaleFactor}px` : `${-6 * scaleFactor}px`,
+                background: 'tan',
+                color: 'black',
+                clipPath: 'polygon(20% 0%, 100% 0%, 100% 100%, 20% 100%, 0% 50%)',
+                padding: isMobile
+                  ? `${2 * scaleFactor}px ${4 * scaleFactor}px ${2 * scaleFactor}px ${6 * scaleFactor}px`
+                  : `${3 * scaleFactor}px ${6 * scaleFactor}px ${3 * scaleFactor}px ${8 * scaleFactor}px`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: isMobile ? `${0.5 * scaleFactor}rem` : `${0.6 * scaleFactor}rem`,
+                fontWeight: 700,
+                border: isMobile ? `${1.5 * scaleFactor}px solid var(--card-bg)` : `${2 * scaleFactor}px solid var(--card-bg)`,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                minWidth: isMobile ? `${20 * scaleFactor}px` : `${24 * scaleFactor}px`,
+                height: isMobile ? `${14 * scaleFactor}px` : `${18 * scaleFactor}px`
+              }}>
+                ${faabAmount}
+              </div>
+            )}
+          </div>
+        )}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', flex: 1, alignItems: 'center' }}>
+          {firstName && (
+            <div style={{ fontSize: `${parseFloat(fontSize) * 0.85}rem`, fontWeight: 400, color: 'var(--muted)', opacity: 0.7 }}>
+              {firstName}
+            </div>
+          )}
+          {lastName && (
+            <div style={{ fontSize: fontSize, fontWeight: 600, color: 'var(--text)', opacity: 0.7 }}>
+              {lastName}
+            </div>
+          )}
+          {!firstName && !lastName && (
+            <div style={{ fontSize: fontSize, fontWeight: 600, color: 'var(--text)', opacity: 0.7 }}>
+              {playerName}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // For real players, wrap everything in a Link with hover effect
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+    <Link
+      to={`/player/${playerSlug}`}
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.5rem',
+        padding: '0.25rem',
+        border: '1px solid transparent',
+        background: 'transparent',
+        borderRadius: '8px',
+        transition: 'all 0.2s ease',
+        cursor: 'pointer',
+        textDecoration: 'none',
+        color: 'var(--text)'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.background = 'var(--bg)';
+        e.currentTarget.style.borderColor = 'var(--accent)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.background = 'transparent';
+        e.currentTarget.style.borderColor = 'transparent';
+      }}
+    >
       {imageUrl && (
         <div style={{ position: 'relative', flexShrink: 0 }}>
           <img
@@ -61,62 +151,24 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
           )}
         </div>
       )}
-      {shouldLink ? (
-        <Link
-          to={`/player/${playerSlug}`}
-          style={{
-            color: 'var(--text)',
-            textDecoration: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '0.1rem',
-            transition: 'color 0.2s ease',
-            flex: 1,
-            alignItems: 'center'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'var(--accent)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.color = 'var(--text)';
-          }}
-        >
-          {firstName && (
-            <div style={{ fontSize: `${parseFloat(fontSize) * 0.85}rem`, fontWeight: 400, color: 'var(--muted)' }}>
-              {firstName}
-            </div>
-          )}
-          {lastName && (
-            <div style={{ fontSize: fontSize, fontWeight: 600 }}>
-              {lastName}
-            </div>
-          )}
-          {!firstName && !lastName && (
-            <div style={{ fontSize: fontSize, fontWeight: 600 }}>
-              {playerName}
-            </div>
-          )}
-        </Link>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', flex: 1, alignItems: 'center' }}>
-          {firstName && (
-            <div style={{ fontSize: `${parseFloat(fontSize) * 0.85}rem`, fontWeight: 400, color: 'var(--muted)', opacity: 0.7 }}>
-              {firstName}
-            </div>
-          )}
-          {lastName && (
-            <div style={{ fontSize: fontSize, fontWeight: 600, color: 'var(--text)', opacity: 0.7 }}>
-              {lastName}
-            </div>
-          )}
-          {!firstName && !lastName && (
-            <div style={{ fontSize: fontSize, fontWeight: 600, color: 'var(--text)', opacity: 0.7 }}>
-              {playerName}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', flex: 1, alignItems: 'center' }}>
+        {firstName && (
+          <div style={{ fontSize: `${parseFloat(fontSize) * 0.85}rem`, fontWeight: 400, color: 'var(--muted)' }}>
+            {firstName}
+          </div>
+        )}
+        {lastName && (
+          <div style={{ fontSize: fontSize, fontWeight: 600 }}>
+            {lastName}
+          </div>
+        )}
+        {!firstName && !lastName && (
+          <div style={{ fontSize: fontSize, fontWeight: 600 }}>
+            {playerName}
+          </div>
+        )}
+      </div>
+    </Link>
   );
 }
 
@@ -183,10 +235,11 @@ export function WaiverCard({ weekData, isMobile = false }) {
   const hasAdds = processedAdds.length > 0;
   const hasDrops = processedDrops.length > 0;
 
-  const activeColumns = [hasAdds, hasDrops].filter(Boolean).length;
+  // Always show both columns
+  const activeColumns = 2;
 
-  // Don't render if no transactions
-  if (activeColumns === 0) return null;
+  // Don't render if no transactions at all
+  if (transactions.length === 0) return null;
 
   // Calculate optimal scaling based on longest last name
   const allPlayers = [
@@ -268,132 +321,128 @@ export function WaiverCard({ weekData, isMobile = false }) {
       <div style={{
         padding: isMobile ? '0.65rem' : '1rem',
         display: 'grid',
-        gridTemplateColumns: `repeat(${activeColumns}, 1fr)`,
+        gridTemplateColumns: 'repeat(2, 1fr)',
         gap: '0'
       }}>
-        {/* Adds Column */}
-        {hasAdds && (
+        {/* Adds Column - Always shown */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          paddingRight: isMobile ? '0.5rem' : '0.75rem'
+        }}>
+          <div style={{
+            fontSize: isMobile ? '0.85rem' : '1rem',
+            fontWeight: 700,
+            color: 'var(--text)',
+            marginBottom: isMobile ? '0.5rem' : '0.75rem',
+            paddingBottom: isMobile ? '0.35rem' : '0.5rem',
+            borderBottom: '1px solid var(--border)'
+          }}>
+            Adds ({processedAdds.length})
+          </div>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            paddingRight: isMobile ? '0.5rem' : '0.75rem'
+            gap: isMobile ? '0.5rem' : '0.65rem',
+            width: '100%'
           }}>
-            <div style={{
-              fontSize: isMobile ? '0.85rem' : '1rem',
-              fontWeight: 700,
-              color: 'var(--text)',
-              marginBottom: isMobile ? '0.5rem' : '0.75rem',
-              paddingBottom: isMobile ? '0.35rem' : '0.5rem',
-              borderBottom: '1px solid var(--border)'
-            }}>
-              Adds ({processedAdds.length})
-            </div>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: isMobile ? '0.5rem' : '0.65rem',
-              width: '100%'
-            }}>
-              {processedAdds.map((txn, i) => {
-                const hasRelationship = txn.relationshipId !== null;
-                return (
-                  <div key={i} style={{ position: 'relative' }}>
-                    <PlayerLinkVertical
-                      player={txn.player}
-                      imageSize={scaledImageSize}
-                      fontSize={`${scaledFontSize}rem`}
-                      faabAmount={txn.faab_spent}
-                      scaleFactor={scaleFactor}
-                      isMobile={isMobile}
-                    />
-                    {hasRelationship && (
-                      <div style={{
-                        position: 'absolute',
-                        right: isMobile ? '-0.4rem' : '-0.75rem',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: isMobile ? '16px' : '18px',
-                        height: isMobile ? '12px' : '14px',
-                        background: RELATIONSHIP_COLORS.add,
-                        borderRadius: '3px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: isMobile ? '0.6rem' : '0.7rem',
-                        fontWeight: 700
-                      }}>
-                        +
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {processedAdds.map((txn, i) => {
+              const hasRelationship = txn.relationshipId !== null;
+              return (
+                <div key={i} style={{ position: 'relative' }}>
+                  <PlayerLinkVertical
+                    player={txn.player}
+                    imageSize={scaledImageSize}
+                    fontSize={`${scaledFontSize}rem`}
+                    faabAmount={txn.faab_spent}
+                    scaleFactor={scaleFactor}
+                    isMobile={isMobile}
+                  />
+                  {hasRelationship && (
+                    <div style={{
+                      position: 'absolute',
+                      right: isMobile ? '-0.4rem' : '-0.75rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: isMobile ? '16px' : '18px',
+                      height: isMobile ? '12px' : '14px',
+                      background: RELATIONSHIP_COLORS.add,
+                      borderRadius: '3px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: isMobile ? '0.6rem' : '0.7rem',
+                      fontWeight: 700
+                    }}>
+                      +
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        )}
+        </div>
 
-        {/* Drops Column */}
-        {hasDrops && (
+        {/* Drops Column - Always shown */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          paddingLeft: isMobile ? '0.5rem' : '0.75rem',
+          borderLeft: '1px solid var(--border)'
+        }}>
+          <div style={{
+            fontSize: isMobile ? '0.85rem' : '1rem',
+            fontWeight: 700,
+            color: 'var(--text)',
+            marginBottom: isMobile ? '0.5rem' : '0.75rem',
+            paddingBottom: isMobile ? '0.35rem' : '0.5rem',
+            borderBottom: '1px solid var(--border)'
+          }}>
+            Drops ({processedDrops.length})
+          </div>
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            paddingLeft: hasAdds ? (isMobile ? '0.5rem' : '0.75rem') : '0',
-            borderLeft: hasAdds ? '1px solid var(--border)' : 'none'
+            gap: isMobile ? '0.5rem' : '0.65rem',
+            width: '100%'
           }}>
-            <div style={{
-              fontSize: isMobile ? '0.85rem' : '1rem',
-              fontWeight: 700,
-              color: 'var(--text)',
-              marginBottom: isMobile ? '0.5rem' : '0.75rem',
-              paddingBottom: isMobile ? '0.35rem' : '0.5rem',
-              borderBottom: '1px solid var(--border)'
-            }}>
-              Drops ({processedDrops.length})
-            </div>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: isMobile ? '0.5rem' : '0.65rem',
-              width: '100%'
-            }}>
-              {processedDrops.map((txn, i) => {
-                const hasRelationship = txn.relationshipId !== null;
-                return (
-                  <div key={i} style={{ position: 'relative', paddingLeft: '0.45rem' }}>
-                    <PlayerLinkVertical
-                      player={txn.player}
-                      imageSize={scaledImageSize}
-                      fontSize={`${scaledFontSize}rem`}
-                      scaleFactor={scaleFactor}
-                      isMobile={isMobile}
-                    />
-                    {hasRelationship && (
-                      <div style={{
-                        position: 'absolute',
-                        left: isMobile ? '-0.4rem' : '-0.75rem',
-                        top: '50%',
-                        transform: 'translateY(-50%)',
-                        width: isMobile ? '16px' : '18px',
-                        height: isMobile ? '12px' : '14px',
-                        background: RELATIONSHIP_COLORS.drop,
-                        borderRadius: '3px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: 'white',
-                        fontSize: isMobile ? '0.6rem' : '0.7rem',
-                        fontWeight: 700
-                      }}>
-                        −
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+            {processedDrops.map((txn, i) => {
+              const hasRelationship = txn.relationshipId !== null;
+              return (
+                <div key={i} style={{ position: 'relative', paddingLeft: '0.45rem' }}>
+                  <PlayerLinkVertical
+                    player={txn.player}
+                    imageSize={scaledImageSize}
+                    fontSize={`${scaledFontSize}rem`}
+                    scaleFactor={scaleFactor}
+                    isMobile={isMobile}
+                  />
+                  {hasRelationship && (
+                    <div style={{
+                      position: 'absolute',
+                      left: isMobile ? '-0.4rem' : '-0.75rem',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      width: isMobile ? '16px' : '18px',
+                      height: isMobile ? '12px' : '14px',
+                      background: RELATIONSHIP_COLORS.drop,
+                      borderRadius: '3px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: 'white',
+                      fontSize: isMobile ? '0.6rem' : '0.7rem',
+                      fontWeight: 700
+                    }}>
+                      −
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

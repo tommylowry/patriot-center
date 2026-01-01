@@ -926,7 +926,8 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
         flexDirection: 'column',
         gap: isMobile ? '0.25rem' : '0.5rem',
         minWidth: 0,
-        overflow: 'hidden'
+        overflow: 'hidden',
+        ...(!isMobile && { alignItems: 'flex-start' })
       }}
     >
       <div style={{
@@ -938,62 +939,137 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
       }}>
         {title}
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.25rem' : '0.5rem' }}>
-        {player.player_image_endpoint && (
-          <img
-            src={player.player_image_endpoint}
-            alt={playerName}
-            style={{
-              width: isMobile ? '50px' : '75px',
-              height: isMobile ? '50px' : '75px',
-              borderRadius: '8px',
-              objectFit: 'cover',
-              flexShrink: 0
-            }}
-            onError={(e) => {
-              e.target.style.display = 'none';
-            }}
-          />
-        )}
-        {/* Vertical Divider */}
-        {player.player_image_endpoint && <div style={{ width: '1px', height: isMobile ? '50px' : '75px', background: 'var(--border)', flexShrink: 0 }} />}
-        <div ref={textContainerRef} style={{ minWidth: 0, textAlign: 'left', width: '100%' }}>
-          <Link
-            to={`/player/${playerSlug}`}
-            style={{
-              fontWeight: 600,
-              fontSize: fontSize,
-              color: 'var(--text)',
-              textDecoration: 'none',
-              lineHeight: '1.2',
-              display: 'block',
-              transition: 'color 0.2s ease',
-              overflow: 'hidden',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--accent)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--text)';
-            }}
-          >
-            <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{firstName}</div>
-            <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{lastName}</div>
-          </Link>
-          <div style={{ fontSize: isMobile ? '0.45rem' : '0.8rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
-            {player.position} • {player.team}
-          </div>
-          <div style={{ fontSize: isMobile ? '0.75rem' : '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: isMobile ? '0.15rem' : '0.25rem', opacity: 0.85 }}>
-            {statValue}
-          </div>
-          {additionalInfo && (
-            <div style={{ fontSize: isMobile ? '0.45rem' : '0.75rem', color: 'var(--muted)', marginTop: isMobile ? '0.15rem' : '0.25rem', whiteSpace: 'nowrap' }}>
-              {additionalInfo}
-            </div>
+
+      {isMobile ? (
+        // Mobile: Original structure with div wrapper and separate link on name
+        <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.25rem' : '0.5rem' }}>
+          {player.player_image_endpoint && (
+            <img
+              src={player.player_image_endpoint}
+              alt={playerName}
+              style={{
+                width: isMobile ? '50px' : '75px',
+                height: isMobile ? '50px' : '75px',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                flexShrink: 0
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
           )}
+          {/* Vertical Divider */}
+          {player.player_image_endpoint && <div style={{ width: '1px', height: isMobile ? '50px' : '75px', background: 'var(--border)', flexShrink: 0 }} />}
+          <div ref={textContainerRef} style={{ minWidth: 0, textAlign: 'left', width: '100%' }}>
+            <Link
+              to={`/player/${playerSlug}`}
+              style={{
+                fontWeight: 600,
+                fontSize: fontSize,
+                color: 'var(--text)',
+                textDecoration: 'none',
+                lineHeight: '1.2',
+                display: 'block',
+                transition: 'color 0.2s ease',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.color = 'var(--accent)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.color = 'var(--text)';
+              }}
+            >
+              <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{firstName}</div>
+              <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{lastName}</div>
+            </Link>
+            <div style={{ fontSize: isMobile ? '0.45rem' : '0.8rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+              {player.position} • {player.team}
+            </div>
+            <div style={{ fontSize: isMobile ? '0.75rem' : '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: isMobile ? '0.15rem' : '0.25rem', opacity: 0.85 }}>
+              {statValue}
+            </div>
+            {additionalInfo && (
+              <div style={{ fontSize: isMobile ? '0.45rem' : '0.75rem', color: 'var(--muted)', marginTop: isMobile ? '0.15rem' : '0.25rem', whiteSpace: 'nowrap' }}>
+                {additionalInfo}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        // Desktop: New structure with Link wrapper and hover border
+        <Link
+          to={`/player/${playerSlug}`}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.25rem',
+            border: '1px solid transparent',
+            background: 'transparent',
+            borderRadius: '8px',
+            transition: 'all 0.2s ease',
+            cursor: 'pointer',
+            textDecoration: 'none'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--bg)';
+            e.currentTarget.style.borderColor = 'var(--accent)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.borderColor = 'transparent';
+          }}
+        >
+          {player.player_image_endpoint && (
+            <img
+              src={player.player_image_endpoint}
+              alt={playerName}
+              style={{
+                width: '75px',
+                height: '75px',
+                borderRadius: '8px',
+                objectFit: 'cover',
+                flexShrink: 0
+              }}
+              onError={(e) => {
+                e.target.style.display = 'none';
+              }}
+            />
+          )}
+          {/* Vertical Divider */}
+          {player.player_image_endpoint && <div style={{ width: '1px', height: '75px', background: 'var(--border)', flexShrink: 0 }} />}
+          <div ref={textContainerRef} style={{ minWidth: 0, textAlign: 'left' }}>
+            <div
+              style={{
+                fontWeight: 600,
+                fontSize: fontSize,
+                color: 'var(--text)',
+                lineHeight: '1.2',
+                display: 'block',
+                overflow: 'hidden',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{firstName}</div>
+              <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{lastName}</div>
+            </div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+              {player.position} • {player.team}
+            </div>
+            <div style={{ fontSize: '1.1rem', fontWeight: 700, color: getStatValueColor(), marginTop: '0.25rem', opacity: 0.85 }}>
+              {statValue}
+            </div>
+            {additionalInfo && (
+              <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.25rem', whiteSpace: 'nowrap' }}>
+                {additionalInfo}
+              </div>
+            )}
+          </div>
+        </Link>
+      )}
     </div>
   );
 }

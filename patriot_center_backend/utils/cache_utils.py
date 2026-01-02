@@ -108,10 +108,14 @@ def get_current_season_and_week():
         (int, int): (season, week)
     """
     current_year = datetime.now().year
-    # Look up the active league ID for the calendar year; required for API call
+
+    if current_year not in LEAGUE_IDS.get(int(current_year)) and datetime.now().month < 8:
+        if current_year - 1 in LEAGUE_IDS.get(int(current_year)):
+            current_year -= 1
+        else:
+            raise Exception(f"No league ID found for the current year OR the previous year: {current_year}, {current_year-1}")
+
     league_id = LEAGUE_IDS.get(int(current_year))  # Get the league ID for the current year
-    if not league_id:
-        raise Exception(f"No league ID found for the current year: {current_year}")
     
     # OFFLINE DEBUGGING, comment out when online
     # return "2025", 10

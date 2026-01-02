@@ -109,8 +109,8 @@ def get_current_season_and_week():
     """
     current_year = datetime.now().year
 
-    if current_year not in LEAGUE_IDS.get(int(current_year)) and datetime.now().month < 8:
-        if current_year - 1 in LEAGUE_IDS.get(int(current_year)):
+    if current_year not in LEAGUE_IDS and datetime.now().month < 8:
+        if current_year - 1 in LEAGUE_IDS:
             current_year -= 1
         else:
             raise Exception(f"No league ID found for the current year OR the previous year: {current_year}, {current_year-1}")

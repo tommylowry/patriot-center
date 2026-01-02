@@ -192,7 +192,7 @@ class TestGetCurrentSeasonAndWeek:
         # Mock current year that's not in LEAGUE_IDS
         mock_datetime.now.return_value = datetime(2099, 1, 1)
 
-        with pytest.raises(Exception, match="No league ID found for the current year: 2099"):
+        with pytest.raises(Exception, match="No league ID found for the current year OR the previous year: 2099, 2098"):
             get_current_season_and_week()
 
     @patch('patriot_center_backend.utils.cache_utils.datetime')

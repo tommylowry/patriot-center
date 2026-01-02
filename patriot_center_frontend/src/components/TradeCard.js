@@ -24,9 +24,9 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
       const managerName = typeof manager === 'string' ? manager : manager?.name || 'Unknown';
       const managerImageUrl = typeof manager === 'object' ? manager?.image_url : null;
       const managerKey = managerName.toLowerCase().replace(/\s+/g, '_');
-      const sent = trade[`${managerKey}_sent`] || [];
+      const received = trade[`${managerKey}_received`] || [];
 
-      sent.forEach(player => {
+      received.forEach(player => {
         let receivingManager = null;
         let receivingManagerImage = null;
 

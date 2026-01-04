@@ -233,11 +233,15 @@ def update_players_cache(item: list|str, players_cache: dict,
         ValueError: If item is None or empty, or if wrong type provided
     """
     if not item:
-            raise ValueError("Item to update players cache cannot be None or empty.")
+        raise ValueError("Item to update players cache cannot be None or empty.")
 
     # Handle single player ID
     if isinstance(item, str):
         player_name = player_ids.get(item, {}).get("full_name", "")
+
+        if player_name == '':
+            print(f"WARNING: player_id {item} not found in player_ids")
+            return
 
         if player_name not in players_cache:
             player_meta = player_ids.get(item, {})

@@ -9,6 +9,6 @@ Provides comprehensive manager metadata management including:
 
 Main entry point: get_manager_metadata_manager()
 """
-from .manager_metadata_manager import ManagerMetadataManager, get_manager_metadata_manager
+from patriot_center_backend.managers.manager_metadata_manager import ManagerMetadataManager, get_manager_metadata_manager
 
 __all__ = ['ManagerMetadataManager', 'get_manager_metadata_manager']

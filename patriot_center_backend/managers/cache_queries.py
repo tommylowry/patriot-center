@@ -11,6 +11,7 @@ from decimal import Decimal
 from patriot_center_backend.managers.validators import validate_matchup_data
 from patriot_center_backend.managers.formatters import get_trade_card, get_matchup_card
 from patriot_center_backend.managers.utilities import extract_dict_data, get_image_url
+
 from patriot_center_backend.constants import LEAGUE_IDS
 
 

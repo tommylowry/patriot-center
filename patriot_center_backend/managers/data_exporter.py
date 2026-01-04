@@ -8,6 +8,7 @@ from typing import Dict, Any
 from copy import deepcopy
 
 from patriot_center_backend.constants import LEAGUE_IDS
+
 from patriot_center_backend.managers.utilities import get_current_manager_image_url
 from patriot_center_backend.managers.cache_queries import (
     get_matchup_details_from_cache,

@@ -8,6 +8,7 @@ from copy import deepcopy
 
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS
+
 from patriot_center_backend.managers.utilities import get_image_url
 
 def get_season_state(week: str, year: str, playoff_week_start: Optional[int]) -> str:

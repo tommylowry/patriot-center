@@ -20,10 +20,10 @@ from flask_cors import CORS
 
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.utils.cache_utils import slug_to_player_name
-from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+from patriot_center_backend.managers import get_manager_metadata_manager
 
+MANAGER_METADATA_MANAGER = get_manager_metadata_manager()
 
-MANAGER_METADATA_MANAGER = ManagerMetadataManager()
 app = Flask(__name__)
 
 # Configure CORS for production (Netlify frontend)

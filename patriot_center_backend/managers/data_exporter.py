@@ -1,0 +1,456 @@
+"""
+Data export layer for manager metadata.
+
+Provides public API for retrieving manager data in various formats.
+All methods delegate to cache_queries for data extraction.
+"""
+from typing import Dict, Any
+from copy import deepcopy
+
+from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.managers.utilities import get_current_manager_image_url
+from patriot_center_backend.managers.cache_queries import (
+    get_matchup_details_from_cache,
+    get_transaction_details_from_cache,
+    get_overall_data_details_from_cache,
+    get_ranking_details_from_cache,
+    get_head_to_head_details_from_cache,
+    get_weekly_trade_details_from_cache,
+    get_head_to_head_overall_from_cache,
+    get_trade_history_between_two_managers,
+    get_manager_awards_from_cache,
+    get_manager_score_awards_from_cache
+)
+from patriot_center_backend.managers.formatters import get_matchup_card, get_image_url, get_trade_card
+
+
+class DataExporter:
+    """
+    Exports manager metadata in various formats.
+    
+    This class provides the public API for reading manager data.
+    All methods are read-only.
+    """
+    
+    def __init__(self, cache: dict, transaction_ids_cache: dict, players_cache: dict,
+                 valid_options_cache: dict, starters_cache: dict, player_ids: dict):
+        """
+        Initialize data exporter.
+        
+        Args:
+            cache: Main manager metadata cache (read-only)
+            transaction_ids_cache: Transaction ID cache (read-only)
+            players_cache: Player cache (read-only)
+            player_ids: Player ID mapping (read-only)
+        """
+        self._cache = cache
+        self._transaction_ids_cache = transaction_ids_cache
+        self._players_cache = players_cache
+        self._player_ids = player_ids
+        self._valid_options_cache = valid_options_cache
+        self._starters_cache = starters_cache
+        self._image_urls_cache: Dict[str, str] = {}  # Mutable cache for image URLs
+    
+    def get_managers_list(self, active_only: bool) -> Dict[str, Any]:
+        """Get list of all manager names."""
+        current_year = str(max(LEAGUE_IDS.keys()))
+        
+        managers = self._valid_options_cache[current_year]["managers"]
+        if not active_only:
+            managers = list(self._cache.keys())
+        
+        managers_list = []
+        
+        for manager in managers:
+            wins   = self._cache[manager]["summary"]["matchup_data"]["overall"]["wins"]["total"]
+            losses = self._cache[manager]["summary"]["matchup_data"]["overall"]["losses"]["total"]
+            ties   = self._cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
+            
+            ranking_details = get_ranking_details_from_cache(self._cache, manager, self._valid_options_cache,
+                                                             manager_summary_usage=True, active_only=active_only)
+
+            manager_item = {
+                "name":           manager,
+                "image_url":      get_current_manager_image_url(manager, self._cache, self._image_urls_cache),
+                "years_active":   list(self._cache[manager].get("years", {}).keys()),
+                "total_trades":   self._cache[manager]["summary"]["transactions"]["trades"]["total"],
+                "wins":           wins,
+                "losses":         losses,
+                "ties":           ties,
+                "win_percentage": ranking_details['values']['win_percentage']
+            }
+
+            placements = {
+                "first_place":  0,
+                "second_place": 0,
+                "third_place":  0
+            }
+            championships       = 0
+            playoff_appearances = ranking_details['values']['playoffs']
+            best_finish         = 4
+            for y in self._cache[manager]['summary']['overall_data']['placement']:
+                if self._cache[manager]['summary']['overall_data']['placement'][y] == 1:
+                    championships += 1
+                    placements['first_place'] += 1
+                if self._cache[manager]['summary']['overall_data']['placement'][y] == 2:
+                    placements['second_place'] += 1
+                if self._cache[manager]['summary']['overall_data']['placement'][y] == 3:
+                    placements['third_place'] += 1
+                if self._cache[manager]['summary']['overall_data']['placement'][y] < best_finish:
+                    best_finish = self._cache[manager]['summary']['overall_data']['placement'][y]
+
+
+            if best_finish == 4:
+                if playoff_appearances > 0:
+                    best_finish = "Playoffs"
+                else:
+                    best_finish = "Never Made Playoffs"
+            
+            # determine how high or low they should go in the list
+            weight = 0
+            weight += placements['first_place'] * 10000
+            weight += placements['second_place'] * 1000
+            weight += placements['third_place'] * 100
+            weight += playoff_appearances * 10
+            weight += ranking_details['values']['average_points_for']
+            manager_item['weight'] = weight
+            
+            manager_item["placements"]          = deepcopy(placements)
+            manager_item["championships"]       = championships
+            manager_item["playoff_appearances"] = ranking_details['values']['playoffs']
+            manager_item["best_finish"]         = best_finish
+
+            manager_item["average_points_for"] = ranking_details['values']['average_points_for']
+
+            manager_item["total_adds"]  = self._cache[manager]['summary']['transactions']['adds']['total']
+            manager_item["total_drops"] = self._cache[manager]['summary']['transactions']['drops']['total']
+
+            manager_item["is_active"] = ranking_details['ranks']['is_active_manager']
+
+            rankings = {
+                "win_percentage":     ranking_details['ranks']['win_percentage'],
+                "average_points_for": ranking_details['ranks']['average_points_for'],
+                "trades":             ranking_details['ranks']['trades'],
+                "playoffs":           ranking_details['ranks']['playoffs'],
+                "best":               ranking_details['ranks']['best'],
+                "worst":              ranking_details['ranks']['worst']
+            }
+
+            manager_item["rankings"] = deepcopy(rankings)
+
+            managers_list.append(manager_item)
+        
+        return { "managers": managers_list }
+    
+    def get_manager_summary(self, manager: str, year: str = None) -> Dict:
+        """Get comprehensive manager summary for a specific week."""
+        if manager not in self._cache:
+            raise ValueError(f"Manager {manager} not found in cache.")
+        
+        if year:
+            if year not in self._cache[manager]["years"]:
+                raise ValueError(f"Year {year} not found for manager {manager} in cache.")
+        
+        return_dict = {}
+        return_dict["manager_name"] = manager
+        return_dict["user_id"]      = self._cache[manager]["summary"].get("user_id", "")
+        return_dict["image_url"]    = get_current_manager_image_url(manager, self._cache, self._image_urls_cache)
+        return_dict["years_active"] = list(self._cache[manager].get("years", {}).keys())
+
+        return_dict["matchup_data"] = get_matchup_details_from_cache(self._cache, manager, year=year)
+        return_dict["transactions"] = get_transaction_details_from_cache(self._cache, year, manager,
+                                                                         self._image_urls_cache, self._players_cache,
+                                                                         self._player_ids)
+        return_dict["overall_data"] = get_overall_data_details_from_cache(self._cache, year, manager)
+        return_dict["rankings"]     = get_ranking_details_from_cache(self._cache, manager, self._valid_options_cache, year=year)
+        return_dict["head_to_head"] = get_head_to_head_details_from_cache(self._cache, manager, self._image_urls_cache, 
+                                                                          self._players_cache, self._player_ids, year=year)
+
+        return deepcopy(return_dict)
+    
+    def get_manager_yearly_data(self, manager: str, year: str) -> Dict:
+        """Get manager data for entire year or specific week."""
+        if manager not in self._cache:
+            raise ValueError(f"Manager {manager} not found in cache.")
+        
+        if year not in self._cache[manager]["years"]:
+            raise ValueError(f"Year {year} not found for manager {manager} in cache.")
+        
+        cached_yearly_data = deepcopy(self._cache[manager]["years"][year])
+
+        yearly_data = {
+            "manager_name": manager,
+            "year":         year,
+            "image_url":    get_current_manager_image_url(manager, self._cache, self._image_urls_cache),
+            "matchup_data": get_matchup_details_from_cache(self._cache, manager, year=year)
+        }
+
+        # Matchup Data
+        weekly_scores = []
+        for week in cached_yearly_data.get("weeks", {}):
+            week_data = deepcopy(cached_yearly_data["weeks"][week]["matchup_data"])
+            
+            opponent = week_data.get("opponent_manager", "N/A")
+            if opponent == "N/A":
+                continue
+            
+            weekly_scores.append(get_matchup_card(self._cache, manager, opponent,
+                                                  year, week, self._players_cache,
+                                                  self._player_ids, self._image_urls_cache,
+                                                  self._starters_cache))
+        
+        yearly_data["matchup_data"]["overall"]["weekly_scores"] = weekly_scores
+
+        
+        # Transactions Data
+        transaction_data = {
+            "trades": {
+                "total": cached_yearly_data["summary"]["transactions"]["trades"]["total"],
+                "by_week": []
+            },
+            "adds": {
+                "total": cached_yearly_data["summary"]["transactions"]["adds"]["total"],
+                "by_week": []
+            },
+            "drops": {
+                "total": cached_yearly_data["summary"]["transactions"]["drops"]["total"],
+                "by_week": []
+            }
+        }
+        
+        for week in cached_yearly_data.get("weeks", {}):
+            weekly_transactions = cached_yearly_data["weeks"][week]["transactions"]
+            
+            # Trades
+            trade_item = {
+                "week": week,
+                "trades": get_weekly_trade_details_from_cache(self._cache, year, week,
+                                                              manager, self._transaction_ids_cache,
+                                                              self._image_urls_cache, self._players_cache,
+                                                              self._player_ids)
+            }
+            transaction_data["trades"]["by_week"].append(trade_item)
+            
+
+            # Adds
+            add_item = {
+                "week": week,
+                "players": []
+            }
+            players = list(weekly_transactions.get("adds", {}).get("players", {}).keys())
+            for player in players:
+                add_item["players"].append(deepcopy(get_image_url(player, self._players_cache,
+                                                                  self._player_ids, self._image_urls_cache,
+                                                                  self._cache, dictionary=True)))
+            transaction_data["adds"]["by_week"].append(deepcopy(add_item))
+
+            # Drops
+            drop_item = {
+                "week": week,
+                "players": []
+            }
+            players = list(weekly_transactions.get("drops", {}).get("players", {}).keys())
+            for player in players:
+                drop_item["players"].append(deepcopy(get_image_url(player, self._players_cache,
+                                                                  self._player_ids, self._image_urls_cache,
+                                                                  self._cache, dictionary=True)))
+            transaction_data["drops"]["by_week"].append(deepcopy(drop_item))
+        
+        yearly_data["transactions"] = deepcopy(transaction_data)
+        
+        return deepcopy(yearly_data)
+    
+    def get_head_to_head(self, manager1: str, manager2: str, year: str = None) -> Dict:
+        """Get head-to-head matchup history between two managers."""
+        return_dict = {}
+        
+        for manager in [manager1, manager2]:
+        
+            if manager not in self._cache:
+                raise ValueError(f"Manager {manager} not found in cache.")
+            if year:
+                if year not in self._cache[manager]["years"]:
+                    raise ValueError(f"Year {year} not found for manager {manager} in cache.")
+
+            manager = {
+                "name":      manager,
+                "image_url": get_current_manager_image_url(manager, self._cache, self._image_urls_cache)
+            }
+
+            if "manager_1" not in return_dict:
+                return_dict["manager_1"] = deepcopy(manager)
+            else:
+                return_dict["manager_2"] = deepcopy(manager)
+
+
+        return_dict["overall"] = get_head_to_head_overall_from_cache(self._cache, manager1, manager2,
+                                                                     self._players_cache, self._player_ids,
+                                                                     self._image_urls_cache, self._starters_cache,
+                                                                     year=year)
+
+        return_dict["matchup_history"]= get_head_to_head_overall_from_cache(self._cache, manager1, manager2,
+                                                                     self._players_cache, self._player_ids,
+                                                                     self._image_urls_cache, self._starters_cache,
+                                                                     year=year, list_all_matchups=True)
+
+        trades_between = get_trade_history_between_two_managers(self._cache, manager1, manager2,
+                                                                self._transaction_ids_cache,
+                                                                self._image_urls_cache, self._players_cache,
+                                                                self._player_ids, year=year)
+
+        return_dict["trades_between"] = {
+            "total": len(trades_between),
+            "trade_history": trades_between
+        }
+
+        return deepcopy(return_dict)
+    
+    def get_manager_transactions(self, manager_name: str, year: str = None, 
+                                transaction_type: str = None, limit: int = 50, 
+                                offset: int = 0) -> dict:
+        """Get manager transaction history."""
+        if manager_name not in self._cache:
+            raise ValueError(f"Manager {manager_name} not found in cache.")
+        if year:
+            if year not in self._cache[manager_name]["years"]:
+                raise ValueError(f"Year {year} not found for manager {manager_name} in cache.")
+        
+        
+        transaction_history = {
+            "name": get_image_url(manager_name, self._players_cache, self._player_ids,
+                                  self._image_urls_cache, self._cache, dictionary=True),
+            "total_count":  0,
+            "transactions": []
+        }
+
+        # Gather transactions based on filters
+        filtered_transactions = []
+        years_to_check = [year] if year else list(self._cache[manager_name]["years"].keys())
+        
+        for yr in years_to_check:
+            yearly_data = self._cache[manager_name]["years"][yr]
+            for week in yearly_data.get("weeks", {}):
+                weekly_transactions = deepcopy(yearly_data["weeks"][week]["transactions"])
+                
+                # Trades
+                if transaction_type in [None, "trade"]:
+                    transaction_ids = deepcopy(weekly_transactions.get("trades", {}).get("transaction_ids", []))
+                    transaction_ids.reverse()
+                    for transaction_id in transaction_ids:
+                        trade_details = get_trade_card(transaction_id, self._transaction_ids_cache,
+                                                       self._image_urls_cache, self._players_cache,
+                                                       self._player_ids, self._cache)
+
+                        trade_details["type"] = "trade"
+                        filtered_transactions.append(deepcopy(trade_details))
+                        
+                
+                # Adds
+                if transaction_type in [None, "add", "add_and_or_drop"]:
+                    transaction_ids = deepcopy(weekly_transactions.get("adds", {}).get("transaction_ids", []))
+                    transaction_ids.reverse()
+                    for transaction_id in transaction_ids:
+                        add_details = self._transaction_ids_cache.get(transaction_id, {})
+                        if add_details:
+                            
+                            # Only include adds portion of a transaction for "add" filter
+                            if "add" in add_details.get("types", []):
+                                
+                                transaction_item = {
+                                    "year":           yr,
+                                    "week":           week,
+                                    "type":           "add",
+                                    "player":         get_image_url(add_details.get("add", ""), self._players_cache,
+                                                                    self._player_ids, self._image_urls_cache, self._cache,
+                                                                    dictionary=True),
+                                    "faab_spent":     add_details.get("faab_spent", None), # None if FAAB not implemented yet or a free agent add
+                                    "transaction_id": transaction_id
+                                }
+                                filtered_transactions.append(deepcopy(transaction_item))
+                
+
+                # Drops
+                if transaction_type in [None, "drop", "add_and_or_drop"]:
+                    transaction_ids = deepcopy(weekly_transactions.get("drops", {}).get("transaction_ids", []))
+                    transaction_ids.reverse()
+                    for transaction_id in transaction_ids:
+                        drop_details = self._transaction_ids_cache.get(transaction_id, {})
+                        if drop_details:
+                            
+                            # Only include drops portion of a transaction for "drop" filter
+                            if "drop" in drop_details.get("types", []):
+                                
+                                transaction_item = {
+                                    "year":           yr,
+                                    "week":           week,
+                                    "type":           "drop",
+                                    "player":         get_image_url(drop_details.get("drop", ""), self._players_cache,
+                                                                    self._player_ids, self._image_urls_cache, self._cache,
+                                                                    dictionary=True),
+                                    "transaction_id": transaction_id
+                                }
+                                filtered_transactions.append(deepcopy(transaction_item))
+                
+                # Adds and Drops
+                if transaction_type in [None, "add_and_or_drop"]:
+                    
+                    transaction_ids = deepcopy(weekly_transactions.get("adds", {}).get("transaction_ids", []))
+                    transaction_ids.reverse()
+                    for transaction_id in transaction_ids:
+                        add_drop_details = self._transaction_ids_cache.get(transaction_id, {})
+                        if add_drop_details:
+                            
+                            # Only include add_and_drop transactions
+                            if "add" in add_drop_details.get("types", []) and "drop" in add_drop_details.get("types", []):
+                                transaction_item = {
+                                    "year":           yr,
+                                    "week":           week,
+                                    "type":           "add_and_drop",
+                                    "added_player":   get_image_url(add_drop_details.get("add", ""), self._players_cache,
+                                                                    self._player_ids, self._image_urls_cache, self._cache,
+                                                                    dictionary=True),
+                                    "dropped_player": get_image_url(add_drop_details.get("drop", ""), self._players_cache,
+                                                                    self._player_ids, self._image_urls_cache, self._cache,
+                                                                    dictionary=True),
+                                    "faab_spent":     add_drop_details.get("faab_spent", None), # None if FAAB not implemented yet or a free agent add/drop
+                                    "transaction_id": transaction_id
+                                }
+                                filtered_transactions.append(deepcopy(transaction_item))
+                
+        # Set total count before pagination
+        transaction_history["total_count"] = len(filtered_transactions)
+
+        filtered_transactions.reverse()
+
+        # Apply pagination
+        paginated_transactions = filtered_transactions[offset:offset+limit] 
+        
+        # Set transactions in output
+        transaction_history["transactions"] = deepcopy(paginated_transactions)
+        
+        return deepcopy(transaction_history)
+
+    
+    def get_manager_awards(self, manager: str) -> Dict:
+        """Get all awards for a manager."""
+        if manager not in self._cache:
+            raise ValueError(f"Manager {manager} not found in cache.")
+        
+        awards_data = {
+            "manager":   get_image_url(manager, self._players_cache,
+                                       self._player_ids, self._image_urls_cache,
+                                       self._cache, dictionary=True),
+            "image_url": get_current_manager_image_url(manager, self._cache,
+                                                       self._image_urls_cache),
+            "awards":    get_manager_awards_from_cache(self._cache, manager,
+                                                       self._players_cache, self._player_ids,
+                                                       self._image_urls_cache)
+        }
+        
+        score_awards = get_manager_score_awards_from_cache(self._cache, manager, self._players_cache,
+                                                           self._player_ids, self._image_urls_cache,
+                                                           self._starters_cache)
+
+        awards_data["awards"].update(deepcopy(score_awards))
+
+        return deepcopy(awards_data)

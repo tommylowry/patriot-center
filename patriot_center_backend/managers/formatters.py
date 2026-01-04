@@ -3,7 +3,7 @@ Data formatting and presentation helpers.
 
 Formats matchup cards, trade cards, and determines season state.
 """
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 from copy import deepcopy
 
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
@@ -37,7 +37,6 @@ def get_season_state(week: str, year: str, playoff_week_start: Optional[int]) ->
     if int(week) >= playoff_week_start:
         return "playoffs"
     return "regular_season"
-
 
 def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, manager_2: str, players_cache: dict,
                                         player_ids: dict, image_urls_cache: dict, cache: dict, starters_cache: dict) -> List[Dict]:
@@ -194,10 +193,9 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, mana
             "manager_2_lowest_scorer": manager_2_lowest_scorer
         }
 
-
 def get_matchup_card(cache: dict, manager_1: str, manager_2: str, year: str, week: str,
                     players_cache: dict, player_ids: dict,
-                    image_urls_cache: dict, starters_cache: dict) -> Dict:
+                    image_urls_cache: dict, starters_cache: dict) -> Dict[str, Any]:
     """
     Generate complete matchup card with scores, winner, and top performers.
 
@@ -250,10 +248,9 @@ def get_matchup_card(cache: dict, manager_1: str, manager_2: str, year: str, wee
 
     return deepcopy(matchup)
 
-
 def get_trade_card(transaction_id: str, transaction_ids_cache: dict,
                   image_urls_cache: dict, players_cache: dict,
-                  player_ids: dict, cache: dict) -> Dict:
+                  player_ids: dict, cache: dict) -> Dict[str, Any]:
     """
     Generate formatted trade card showing all players/assets exchanged.
 

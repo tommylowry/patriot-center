@@ -3,7 +3,7 @@ Validation functions for manager metadata processing.
 
 Validates preconditions, matchup data, and transaction data.
 """
-from typing import Dict, Optional
+from typing import Dict, Optional, Callable
 
 
 class ValidationError(Exception):
@@ -42,7 +42,6 @@ def validate_caching_preconditions(weekly_roster_ids: Dict[int, str],
         raise ValidationError("Year not set. Cannot cache week data.")
     if not week:
         raise ValidationError("Week not set. Cannot cache week data.")
-
 
 def validate_matchup_data(matchup_data: dict, cache: dict) -> None:
     """
@@ -99,9 +98,9 @@ def validate_matchup_data(matchup_data: dict, cache: dict) -> None:
 
     return ""
 
-
-def validate_transaction(transaction: dict, transaction_type: str, process_transaction_type,
-                          weekly_roster_ids: Dict[int, str]) -> bool:
+def validate_transaction(transaction: dict, transaction_type: str,
+                         process_transaction_type: Optional[Callable[[dict], bool]],
+                         weekly_roster_ids: Dict[int, str]) -> bool:
     """
     Validate if transaction should be processed.
 

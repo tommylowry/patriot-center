@@ -107,7 +107,6 @@ def get_matchup_details_from_cache(cache: dict, manager: str, year: str = None) 
 
     return deepcopy(matchup_data)
 
-
 def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
                                        image_urls_cache: dict, players_cache: dict,
                                        player_ids: dict) -> Dict:
@@ -233,7 +232,6 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     # Return final transaction summary
     return deepcopy(transaction_summary)
 
-
 def get_overall_data_details_from_cache(cache: dict, year: str, manager: str) -> Dict:
     """
     Get career achievements including playoff appearances and season placements.
@@ -265,10 +263,9 @@ def get_overall_data_details_from_cache(cache: dict, year: str, manager: str) ->
 
     return deepcopy(overall_data)
 
-
 def get_ranking_details_from_cache(cache: dict, manager: str, valid_options_cache: dict,
                                    manager_summary_usage: bool = False, active_only: bool = True,
-                                   year: str = None) -> Dict:
+                                   year: str|None = None) -> Dict:
     """
     Calculate manager rankings across all statistical categories.
 
@@ -401,11 +398,10 @@ def get_ranking_details_from_cache(cache: dict, manager: str, valid_options_cach
     
     return deepcopy(returning_dictionary)
 
-
 def get_head_to_head_details_from_cache(cache: dict, manager: str,
                                         image_urls_cache: dict, players_cache: dict,
-                                        player_ids: dict, year: str = None,
-                                        opponent: str = None) -> Dict:
+                                        player_ids: dict, year: str|None = None,
+                                        opponent: str|None = None) -> Dict:
     """
     Get head-to-head record(s) for a manager against opponent(s).
 
@@ -455,7 +451,8 @@ def get_head_to_head_details_from_cache(cache: dict, manager: str,
 
 def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: str,
                                         players_cache: dict, player_ids: dict,
-                                        image_urls_cache: dict,  starters_cache, year: str = None,
+                                        image_urls_cache: dict,  starters_cache,
+                                        year: str|None = None,
                                         list_all_matchups: bool = False) -> Dict:
     """
     Get comprehensive head-to-head analysis between two managers.
@@ -645,12 +642,10 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
 
     return deepcopy(head_to_head_overall)
     
-
-
 def get_trade_history_between_two_managers(cache: dict, manager1: str, manager2: str,
                                            transaction_ids_cache: dict,
                                            image_urls_cache: dict, players_cache: dict,
-                                           player_ids: dict, year: str = None) -> List:
+                                           player_ids: dict, year: str|None = None) -> List:
     """
     Get complete trade history between two managers.
 
@@ -695,7 +690,6 @@ def get_trade_history_between_two_managers(cache: dict, manager1: str, manager2:
     
     trades_between.reverse()
     return trades_between
-
 
 def get_manager_awards_from_cache(cache: dict, manager: str,
                                   players_cache: dict, player_ids: dict,

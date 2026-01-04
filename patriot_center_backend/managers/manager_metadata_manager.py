@@ -7,7 +7,7 @@ All other code should use ManagerMetadataManager methods.
 Single Responsibility: Orchestrate sub-processors and manage persistence.
 """
 from copy import deepcopy
-from typing import Dict, Optional, List
+from typing import Dict, Optional, Any
 
 from patriot_center_backend.cache.cache_manager import get_cache_manager
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
@@ -50,7 +50,7 @@ class ManagerMetadataManager:
     Access via get_manager_metadata_manager() singleton function.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         # Get cache manager instance
         self._cache_mgr = get_cache_manager()
         
@@ -241,7 +241,6 @@ class ManagerMetadataManager:
         self._transaction_processor.clear_session_state()
         self._matchup_processor.clear_session_state()
 
-    
     def set_playoff_placements(self, placement_dict: dict, year: str) -> None:
         """
         Record final season placements for all managers.
@@ -262,29 +261,29 @@ class ManagerMetadataManager:
 
     # ===== API Export Functions =====
     
-    def get_managers_list(self, active_only: bool) -> List[str]:
+    def get_managers_list(self, active_only: bool) -> Dict[str, Any]:
         """Get list of all managers."""
         return self._data_exporter.get_managers_list(active_only=active_only)
     
-    def get_manager_summary(self, manager: str, year: str = None) -> Dict:
+    def get_manager_summary(self, manager: str, year: str|None = None) -> Dict[str, Any]:
         """Get manager summary."""
         return self._data_exporter.get_manager_summary(manager, year=year)
     
-    def get_head_to_head(self, manager1: str, manager2: str, year: str = None) -> Dict:
+    def get_head_to_head(self, manager1: str, manager2: str, year: str|None = None) -> Dict[str, Any]:
         """Get head-to-head data."""
         return self._data_exporter.get_head_to_head(manager1, manager2, year=year)
     
-    def get_manager_transactions(self, manager_name: str, year: str = None) -> Dict:
+    def get_manager_transactions(self, manager_name: str, year: str|None = None) -> Dict[str, Any]:
         """Get manager transactions."""
         return self._data_exporter.get_manager_transactions(manager_name, year=year)
     
-    def get_manager_awards(self, manager: str) -> Dict:
+    def get_manager_awards(self, manager: str) -> Dict[str, Any]:
         """Get manager awards."""
         return self._data_exporter.get_manager_awards(manager)
     
     # ===== SAVE TO DISK =====
     
-    def save(self):
+    def save(self) -> None:
         """Save all caches to disk."""
         self._cache_mgr.save_manager_cache(self._cache)
         self._cache_mgr.save_transaction_ids_cache(self._transaction_ids_cache)
@@ -292,7 +291,7 @@ class ManagerMetadataManager:
     
     # ========== PRIVATE HELPER METHODS ==========
     
-    def _set_defaults_if_missing(self, roster_id: int):
+    def _set_defaults_if_missing(self, roster_id: int) -> None:
         """
         Initialize cache structure for manager/year/week if not already present.
 
@@ -335,7 +334,7 @@ class ManagerMetadataManager:
         if self._use_faab:
             self._cache = initialize_faab_template(manager, self._year, self._week, self._cache)
     
-    def _clear_weekly_metadata(self):
+    def _clear_weekly_metadata(self) -> None:
         """
         Clear weekly session state after processing.
 

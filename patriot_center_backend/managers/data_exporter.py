@@ -39,7 +39,7 @@ class DataExporter:
     """
 
     def __init__(self, cache: dict, transaction_ids_cache: dict, players_cache: dict,
-                 valid_options_cache: dict, starters_cache: dict, player_ids: dict):
+                 valid_options_cache: dict, starters_cache: dict, player_ids: dict) -> None:
         """
         Initialize data exporter with required caches.
 
@@ -162,7 +162,7 @@ class DataExporter:
         
         return { "managers": managers_list }
     
-    def get_manager_summary(self, manager: str, year: str = None) -> Dict:
+    def get_manager_summary(self, manager: str, year: str|None = None) -> Dict[str, Any]:
         """
         Get comprehensive manager summary with all statistics and rankings.
 
@@ -207,8 +207,7 @@ class DataExporter:
 
         return deepcopy(return_dict)
     
-    
-    def get_head_to_head(self, manager1: str, manager2: str, year: str = None) -> Dict:
+    def get_head_to_head(self, manager1: str, manager2: str, year: str|None = None) -> Dict[str, Any]:
         """
         Get complete head-to-head analysis between two managers.
 
@@ -271,7 +270,7 @@ class DataExporter:
 
         return deepcopy(return_dict)
     
-    def get_manager_transactions(self, manager_name: str, year: str = None) -> dict:
+    def get_manager_transactions(self, manager_name: str, year: str|None = None) -> Dict[str, Any]:
         """
         Get complete transaction history for a manager.
 
@@ -405,8 +404,7 @@ class DataExporter:
         
         return deepcopy(transaction_history)
 
-    
-    def get_manager_awards(self, manager: str) -> Dict:
+    def get_manager_awards(self, manager: str) -> Dict[str, Any]:
         """
         Get all career awards and achievements for a manager.
 

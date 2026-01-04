@@ -39,7 +39,7 @@ class TransactionProcessor:
     """
 
     def __init__(self, cache: dict, transaction_ids_cache: dict, players_cache: dict,
-                 player_ids: dict, use_faab: bool):
+                 player_ids: dict, use_faab: bool) -> None:
         """
         Initialize transaction processor with cache references.
 
@@ -262,7 +262,7 @@ class TransactionProcessor:
         # Run the transaction through the appropriate processor
         process_transaction_type(transaction, commish_action)
 
-    def _revert_trade_transaction(self, transaction_id1: str, transaction_id2) -> None:
+    def _revert_trade_transaction(self, transaction_id1: str, transaction_id2: str) -> None:
         """
         Revert two trade transactions that cancel each other out.
 
@@ -466,7 +466,6 @@ class TransactionProcessor:
         
         return False # return False if theres still more information
 
-    
     def _process_trade_transaction(self, transaction: dict, commish_action: bool) -> None:
         """
         Process a trade transaction involving multiple managers, players, picks, and FAAB.
@@ -562,7 +561,6 @@ class TransactionProcessor:
                 # add faab trade details to the cache
                 self._add_faab_details_to_cache("trade", sender, "FAAB", faab_amount, transaction_id, trade_partner=receiver)
                 self._add_faab_details_to_cache("trade", receiver, "FAAB", -faab_amount, transaction_id, trade_partner=sender)
-
     
     def _add_trade_details_to_cache(self, manager: str, trade_partners: list,
                                     acquired: dict, sent: dict,
@@ -648,7 +646,6 @@ class TransactionProcessor:
 
         # Finally, add transaction ID to weekly summary to avoid double counting
         weekly_summary["transaction_ids"].append(transaction_id)
-
     
     def _process_add_or_drop_transaction(self, transaction: dict, commish_action: bool) -> None:
         """

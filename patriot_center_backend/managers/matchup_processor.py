@@ -25,7 +25,7 @@ class MatchupProcessor:
     Uses session state pattern for thread safety during week processing.
     """
 
-    def __init__(self, cache: dict, playoff_week_start: Optional[int]):
+    def __init__(self, cache: dict, playoff_week_start: Optional[int]) -> None:
         """
         Initialize matchup processor with cache reference.
 

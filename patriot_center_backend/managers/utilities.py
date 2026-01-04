@@ -39,7 +39,6 @@ def draft_pick_decipher(draft_pick_dict: Dict[str, Any], weekly_roster_ids: Dict
 
     return f"{origin_manager}'s {season} Round {round_num} Draft Pick"
 
-
 def extract_dict_data(data: dict, players_cache: dict, player_ids: dict,
                      image_urls_cache: dict, cache: dict,
                      key_name: str = "name", value_name: str = "count",
@@ -98,7 +97,6 @@ def extract_dict_data(data: dict, players_cache: dict, player_ids: dict,
         items.append(deepcopy(long_dict))
 
     return deepcopy(items)
-
 
 def get_image_url(item: str, players_cache: dict, player_ids: dict,
                   image_urls_cache: dict, cache: dict, dictionary: bool = False) -> str:
@@ -184,7 +182,6 @@ def get_image_url(item: str, players_cache: dict, player_ids: dict,
     print("WARNING: Could not find image URL for item:", item)
     return ""
 
-
 def get_current_manager_image_url(manager: str, cache: dict, 
                                   image_urls_cache: dict) -> str:
     """
@@ -209,7 +206,6 @@ def get_current_manager_image_url(manager: str, cache: dict,
         return f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
 
     return ""
-
 
 def update_players_cache(item: list|str, players_cache: dict,
                          player_ids: dict) -> None:

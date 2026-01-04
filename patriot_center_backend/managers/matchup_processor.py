@@ -3,7 +3,7 @@ Matchup and playoff processing for manager metadata.
 
 Handles matchup data collection and playoff bracket processing.
 """
-from typing import Dict, Any, Optional
+from typing import Dict, Optional
 from decimal import Decimal
 
 from patriot_center_backend.constants import LEAGUE_IDS

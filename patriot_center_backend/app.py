@@ -54,7 +54,6 @@ def index():
             "/options/list",
             "/get/managers/list/<active_only>",
             "/api/managers/<manager_name>/summary",
-            "/api/managers/<manager_name>/yearly/<year>",
             "/api/managers/<manager_name>/head-to-head/<opponent_name>",
             "/api/managers/<manager_name>/transactions",
             "/api/managers/<manager_name>/awards",
@@ -301,30 +300,6 @@ def manager_summary(manager_name, year):
     return response, 200
 
 
-@app.route('/api/managers/<string:manager_name>/yearly/<string:year>', methods=['GET'])
-def manager_yearly_data(manager_name, year):
-    """
-    Endpoint to get detailed yearly data for a specific manager.
-
-    Args:
-        manager_name (str): The name of the manager.
-        year (str): The year to filter the details.
-
-    Returns:
-        Flask Response: JSON payload (manager yearly details or error).
-    """
-    try:
-        data = MANAGER_METADATA_MANAGER.get_manager_yearly_data(manager_name, year)
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-    response = jsonify(data)
-    response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
-    return response, 200
-
-
 @app.route('/api/managers/<string:manager_name>/head-to-head/<string:opponent_name>', defaults={'year': None}, methods=['GET'])
 @app.route('/api/managers/<string:manager_name>/head-to-head/<string:opponent_name>/<string:year>', methods=['GET'])
 def manager_head_to_head(manager_name, opponent_name, year):
@@ -351,21 +326,15 @@ def manager_head_to_head(manager_name, opponent_name, year):
     return response, 200
 
 
-@app.route('/api/managers/<string:manager_name>/transactions', defaults={'year': None, 'type': None, 'limit': 50, 'offset': 0}, methods=['GET'])
-@app.route('/api/managers/<string:manager_name>/transactions/<string:year>', defaults={'type': None, 'limit': 50, 'offset': 0}, methods=['GET'])
-@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>', defaults={'limit': 50, 'offset': 0}, methods=['GET'])
-@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>/<int:limit>', defaults={'offset': 0}, methods=['GET'])
-@app.route('/api/managers/<string:manager_name>/transactions/<string:year>/<string:type>/<int:limit>/<int:offset>', methods=['GET'])
-def manager_transactions(manager_name, year, type, limit, offset):
+@app.route('/api/managers/<string:manager_name>/transactions', defaults={'year': None}, methods=['GET'])
+@app.route('/api/managers/<string:manager_name>/transactions/<string:year>', methods=['GET'])
+def manager_transactions(manager_name, year):
     """
     Endpoint to get transaction history for a specific manager.
 
     Args:
         manager_name (str): The name of the manager.
         year (str | None): Optional year to filter transactions.
-        type (str | None): Optional transaction type to filter.
-        limit (int): Number of records to return.
-        offset (int): Offset for pagination.
 
     Returns:
         Flask Response: JSON payload (transaction history or error).
@@ -373,11 +342,9 @@ def manager_transactions(manager_name, year, type, limit, offset):
     # Convert 'all' strings to None for proper filtering
     if year == 'all':
         year = None
-    if type == 'all':
-        type = None
 
     try:
-        data = MANAGER_METADATA_MANAGER.get_manager_transactions(manager_name, year, type, limit, offset)
+        data = MANAGER_METADATA_MANAGER.get_manager_transactions(manager_name, year)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

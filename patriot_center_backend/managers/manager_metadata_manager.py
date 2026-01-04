@@ -200,21 +200,13 @@ class ManagerMetadataManager:
         """Get manager summary."""
         return self._data_exporter.get_manager_summary(manager, year=year)
     
-    def get_manager_yearly_data(self, manager: str, year: str) -> Dict:
-        """Get manager yearly data."""
-        return self._data_exporter.get_manager_yearly_data(manager, year)
-    
     def get_head_to_head(self, manager1: str, manager2: str, year: str = None) -> Dict:
         """Get head-to-head data."""
         return self._data_exporter.get_head_to_head(manager1, manager2, year=year)
     
-    def get_manager_transactions(self, manager_name: str, year: str = None, 
-                                transaction_type: str = None, limit: int = 50, 
-                                offset: int = 0) -> Dict:
+    def get_manager_transactions(self, manager_name: str, year: str = None) -> Dict:
         """Get manager transactions."""
-        return self._data_exporter.get_manager_transactions(manager_name, year=year,
-                                                            transaction_type=transaction_type,
-                                                            limit=limit, offset=offset)
+        return self._data_exporter.get_manager_transactions(manager_name, year=year)
     
     def get_manager_awards(self, manager: str) -> Dict:
         """Get manager awards."""

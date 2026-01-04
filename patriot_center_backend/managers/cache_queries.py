@@ -53,9 +53,6 @@ def get_matchup_details_from_cache(cache: dict, manager: str, year: str = None) 
                     "losses":                     0,
                     "ties":                       0,
                     "win_percentage":             0.0,
-                    "total_points_for":           0,
-                    "total_points_against":       0,
-                    "point_differential":         0,
                     "average_points_for":         0.0,
                     "average_points_against":     0.0,
                     "average_point_differential": 0.0
@@ -94,9 +91,6 @@ def get_matchup_details_from_cache(cache: dict, manager: str, year: str = None) 
             average_point_differential = float(Decimal(((total_point_differential) / num_matchups)).quantize(Decimal('0.01')))
         
 
-        matchup_data[season_state]["total_points_for"]           = total_points_for
-        matchup_data[season_state]["total_points_against"]       = total_points_against
-        matchup_data[season_state]["point_differential"]         = total_point_differential
         matchup_data[season_state]["average_points_for"]         = average_points_for
         matchup_data[season_state]["average_points_against"]     = average_points_against
         matchup_data[season_state]["average_point_differential"] = average_point_differential
@@ -218,22 +212,14 @@ def get_overall_data_details_from_cache(cache: dict, year: str, manager: str) ->
 
     # ----- Other Overall Data -----
     placements = []
-    best_finish = None
-    championships = 0
     for year in cached_overall_data.get("placement", {}):
-        if cached_overall_data["placement"][year] == 1:
-            championships += 1
-        if best_finish is None or cached_overall_data["placement"][year] < best_finish:
-            best_finish = cached_overall_data["placement"][year]
         placement_item = {
             "year": year,
             "placement": cached_overall_data["placement"][year]
         }
         placements.append(placement_item)
 
-    overall_data["placements"]    = placements
-    overall_data["best_finish"]   = best_finish if best_finish is not None else 0
-    overall_data["championships"] = championships
+    overall_data["placements"] = placements
 
     return deepcopy(overall_data)
 
@@ -242,10 +228,7 @@ def get_ranking_details_from_cache(cache: dict, manager: str, valid_options_cach
                                    manager_summary_usage: bool = False, active_only: bool = True,
                                    year: str = None) -> Dict:
     """Get ranking details from cache."""
-    # PASTE LINES 1303-1410 HERE
-    returning_dictionary = {
-        "best": 1
-    }
+    returning_dictionary = {}
     
     manager_rankings = {
         "win_percentage": [],
@@ -388,26 +371,11 @@ def get_head_to_head_details_from_cache(cache: dict, manager: str,
     
     return deepcopy(head_to_head_data)
 
-def get_weekly_trade_details_from_cache(cache: dict, year: str, week: str,
-                                        manager: str, transaction_ids_cache: dict,
-                                        image_urls_cache: dict, players_cache: dict,
-                                        player_ids: dict) -> List:
-    """Get weekly trade details from cache."""
-    weekly_trade_transaction_ids = deepcopy(cache.get(manager, {}).get("years", {}).get(year, {}).get("weeks", {}).get(week, {}).get("transactions", {}).get("trades", {}).get("transaction_ids", []))
-
-    trades = []
-    for transaction_id in weekly_trade_transaction_ids:
-        trades.append(get_trade_card(transaction_id, transaction_ids_cache, image_urls_cache, players_cache, player_ids, cache))
-    
-    return trades
-
-
 def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: str, 
                                         players_cache: dict, player_ids: dict,
                                         image_urls_cache: dict,  starters_cache, year: str = None,
                                         list_all_matchups: bool = False) -> Dict:
     """Get overall head-to-head record between two managers."""
-    # PASTE LINES 1480-1661 HERE
     if list_all_matchups:
         years = list(cache[manager1].get("years", {}).keys())
         if year:
@@ -585,7 +553,6 @@ def get_trade_history_between_two_managers(cache: dict, manager1: str, manager2:
                                            image_urls_cache: dict, players_cache: dict,
                                            player_ids: dict, year: str = None) -> List:
     """Get full trade history between two managers."""
-    # PASTE LINES 1665-1703 HERE
     # Call get_trade_card from formatters
     years = list(cache[manager1].get("years", {}).keys())
     if year:
@@ -688,9 +655,7 @@ def get_manager_score_awards_from_cache(cache: dict, manager: str, players_cache
                                         player_ids: dict, image_urls_cache: dict,
                                         starters_cache: dict) -> Dict:
     """Get manager scoring awards from cache."""
-    # PASTE LINES 1789-1858 HERE
     score_awards = {}
-
 
     highest_weekly_score = {}
     lowest_weekly_score = {}

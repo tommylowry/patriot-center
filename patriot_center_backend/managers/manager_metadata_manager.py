@@ -24,15 +24,32 @@ from patriot_center_backend.managers.formatters import get_season_state
 
 class ManagerMetadataManager:
     """
-    Main orchestrator for manager metadata operations.
-    
-    Coordinates between:
-    - TransactionProcessor: Handles transaction processing
-    - MatchupProcessor: Handles matchup/playoff processing
-    - DataExporter: Provides public read API
-    - CacheManager: Handles persistence
+    Central orchestrator for all manager metadata operations (Singleton).
+
+    This is the ONLY entry point for manager metadata management.
+    Coordinates between specialized processors and manages cache persistence.
+
+    Architecture:
+    - Singleton pattern ensures single source of truth
+    - Facade pattern provides simplified API
+    - Lazy initialization for processors (created when configuration known)
+    - Session state management during week processing
+
+    Coordinates:
+    - TransactionProcessor: Handles trades, adds, drops, FAAB, reversal detection
+    - MatchupProcessor: Handles matchups, win/loss records, playoff tracking
+    - DataExporter: Provides public read-only API
+    - CacheManager: Handles cache loading/saving
+
+    Workflow:
+    1. set_roster_id() - Called for each manager to establish roster mapping
+    2. cache_week_data() - Processes transactions and matchups for the week
+    3. set_playoff_placements() - Records final season standings
+    4. save() - Persists all caches to disk
+
+    Access via get_manager_metadata_manager() singleton function.
     """
-    
+
     def __init__(self):
         # Get cache manager instance
         self._cache_mgr = get_cache_manager()
@@ -82,7 +99,16 @@ class ManagerMetadataManager:
         self._matchup_processor: Optional[MatchupProcessor] = None
     
     def _ensure_processors_initialized(self) -> None:
-        """Lazy initialization of processors once configuration is known."""
+        """
+        Lazy initialization of processors once league configuration is known.
+
+        Processors require use_faab and playoff_week_start, which are fetched
+        during the first set_roster_id() call. This ensures processors are
+        only created after configuration is available.
+
+        Raises:
+            ValueError: If use_faab not set before initialization attempt
+        """
         if self._transaction_processor is None:
             if self._use_faab is None:
                 raise ValueError("Cannot initialize processors before use_faab is set")
@@ -104,7 +130,24 @@ class ManagerMetadataManager:
     
     def set_roster_id(self, manager: str, year: str, week: str, roster_id: int,
                      playoff_roster_ids: dict = {}, matchups: dict = {}) -> None:
-        """Set the roster ID for a given manager and year."""
+        """
+        Establish roster ID mapping and initialize manager data structures.
+
+        Must be called for each manager before cache_week_data().
+        On first call (week 1), fetches league settings to determine FAAB usage
+        and playoff configuration.
+
+        Args:
+            manager: Manager name
+            year: Season year as string
+            week: Week number as string
+            roster_id: Sleeper roster ID for this manager (None for co-managers)
+            playoff_roster_ids: Dict with playoff bracket roster IDs (optional)
+            matchups: Matchup data for updating players cache (optional)
+
+        Raises:
+            ValueError: If user data fetch fails or no username mapping found
+        """
         if roster_id == None:
             # Co-manager scenario; skip
             return
@@ -138,7 +181,25 @@ class ManagerMetadataManager:
                 raise ValueError(f"No username mapping found for manager {manager}.")
     
     def cache_week_data(self, year: str, week: str) -> None:
-        """Cache week-specific data for a given week and year."""
+        """
+        Process and cache all data for a specific week.
+
+        Main orchestration method that:
+        1. Validates preconditions (roster IDs set, even number of teams, etc.)
+        2. Initializes processors if needed
+        3. Processes transactions (trades, adds, drops, FAAB)
+        4. Checks for transaction reversals
+        5. Processes matchups (win/loss records, points)
+        6. Processes playoff appearances (if playoff week)
+        7. Clears session state to prevent leakage
+
+        Args:
+            year: Season year as string
+            week: Week number as string
+
+        Raises:
+            ValidationError: If preconditions not met
+        """
         validate_caching_preconditions(self._weekly_roster_ids, year, week)
 
         self._ensure_processors_initialized()
@@ -182,7 +243,16 @@ class ManagerMetadataManager:
 
     
     def set_playoff_placements(self, placement_dict: dict, year: str) -> None:
-        """Set playoff placements for managers."""
+        """
+        Record final season placements for all managers.
+
+        Should be called after season completion to record final standings.
+        Only sets placement if not already set for the year (prevents overwrites).
+
+        Args:
+            placement_dict: Dict mapping manager names to placement (1=champion, 2=runner-up, etc.)
+            year: Season year as string
+        """
         for manager in placement_dict:
             if manager not in self._cache:
                 continue
@@ -223,7 +293,20 @@ class ManagerMetadataManager:
     # ========== PRIVATE HELPER METHODS ==========
     
     def _set_defaults_if_missing(self, roster_id: int):
-        """Set default cache structure if missing."""
+        """
+        Initialize cache structure for manager/year/week if not already present.
+
+        Creates:
+        - Manager entry (if first time seen)
+        - Year entry (if new season)
+        - Week entry (with appropriate template for playoff vs regular season)
+        - FAAB template (if league uses FAAB)
+
+        Uses deep copies of templates to prevent reference sharing.
+
+        Args:
+            roster_id: Roster ID to map to manager name
+        """
         if not self._templates:
             self._templates = initialize_summary_templates(use_faab=self._use_faab)
 
@@ -253,7 +336,12 @@ class ManagerMetadataManager:
             self._cache = initialize_faab_template(manager, self._year, self._week, self._cache)
     
     def _clear_weekly_metadata(self):
-        """Clear weekly session state."""
+        """
+        Clear weekly session state after processing.
+
+        Resets year, week, and roster ID mappings to prevent state leakage.
+        Also clears processor session state if processors exist.
+        """
         if self._year == "2024" and self._week == "17":
             self._weekly_roster_ids = {}
         self._week = None

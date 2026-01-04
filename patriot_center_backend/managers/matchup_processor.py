@@ -15,16 +15,22 @@ from patriot_center_backend.managers.formatters import get_season_state
 class MatchupProcessor:
     """
     Processes fantasy football matchups and playoff data.
-    
-    This class handles weekly matchup ingestion and playoff bracket processing.
+
+    Handles:
+    - Fetching matchup data from Sleeper API
+    - Determining matchup results (win/loss/tie)
+    - Updating cache at 4 levels (weekly, yearly-overall, yearly-season-state, all-time)
+    - Tracking playoff appearances
+
+    Uses session state pattern for thread safety during week processing.
     """
-    
+
     def __init__(self, cache: dict, playoff_week_start: Optional[int]):
         """
-        Initialize matchup processor.
-        
+        Initialize matchup processor with cache reference.
+
         Args:
-            cache: Main manager metadata cache (will be modified)
+            cache: Main manager metadata cache (will be modified in-place)
             playoff_week_start: Week when playoffs start (from league settings)
         """
         self._cache = cache
@@ -38,7 +44,18 @@ class MatchupProcessor:
     
     def set_session_state(self, year: str, week: str, weekly_roster_ids: Dict[int, str],
                          playoff_roster_ids: Dict[int, str], playoff_week_start: int) -> None:
-        """Set session state before processing matchups."""
+        """
+        Set session state before processing matchup data.
+
+        Must be called before scrub_matchup_data() to establish context.
+
+        Args:
+            year: Season year as string
+            week: Week number as string
+            weekly_roster_ids: Mapping of roster IDs to manager names for this week
+            playoff_roster_ids: Dict with playoff bracket roster IDs
+            playoff_week_start: Week when playoffs start
+        """
         self._year = year
         self._week = week
         self._weekly_roster_ids = weekly_roster_ids
@@ -46,7 +63,11 @@ class MatchupProcessor:
         self._playoff_week_start = playoff_week_start
     
     def clear_session_state(self) -> None:
-        """Clear session state after processing week."""
+        """
+        Clear session state after processing week.
+
+        Prevents state leakage between weeks by resetting all session variables.
+        """
         self._year = None
         self._week = None
         self._weekly_roster_ids = {}
@@ -54,11 +75,21 @@ class MatchupProcessor:
 
     def scrub_matchup_data(self, year: str, week: str) -> None:
         """
-        Scrub and process matchup data for a given week.
-        
+        Fetch and process all matchups for a given week.
+
+        Workflow:
+        1. Fetch matchup data from Sleeper API
+        2. Filter out non-playoff teams if in playoff weeks
+        3. Pair managers by matchup_id
+        4. Determine win/loss/tie based on points
+        5. Update cache for both managers via _add_matchup_details_to_cache
+
         Args:
-            year: Season year
-            week: Week number
+            year: Season year as string
+            week: Week number as string
+
+        Raises:
+            ValueError: If no league ID found for the year
         """
         league_id = LEAGUE_IDS.get(int(year), "")
         if not league_id:
@@ -117,7 +148,28 @@ class MatchupProcessor:
             self._add_matchup_details_to_cache(manager_2)
     
     def _add_matchup_details_to_cache(self, matchup_data: dict) -> None:
-        """Add matchup details to cache."""
+        """
+        Update cache with matchup results at all aggregation levels.
+
+        Updates cache at 4 levels:
+        1. Weekly summary (specific opponent and result)
+        2. Yearly overall summary (all matchups that year)
+        3. Yearly season-state summary (regular season OR playoffs)
+        4. Top-level overall summary (all-time stats)
+
+        For each level, updates:
+        - Points for/against (total and opponent-specific)
+        - Total matchups count
+        - Wins/losses/ties (total and opponent-specific)
+
+        Uses Decimal for precise point quantization to 2 decimal places.
+
+        Args:
+            matchup_data: Dict with manager, opponent_manager, points_for, points_against, result
+
+        Raises:
+            ValueError: If matchup data is invalid or missing required fields
+        """
         manager = matchup_data.get("manager", None)
         opponent_manager = matchup_data.get("opponent_manager", None)
         points_for = matchup_data.get("points_for", 0.0)
@@ -191,7 +243,10 @@ class MatchupProcessor:
     
     def scrub_playoff_data(self) -> None:
         """
-        Scrub playoff data and update placements.
+        Mark playoff appearances for all teams in the playoff bracket.
+
+        Adds the current year to each playoff team's playoff_appearances list
+        if not already present. This is used for awards and playoff streak tracking.
         """
         for roster_ids in self._playoff_roster_ids.get("round_roster_ids", []):
             manager = self._weekly_roster_ids.get(roster_ids, None)

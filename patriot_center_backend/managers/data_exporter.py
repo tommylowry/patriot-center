@@ -26,22 +26,30 @@ from patriot_center_backend.managers.formatters import get_image_url, get_trade_
 
 class DataExporter:
     """
-    Exports manager metadata in various formats.
-    
-    This class provides the public API for reading manager data.
-    All methods are read-only.
+    Exports manager metadata in various formats for API consumption.
+
+    Provides public read-only API for accessing manager data including:
+    - Manager lists with rankings
+    - Comprehensive manager summaries
+    - Head-to-head matchup histories
+    - Transaction histories
+    - Manager awards and achievements
+
+    All methods delegate to cache_queries for data extraction.
     """
-    
+
     def __init__(self, cache: dict, transaction_ids_cache: dict, players_cache: dict,
                  valid_options_cache: dict, starters_cache: dict, player_ids: dict):
         """
-        Initialize data exporter.
-        
+        Initialize data exporter with required caches.
+
         Args:
             cache: Main manager metadata cache (read-only)
             transaction_ids_cache: Transaction ID cache (read-only)
             players_cache: Player cache (read-only)
-            player_ids: Player ID mapping (read-only)
+            valid_options_cache: Valid options cache by year (read-only)
+            starters_cache: Starting lineup cache (read-only)
+            player_ids: Player ID to metadata mapping (read-only)
         """
         self._cache = cache
         self._transaction_ids_cache = transaction_ids_cache
@@ -52,7 +60,23 @@ class DataExporter:
         self._image_urls_cache: Dict[str, str] = {}  # Mutable cache for image URLs
     
     def get_managers_list(self, active_only: bool) -> Dict[str, Any]:
-        """Get list of all manager names."""
+        """
+        Get list of all managers with key stats and rankings.
+
+        Returns formatted manager list including:
+        - Basic info (name, image, years active)
+        - Record (wins/losses/ties, win percentage)
+        - Transaction totals (trades, adds, drops)
+        - Placements (championships, playoff appearances, best finish)
+        - Rankings across categories
+        - Weight for sorting (prioritizes championships, then playoffs, then points)
+
+        Args:
+            active_only: If True, only return currently active managers
+
+        Returns:
+            Dictionary with "managers" list, sorted by weight (best managers first)
+        """
         current_year = str(max(LEAGUE_IDS.keys()))
         
         managers = self._valid_options_cache[current_year]["managers"]
@@ -139,7 +163,27 @@ class DataExporter:
         return { "managers": managers_list }
     
     def get_manager_summary(self, manager: str, year: str = None) -> Dict:
-        """Get comprehensive manager summary for a specific week."""
+        """
+        Get comprehensive manager summary with all statistics and rankings.
+
+        Includes:
+        - Basic info (name, image, years active)
+        - Matchup data (record, averages by season state)
+        - Transaction summary (trades, adds, drops, FAAB)
+        - Overall data (placements, playoff appearances)
+        - Rankings across all categories
+        - Head-to-head records against all opponents
+
+        Args:
+            manager: Manager name
+            year: Season year (optional - defaults to all-time stats)
+
+        Returns:
+            Comprehensive manager summary dictionary
+
+        Raises:
+            ValueError: If manager or year not found in cache
+        """
         if manager not in self._cache:
             raise ValueError(f"Manager {manager} not found in cache.")
         
@@ -165,7 +209,25 @@ class DataExporter:
     
     
     def get_head_to_head(self, manager1: str, manager2: str, year: str = None) -> Dict:
-        """Get head-to-head matchup history between two managers."""
+        """
+        Get complete head-to-head analysis between two managers.
+
+        Includes:
+        - Overall statistics (record, margins, last wins, biggest blowouts)
+        - Complete matchup history (all games with scores and performers)
+        - Trade history between the two managers
+
+        Args:
+            manager1: First manager name
+            manager2: Second manager name
+            year: Season year (optional - defaults to all-time)
+
+        Returns:
+            Dictionary with overall stats, matchup_history, and trades_between
+
+        Raises:
+            ValueError: If manager or year not found in cache
+        """
         return_dict = {}
         
         for manager in [manager1, manager2]:
@@ -210,7 +272,26 @@ class DataExporter:
         return deepcopy(return_dict)
     
     def get_manager_transactions(self, manager_name: str, year: str = None) -> dict:
-        """Get manager transaction history."""
+        """
+        Get complete transaction history for a manager.
+
+        Returns all transactions (trades, adds, drops, add_and_drops) with details.
+        Transactions include:
+        - Trades: All players/assets exchanged
+        - Adds: Players added with FAAB spent
+        - Drops: Players dropped
+        - Add_and_drops: Combined add/drop transactions
+
+        Args:
+            manager_name: Manager name
+            year: Season year (optional - defaults to all-time)
+
+        Returns:
+            Dictionary with name, total_count, and transactions list (newest first)
+
+        Raises:
+            ValueError: If manager or year not found in cache
+        """
         if manager_name not in self._cache:
             raise ValueError(f"Manager {manager_name} not found in cache.")
         if year:
@@ -326,7 +407,25 @@ class DataExporter:
 
     
     def get_manager_awards(self, manager: str) -> Dict:
-        """Get all awards for a manager."""
+        """
+        Get all career awards and achievements for a manager.
+
+        Includes:
+        - Placements (1st/2nd/3rd place finishes)
+        - Playoff appearances
+        - Trade records (most trades in a year)
+        - FAAB records (biggest bid)
+        - Scoring records (highest/lowest weeks, biggest blowouts)
+
+        Args:
+            manager: Manager name
+
+        Returns:
+            Dictionary with manager info and all awards
+
+        Raises:
+            ValueError: If manager not found in cache
+        """
         if manager not in self._cache:
             raise ValueError(f"Manager {manager} not found in cache.")
         

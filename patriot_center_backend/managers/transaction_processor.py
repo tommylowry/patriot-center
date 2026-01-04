@@ -19,23 +19,36 @@ from patriot_center_backend.managers.utilities import update_players_cache, draf
 
 class TransactionProcessor:
     """
-    Processes fantasy football transactions (trades, adds, drops, waivers).
-    
-    This class is tightly coupled to transaction logic and maintains state
-    during transaction processing.
+    Processes fantasy football transactions with reversal detection and FAAB tracking.
+
+    Handles:
+    - Trade processing (multi-party, draft picks, FAAB)
+    - Add/drop/waiver processing
+    - Transaction reversal detection (joke trades, accidental transactions)
+    - FAAB spending and trading
+    - Transaction deduplication
+    - Cache updates at 3 levels (weekly, yearly, all-time)
+
+    Key Features:
+    - Detects and reverts reversed transactions (same managers, opposite players)
+    - Tracks FAAB spent on waivers and traded between managers
+    - Handles commissioner actions separately
+    - Maintains global transaction ID cache for deduplication
+
+    Uses session state pattern for thread safety during week processing.
     """
-    
+
     def __init__(self, cache: dict, transaction_ids_cache: dict, players_cache: dict,
                  player_ids: dict, use_faab: bool):
         """
-        Initialize transaction processor.
-        
+        Initialize transaction processor with cache references.
+
         Args:
-            cache: Main manager metadata cache (will be modified)
-            transaction_ids_cache: Transaction ID deduplication cache (will be modified)
-            players_cache: Player cache (will be modified)
-            player_ids: Player ID mapping (read-only)
-            use_faab: Whether league uses FAAB
+            cache: Main manager metadata cache (will be modified in-place)
+            transaction_ids_cache: Transaction ID deduplication cache (will be modified in-place)
+            players_cache: Player cache (will be modified in-place)
+            player_ids: Player ID to metadata mapping (read-only)
+            use_faab: Whether league uses FAAB (Free Agent Acquisition Budget)
         """
         self._cache = cache
         self._transaction_ids_cache = transaction_ids_cache
@@ -50,7 +63,17 @@ class TransactionProcessor:
         self._weekly_transaction_ids: List[Dict[str, Any]] = []
     
     def set_session_state(self, year: str, week: str, weekly_roster_ids: Dict[int, str], use_faab: bool) -> None:
-        """Set session state before processing transactions."""
+        """
+        Set session state before processing transaction data.
+
+        Must be called before scrub_transaction_data() to establish context.
+
+        Args:
+            year: Season year as string
+            week: Week number as string
+            weekly_roster_ids: Mapping of roster IDs to manager names for this week
+            use_faab: Whether FAAB is used this season
+        """
         self._year = year
         self._week = week
         self._weekly_roster_ids = weekly_roster_ids
@@ -58,11 +81,20 @@ class TransactionProcessor:
     
     def scrub_transaction_data(self, year: str, week: str) -> None:
         """
-        Scrub and process all transactions for a given week.
-        
+        Fetch and process all transactions for a given week.
+
+        Workflow:
+        1. Fetch transactions from Sleeper API
+        2. Reverse order (Sleeper returns newest first, we want oldest first)
+        3. Process each transaction via _process_transaction
+        4. Transactions are validated, categorized, and cached
+
         Args:
-            year: Season year
-            week: Week number
+            year: Season year as string
+            week: Week number as string
+
+        Raises:
+            ValueError: If no league ID found for the year
         """
         league_id = LEAGUE_IDS.get(int(year), "")
         if not league_id:
@@ -84,7 +116,20 @@ class TransactionProcessor:
         self._weekly_transaction_ids = []
     
     def check_for_reverse_transactions(self) -> None:
-        """Check for and revert reversed transactions."""
+        """
+        Detect and revert reversed transactions (joke trades or accidental transactions).
+
+        Compares all weekly transactions to find pairs that undo each other:
+        - Same managers involved
+        - Same players involved
+        - Opposite directions (player moved from A→B then B→A)
+
+        Handles two cases:
+        1. Commissioner add/drop reversals (accident correction)
+        2. Trade reversals (joke trades or mistakes)
+
+        Reverted transactions are removed from cache and transaction ID list.
+        """
         while len(self._weekly_transaction_ids) > 1:
             weekly_transaction_ids = deepcopy(self._weekly_transaction_ids)
             
@@ -93,12 +138,14 @@ class TransactionProcessor:
 
             for transaction_id2 in weekly_transaction_ids:
                 transaction2 = self._transaction_ids_cache[transaction_id2]
-                
+
+                # Skip if different managers involved
                 if sorted(transaction1['managers_involved']) != sorted(transaction2['managers_involved']):
                     continue
-                
-                # Commish add/drop, if a player is added or dropped by commish, see if the opposite is true in a transaction and cancel them both out
-                # as this was probably an accident and not a true transaction.
+
+                # Check for commissioner add/drop reversals
+                # If commissioner adds/drops a player, then opposite action occurs,
+                # this was likely an accident - revert both transactions
                 if transaction1["commish_action"]:
                     if "add" in transaction1:
                         if transaction1["add"] == transaction2.get("drop", ""):
@@ -140,13 +187,15 @@ class TransactionProcessor:
                             if trans_2_removed:
                                 continue
                 
-                # add drop taken care of above, it can only be a trade to be invalid
+                # Check for trade reversals (joke trades or immediate regret)
+                # Both must be trades with same players, but opposite directions
                 if "trade" not in transaction1["types"] or "trade" not in transaction2["types"]:
                     continue
 
                 if sorted(transaction1['players_involved']) != sorted(transaction2['players_involved']):
                     continue
-                
+
+                # If same players and trade details match (opposite directions), it's a reversal
                 if sorted(list(transaction1['trade_details'].keys())) == sorted(list(transaction2['trade_details'].keys())):
                     
                     invalid_transaction = True
@@ -168,7 +217,19 @@ class TransactionProcessor:
                 self._weekly_transaction_ids.remove(transaction_id1)
 
     def _process_transaction(self, transaction: dict) -> None:
-        """Process a single transaction."""
+        """
+        Process a single transaction by categorizing and routing to appropriate handler.
+
+        Workflow:
+        1. Determine transaction type (trade, add_or_drop, waiver, commissioner)
+        2. Normalize type (free_agent/waiver → add_or_drop)
+        3. Detect commissioner actions
+        4. Validate transaction
+        5. Route to appropriate processor (_process_trade_transaction or _process_add_or_drop_transaction)
+
+        Args:
+            transaction: Raw transaction data from Sleeper API
+        """
         transaction_type = transaction.get("type", "")
         commish_action = False
 
@@ -202,7 +263,16 @@ class TransactionProcessor:
         process_transaction_type(transaction, commish_action)
 
     def _revert_trade_transaction(self, transaction_id1: str, transaction_id2) -> None:
-        """Revert a trade transaction."""
+        """
+        Revert two trade transactions that cancel each other out.
+
+        Removes both transactions from cache at all levels (weekly, yearly, all-time)
+        and removes from transaction ID list. Used for joke trades or accidental trades.
+
+        Args:
+            transaction_id1: First transaction ID to revert
+            transaction_id2: Second transaction ID to revert
+        """
         transaction = deepcopy(self._transaction_ids_cache[transaction_id1])
         
         year = transaction['year']
@@ -310,7 +380,22 @@ class TransactionProcessor:
             self._weekly_transaction_ids.remove(transaction_id2)
     
     def _revert_add_drop_transaction(self, transaction_id: str, transaction_type: str) -> bool:
-        """Revert an add/drop transaction."""
+        """
+        Revert a specific add or drop from a transaction (used for commissioner reversals).
+
+        Decrements counts in cache at all levels and removes from transaction lists.
+        Handles FAAB spent if applicable. Returns whether transaction was fully removed.
+
+        Args:
+            transaction_id: Transaction ID to revert
+            transaction_type: Either "add" or "drop" to specify which portion to revert
+
+        Returns:
+            True if transaction was completely removed from cache, False otherwise
+
+        Raises:
+            Exception: If transaction involves multiple managers (unexpected)
+        """
         if transaction_type != "add" and transaction_type != "drop":
             print(f"Cannot revert type {transaction_type} in _revert_add_or_drop_transaction for transaction_id {transaction_id}")
             return
@@ -383,7 +468,23 @@ class TransactionProcessor:
 
     
     def _process_trade_transaction(self, transaction: dict, commish_action: bool) -> None:
-        """Process a trade transaction."""
+        """
+        Process a trade transaction involving multiple managers, players, picks, and FAAB.
+
+        Handles:
+        - Multi-party trades (2+ managers)
+        - Player swaps
+        - Draft pick exchanges
+        - FAAB trading between managers
+        - Commissioner forced trades
+
+        For each manager involved, determines what they acquired vs sent,
+        then updates cache and adds to transaction IDs cache.
+
+        Args:
+            transaction: Raw trade transaction from Sleeper API
+            commish_action: Whether this is a commissioner-forced trade
+        """
         for roster_id in transaction.get("roster_ids", []):
             manager = self._weekly_roster_ids.get(roster_id, None)
 
@@ -466,8 +567,22 @@ class TransactionProcessor:
     def _add_trade_details_to_cache(self, manager: str, trade_partners: list,
                                     acquired: dict, sent: dict,
                                     transaction_id: str, commish_action: bool) -> None:
-        """Add trade details to cache."""
-        # PASTE LINES 2747-2812 from original manager_metadata_manager.py
+        """
+        Update cache with trade details at all aggregation levels.
+
+        Updates cache at 3 levels (weekly, yearly, all-time) with:
+        - Total trade count
+        - Trade partner counts
+        - Players acquired/sent (with partner tracking)
+
+        Args:
+            manager: Manager name
+            trade_partners: List of other managers involved in trade
+            acquired: Dict of {player/asset: previous_owner} acquired by manager
+            sent: Dict of {player/asset: new_owner} sent by manager
+            transaction_id: Unique transaction ID
+            commish_action: Whether this is a commissioner-forced trade
+        """
         player_initial_dict = {
             "total": 0,
             "trade_partners": {
@@ -536,7 +651,22 @@ class TransactionProcessor:
 
     
     def _process_add_or_drop_transaction(self, transaction: dict, commish_action: bool) -> None:
-        """Process an add or drop transaction."""
+        """
+        Process add/drop transactions (waivers, free agents, commissioner actions).
+
+        Handles:
+        - Waiver claims (with FAAB bidding)
+        - Free agent pickups
+        - Player drops
+        - Commissioner manual adds/drops
+
+        For each add, tracks player and FAAB spent (if applicable).
+        For each drop, tracks player only.
+
+        Args:
+            transaction: Raw add/drop transaction from Sleeper API
+            commish_action: Whether this is a commissioner action
+        """
         adds  = transaction.get("adds", {})
         drops = transaction.get("drops", {})
 
@@ -583,7 +713,24 @@ class TransactionProcessor:
                                          player_name: str, transaction_id: str,
                                          commish_action: bool,
                                          waiver_bid: int|None = None) -> None:
-        """Add add/drop details to cache."""
+        """
+        Update cache with add or drop details at all aggregation levels.
+
+        Updates cache at 3 levels (weekly, yearly, all-time) with:
+        - Total add/drop count
+        - Player-specific counts
+
+        Args:
+            free_agent_type: Either "add" or "drop"
+            manager: Manager name
+            player_name: Full player name
+            transaction_id: Unique transaction ID
+            commish_action: Whether this is a commissioner action
+            waiver_bid: FAAB amount bid (for adds only)
+
+        Returns:
+            Weekly summary dictionary
+        """
         if free_agent_type not in ["add", "drop"]:
             return
 
@@ -624,7 +771,26 @@ class TransactionProcessor:
                                    player_name: str, faab_amount: int,
                                    transaction_id: str,
                                    trade_partner: str = None) -> None:
-        """Add FAAB details to cache."""
+        """
+        Update cache with FAAB spending and trading details.
+
+        Handles two types of FAAB transactions:
+        1. Waiver/free agent: FAAB spent on player acquisitions
+        2. Trade: FAAB traded between managers (can be positive or negative)
+
+        Updates cache at 3 levels (weekly, yearly, all-time) with:
+        - Total FAAB lost/gained
+        - Player-specific FAAB spent (for waivers)
+        - Trade partner FAAB exchanges (for trades)
+
+        Args:
+            transaction_type: "waiver", "free_agent", "commissioner", or "trade"
+            manager: Manager name
+            player_name: Player name (for waivers) or "FAAB" (for trades)
+            faab_amount: Amount of FAAB (positive for spent/sent, negative for received in trade)
+            transaction_id: Unique transaction ID
+            trade_partner: Other manager in FAAB trade (required for trades)
+        """
         if transaction_type == "trade" and trade_partner is None:
             print("Trade transaction missing trade partner for FAAB processing:", transaction_type, manager, player_name, faab_amount, transaction_id)
             return
@@ -683,8 +849,29 @@ class TransactionProcessor:
         weekly_summary["transaction_ids"].append(transaction_id)
     
     def _add_to_transaction_ids_cache(self, transaction_info: dict, commish_action: bool) -> None:
-        """Add transaction to deduplication cache."""
-        # PASTE LINES 3053-3162 HERE
+        """
+        Add transaction to global transaction IDs cache for deduplication and reversal detection.
+
+        Creates comprehensive transaction record including:
+        - Year, week, transaction type
+        - Managers involved
+        - Players/assets involved
+        - Trade details (for trades)
+        - Add/drop details (for add_or_drop)
+        - Commissioner action flag
+
+        This cache enables:
+        1. Deduplication (prevent processing same transaction twice)
+        2. Reversal detection (detect joke trades/accidental transactions)
+        3. Transaction history tracking
+
+        Args:
+            transaction_info: Dict with transaction details (type, manager, etc.)
+            commish_action: Whether this is a commissioner action
+
+        Raises:
+            ValueError: If required fields missing from transaction_info
+        """
         transaction_type = transaction_info.get("type", "")
         if not transaction_type:
             raise ValueError(f"Transaction type not found in transaction_info: {transaction_info}")

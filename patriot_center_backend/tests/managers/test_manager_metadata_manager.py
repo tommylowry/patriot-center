@@ -127,21 +127,31 @@ class TestSetRosterId:
 
     @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
     @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    def test_set_roster_id_creates_manager_entry(self, mock_fetch, manager):
-        """Test that set_roster_id creates manager entry if not exists."""
+    def test_set_roster_id_calls_set_defaults(self, mock_fetch, manager):
+        """Test that set_roster_id calls _set_defaults_if_missing."""
         mock_fetch.side_effect = [
             ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
             ({"user_id": "user123"}, 200)
         ]
 
-        manager.set_roster_id(
-            manager="Manager 1",
-            year="2023",
-            week="1",
-            roster_id=1
-        )
+        with patch.object(manager, '_set_defaults_if_missing') as mock_defaults:
+            # Need to set up minimal cache structure since _set_defaults_if_missing is mocked
+            from patriot_center_backend.managers.templates import initialize_summary_templates
+            templates = initialize_summary_templates(use_faab=True)
+            manager._cache["Manager 1"] = {
+                "summary": templates['top_level_summary_template'],
+                "years": {"2023": {"summary": {}, "roster_id": None, "weeks": {}}}
+            }
 
-        assert "Manager 1" in manager._cache
+            manager.set_roster_id(
+                manager="Manager 1",
+                year="2023",
+                week="1",
+                roster_id=1
+            )
+
+            # Should call _set_defaults_if_missing
+            mock_defaults.assert_called_once_with(1)
 
     @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
     @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
@@ -407,28 +417,96 @@ class TestSave:
 
 
 class TestSetDefaultsIfMissing:
-    """Test _set_defaults_if_missing method."""
+    """Test _set_defaults_if_missing method - unit tests calling function directly."""
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    def test_set_defaults_creates_manager_entry(self, mock_fetch, manager):
-        """Test that defaults are set for new manager."""
-        mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
-        ]
+    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
+    def test_set_defaults_creates_manager_entry(self, mock_season_state, manager):
+        """Test _set_defaults_if_missing creates manager entry if not exists."""
+        mock_season_state.return_value = "regular_season"
+        manager._year = "2023"
+        manager._week = "1"
+        manager._use_faab = True
+        manager._playoff_week_start = 15
+        manager._playoff_roster_ids = []
+        manager._weekly_roster_ids[1] = "Manager 1"
 
-        manager.set_roster_id("Manager 1", "2023", "1", 1)
+        # Call directly
+        manager._set_defaults_if_missing(1)
 
+        # Should create manager entry
         assert "Manager 1" in manager._cache
+        assert "summary" in manager._cache["Manager 1"]
+        assert "years" in manager._cache["Manager 1"]
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    def test_set_defaults_skips_existing_manager(self, mock_fetch, manager):
-        """Test that existing manager is not overwritten."""
+    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
+    def test_set_defaults_creates_year_entry(self, mock_season_state, manager):
+        """Test _set_defaults_if_missing creates year entry if not exists."""
+        mock_season_state.return_value = "regular_season"
+        manager._year = "2023"
+        manager._week = "1"
+        manager._use_faab = True
+        manager._playoff_week_start = 15
+        manager._playoff_roster_ids = []
+        manager._weekly_roster_ids[1] = "Manager 1"
+
+        # Call directly
+        manager._set_defaults_if_missing(1)
+
+        # Should create year entry
+        assert "2023" in manager._cache["Manager 1"]["years"]
+        assert "summary" in manager._cache["Manager 1"]["years"]["2023"]
+        assert "weeks" in manager._cache["Manager 1"]["years"]["2023"]
+
+    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
+    def test_set_defaults_creates_week_entry(self, mock_season_state, manager):
+        """Test _set_defaults_if_missing creates week entry with correct template."""
+        mock_season_state.return_value = "regular_season"
+        manager._year = "2023"
+        manager._week = "1"
+        manager._use_faab = True
+        manager._playoff_week_start = 15
+        manager._playoff_roster_ids = []
+        manager._weekly_roster_ids[1] = "Manager 1"
+
+        # Call directly
+        manager._set_defaults_if_missing(1)
+
+        # Should create week entry with matchup_data
+        assert "1" in manager._cache["Manager 1"]["years"]["2023"]["weeks"]
+        assert "matchup_data" in manager._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]
+
+    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
+    def test_set_defaults_uses_playoff_template_when_not_in_playoffs(self, mock_season_state, manager):
+        """Test _set_defaults_if_missing uses playoff template for non-playoff teams."""
+        mock_season_state.return_value = "playoffs"
+        manager._year = "2023"
+        manager._week = "15"
+        manager._use_faab = True
+        manager._playoff_week_start = 15
+        manager._playoff_roster_ids = [2, 3]  # Roster 1 is NOT in playoffs
+        manager._weekly_roster_ids[1] = "Manager 1"
+
+        # Call directly
+        manager._set_defaults_if_missing(1)
+
+        # Should use weekly_summary_not_in_playoffs_template (empty matchup_data)
+        week_data = manager._cache["Manager 1"]["years"]["2023"]["weeks"]["15"]
+        assert week_data["matchup_data"] == {}
+
+    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
+    def test_set_defaults_skips_existing_entries(self, mock_season_state, manager):
+        """Test _set_defaults_if_missing does not overwrite existing data."""
         from patriot_center_backend.managers.templates import initialize_summary_templates
 
-        # Initialize with proper template structure
+        mock_season_state.return_value = "regular_season"
+        manager._year = "2023"
+        manager._week = "1"
+        manager._use_faab = True
+        manager._playoff_week_start = 15
+        manager._playoff_roster_ids = []
+        manager._weekly_roster_ids[1] = "Manager 1"
+
+        # Initialize with proper template structure plus custom data
         templates = initialize_summary_templates(use_faab=True)
         manager._cache["Manager 1"] = {
             "existing": "data",
@@ -436,15 +514,32 @@ class TestSetDefaultsIfMissing:
             "years": {}
         }
 
-        mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
-        ]
-
-        manager.set_roster_id("Manager 1", "2023", "1", 1)
+        # Call directly
+        manager._set_defaults_if_missing(1)
 
         # Should not overwrite existing key
         assert manager._cache["Manager 1"]["existing"] == "data"
+
+    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
+    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
+    def test_set_defaults_initializes_faab_when_enabled(self, mock_init_faab, mock_season_state, manager):
+        """Test _set_defaults_if_missing initializes FAAB template when FAAB is enabled."""
+        mock_season_state.return_value = "regular_season"
+        mock_init_faab.return_value = manager._cache
+
+        manager._year = "2023"
+        manager._week = "1"
+        manager._use_faab = True
+        manager._playoff_week_start = 15
+        manager._playoff_roster_ids = []
+        manager._weekly_roster_ids[1] = "Manager 1"
+
+        # Call directly
+        manager._set_defaults_if_missing(1)
+
+        # Should call initialize_faab_template
+        assert mock_init_faab.called
+        mock_init_faab.assert_called_once_with("Manager 1", "2023", "1", manager._cache)
 
 
 class TestCacheIntegrity:

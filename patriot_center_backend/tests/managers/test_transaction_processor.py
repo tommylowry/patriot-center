@@ -395,27 +395,7 @@ class TestCheckForReverseTransactions:
             assert not mock_revert.called
 
     def test_commissioner_add_then_drop_reversal(self, processor):
-        """Test commissioner adds player, then player is dropped (reversal)."""
-        # Setup session state
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = False
-
-        # Setup cache with both transactions
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["players"]["Player One"] = 1
-
+        """Test check_for_reverse_transactions detects commissioner add followed by drop."""
         processor._transaction_ids_cache = {
             "trans1": {
                 "year": "2023",
@@ -438,42 +418,18 @@ class TestCheckForReverseTransactions:
         }
         processor._weekly_transaction_ids = ["trans1", "trans2"]
 
-        # Call reversal detection - this should actually execute the reversal logic
-        processor.check_for_reverse_transactions()
+        with patch.object(processor, '_revert_add_drop_transaction') as mock_revert:
+            processor.check_for_reverse_transactions()
 
-        # Verify both transactions were removed from cache
-        assert "trans1" not in processor._transaction_ids_cache
-        assert "trans2" not in processor._transaction_ids_cache
-        assert len(processor._weekly_transaction_ids) == 0
-
-        # Verify cache was decremented
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] == 0
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] == 0
-        assert "Player One" not in processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]
-        assert "Player One" not in processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["players"]
+            # Should detect reversal and call revert for both add and drop
+            assert mock_revert.call_count == 2
+            # Check that it was called with the correct transaction IDs and types
+            calls = [call[0] for call in mock_revert.call_args_list]
+            assert ("trans1", "add") in calls
+            assert ("trans2", "drop") in calls
 
     def test_commissioner_drop_then_add_reversal(self, processor):
-        """Test commissioner drops player, then player is added (reversal)."""
-        # Setup session state
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = False
-
-        # Setup cache with both transactions
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["players"]["Player One"] = 1
-
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-
+        """Test check_for_reverse_transactions detects commissioner drop followed by add."""
         processor._transaction_ids_cache = {
             "trans1": {
                 "year": "2023",
@@ -496,40 +452,17 @@ class TestCheckForReverseTransactions:
         }
         processor._weekly_transaction_ids = ["trans1", "trans2"]
 
-        # Call reversal detection
-        processor.check_for_reverse_transactions()
+        with patch.object(processor, '_revert_add_drop_transaction') as mock_revert:
+            processor.check_for_reverse_transactions()
 
-        # Verify both transactions were removed
-        assert "trans1" not in processor._transaction_ids_cache
-        assert "trans2" not in processor._transaction_ids_cache
-        assert len(processor._weekly_transaction_ids) == 0
-
-        # Verify cache was decremented
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] == 0
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] == 0
+            # Should detect reversal and call revert for both drop and add
+            assert mock_revert.call_count == 2
+            calls = [call[0] for call in mock_revert.call_args_list]
+            assert ("trans1", "drop") in calls
+            assert ("trans2", "add") in calls
 
     def test_regular_transaction_then_commissioner_reversal(self, processor):
-        """Test regular add/drop followed by commissioner reversal."""
-        # Setup session state
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = False
-
-        # Setup cache with both transactions
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["players"]["Player One"] = 1
-
+        """Test check_for_reverse_transactions detects regular add followed by commissioner drop."""
         processor._transaction_ids_cache = {
             "trans1": {
                 "year": "2023",
@@ -552,40 +485,17 @@ class TestCheckForReverseTransactions:
         }
         processor._weekly_transaction_ids = ["trans1", "trans2"]
 
-        # Call reversal detection
-        processor.check_for_reverse_transactions()
+        with patch.object(processor, '_revert_add_drop_transaction') as mock_revert:
+            processor.check_for_reverse_transactions()
 
-        # Verify both transactions were removed
-        assert "trans1" not in processor._transaction_ids_cache
-        assert "trans2" not in processor._transaction_ids_cache
-        assert len(processor._weekly_transaction_ids) == 0
-
-        # Verify cache was decremented
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] == 0
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] == 0
+            # Should detect reversal and call revert for both add and drop
+            assert mock_revert.call_count == 2
+            calls = [call[0] for call in mock_revert.call_args_list]
+            assert ("trans1", "add") in calls
+            assert ("trans2", "drop") in calls
 
     def test_commissioner_reversal_with_different_players_no_match(self, processor):
-        """Test commissioner transactions with different players don't reverse."""
-        # Setup session state
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = False
-
-        # Setup cache with both transactions (different players)
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["players"]["Player Two"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["players"]["Player Two"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["players"]["Player Two"] = 1
-
+        """Test check_for_reverse_transactions doesn't detect reversal with different players."""
         processor._transaction_ids_cache = {
             "trans1": {
                 "year": "2023",
@@ -608,16 +518,11 @@ class TestCheckForReverseTransactions:
         }
         processor._weekly_transaction_ids = ["trans1", "trans2"]
 
-        # Call reversal detection
-        processor.check_for_reverse_transactions()
+        with patch.object(processor, '_revert_add_drop_transaction') as mock_revert:
+            processor.check_for_reverse_transactions()
 
-        # Verify NO transactions were removed (different players, so no reversal)
-        assert "trans1" in processor._transaction_ids_cache
-        assert "trans2" in processor._transaction_ids_cache
-
-        # Verify cache was NOT decremented (transactions remain)
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] == 1
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] == 1
+            # Should NOT detect reversal because players are different
+            assert not mock_revert.called
 
 
 class TestProcessTransaction:
@@ -921,6 +826,416 @@ class TestAddToTransactionIdsCache:
                 {"type": "trade", "manager": "Manager 1"},
                 commish_action=False
             )
+
+
+class TestRevertAddDropTransaction:
+    """Test _revert_add_drop_transaction method - unit tests calling function directly."""
+
+    def test_revert_add_removes_from_cache_and_transaction_ids(self, processor):
+        """Test _revert_add_drop_transaction removes add from cache."""
+        processor._year = "2023"
+        processor._week = "1"
+
+        # Setup cache as if add was processed
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+
+        processor._transaction_ids_cache["trans1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": True,
+            "managers_involved": ["Manager 1"],
+            "types": ["add"],
+            "players_involved": ["Player One"],
+            "add": "Player One"
+        }
+        processor._weekly_transaction_ids = ["trans1"]
+
+        # Call function directly
+        result = processor._revert_add_drop_transaction("trans1", "add")
+
+        # Assert only THIS function's behavior
+        assert processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] == 0
+        assert "Player One" not in processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]
+        assert "trans1" not in processor._transaction_ids_cache
+        assert "trans1" not in processor._weekly_transaction_ids
+        assert result is True
+
+    def test_revert_drop_removes_from_cache(self, processor):
+        """Test _revert_add_drop_transaction removes drop from cache."""
+        processor._year = "2023"
+        processor._week = "1"
+
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["total"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["players"]["Player Two"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["total"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["players"]["Player Two"] = 1
+        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] = 1
+        processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["players"]["Player Two"] = 1
+
+        processor._transaction_ids_cache["trans2"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1"],
+            "types": ["drop"],
+            "players_involved": ["Player Two"],
+            "drop": "Player Two"
+        }
+        processor._weekly_transaction_ids = ["trans2"]
+
+        result = processor._revert_add_drop_transaction("trans2", "drop")
+
+        assert processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] == 0
+        assert "Player Two" not in processor._cache["Manager 1"]["summary"]["transactions"]["drops"]["players"]
+        assert "trans2" not in processor._transaction_ids_cache
+        assert result is True
+
+    def test_revert_add_with_faab_removes_faab_data(self, processor):
+        """Test _revert_add_drop_transaction removes FAAB data when reverting add."""
+        processor._year = "2023"
+        processor._week = "1"
+        processor._use_faab = True
+
+        # Setup add and FAAB data
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["transaction_ids"] = ["trans1"]
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["players"]["Player One"] = {
+            "num_bids_won": 1, "total_faab_spent": 50
+        }
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["faab"]["players"]["Player One"] = {
+            "num_bids_won": 1, "total_faab_spent": 50
+        }
+        processor._cache["Manager 1"]["summary"]["transactions"]["faab"]["players"]["Player One"] = {
+            "num_bids_won": 1, "total_faab_spent": 50
+        }
+
+        processor._transaction_ids_cache["trans1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": True,
+            "managers_involved": ["Manager 1"],
+            "types": ["add"],
+            "players_involved": ["Player One"],
+            "add": "Player One",
+            "faab_spent": 50
+        }
+        processor._weekly_transaction_ids = ["trans1"]
+
+        result = processor._revert_add_drop_transaction("trans1", "add")
+
+        # Assert FAAB data was removed
+        assert "Player One" not in processor._cache["Manager 1"]["summary"]["transactions"]["faab"]["players"]
+        assert "trans1" not in processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["transaction_ids"]
+        assert result is True
+
+    def test_revert_partial_transaction_keeps_other_type(self, processor):
+        """Test reverting only add portion of add+drop transaction keeps drop."""
+        processor._year = "2023"
+        processor._week = "1"
+
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
+        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+
+        processor._transaction_ids_cache["trans1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1"],
+            "types": ["add", "drop"],
+            "players_involved": ["Player One", "Player Two"],
+            "add": "Player One",
+            "drop": "Player Two"
+        }
+        processor._weekly_transaction_ids = ["trans1"]
+
+        result = processor._revert_add_drop_transaction("trans1", "add")
+
+        # Transaction should still exist (drop remains)
+        assert "trans1" in processor._transaction_ids_cache
+        assert "add" not in processor._transaction_ids_cache["trans1"]
+        assert "drop" in processor._transaction_ids_cache["trans1"]
+        assert "trans1" in processor._weekly_transaction_ids
+        assert result is False  # Not fully removed
+
+    def test_revert_invalid_type_returns_none(self, processor):
+        """Test _revert_add_drop_transaction returns None for invalid type."""
+        processor._year = "2023"
+        processor._week = "1"
+
+        processor._transaction_ids_cache["trans1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1"],
+            "types": ["add"],
+            "players_involved": ["Player One"],
+            "add": "Player One"
+        }
+
+        result = processor._revert_add_drop_transaction("trans1", "invalid_type")
+        assert result is None
+
+    def test_revert_raises_on_multiple_managers(self, processor):
+        """Test _revert_add_drop_transaction raises error for multiple managers."""
+        processor._year = "2023"
+        processor._week = "1"
+
+        processor._transaction_ids_cache["trans1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1", "Manager 2"],
+            "types": ["add"],
+            "players_involved": ["Player One"],
+            "add": "Player One"
+        }
+
+        with pytest.raises(Exception, match="Weird add with multiple managers"):
+            processor._revert_add_drop_transaction("trans1", "add")
+
+
+class TestRevertTradeTransaction:
+    """Test _revert_trade_transaction method - unit tests calling function directly."""
+
+    def test_revert_simple_trade_removes_both_transactions(self, processor):
+        """Test _revert_trade_transaction removes both trades from cache."""
+        processor._year = "2023"
+        processor._week = "1"
+
+        # Setup cache for both managers - use total=2 since we're removing all trades
+        for manager in ["Manager 1", "Manager 2"]:
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 2
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2"]
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 2
+            }
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 2
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 2
+            }
+            processor._cache[manager]["summary"]["transactions"]["trades"]["total"] = 2
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 2
+            }
+
+            # Setup acquired/sent
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {
+                "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
+                "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
+                "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {
+                "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
+                "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
+                "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+
+        processor._transaction_ids_cache["trade1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1", "Manager 2"],
+            "types": ["trade"],
+            "players_involved": ["Player One"],
+            "trade_details": {
+                "Player One": {"old_manager": "Manager 1", "new_manager": "Manager 2"}
+            }
+        }
+        processor._transaction_ids_cache["trade2"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1", "Manager 2"],
+            "types": ["trade"],
+            "players_involved": ["Player One"],
+            "trade_details": {
+                "Player One": {"old_manager": "Manager 2", "new_manager": "Manager 1"}
+            }
+        }
+        processor._weekly_transaction_ids = ["trade1", "trade2"]
+
+        # Call function directly
+        processor._revert_trade_transaction("trade1", "trade2")
+
+        # Assert only THIS function's behavior
+        assert "trade1" not in processor._transaction_ids_cache
+        assert "trade2" not in processor._transaction_ids_cache
+        assert len(processor._weekly_transaction_ids) == 0
+        assert processor._cache["Manager 1"]["summary"]["transactions"]["trades"]["total"] == 0
+        assert processor._cache["Manager 1"]["summary"]["transactions"]["trades"]["trade_partners"] == {}
+
+    def test_revert_trade_with_faab_removes_faab_data(self, processor):
+        """Test _revert_trade_transaction removes FAAB data."""
+        processor._year = "2023"
+        processor._week = "1"
+        processor._use_faab = True
+
+        # Setup basic trade cache - use 4 total so after decrementing 2, there are still 2 left
+        # (if total goes to 0, the code continues and skips FAAB decrement logic)
+        for manager in ["Manager 1", "Manager 2"]:
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 4
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2"]
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 2
+            }
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 4
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 2
+            }
+            processor._cache[manager]["summary"]["transactions"]["trades"]["total"] = 4
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 2
+            }
+
+            # Setup acquired/sent for FAAB
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {
+                "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
+                "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
+                "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {
+                "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
+                "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
+                "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
+            }
+
+        # Setup FAAB cache - the code decrements both traded_away and acquired_from for each manager
+        # Set up both fields for both managers
+        for manager, partner in [("Manager 1", "Manager 2"), ("Manager 2", "Manager 1")]:
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["traded_away"]["total"] = 100
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["acquired_from"]["total"] = 100
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
+
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["traded_away"]["total"] = 100
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["acquired_from"]["total"] = 100
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
+
+            processor._cache[manager]["summary"]["transactions"]["faab"]["traded_away"]["total"] = 100
+            processor._cache[manager]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
+            processor._cache[manager]["summary"]["transactions"]["faab"]["acquired_from"]["total"] = 100
+            processor._cache[manager]["summary"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
+
+        processor._transaction_ids_cache["trade1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1", "Manager 2"],
+            "types": ["trade"],
+            "players_involved": ["$100 FAAB"],
+            "trade_details": {
+                "$100 FAAB": {"old_manager": "Manager 1", "new_manager": "Manager 2"}
+            }
+        }
+        processor._transaction_ids_cache["trade2"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1", "Manager 2"],
+            "types": ["trade"],
+            "players_involved": ["$100 FAAB"],
+            "trade_details": {
+                "$100 FAAB": {"old_manager": "Manager 2", "new_manager": "Manager 1"}
+            }
+        }
+        processor._weekly_transaction_ids = ["trade1", "trade2"]
+
+        processor._revert_trade_transaction("trade1", "trade2")
+
+        # Assert FAAB was removed
+        assert processor._cache["Manager 1"]["summary"]["transactions"]["faab"]["traded_away"]["total"] == 0
+        assert processor._cache["Manager 2"]["summary"]["transactions"]["faab"]["acquired_from"]["total"] == 0
+        assert "Manager 2" not in processor._cache["Manager 1"]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"]
+
+    def test_revert_trade_removes_from_weekly_transaction_ids(self, processor):
+        """Test _revert_trade_transaction removes IDs from weekly list."""
+        processor._year = "2023"
+        processor._week = "1"
+
+        # Setup with 3 trades total
+        for manager in ["Manager 1", "Manager 2"]:
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 3
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2", "trade3"]
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 3
+            }
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 3
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 3
+            }
+            processor._cache[manager]["summary"]["transactions"]["trades"]["total"] = 3
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
+                "Manager 2" if manager == "Manager 1" else "Manager 1": 3
+            }
+
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {}
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {}
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {}
+            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {}
+            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {}
+            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {}
+
+        processor._transaction_ids_cache["trade1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1", "Manager 2"],
+            "types": ["trade"],
+            "players_involved": [],
+            "trade_details": {}
+        }
+        processor._transaction_ids_cache["trade2"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1", "Manager 2"],
+            "types": ["trade"],
+            "players_involved": [],
+            "trade_details": {}
+        }
+        processor._weekly_transaction_ids = ["trade1", "trade2", "trade3"]
+
+        processor._revert_trade_transaction("trade1", "trade2")
+
+        # Assert trade3 still exists
+        assert "trade3" in processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"]
+        assert "trade1" not in processor._weekly_transaction_ids
+        assert "trade2" not in processor._weekly_transaction_ids
+        assert "trade3" in processor._weekly_transaction_ids
 
 
 class TestCacheModification:

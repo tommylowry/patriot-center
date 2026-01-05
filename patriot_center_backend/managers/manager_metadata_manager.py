@@ -9,7 +9,7 @@ Single Responsibility: Orchestrate sub-processors and manage persistence.
 from copy import deepcopy
 from typing import Dict, Optional, Any
 
-from patriot_center_backend.cache.cache_manager import get_cache_manager
+from patriot_center_backend.cache import get_cache_manager
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 

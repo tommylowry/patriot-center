@@ -298,13 +298,10 @@ class TransactionProcessor:
                 # if there were 2 trades made, these 2 were the 2, so it should now be empty
                 d['trades']['total'] -= 2
                 if d['trades']['total'] == 0:
-                    d = {
-                        "total": 0,
-                        "trade_partners": {},
-                        "trade_players_acquired": {},
-                        "trade_players_sent": {},
-                        "transaction_ids": []
-                    }
+                    d['trades']['trade_partners']         = {}
+                    d['trades']['trade_players_acquired'] = {}
+                    d['trades']['trade_players_sent']     = {}
+                    d['trades']['transaction_ids']        = []
                     continue
 
                 # first remove all other managers as ones this manager has traded with
@@ -417,21 +414,10 @@ class TransactionProcessor:
 
         for d in places_to_change:
 
-            # remove the add transaction from the cache
+            # remove the add/drop transaction from the cache
             d['total'] -= 1
-
-            # if there are no more adds that week, make everything blank and move on
-            if d['total'] == 0:
-                d = {
-                    "total": 0,
-                    "trade_partners": {},
-                    "trade_players_acquired": {},
-                    "trade_players_sent": {},
-                    "transaction_ids": []
-                }
-                continue
-            
             d['players'][player] -=1
+
             if d['players'][player] == 0:
                 del d['players'][player]
 
@@ -458,7 +444,7 @@ class TransactionProcessor:
         self._transaction_ids_cache[transaction_id]['players_involved'].remove(player)
 
         # this was the only data in the transaction so it can be fully removed
-        if len(transaction['types']) == 0:
+        if len(self._transaction_ids_cache[transaction_id]['types']) == 0:
             del self._transaction_ids_cache[transaction_id]
             if transaction_id in self._weekly_transaction_ids:
                 self._weekly_transaction_ids.remove(transaction_id)
@@ -559,8 +545,8 @@ class TransactionProcessor:
                 transaction_id = transaction.get("transaction_id", "")
 
                 # add faab trade details to the cache
-                self._add_faab_details_to_cache("trade", sender, "FAAB", faab_amount, transaction_id, trade_partner=receiver)
-                self._add_faab_details_to_cache("trade", receiver, "FAAB", -faab_amount, transaction_id, trade_partner=sender)
+                self._add_faab_details_to_cache("trade", sender, "FAAB", -faab_amount, transaction_id, trade_partner=receiver)
+                self._add_faab_details_to_cache("trade", receiver, "FAAB", faab_amount, transaction_id, trade_partner=sender)
     
     def _add_trade_details_to_cache(self, manager: str, trade_partners: list,
                                     acquired: dict, sent: dict,

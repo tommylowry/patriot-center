@@ -325,6 +325,39 @@ class TestGetTransactionDetailsFromCache:
         assert result["adds"]["total"] == 5
         assert result["drops"]["total"] == 5
 
+    @patch('patriot_center_backend.managers.cache_queries.extract_dict_data')
+    def test_transactions_with_faab_data(self, mock_extract, sample_cache):
+        """Test getting transaction stats when FAAB data exists."""
+        # Setup cache with FAAB data
+        sample_cache["Manager 1"]["summary"]["transactions"]["faab"] = {
+            "total_lost_or_gained": -150,
+            "players": {
+                "Player A": {"num_bids_won": 2, "total_faab_spent": 100},
+                "Player B": {"num_bids_won": 1, "total_faab_spent": 50}
+            },
+            "traded_away": {
+                "total": 25,
+                "trade_partners": {"Manager 2": 25}
+            },
+            "acquired_from": {
+                "total": 30,
+                "trade_partners": {"Manager 2": 30}
+            }
+        }
+
+        mock_extract.return_value = []
+
+        result = get_transaction_details_from_cache(
+            sample_cache, None, "Manager 1", {}, {}, {}
+        )
+
+        # Assert FAAB summary was created
+        assert "faab" in result
+        assert result["faab"]["total_spent"] == 150  # abs(-150)
+        assert result["faab"]["faab_traded"]["sent"] == 25
+        assert result["faab"]["faab_traded"]["received"] == 30
+        assert result["faab"]["faab_traded"]["net"] == 5  # 30 - 25
+
 
 class TestGetOverallDataDetailsFromCache:
     """Test get_overall_data_details_from_cache function."""
@@ -422,6 +455,116 @@ class TestGetHeadToHeadOverallFromCache:
         # Should handle gracefully even with no matchups
         assert result is not None
         assert isinstance(result, dict)
+
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_h2h_list_all_matchups(self, mock_matchup_card, sample_cache):
+        """Test H2H with list_all_matchups=True returns matchup history."""
+        # Setup weeks data with matchups
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"] = {
+            "1": {
+                "matchup_data": {
+                    "opponent_manager": "Manager 2",
+                    "result": "win",
+                    "points_for": 120.5,
+                    "points_against": 100.0
+                },
+                "transactions": {}
+            },
+            "2": {
+                "matchup_data": {
+                    "opponent_manager": "Manager 2",
+                    "result": "loss",
+                    "points_for": 90.0,
+                    "points_against": 110.0
+                },
+                "transactions": {}
+            }
+        }
+
+        mock_matchup_card.return_value = {"year": "2023", "week": "1"}
+
+        result = get_head_to_head_overall_from_cache(
+            sample_cache, "Manager 1", "Manager 2",
+            {}, {}, {}, {},
+            list_all_matchups=True
+        )
+
+        # Should return a list of matchup cards
+        assert isinstance(result, list)
+        assert len(result) == 2
+
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    @patch('patriot_center_backend.managers.cache_queries.get_head_to_head_details_from_cache')
+    def test_h2h_with_specific_year(self, mock_h2h_details, mock_matchup_card, sample_cache):
+        """Test H2H stats filtered to specific year."""
+        # Setup weeks data
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"] = {
+            "1": {
+                "matchup_data": {
+                    "opponent_manager": "Manager 2",
+                    "result": "win",
+                    "points_for": 120.5,
+                    "points_against": 100.0
+                },
+                "transactions": {}
+            }
+        }
+        sample_cache["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]["points_for"]["opponents"]["Manager 2"] = 120.5
+        sample_cache["Manager 2"] = deepcopy(sample_cache["Manager 1"])
+        sample_cache["Manager 2"]["years"]["2023"]["summary"]["matchup_data"]["overall"]["points_for"]["opponents"] = {"Manager 1": 100.0}
+
+        mock_h2h_details.return_value = {"wins": 1, "losses": 0, "ties": 0}
+        mock_matchup_card.return_value = {"year": "2023", "week": "1"}
+
+        result = get_head_to_head_overall_from_cache(
+            sample_cache, "Manager 1", "Manager 2",
+            {}, {}, {}, {},
+            year="2023"
+        )
+
+        # Should return dict with stats
+        assert isinstance(result, dict)
+        assert "manager_1_wins" in result
+
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    @patch('patriot_center_backend.managers.cache_queries.get_head_to_head_details_from_cache')
+    def test_h2h_manager2_wins(self, mock_h2h_details, mock_matchup_card, sample_cache):
+        """Test H2H when manager2 wins (result='loss' for manager1)."""
+        # Setup weeks data where Manager 2 wins
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"] = {
+            "1": {
+                "matchup_data": {
+                    "opponent_manager": "Manager 2",
+                    "result": "loss",
+                    "points_for": 90.0,
+                    "points_against": 110.0
+                },
+                "transactions": {}
+            },
+            "2": {
+                "matchup_data": {
+                    "opponent_manager": "Manager 2",
+                    "result": "loss",
+                    "points_for": 85.0,
+                    "points_against": 115.0
+                },
+                "transactions": {}
+            }
+        }
+
+        sample_cache["Manager 2"] = deepcopy(sample_cache["Manager 1"])
+
+        mock_h2h_details.return_value = {"wins": 0, "losses": 2, "ties": 0}
+        mock_matchup_card.return_value = {"year": "2023", "week": "1", "margin": 20.0}
+
+        result = get_head_to_head_overall_from_cache(
+            sample_cache, "Manager 1", "Manager 2",
+            {}, {}, {}, {}
+        )
+
+        # Should process manager2's wins correctly
+        assert isinstance(result, dict)
+        assert "manager_2_wins" in result
 
 
 class TestGetTradeHistoryBetweenTwoManagers:

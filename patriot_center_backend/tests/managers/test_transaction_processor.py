@@ -1503,3 +1503,132 @@ class TestTradeReversalDetection:
         # Trades should NOT be removed (different players)
         assert "trade1" in processor._transaction_ids_cache
         assert "trade2" in processor._transaction_ids_cache
+
+
+class TestProcessAddOrDropTransaction:
+    """Test _process_add_or_drop_transaction method."""
+
+    def test_empty_adds_and_drops_prints_warning(self, processor, capsys):
+        """Test _process_add_or_drop_transaction handles empty transaction."""
+        processor._year = "2023"
+        processor._week = "1"
+
+        transaction = {
+            "transaction_id": "empty1",
+            "adds": {},
+            "drops": {}
+        }
+
+        processor._process_add_or_drop_transaction(transaction, False)
+
+        # Should print warning and return early
+        captured = capsys.readouterr()
+        assert "Waiver transaction with no adds or drops" in captured.out
+
+    @patch.object(TransactionProcessor, '_add_faab_details_to_cache')
+    @patch.object(TransactionProcessor, '_add_add_or_drop_details_to_cache')
+    def test_process_add_with_faab(self, mock_add_details, mock_add_faab, processor):
+        """Test _process_add_or_drop_transaction processes add with FAAB."""
+        processor._year = "2023"
+        processor._week = "1"
+        processor._use_faab = True
+        processor._weekly_roster_ids = {1: "Manager 1"}
+        processor._player_ids = {"player123": {"full_name": "Player A"}}
+
+        transaction = {
+            "transaction_id": "add1",
+            "adds": {"player123": 1},
+            "drops": {},
+            "settings": {"waiver_bid": 50}
+        }
+
+        processor._process_add_or_drop_transaction(transaction, False)
+
+        # Should call both add_details and add_faab_details
+        mock_add_details.assert_called_once_with("add", "Manager 1", "Player A", "add1", False, 50)
+        mock_add_faab.assert_called_once()
+
+    @patch.object(TransactionProcessor, '_add_add_or_drop_details_to_cache')
+    def test_process_add_without_faab(self, mock_add_details, processor):
+        """Test _process_add_or_drop_transaction processes add without FAAB."""
+        processor._year = "2023"
+        processor._week = "1"
+        processor._use_faab = False
+        processor._weekly_roster_ids = {1: "Manager 1"}
+        processor._player_ids = {"player123": {"full_name": "Player A"}}
+
+        transaction = {
+            "transaction_id": "add2",
+            "adds": {"player123": 1},
+            "drops": {}
+        }
+
+        processor._process_add_or_drop_transaction(transaction, False)
+
+        # Should only call add_details (no FAAB)
+        mock_add_details.assert_called_once_with("add", "Manager 1", "Player A", "add2", False, None)
+
+    @patch.object(TransactionProcessor, '_add_add_or_drop_details_to_cache')
+    def test_process_drop(self, mock_add_details, processor):
+        """Test _process_add_or_drop_transaction processes drop."""
+        processor._year = "2023"
+        processor._week = "1"
+        processor._weekly_roster_ids = {1: "Manager 1"}
+        processor._player_ids = {"player456": {"full_name": "Player B"}}
+
+        transaction = {
+            "transaction_id": "drop1",
+            "adds": {},
+            "drops": {"player456": 1}
+        }
+
+        processor._process_add_or_drop_transaction(transaction, False)
+
+        # Should call add_details for drop
+        mock_add_details.assert_called_once_with("drop", "Manager 1", "Player B", "drop1", False)
+
+    @patch.object(TransactionProcessor, '_add_faab_details_to_cache')
+    @patch.object(TransactionProcessor, '_add_add_or_drop_details_to_cache')
+    def test_process_add_and_drop(self, mock_add_details, mock_add_faab, processor):
+        """Test _process_add_or_drop_transaction processes both add and drop."""
+        processor._year = "2023"
+        processor._week = "1"
+        processor._use_faab = True
+        processor._weekly_roster_ids = {1: "Manager 1"}
+        processor._player_ids = {
+            "player123": {"full_name": "Player A"},
+            "player456": {"full_name": "Player B"}
+        }
+
+        transaction = {
+            "transaction_id": "add_drop1",
+            "adds": {"player123": 1},
+            "drops": {"player456": 1},
+            "settings": {"waiver_bid": 30}
+        }
+
+        processor._process_add_or_drop_transaction(transaction, False)
+
+        # Should call add_details twice (once for add, once for drop)
+        assert mock_add_details.call_count == 2
+        # Should call add_faab once for the add
+        mock_add_faab.assert_called_once()
+
+    @patch.object(TransactionProcessor, '_add_add_or_drop_details_to_cache')
+    def test_process_commissioner_action(self, mock_add_details, processor):
+        """Test _process_add_or_drop_transaction handles commissioner action flag."""
+        processor._year = "2023"
+        processor._week = "1"
+        processor._weekly_roster_ids = {1: "Manager 1"}
+        processor._player_ids = {"player123": {"full_name": "Player A"}}
+
+        transaction = {
+            "transaction_id": "commish_add",
+            "adds": {"player123": 1},
+            "drops": {}
+        }
+
+        processor._process_add_or_drop_transaction(transaction, True)
+
+        # Should pass commish_action=True
+        mock_add_details.assert_called_once_with("add", "Manager 1", "Player A", "commish_add", True, None)

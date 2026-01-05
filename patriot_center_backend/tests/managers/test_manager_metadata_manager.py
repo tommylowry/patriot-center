@@ -10,6 +10,8 @@ from patriot_center_backend.managers.manager_metadata_manager import (
     ManagerMetadataManager,
     get_manager_metadata_manager
 )
+from patriot_center_backend.managers.transaction_processor import TransactionProcessor
+from patriot_center_backend.managers.matchup_processor import MatchupProcessor
 
 
 @pytest.fixture
@@ -560,3 +562,73 @@ class TestCacheIntegrity:
 
         # Cache reference should not change
         assert manager._cache is original_cache
+
+
+class TestClearWeeklyMetadata:
+    """Test _clear_weekly_metadata method."""
+
+    def test_clear_weekly_metadata_resets_year_and_week(self, manager):
+        """Test _clear_weekly_metadata resets year and week to None."""
+        manager._year = "2023"
+        manager._week = "5"
+
+        manager._clear_weekly_metadata()
+
+        assert manager._year is None
+        assert manager._week is None
+
+    def test_clear_weekly_metadata_special_case_2024_week_17(self, manager):
+        """Test _clear_weekly_metadata clears roster IDs for 2024 week 17."""
+        manager._year = "2024"
+        manager._week = "17"
+        manager._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+
+        manager._clear_weekly_metadata()
+
+        # Should clear roster IDs for this special case
+        assert manager._weekly_roster_ids == {}
+        assert manager._year is None
+        assert manager._week is None
+
+    def test_clear_weekly_metadata_does_not_clear_roster_ids_for_other_weeks(self, manager):
+        """Test _clear_weekly_metadata does not clear roster IDs for other weeks."""
+        manager._year = "2024"
+        manager._week = "5"
+        manager._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+
+        manager._clear_weekly_metadata()
+
+        # Should NOT clear roster IDs (not week 17)
+        assert manager._weekly_roster_ids == {1: "Manager 1", 2: "Manager 2"}
+        assert manager._year is None
+        assert manager._week is None
+
+    @patch.object(MatchupProcessor, 'clear_session_state')
+    @patch.object(TransactionProcessor, 'clear_session_state')
+    def test_clear_weekly_metadata_clears_processor_state(self, mock_trans_clear, mock_matchup_clear, manager):
+        """Test _clear_weekly_metadata calls clear_session_state on processors."""
+        manager._year = "2023"
+        manager._week = "1"
+
+        # Create processor instances
+        manager._transaction_processor = TransactionProcessor({}, {}, {}, {}, False)
+        manager._matchup_processor = MatchupProcessor({}, {})
+
+        manager._clear_weekly_metadata()
+
+        # Should call clear_session_state on both processors
+        mock_trans_clear.assert_called_once()
+        mock_matchup_clear.assert_called_once()
+
+    def test_clear_weekly_metadata_handles_no_processors(self, manager):
+        """Test _clear_weekly_metadata handles None processors gracefully."""
+        manager._year = "2023"
+        manager._week = "1"
+        manager._transaction_processor = None
+        manager._matchup_processor = None
+
+        # Should not raise exception
+        manager._clear_weekly_metadata()
+
+        assert manager._year is None
+        assert manager._week is None

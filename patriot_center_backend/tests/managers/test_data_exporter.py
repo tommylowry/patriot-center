@@ -403,6 +403,132 @@ class TestGetManagerTransactions:
         assert "total_count" in result
         assert "transactions" in result
 
+    @patch('patriot_center_backend.managers.data_exporter.get_trade_card')
+    @patch('patriot_center_backend.managers.data_exporter.get_image_url')
+    def test_get_transactions_with_trades(self, mock_image_url, mock_trade_card, data_exporter):
+        """Test get_manager_transactions processes trade transactions."""
+        # Setup cache with trade transaction IDs
+        data_exporter._cache["Manager 1"]["years"]["2023"]["weeks"] = {
+            "1": {
+                "transactions": {
+                    "trades": {
+                        "transaction_ids": ["trade1", "trade2"]
+                    }
+                }
+            }
+        }
+
+        mock_image_url.return_value = {"name": "Manager 1", "image_url": "http://example.com/manager1.jpg"}
+        mock_trade_card.return_value = {
+            "year": "2023",
+            "week": "1",
+            "managers_involved": ["Manager 1", "Manager 2"]
+        }
+
+        result = data_exporter.get_manager_transactions("Manager 1", year="2023")
+
+        # Should have processed 2 trades
+        assert result["total_count"] == 2
+        trades = [t for t in result["transactions"] if t["type"] == "trade"]
+        assert len(trades) == 2
+
+    @patch('patriot_center_backend.managers.data_exporter.get_image_url')
+    def test_get_transactions_with_adds(self, mock_image_url, data_exporter):
+        """Test get_manager_transactions processes add transactions."""
+        # Setup cache with add transaction
+        data_exporter._cache["Manager 1"]["years"]["2023"]["weeks"] = {
+            "1": {
+                "transactions": {
+                    "adds": {
+                        "transaction_ids": ["add1"]
+                    }
+                }
+            }
+        }
+
+        data_exporter._transaction_ids_cache["add1"] = {
+            "types": ["add"],
+            "add": "Player A",
+            "faab_spent": 50
+        }
+
+        mock_image_url.return_value = {"name": "Player A", "image_url": "http://example.com/player.jpg"}
+
+        result = data_exporter.get_manager_transactions("Manager 1", year="2023")
+
+        # Should have 1 add transaction
+        adds = [t for t in result["transactions"] if t["type"] == "add"]
+        assert len(adds) == 1
+        assert adds[0]["faab_spent"] == 50
+
+    @patch('patriot_center_backend.managers.data_exporter.get_image_url')
+    def test_get_transactions_with_drops(self, mock_image_url, data_exporter):
+        """Test get_manager_transactions processes drop transactions."""
+        # Setup cache with drop transaction
+        data_exporter._cache["Manager 1"]["years"]["2023"]["weeks"] = {
+            "1": {
+                "transactions": {
+                    "drops": {
+                        "transaction_ids": ["drop1"]
+                    }
+                }
+            }
+        }
+
+        data_exporter._transaction_ids_cache["drop1"] = {
+            "types": ["drop"],
+            "drop": "Player B"
+        }
+
+        mock_image_url.return_value = {"name": "Player B", "image_url": "http://example.com/player.jpg"}
+
+        result = data_exporter.get_manager_transactions("Manager 1", year="2023")
+
+        # Should have 1 drop transaction
+        drops = [t for t in result["transactions"] if t["type"] == "drop"]
+        assert len(drops) == 1
+        assert drops[0]["player"]["name"] == "Player B"
+
+    @patch('patriot_center_backend.managers.data_exporter.get_image_url')
+    def test_get_transactions_with_add_and_drop(self, mock_image_url, data_exporter):
+        """Test get_manager_transactions processes add_and_drop transactions."""
+        # Setup cache with add_and_drop transaction
+        data_exporter._cache["Manager 1"]["years"]["2023"]["weeks"] = {
+            "1": {
+                "transactions": {
+                    "adds": {
+                        "transaction_ids": ["add_drop1"]
+                    }
+                }
+            }
+        }
+
+        data_exporter._transaction_ids_cache["add_drop1"] = {
+            "types": ["add", "drop"],
+            "add": "Player A",
+            "drop": "Player B",
+            "faab_spent": 30
+        }
+
+        def image_url_side_effect(player, *args, **kwargs):
+            if player == "Player A":
+                return {"name": "Player A", "image_url": "http://example.com/playerA.jpg"}
+            elif player == "Player B":
+                return {"name": "Player B", "image_url": "http://example.com/playerB.jpg"}
+            else:
+                return {"name": "Manager 1", "image_url": "http://example.com/manager1.jpg"}
+
+        mock_image_url.side_effect = image_url_side_effect
+
+        result = data_exporter.get_manager_transactions("Manager 1", year="2023")
+
+        # Should have 1 add_and_drop transaction
+        add_drops = [t for t in result["transactions"] if t["type"] == "add_and_drop"]
+        assert len(add_drops) == 1
+        assert add_drops[0]["added_player"]["name"] == "Player A"
+        assert add_drops[0]["dropped_player"]["name"] == "Player B"
+        assert add_drops[0]["faab_spent"] == 30
+
 
 class TestGetManagerAwards:
     """Test get_manager_awards method."""

@@ -1488,16 +1488,6 @@
         ],
         "add": "Geronimo Allison"
     },
-    "474799590776762368": {
-        "year": "2019",
-        "week": "1",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "474818727729164288": {
         "year": "2019",
         "week": "1",
@@ -6105,26 +6095,6 @@
         ],
         "drop": "Tyler Eifert"
     },
-    "484465275052224512": {
-        "year": "2019",
-        "week": "4",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "484466049014558720": {
-        "year": "2019",
-        "week": "4",
-        "commish_action": false,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "484564289865117696": {
         "year": "2019",
         "week": "4",
@@ -6221,26 +6191,6 @@
         ],
         "add": "Tennessee Titans",
         "drop": "Pittsburgh Steelers"
-    },
-    "484729913522253824": {
-        "year": "2019",
-        "week": "4",
-        "commish_action": false,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "484730419539865600": {
-        "year": "2019",
-        "week": "4",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "484753101283127296": {
         "year": "2019",
@@ -9332,16 +9282,6 @@
             }
         }
     },
-    "494360578546987008": {
-        "year": "2019",
-        "week": "8",
-        "commish_action": false,
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "494361673990139904": {
         "year": "2019",
         "week": "8",
@@ -9386,16 +9326,6 @@
             "Cole Beasley"
         ],
         "add": "Cole Beasley"
-    },
-    "494369943232442368": {
-        "year": "2019",
-        "week": "8",
-        "commish_action": true,
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "494522650463301632": {
         "year": "2019",
@@ -13976,26 +13906,6 @@
             }
         }
     },
-    "609253942622244864": {
-        "year": "2020",
-        "week": "1",
-        "commish_action": false,
-        "managers_involved": [
-            "Dheeraj"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "609254686905675776": {
-        "year": "2020",
-        "week": "1",
-        "commish_action": true,
-        "managers_involved": [
-            "Dheeraj"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "609254754337505280": {
         "year": "2020",
         "week": "1",
@@ -15642,16 +15552,6 @@
         ],
         "add": "O.J. Howard"
     },
-    "613098783697367040": {
-        "year": "2020",
-        "week": "2",
-        "commish_action": false,
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "613147198061883392": {
         "year": "2020",
         "week": "2",
@@ -15819,16 +15719,6 @@
             "Courtland Sutton"
         ],
         "drop": "Courtland Sutton"
-    },
-    "613817830797819904": {
-        "year": "2020",
-        "week": "2",
-        "commish_action": true,
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "613964262624342016": {
         "year": "2020",
@@ -18133,26 +18023,6 @@
             }
         }
     },
-    "617490803496914944": {
-        "year": "2020",
-        "week": "4",
-        "commish_action": false,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "617490916361465856": {
-        "year": "2020",
-        "week": "4",
-        "commish_action": true,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "617491215302070272": {
         "year": "2020",
         "week": "4",
@@ -18212,16 +18082,6 @@
             "Matt Prater"
         ],
         "add": "Matt Prater"
-    },
-    "617556663414722560": {
-        "year": "2020",
-        "week": "4",
-        "commish_action": true,
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "617602046698369024": {
         "year": "2020",
@@ -19208,16 +19068,6 @@
         ],
         "drop": "Sony Michel"
     },
-    "619294770342203392": {
-        "year": "2020",
-        "week": "4",
-        "commish_action": false,
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "619294790487482368": {
         "year": "2020",
         "week": "4",
@@ -19794,16 +19644,6 @@
             }
         }
     },
-    "619949408955502592": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": false,
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "619950116102553600": {
         "year": "2020",
         "week": "5",
@@ -19862,16 +19702,6 @@
             "DeSean Jackson"
         ],
         "drop": "DeSean Jackson"
-    },
-    "620025307981770752": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "620070316059910144": {
         "year": "2020",
@@ -20000,46 +19830,6 @@
         "add": "Olamide Zaccheaus",
         "drop": "Brandin Cooks"
     },
-    "620433738920181760": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": false,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "620433873507004416": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": false,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "620434038318002176": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": false,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "620434136741523456": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": false,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "620611849448169472": {
         "year": "2020",
         "week": "5",
@@ -20139,16 +19929,6 @@
         "add": "Wil Lutz",
         "drop": "Michael Badgley"
     },
-    "620915194104733696": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": false,
-        "managers_involved": [
-            "Dheeraj"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "620915377613942784": {
         "year": "2020",
         "week": "5",
@@ -20166,16 +19946,6 @@
         ],
         "add": "Mike Williams",
         "drop": "Randall Cobb"
-    },
-    "620915447058997248": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Dheeraj"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "620915867286315008": {
         "year": "2020",
@@ -20224,26 +19994,6 @@
             "Greg Ward"
         ],
         "add": "Greg Ward"
-    },
-    "621031329550729216": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": false,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "621031501156642816": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "621041036856467456": {
         "year": "2020",
@@ -20361,66 +20111,6 @@
             "Nyheim Miller-Hines"
         ],
         "drop": "Nyheim Miller-Hines"
-    },
-    "621593571472019456": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Soup"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "621593628866871296": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Soup"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "621806958663512064": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "621807010958114816": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "621807071406391296": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "621807119057887232": {
-        "year": "2020",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "621814339866820608": {
         "year": "2020",
@@ -21324,26 +21014,6 @@
         ],
         "add": "Eric Ebron",
         "drop": "Dalton Schultz"
-    },
-    "622897527313768448": {
-        "year": "2020",
-        "week": "6",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "622898365440524288": {
-        "year": "2020",
-        "week": "6",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "622902089470808064": {
         "year": "2020",
@@ -22713,16 +22383,6 @@
         ],
         "drop": "Daniel Carlson"
     },
-    "624961314699190272": {
-        "year": "2020",
-        "week": "7",
-        "commish_action": true,
-        "managers_involved": [
-            "Anthony"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "624982303818452992": {
         "year": "2020",
         "week": "7",
@@ -23681,26 +23341,6 @@
         ],
         "add": "Tom Brady",
         "drop": "Tim Patrick"
-    },
-    "626909722104131584": {
-        "year": "2020",
-        "week": "7",
-        "commish_action": false,
-        "managers_involved": [
-            "Billiam"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "626909901884600320": {
-        "year": "2020",
-        "week": "7",
-        "commish_action": true,
-        "managers_involved": [
-            "Billiam"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "626913644462030848": {
         "year": "2020",
@@ -24928,26 +24568,6 @@
             "Tyler Higbee"
         ],
         "drop": "Tyler Higbee"
-    },
-    "629750181352542208": {
-        "year": "2020",
-        "week": "9",
-        "commish_action": false,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "629750275619491840": {
-        "year": "2020",
-        "week": "9",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "629762775064866816": {
         "year": "2020",
@@ -27674,16 +27294,6 @@
         ],
         "drop": "Sterling Shepard"
     },
-    "634850925340606464": {
-        "year": "2020",
-        "week": "11",
-        "commish_action": true,
-        "managers_involved": [
-            "Luke"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "635108363084070912": {
         "year": "2020",
         "week": "11",
@@ -27835,16 +27445,6 @@
             "Marquez Valdes-Scantling"
         ],
         "drop": "Marquez Valdes-Scantling"
-    },
-    "635302997785792512": {
-        "year": "2020",
-        "week": "11",
-        "commish_action": false,
-        "managers_involved": [
-            "Luke"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "635303521230753792": {
         "year": "2020",
@@ -28708,26 +28308,6 @@
         ],
         "drop": "Denzel Mims"
     },
-    "637706071473041408": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": false,
-        "managers_involved": [
-            "Billiam"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "637706446825455616": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": false,
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "637732921662382080": {
         "year": "2020",
         "week": "12",
@@ -29131,16 +28711,6 @@
         "add": "Royce Freeman",
         "drop": "Malcolm Brown"
     },
-    "638553843688374272": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": false,
-        "managers_involved": [
-            "Dheeraj"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "638553981420924928": {
         "year": "2020",
         "week": "12",
@@ -29188,16 +28758,6 @@
             "San Francisco 49ers"
         ],
         "drop": "San Francisco 49ers"
-    },
-    "638556779659223040": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": true,
-        "managers_involved": [
-            "Dheeraj"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "638570792136802304": {
         "year": "2020",
@@ -29267,26 +28827,6 @@
             "Laviska Shenault"
         ],
         "drop": "Laviska Shenault"
-    },
-    "638581625973706752": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": true,
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "638583187055919104": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": false,
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "638598165880193024": {
         "year": "2020",
@@ -29760,46 +29300,6 @@
         ],
         "add": "Buffalo Bills",
         "drop": "Allen Lazard"
-    },
-    "639962910516490240": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": true,
-        "managers_involved": [
-            "Billiam"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "639962959539515392": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": true,
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "639963020113698816": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": true,
-        "managers_involved": [
-            "Billiam"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "639963154943774720": {
-        "year": "2020",
-        "week": "12",
-        "commish_action": true,
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "640011632696770560": {
         "year": "2020",
@@ -30875,26 +30375,6 @@
         ],
         "add": "Tennessee Titans",
         "drop": "Duke Johnson"
-    },
-    "642473246486245376": {
-        "year": "2020",
-        "week": "13",
-        "commish_action": false,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "642476272240398336": {
-        "year": "2020",
-        "week": "13",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "642501752196792320": {
         "year": "2020",
@@ -32884,27 +32364,6 @@
             "Tyrell Williams"
         ],
         "add": "Tyrell Williams"
-    },
-    "738223571490533376": {
-        "year": "2021",
-        "week": "1",
-        "commish_action": true,
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "738224433608736768": {
-        "year": "2021",
-        "week": "1",
-        "commish_action": false,
-        "managers_involved": [
-            "Owen"
-        ],
-        "types": [],
-        "players_involved": [],
-        "faab_spent": 0
     },
     "738224692590227456": {
         "year": "2021",
@@ -40534,26 +39993,6 @@
             "Los Angeles Chargers"
         ],
         "drop": "Los Angeles Chargers"
-    },
-    "758100771068915712": {
-        "year": "2021",
-        "week": "7",
-        "commish_action": true,
-        "managers_involved": [
-            "Davey"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "758100832708395008": {
-        "year": "2021",
-        "week": "7",
-        "commish_action": true,
-        "managers_involved": [
-            "Davey"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "758124393368219648": {
         "year": "2021",
@@ -48529,16 +47968,6 @@
         "faab_spent": 0,
         "drop": "Wayne Gallman"
     },
-    "777655460428918784": {
-        "year": "2021",
-        "week": "15",
-        "commish_action": false,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "777655691887398912": {
         "year": "2021",
         "week": "15",
@@ -48651,16 +48080,6 @@
             "Tennessee Titans"
         ],
         "drop": "Tennessee Titans"
-    },
-    "778002874625101824": {
-        "year": "2021",
-        "week": "15",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "778125271940603904": {
         "year": "2021",
@@ -49165,26 +48584,6 @@
         ],
         "add": "Kene Nwangwu",
         "faab_spent": 1
-    },
-    "779817436005462016": {
-        "year": "2021",
-        "week": "16",
-        "commish_action": false,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "779817565487804416": {
-        "year": "2021",
-        "week": "16",
-        "commish_action": true,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "779834602859720704": {
         "year": "2021",
@@ -49897,17 +49296,6 @@
         "faab_spent": 0,
         "drop": "Pat Freiermuth"
     },
-    "782283282384535552": {
-        "year": "2021",
-        "week": "17",
-        "commish_action": false,
-        "managers_involved": [
-            "Soup"
-        ],
-        "types": [],
-        "players_involved": [],
-        "faab_spent": 0
-    },
     "782463861931548672": {
         "year": "2021",
         "week": "17",
@@ -50001,26 +49389,6 @@
             "Denver Broncos"
         ],
         "drop": "Denver Broncos"
-    },
-    "782623379428618240": {
-        "year": "2021",
-        "week": "17",
-        "commish_action": true,
-        "managers_involved": [
-            "Soup"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "782623460097720320": {
-        "year": "2021",
-        "week": "17",
-        "commish_action": true,
-        "managers_involved": [
-            "Soup"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "782698036295032832": {
         "year": "2021",
@@ -56286,26 +55654,6 @@
             "Brett Maher"
         ],
         "drop": "Brett Maher"
-    },
-    "886640105589592064": {
-        "year": "2022",
-        "week": "6",
-        "commish_action": false,
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "886640501271465984": {
-        "year": "2022",
-        "week": "6",
-        "commish_action": true,
-        "managers_involved": [
-            "Ty"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "886640528538693632": {
         "year": "2022",
@@ -67396,26 +66744,6 @@
         "add": "Brandon Allen",
         "drop": "Romeo Doubs"
     },
-    "989375371084713984": {
-        "year": "2023",
-        "week": "1",
-        "commish_action": true,
-        "managers_involved": [
-            "Mitch"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "989375505130377216": {
-        "year": "2023",
-        "week": "1",
-        "commish_action": true,
-        "managers_involved": [
-            "Mitch"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "1004566430676754432": {
         "year": "2023",
         "week": "1",
@@ -67660,26 +66988,6 @@
         ],
         "add": "Graham Gano",
         "faab_spent": 0
-    },
-    "1005550824979779584": {
-        "year": "2023",
-        "week": "1",
-        "commish_action": false,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1005550999920111616": {
-        "year": "2023",
-        "week": "1",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1005876013280735232": {
         "year": "2023",
@@ -69145,16 +68453,6 @@
         ],
         "drop": "Luke Musgrave"
     },
-    "1009885585869197312": {
-        "year": "2023",
-        "week": "2",
-        "commish_action": false,
-        "managers_involved": [
-            "Sam"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "1009886231607652352": {
         "year": "2023",
         "week": "2",
@@ -69169,16 +68467,6 @@
             "Hayden Hurst"
         ],
         "drop": "Hayden Hurst"
-    },
-    "1009886482800295936": {
-        "year": "2023",
-        "week": "2",
-        "commish_action": true,
-        "managers_involved": [
-            "Sam"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1009916253617692672": {
         "year": "2023",
@@ -69971,26 +69259,6 @@
         ],
         "add": "Van Jefferson",
         "drop": "Taysom Hill"
-    },
-    "1011755476625248256": {
-        "year": "2023",
-        "week": "3",
-        "commish_action": true,
-        "managers_involved": [
-            "Dheeraj"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1011755721908195328": {
-        "year": "2023",
-        "week": "3",
-        "commish_action": true,
-        "managers_involved": [
-            "Dheeraj"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1011845254230351872": {
         "year": "2023",
@@ -71322,16 +70590,6 @@
         "faab_spent": 7,
         "drop": "Los Angeles Chargers"
     },
-    "1015322854516146176": {
-        "year": "2023",
-        "week": "5",
-        "commish_action": false,
-        "managers_involved": [
-            "Sam"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "1015323017775235073": {
         "year": "2023",
         "week": "5",
@@ -71346,16 +70604,6 @@
             "Russell Wilson"
         ],
         "drop": "Russell Wilson"
-    },
-    "1015325119771729920": {
-        "year": "2023",
-        "week": "5",
-        "commish_action": true,
-        "managers_involved": [
-            "Sam"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1015389689425076224": {
         "year": "2023",
@@ -88948,16 +88196,6 @@
         ],
         "drop": "Darius Slayton"
     },
-    "1153707248145920000": {
-        "year": "2024",
-        "week": "7",
-        "commish_action": false,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "1153707417717436416": {
         "year": "2024",
         "week": "7",
@@ -88987,16 +88225,6 @@
             "Anthony Richardson"
         ],
         "add": "Anthony Richardson"
-    },
-    "1153707888793092096": {
-        "year": "2024",
-        "week": "7",
-        "commish_action": true,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1153707910778843136": {
         "year": "2024",
@@ -89981,16 +89209,6 @@
         "add": "Austin Seibert",
         "drop": "Chase McLaughlin"
     },
-    "1156337739622170624": {
-        "year": "2024",
-        "week": "8",
-        "commish_action": true,
-        "managers_involved": [
-            "Mitch"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "1156343348723183616": {
         "year": "2024",
         "week": "8",
@@ -90146,16 +89364,6 @@
             "Green Bay Packers"
         ],
         "drop": "Green Bay Packers"
-    },
-    "1156944158272110592": {
-        "year": "2024",
-        "week": "8",
-        "commish_action": false,
-        "managers_involved": [
-            "Mitch"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1156944177444274176": {
         "year": "2024",
@@ -95261,16 +94469,6 @@
             "Alexander Mattison"
         ],
         "drop": "Alexander Mattison"
-    },
-    "1173093822500528128": {
-        "year": "2024",
-        "week": "15",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1173133847362899968": {
         "year": "2024",
@@ -107813,16 +107011,6 @@
         "add": "Jordan Love",
         "drop": "Tyler Loop"
     },
-    "1293240799139483648": {
-        "year": "2025",
-        "week": "10",
-        "commish_action": true,
-        "managers_involved": [
-            "Benz"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "1293242365397442560": {
         "year": "2025",
         "week": "10",
@@ -108097,16 +107285,6 @@
             "AJ Barner"
         ],
         "drop": "AJ Barner"
-    },
-    "1293978464365322240": {
-        "year": "2025",
-        "week": "10",
-        "commish_action": false,
-        "managers_involved": [
-            "Benz"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1293984644819079168": {
         "year": "2025",
@@ -109304,16 +108482,6 @@
             "Tyler Loop"
         ],
         "drop": "Tyler Loop"
-    },
-    "1296860905690112000": {
-        "year": "2025",
-        "week": "12",
-        "commish_action": true,
-        "managers_involved": [
-            "Jay"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1296861400517324800": {
         "year": "2025",
@@ -111274,17 +110442,6 @@
         "add": "Tyrod Taylor",
         "drop": "Trey Lance"
     },
-    "1303474323331252225": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": false,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": [],
-        "faab_spent": 0
-    },
     "1303492012795764736": {
         "year": "2025",
         "week": "14",
@@ -111300,17 +110457,6 @@
         ],
         "add": "Dallas Cowboys",
         "faab_spent": 0
-    },
-    "1303522777512288256": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": false,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": [],
-        "faab_spent": 15
     },
     "1304004999142969344": {
         "year": "2025",
@@ -111342,86 +110488,6 @@
         ],
         "faab_spent": 0,
         "drop": "Daniel Jones"
-    },
-    "1304090638504964096": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": true,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1304090741357690880": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": true,
-        "managers_involved": [
-            "Christian"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1304090916281126912": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": true,
-        "managers_involved": [
-            "Sam"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1304090966193377280": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": true,
-        "managers_involved": [
-            "Sam"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1304091209546891264": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1304091245303320576": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1304091367059763200": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1304091403764133888": {
-        "year": "2025",
-        "week": "14",
-        "commish_action": true,
-        "managers_involved": [
-            "Cody"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1304097110303440896": {
         "year": "2025",
@@ -111826,16 +110892,6 @@
         ],
         "add": "Darius Slayton"
     },
-    "1305999167549620224": {
-        "year": "2025",
-        "week": "15",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
     "1305999577261834240": {
         "year": "2025",
         "week": "15",
@@ -111869,36 +110925,6 @@
         "add": "Indianapolis Colts",
         "faab_spent": 0,
         "drop": "Dallas Cowboys"
-    },
-    "1306306698096410624": {
-        "year": "2025",
-        "week": "15",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1306508744951107584": {
-        "year": "2025",
-        "week": "15",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
-    },
-    "1306508945967304704": {
-        "year": "2025",
-        "week": "15",
-        "commish_action": true,
-        "managers_involved": [
-            "Tommy"
-        ],
-        "types": [],
-        "players_involved": []
     },
     "1306509003810951168": {
         "year": "2025",

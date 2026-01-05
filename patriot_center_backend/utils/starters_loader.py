@@ -21,10 +21,10 @@ from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME, STARTERS_CACHE_FILE, PLAYERS_CACHE_FILE, VALID_OPTIONS_CACHE_FILE
 from patriot_center_backend.utils.player_ids_loader import load_player_ids
 from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
-from patriot_center_backend.utils.manager_metadata_manager import ManagerMetadataManager
+from patriot_center_backend.managers import get_manager_metadata_manager
 
 PLAYER_IDS = load_player_ids()
-MANAGER_METADATA = ManagerMetadataManager()
+MANAGER_METADATA = get_manager_metadata_manager()
 
 def load_starters_cache():
     """

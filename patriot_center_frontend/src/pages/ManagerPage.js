@@ -3,8 +3,6 @@ import { useParams, useNavigate, Link, useSearchParams } from 'react-router-dom'
 import { useManagerSummary } from '../hooks/useManagerSummary';
 import { useManagerAwards } from '../hooks/useManagerAwards';
 import { useManagerTransactions } from '../hooks/useManagerTransactions';
-import { useManagerYearlyData } from '../hooks/useManagerYearlyData';
-import { useHeadToHead } from '../hooks/useHeadToHead';
 import { useAggregatedPlayers } from '../hooks/useAggregatedPlayers';
 import { MatchupCard } from '../components/MatchupCard';
 import { TradeCard } from '../components/TradeCard';
@@ -67,11 +65,7 @@ export default function ManagerPage() {
   // Fetch data from ALL endpoints
   const { summary, loading: summaryLoading, error: summaryError } = useManagerSummary(managerName, { year });
   const { awards, loading: awardsLoading } = useManagerAwards(managerName);
-  const { transactions: transactionHistory, loading: transactionsLoading } = useManagerTransactions(
-    managerName,
-    { limit: 10000 } // Fetch all transactions (no pagination)
-  );
-  const { yearlyData, loading: yearlyLoading } = useManagerYearlyData(managerName, year);
+  const { transactions: transactionHistory, loading: transactionsLoading } = useManagerTransactions(managerName);
 
   // Fetch aggregated players for top player cards (all years)
   const { players: aggregatedPlayers } = useAggregatedPlayers(null, null, managerName);
@@ -97,7 +91,7 @@ export default function ManagerPage() {
     setImageError(false);
   }, [managerName]);
 
-  const loading = summaryLoading || awardsLoading || transactionsLoading || (year && yearlyLoading);
+  const loading = summaryLoading || awardsLoading || transactionsLoading;
   const error = summaryError;
 
   if (loading && !summary) return <div className="App" style={{ paddingTop: '2rem' }}><p>Loading manager data...</p></div>;
@@ -118,7 +112,6 @@ export default function ManagerPage() {
   const overallData = summary.overall_data || {};
   const placements = overallData.placements || [];
   const playoffAppearances = overallData.playoff_appearances || 0;
-  const championships = overallData.championships || 0;
   const rankings = summary.rankings || {};
   const isActiveManager = summary.rankings?.is_active_manager ?? true;
   const awardsData = awards?.awards || {};
@@ -136,7 +129,6 @@ export default function ManagerPage() {
 
   // Responsive breakpoints
   const isMobile = windowWidth < 768;
-  const isTablet = windowWidth >= 768 && windowWidth < 1024;
 
   return (
     <div className="App" style={{ paddingTop: 0, maxWidth: '1400px', margin: '0 auto' }}>
@@ -354,7 +346,7 @@ export default function ManagerPage() {
                 <RankedStatCard title="AVG PA" value={overall.average_points_against?.toFixed(2) || 0} rank={rankings.average_points_against} worst={rankings.worst} isMobile={isMobile} />
                 <RankedStatCard
                   title="AVG Diff"
-                  value={((overall.average_points_for || 0) - (overall.average_points_against || 0)).toFixed(2)}
+                  value={overall.average_point_differential?.toFixed(2) || 0}
                   rank={rankings.average_points_differential}
                   worst={rankings.worst}
                   isMobile={isMobile}
@@ -749,12 +741,6 @@ export default function ManagerPage() {
             )}
           </div>
         )}
-
-        {activeTab === 'weekly' && year && yearlyData && <WeeklyTab
-          yearlyData={yearlyData}
-          year={year}
-          MatchupCard={MatchupCard}
-        />}
       </div>
     </div>
   );
@@ -1719,103 +1705,6 @@ function AwardsTab({ awardsData, MatchupCard }) {
             </div>
           )}
         </div>
-      )}
-    </div>
-  );
-}
-
-// Weekly Stats Tab - Compact grid layout
-function WeeklyTab({ yearlyData, year, MatchupCard }) {
-  if (!yearlyData) return null;
-
-  const weeklyScores = yearlyData.matchup_data?.overall?.weekly_scores || [];
-  const tradesByWeek = yearlyData.transactions?.trades?.by_week || [];
-  const addsByWeek = yearlyData.transactions?.adds?.by_week || [];
-  const dropsByWeek = yearlyData.transactions?.drops?.by_week || [];
-
-  // Filter out weeks where the manager didn't play (empty matchup_data)
-  const validWeeklyScores = weeklyScores.filter(week =>
-    week.manager_1 && week.manager_2 && week.manager_1_score !== undefined && week.manager_2_score !== undefined
-  );
-
-  return (
-    <div>
-      <h3 style={{ marginBottom: '1.5rem', fontSize: '1.25rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '1px' }}>Week-by-Week Breakdown for {year}</h3>
-
-      {/* Weekly Matchups in 2-column grid */}
-      {validWeeklyScores.length > 0 && (
-        <Section title="📅 Weekly Matchups">
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1rem' }}>
-            {validWeeklyScores.map((matchup, i) => (
-              <MatchupCard
-                key={i}
-                matchup={matchup}
-              />
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Weekly Trades */}
-      {tradesByWeek.length > 0 && tradesByWeek.some(w => w.trades && w.trades.length > 0) && (
-        <Section title="🔄 Trades by Week" style={{ marginTop: '2rem' }}>
-          {tradesByWeek.filter(w => w.trades && w.trades.length > 0).map((weekData, i) => (
-            <div key={i} style={{ marginBottom: '1rem' }}>
-              <div style={{ fontWeight: 700, marginBottom: '0.5rem', color: 'var(--text)' }}>Week {weekData.week}</div>
-              {weekData.trades.map((trade, j) => (
-                <div key={j} style={{
-                  paddingBottom: '0.75rem',
-                  marginBottom: '0.75rem',
-                  borderBottom: j < weekData.trades.length - 1 ? '1px solid var(--border)' : 'none'
-                }}>
-                  <TradeCard trade={trade} isMobile={isMobile} />
-                </div>
-              ))}
-            </div>
-          ))}
-        </Section>
-      )}
-
-      {/* Weekly Adds */}
-      {addsByWeek.length > 0 && addsByWeek.some(w => w.players && w.players.length > 0) && (
-        <Section title="➕ Adds by Week" style={{ marginTop: '2rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.75rem' }}>
-            {addsByWeek.filter(w => w.players && w.players.length > 0).map((weekData, i) => (
-              <div key={i} style={{
-                padding: '0.75rem',
-                background: 'var(--bg-alt)',
-                borderRadius: '6px',
-                border: '1px solid var(--border)'
-              }}>
-                <div style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '0.85rem' }}>Week {weekData.week}</div>
-                <div style={{ fontSize: '0.8rem' }}>
-                  {weekData.players.map((p, j) => <div key={j}>{typeof p === 'string' ? p : p?.name || 'Unknown Player'}</div>)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section>
-      )}
-
-      {/* Weekly Drops */}
-      {dropsByWeek.length > 0 && dropsByWeek.some(w => w.players && w.players.length > 0) && (
-        <Section title="➖ Drops by Week" style={{ marginTop: '2rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '0.75rem' }}>
-            {dropsByWeek.filter(w => w.players && w.players.length > 0).map((weekData, i) => (
-              <div key={i} style={{
-                padding: '0.75rem',
-                background: 'var(--bg-alt)',
-                borderRadius: '6px',
-                border: '1px solid var(--border)'
-              }}>
-                <div style={{ fontWeight: 700, marginBottom: '0.5rem', fontSize: '0.85rem' }}>Week {weekData.week}</div>
-                <div style={{ fontSize: '0.8rem' }}>
-                  {weekData.players.map((p, j) => <div key={j}>{typeof p === 'string' ? p : p?.name || 'Unknown Player'}</div>)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </Section>
       )}
     </div>
   );

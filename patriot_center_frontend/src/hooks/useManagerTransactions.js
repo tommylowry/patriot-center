@@ -6,7 +6,7 @@ import { useLoading } from '../contexts/LoadingContext';
  * Hook to fetch transaction history for a specific manager with filtering.
  *
  * @param {string} managerName - The name of the manager
- * @param {Object} filters - { year?: string, type?: string, limit?: number, offset?: number }
+ * @param {Object} filters - { year?: string }
  * @returns {Object} { transactions: Object, loading: boolean, error: string|null, refetch: Function }
  */
 export function useManagerTransactions(managerName, filters = {}) {
@@ -15,7 +15,7 @@ export function useManagerTransactions(managerName, filters = {}) {
   const [error, setError] = useState(null);
   const { startLoading, stopLoading } = useLoading();
 
-  const { year, type, limit = 50, offset = 0 } = filters;
+  const { year } = filters;
 
   const fetchData = useCallback(async () => {
     if (!managerName) {
@@ -31,10 +31,9 @@ export function useManagerTransactions(managerName, filters = {}) {
       let endpoint = `/api/managers/${encodeURIComponent(managerName)}/transactions`;
 
       // Add optional path parameters if provided
-      if (year || type || limit !== 50 || offset !== 0) {
+      if (year) {
         const yearParam = year || 'all';
-        const typeParam = type || 'all';
-        endpoint += `/${yearParam}/${typeParam}/${limit}/${offset}`;
+        endpoint += `/${yearParam}`;
       }
 
       const data = await apiGet(endpoint);
@@ -46,7 +45,7 @@ export function useManagerTransactions(managerName, filters = {}) {
       setLoading(false);
       stopLoading();
     }
-  }, [managerName, year, type, limit, offset, startLoading, stopLoading]);
+  }, [managerName, year, startLoading, stopLoading]);
 
   useEffect(() => {
     fetchData();

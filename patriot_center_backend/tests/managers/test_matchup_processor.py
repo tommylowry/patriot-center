@@ -393,7 +393,7 @@ class TestScrubMatchupData:
     def test_scrub_matchup_data_regular_season_win(self, mock_season_state, mock_fetch, processor):
         """Test scrub_matchup_data processes regular season matchup and calls cache update."""
         mock_season_state.return_value = "regular_season"
-        mock_fetch.return_value = ([
+        mock_fetch.return_value = [
             {
                 "matchup_id": 1,
                 "roster_id": 1,
@@ -406,7 +406,7 @@ class TestScrubMatchupData:
                 "points": 100.0,
                 "players": ["player3", "player4"]
             }
-        ], 200)
+        ]
 
         processor.set_session_state(
             year="2023",
@@ -435,7 +435,7 @@ class TestScrubMatchupData:
     def test_scrub_matchup_data_tie(self, mock_season_state, mock_fetch, processor):
         """Test scrub_matchup_data correctly determines tie result."""
         mock_season_state.return_value = "regular_season"
-        mock_fetch.return_value = ([
+        mock_fetch.return_value = [
             {
                 "matchup_id": 1,
                 "roster_id": 1,
@@ -448,7 +448,7 @@ class TestScrubMatchupData:
                 "points": 100.0,
                 "players": []
             }
-        ], 200)
+        ]
 
         processor.set_session_state(
             year="2023",
@@ -473,12 +473,12 @@ class TestScrubMatchupData:
     def test_scrub_matchup_data_filters_playoff_teams(self, mock_season_state, mock_fetch, processor):
         """Test scrub_matchup_data filters out non-playoff teams during playoffs."""
         mock_season_state.return_value = "playoffs"
-        mock_fetch.return_value = ([
+        mock_fetch.return_value = [
             {"matchup_id": 1, "roster_id": 1, "points": 120.5, "players": []},  # In playoffs
             {"matchup_id": 1, "roster_id": 2, "points": 100.0, "players": []},  # In playoffs
             {"matchup_id": 2, "roster_id": 3, "points": 90.0, "players": []},   # Not in playoffs
             {"matchup_id": 2, "roster_id": 4, "points": 85.0, "players": []}    # Not in playoffs
-        ], 200)
+        ]
 
         processor.set_session_state(
             year="2023",
@@ -507,12 +507,12 @@ class TestScrubPlayoffData:
     @patch('patriot_center_backend.managers.matchup_processor.fetch_sleeper_data')
     def test_scrub_playoff_data_adds_appearances(self, mock_fetch, processor):
         """Test that scrub_playoff_data adds playoff appearances."""
-        mock_fetch.return_value = ({
+        mock_fetch.return_value = {
             "bracket": [
                 {"r": 1, "m": 1},  # Round 1, matchup 1
                 {"r": 1, "m": 2}   # Round 1, matchup 2
             ]
-        }, 200)
+        }
 
         processor.set_session_state(
             year="2023",
@@ -534,9 +534,9 @@ class TestScrubPlayoffData:
         # Pre-populate with existing playoff appearance
         processor._cache["Manager 1"]["summary"]["overall_data"]["playoff_appearances"].append("2023")
 
-        mock_fetch.return_value = ({
+        mock_fetch.return_value = {
             "bracket": [{"r": 1, "m": 1}]
-        }, 200)
+        }
 
         processor.set_session_state(
             year="2023",
@@ -561,10 +561,10 @@ class TestCacheModification:
     def test_processor_modifies_cache_in_place(self, mock_season_state, mock_fetch, sample_cache):
         """Test that processor modifies the cache that was passed in."""
         mock_season_state.return_value = "regular_season"
-        mock_fetch.return_value = ([
+        mock_fetch.return_value = [
             {"matchup_id": 1, "roster_id": 1, "points": 120.5, "players": []},
             {"matchup_id": 1, "roster_id": 2, "points": 100.0, "players": []}
-        ], 200)
+        ]
 
         original_cache = sample_cache
         processor = MatchupProcessor(cache=sample_cache, playoff_week_start=15)

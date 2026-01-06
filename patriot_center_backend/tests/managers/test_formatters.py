@@ -56,11 +56,11 @@ class TestGetSeasonState:
     @patch('patriot_center_backend.managers.formatters.LEAGUE_IDS', {2023: "league123"})
     def test_fetch_playoff_week_from_api(self, mock_fetch):
         """Test fetching playoff_week_start from API when not provided."""
-        mock_fetch.return_value = ({
+        mock_fetch.return_value = {
             "settings": {
                 "playoff_week_start": 15
             }
-        }, 200)
+        }
 
         week = "10"
         year = "2023"

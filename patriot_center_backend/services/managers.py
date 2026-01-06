@@ -9,11 +9,14 @@ Notes:
 - STARTERS_CACHE is loaded at import time to serve requests quickly.
 - Returns empty dicts on missing seasons/weeks/managers instead of raising.
 """
-from patriot_center_backend.utils.player_ids_loader import load_player_ids
-from patriot_center_backend.utils.starters_loader import load_starters_cache
 
-PLAYER_IDS = load_player_ids()
-STARTERS_CACHE = load_starters_cache()
+from patriot_center_backend.cache import get_cache_manager
+
+CACHE_MANAGER = get_cache_manager()
+
+PLAYER_IDS     = CACHE_MANAGER.get_player_ids_cache()
+STARTERS_CACHE = CACHE_MANAGER.get_starters_cache()
+
 
 def fetch_starters(manager=None, season=None, week=None):
     """
@@ -37,16 +40,6 @@ def fetch_starters(manager=None, season=None, week=None):
         return _filter_by_season_and_week(season, week)
 
     return _filter_by_manager(manager, season, week)
-
-
-
-
-
-
-
-
-
-
 
 def _filter_by_season_and_week(season, week):
     """
@@ -107,4 +100,3 @@ def _filter_by_manager(manager, season, week):
                 filtered_data[season_key][week_key][manager] = starters[manager]
 
     return filtered_data
-

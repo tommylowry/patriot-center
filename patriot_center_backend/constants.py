@@ -10,8 +10,6 @@ This module defines all static configuration values used throughout the applicat
 
 All constants are loaded at import time and referenced across services and utilities.
 """
-# patriot_center_backend/constants.py
-import os
 
 # Map year to the league ids (Sleeper league IDs for each fantasy season)
 LEAGUE_IDS = {
@@ -48,31 +46,6 @@ USERNAME_TO_REAL_NAME = {
 
 # Invert the MANAGER_USERNAME_TO_REAL_NAME mapping
 NAME_TO_MANAGER_USERNAME = {v: k for k, v in USERNAME_TO_REAL_NAME.items()}
-
-# Sleeper API base URL
-SLEEPER_API_URL = "https://api.sleeper.app/v1"
-
-
-# -- ALL FILE PATH CONSTANTS --
-# Determine backend directory
-_BACKEND_DIR = os.path.dirname(os.path.abspath(__file__))
-
-# In season weekly data cache files
-PLAYERS_CACHE_FILE             = os.path.join(_BACKEND_DIR, "data", "players_cache.json")
-REPLACEMENT_SCORE_CACHE_FILE   = os.path.join(_BACKEND_DIR, "data", "replacement_score_cache.json")
-STARTERS_CACHE_FILE            = os.path.join(_BACKEND_DIR, "data", "starters_cache.json")
-PLAYERS_DATA_CACHE_FILE        = os.path.join(_BACKEND_DIR, "data", "player_data_cache.json")
-
-# Manager metadata cache file
-MANAGER_METADATA_CACHE_FILE    = os.path.join(_BACKEND_DIR, "data", "manager_metadata_cache.json")
-TRANSACTION_IDS_FILE           = os.path.join(_BACKEND_DIR, "data", "transaction_ids.json")
-
-# Sleeper player IDs cache file
-PLAYER_IDS_CACHE_FILE          = os.path.join(_BACKEND_DIR, "data", "player_ids.json")
-
-# Options selection and validation cache files
-VALID_OPTIONS_CACHE_FILE       = os.path.join(_BACKEND_DIR, "data", "valid_options_cache.json")
-# -- END FILE PATH CONSTANTS --
 
 
 # Mapping of team IDs to their full names

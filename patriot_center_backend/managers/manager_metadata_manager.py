@@ -22,6 +22,11 @@ from patriot_center_backend.managers.validators import validate_caching_precondi
 from patriot_center_backend.managers.formatters import get_season_state
 
 
+CACHE_MANAGER = get_cache_manager()
+
+MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
+
+
 class ManagerMetadataManager:
     """
     Central orchestrator for all manager metadata operations (Singleton).
@@ -51,12 +56,7 @@ class ManagerMetadataManager:
     """
 
     def __init__(self) -> None:
-        # Get cache manager instance
-        self._cache_mgr = get_cache_manager()
-        
-        # Load caches
-        self._cache = self._cache_mgr.get_manager_cache()
-        
+
         # Configuration state
         self._use_faab: Optional[bool] = None
         self._playoff_week_start: Optional[int] = None
@@ -69,25 +69,9 @@ class ManagerMetadataManager:
         self._week: Optional[str] = None
         self._weekly_roster_ids: Dict[int, str] = {}
         self._playoff_roster_ids: Dict[int, str] = {}
-        
-        # External data caches
-        self._player_ids            = self._cache_mgr.get_player_ids_cache()
-        self._transaction_ids_cache = self._cache_mgr.get_transaction_ids_cache()
-        self._players_cache         = self._cache_mgr.get_players_cache()
-        self._valid_options_cache   = self._cache_mgr.get_valid_options_cache()
-        self._starters_cache        = self._cache_mgr.get_starters_cache()
 
         # Initialize data_exporter subprocesser
-        #   NOTE: all data stays the same unless an update occurs in which case the
-        #   initialization of this file is re-ran by the api controller)
-        self._data_exporter = DataExporter(
-            cache                 = self._cache,
-            transaction_ids_cache = self._transaction_ids_cache,
-            players_cache         = self._players_cache,
-            valid_options_cache   = self._valid_options_cache,
-            starters_cache        = self._starters_cache,
-            player_ids            = self._player_ids
-        )
+        self._data_exporter = DataExporter()
         
         # Image URL cache
         self._image_urls_cache: Dict[str, str] = {}
@@ -112,15 +96,10 @@ class ManagerMetadataManager:
                 raise ValueError("Cannot initialize processors before use_faab is set")
             
             self._transaction_processor = TransactionProcessor(
-                cache                  = self._cache,
-                transaction_ids_cache  = self._transaction_ids_cache,
-                players_cache          = self._players_cache,
-                player_ids             = self._player_ids,
-                use_faab               = self._use_faab
+                use_faab = self._use_faab
             )
             
             self._matchup_processor = MatchupProcessor(
-                cache              = self._cache,
                 playoff_week_start = self._playoff_week_start
             )
     
@@ -151,7 +130,7 @@ class ManagerMetadataManager:
             return
         
         if matchups:
-            update_players_cache(matchups, self._players_cache, self._player_ids)
+            update_players_cache(matchups)
 
         self._year = year
         self._week = week
@@ -165,14 +144,14 @@ class ManagerMetadataManager:
 
         self._weekly_roster_ids[roster_id] = manager
         self._set_defaults_if_missing(roster_id)
-        self._cache[manager]["years"][year]["roster_id"] = roster_id
+        MANAGER_CACHE[manager]["years"][year]["roster_id"] = roster_id
 
-        if "user_id" not in self._cache[manager]["summary"]:
+        if "user_id" not in MANAGER_CACHE[manager]["summary"]:
             username = NAME_TO_MANAGER_USERNAME.get(manager, "")
             if username:
                 user_payload = fetch_sleeper_data(f"user/{username}")
                 if "user_id" in user_payload:
-                    self._cache[manager]["summary"]["user_id"] = user_payload["user_id"]
+                    MANAGER_CACHE[manager]["summary"]["user_id"] = user_payload["user_id"]
                 else:
                     raise ValueError(f"Failed to fetch 'user_id' for manager {manager} with username {username}.")
             else:
@@ -251,11 +230,11 @@ class ManagerMetadataManager:
             year: Season year as string
         """
         for manager in placement_dict:
-            if manager not in self._cache:
+            if manager not in MANAGER_CACHE:
                 continue
             
-            if year not in self._cache[manager]["summary"]["overall_data"]["placement"]:
-                self._cache[manager]["summary"]["overall_data"]["placement"][year] = placement_dict[manager]
+            if year not in MANAGER_CACHE[manager]["summary"]["overall_data"]["placement"]:
+                MANAGER_CACHE[manager]["summary"]["overall_data"]["placement"][year] = placement_dict[manager]
 
     # ===== API Export Functions =====
     
@@ -283,9 +262,7 @@ class ManagerMetadataManager:
     
     def save(self) -> None:
         """Save all caches to disk."""
-        self._cache_mgr.save_manager_cache(self._cache)
-        self._cache_mgr.save_transaction_ids_cache(self._transaction_ids_cache)
-        self._cache_mgr.save_players_cache(self._players_cache)
+        CACHE_MANAGER.save_all_caches()
     
     # ========== PRIVATE HELPER METHODS ==========
     
@@ -309,28 +286,28 @@ class ManagerMetadataManager:
 
         manager = self._weekly_roster_ids.get(roster_id, None)
 
-        if manager not in self._cache:
-            self._cache[manager] = {"summary": deepcopy(self._templates['top_level_summary_template']), "years": {}}
+        if manager not in MANAGER_CACHE:
+            MANAGER_CACHE[manager] = {"summary": deepcopy(self._templates['top_level_summary_template']), "years": {}}
         
-        if self._year not in self._cache[manager]["years"]:
-            self._cache[manager]["years"][self._year] = {
+        if self._year not in MANAGER_CACHE[manager]["years"]:
+            MANAGER_CACHE[manager]["years"][self._year] = {
                 "summary": deepcopy(self._templates['yearly_summary_template']),
                 "roster_id": None,
                 "weeks": {}
             }
         
         # Initialize week template if missing
-        if self._week not in self._cache[manager]["years"][self._year]["weeks"]:
+        if self._week not in MANAGER_CACHE[manager]["years"][self._year]["weeks"]:
 
             # Differentiate between playoff and non-playoff weeks
             season_state = get_season_state(self._week, self._year, self._playoff_week_start)
             if season_state == "playoffs" and roster_id not in self._playoff_roster_ids:
-                self._cache[manager]["years"][self._year]["weeks"][self._week] = deepcopy(self._templates['weekly_summary_not_in_playoffs_template'])
+                MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week] = deepcopy(self._templates['weekly_summary_not_in_playoffs_template'])
             else:
-                self._cache[manager]["years"][self._year]["weeks"][self._week] = deepcopy(self._templates['weekly_summary_template'])
+                MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week] = deepcopy(self._templates['weekly_summary_template'])
         
         if self._use_faab:
-            self._cache = initialize_faab_template(manager, self._year, self._week, self._cache)
+            initialize_faab_template(manager, self._year, self._week)
     
     def _clear_weekly_metadata(self) -> None:
         """

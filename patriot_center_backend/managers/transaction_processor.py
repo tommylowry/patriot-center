@@ -10,11 +10,18 @@ Handles all transaction-related operations including:
 from typing import Dict, Any, List, Optional
 from copy import deepcopy
 
-from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.cache import get_cache_manager
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
-
 from patriot_center_backend.managers.validators import validate_transaction
 from patriot_center_backend.managers.utilities import update_players_cache, draft_pick_decipher
+from patriot_center_backend.constants import LEAGUE_IDS
+
+
+CACHE_MANAGER = get_cache_manager()
+
+MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
+PLAYER_IDS_CACHE      = CACHE_MANAGER.get_player_ids_cache()
+TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
 
 
 class TransactionProcessor:
@@ -38,22 +45,13 @@ class TransactionProcessor:
     Uses session state pattern for thread safety during week processing.
     """
 
-    def __init__(self, cache: dict, transaction_ids_cache: dict, players_cache: dict,
-                 player_ids: dict, use_faab: bool) -> None:
+    def __init__(self, use_faab: bool) -> None:
         """
         Initialize transaction processor with cache references.
 
         Args:
-            cache: Main manager metadata cache (will be modified in-place)
-            transaction_ids_cache: Transaction ID deduplication cache (will be modified in-place)
-            players_cache: Player cache (will be modified in-place)
-            player_ids: Player ID to metadata mapping (read-only)
             use_faab: Whether league uses FAAB (Free Agent Acquisition Budget)
         """
-        self._cache = cache
-        self._transaction_ids_cache = transaction_ids_cache
-        self._players_cache = players_cache
-        self._player_ids = player_ids
         self._use_faab = use_faab
         
         # Session state (set externally before processing)
@@ -79,6 +77,13 @@ class TransactionProcessor:
         self._weekly_roster_ids = weekly_roster_ids
         self._use_faab = use_faab
     
+    def clear_session_state(self) -> None:
+        """Clear session state after processing week."""
+        self._year = None
+        self._week = None
+        self._weekly_roster_ids = {}
+        self._weekly_transaction_ids = []
+
     def scrub_transaction_data(self, year: str, week: str) -> None:
         """
         Fetch and process all transactions for a given week.
@@ -108,13 +113,6 @@ class TransactionProcessor:
         for transaction in transactions_list:
            self._process_transaction(transaction)
     
-    def clear_session_state(self) -> None:
-        """Clear session state after processing week."""
-        self._year = None
-        self._week = None
-        self._weekly_roster_ids = {}
-        self._weekly_transaction_ids = []
-    
     def check_for_reverse_transactions(self) -> None:
         """
         Detect and revert reversed transactions (joke trades or accidental transactions).
@@ -134,10 +132,10 @@ class TransactionProcessor:
             weekly_transaction_ids = deepcopy(self._weekly_transaction_ids)
             
             transaction_id1 = weekly_transaction_ids.pop()
-            transaction1    = self._transaction_ids_cache[transaction_id1]
+            transaction1    = TRANSACTION_IDS_CACHE[transaction_id1]
 
             for transaction_id2 in weekly_transaction_ids:
-                transaction2 = self._transaction_ids_cache[transaction_id2]
+                transaction2 = TRANSACTION_IDS_CACHE[transaction_id2]
 
                 # Skip if different managers involved
                 if sorted(transaction1['managers_involved']) != sorted(transaction2['managers_involved']):
@@ -273,16 +271,16 @@ class TransactionProcessor:
             transaction_id1: First transaction ID to revert
             transaction_id2: Second transaction ID to revert
         """
-        transaction = deepcopy(self._transaction_ids_cache[transaction_id1])
+        transaction = deepcopy(TRANSACTION_IDS_CACHE[transaction_id1])
         
         year = transaction['year']
         week = transaction['week']
 
         for manager in transaction['managers_involved']:
             
-            overall_trades = self._cache[manager]['summary']['transactions']
-            yearly_trades  = self._cache[manager]['years'][year]['summary']['transactions']
-            weekly_trades  = self._cache[manager]['years'][year]['weeks'][week]['transactions']
+            overall_trades = MANAGER_CACHE[manager]['summary']['transactions']
+            yearly_trades  = MANAGER_CACHE[manager]['years'][year]['summary']['transactions']
+            weekly_trades  = MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions']
 
             if transaction_id1 in weekly_trades['trades']['transaction_ids']:
                 weekly_trades['trades']['transaction_ids'].remove(transaction_id1)
@@ -369,8 +367,8 @@ class TransactionProcessor:
                         if d['faab']['acquired_from']['trade_partners'][trade_partner] == 0:
                             del d['faab']['acquired_from']['trade_partners'][trade_partner]
             
-        del self._transaction_ids_cache[transaction_id1]
-        del self._transaction_ids_cache[transaction_id2]
+        del TRANSACTION_IDS_CACHE[transaction_id1]
+        del TRANSACTION_IDS_CACHE[transaction_id2]
         if transaction_id1 in self._weekly_transaction_ids:
             self._weekly_transaction_ids.remove(transaction_id1)
         if transaction_id2 in self._weekly_transaction_ids:
@@ -397,7 +395,7 @@ class TransactionProcessor:
             print(f"Cannot revert type {transaction_type} in _revert_add_or_drop_transaction for transaction_id {transaction_id}")
             return
 
-        transaction = deepcopy(self._transaction_ids_cache[transaction_id])
+        transaction = deepcopy(TRANSACTION_IDS_CACHE[transaction_id])
 
         year    = transaction['year']
         week    = transaction['week']
@@ -408,9 +406,9 @@ class TransactionProcessor:
             raise Exception(f"Weird {transaction_type} with multiple managers")
         
         places_to_change = []
-        places_to_change.append(self._cache[manager]['summary']['transactions'][f"{transaction_type}s"])
-        places_to_change.append(self._cache[manager]['years'][year]['summary']['transactions'][f"{transaction_type}s"])
-        places_to_change.append(self._cache[manager]['years'][year]['weeks'][week]['transactions'][f"{transaction_type}s"])
+        places_to_change.append(MANAGER_CACHE[manager]['summary']['transactions'][f"{transaction_type}s"])
+        places_to_change.append(MANAGER_CACHE[manager]['years'][year]['summary']['transactions'][f"{transaction_type}s"])
+        places_to_change.append(MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions'][f"{transaction_type}s"])
 
         for d in places_to_change:
 
@@ -423,13 +421,13 @@ class TransactionProcessor:
 
         # If this transaction had faab spent and the transaction to remove is add, remove the transaction id from the faab spent portion.
         if "faab_spent" in transaction and transaction_type == "add":
-            if transaction_id in self._cache[manager]['years'][year]['weeks'][week]['transactions']['faab']['transaction_ids']:
-                self._cache[manager]['years'][year]['weeks'][week]['transactions']['faab']['transaction_ids'].remove(transaction_id)
+            if transaction_id in MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions']['faab']['transaction_ids']:
+                MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions']['faab']['transaction_ids'].remove(transaction_id)
             
             places_to_change = []
-            places_to_change.append(self._cache[manager]['summary']['transactions']["faab"])
-            places_to_change.append(self._cache[manager]['years'][year]['summary']['transactions']["faab"])
-            places_to_change.append(self._cache[manager]['years'][year]['weeks'][week]['transactions']["faab"])
+            places_to_change.append(MANAGER_CACHE[manager]['summary']['transactions']["faab"])
+            places_to_change.append(MANAGER_CACHE[manager]['years'][year]['summary']['transactions']["faab"])
+            places_to_change.append(MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions']["faab"])
 
             for d in places_to_change:
                     
@@ -439,13 +437,13 @@ class TransactionProcessor:
         
 
         # remove the transaction_type portion of this transaction and keep it intact incase there was a the other type involved
-        del self._transaction_ids_cache[transaction_id][transaction_type]
-        self._transaction_ids_cache[transaction_id]['types'].remove(transaction_type)
-        self._transaction_ids_cache[transaction_id]['players_involved'].remove(player)
+        del TRANSACTION_IDS_CACHE[transaction_id][transaction_type]
+        TRANSACTION_IDS_CACHE[transaction_id]['types'].remove(transaction_type)
+        TRANSACTION_IDS_CACHE[transaction_id]['players_involved'].remove(player)
 
         # this was the only data in the transaction so it can be fully removed
-        if len(self._transaction_ids_cache[transaction_id]['types']) == 0:
-            del self._transaction_ids_cache[transaction_id]
+        if len(TRANSACTION_IDS_CACHE[transaction_id]['types']) == 0:
+            del TRANSACTION_IDS_CACHE[transaction_id]
             if transaction_id in self._weekly_transaction_ids:
                 self._weekly_transaction_ids.remove(transaction_id)
             return True # return True if transaction_id was deleted
@@ -484,18 +482,18 @@ class TransactionProcessor:
             if "adds" in transaction and transaction["adds"] != None:
                 for player_id in transaction.get("adds", {}):
                     if transaction["adds"][player_id] == roster_id:
-                        player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
+                        player_name = PLAYER_IDS_CACHE.get(player_id, {}).get("full_name", "unknown_player")
                         acquired[player_name] = self._weekly_roster_ids.get(transaction["drops"][player_id], "unknown_manager")
-                        update_players_cache(player_id, self._players_cache, self._player_ids)
+                        update_players_cache(player_id)
             
 
             sent = {}
             if "drops" in transaction and transaction["drops"] != None:
                 for player_id in transaction.get("drops", {}):
                     if transaction["drops"][player_id] == roster_id:
-                        player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
+                        player_name = PLAYER_IDS_CACHE.get(player_id, {}).get("full_name", "unknown_player")
                         sent[player_name] = self._weekly_roster_ids.get(transaction["adds"][player_id], "unknown_manager")
-                        update_players_cache(player_id, self._players_cache, self._player_ids)
+                        update_players_cache(player_id)
             
 
             if "draft_picks" in transaction and transaction["draft_picks"] != None:
@@ -574,7 +572,7 @@ class TransactionProcessor:
             }
         }
 
-        if transaction_id in self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"]["trades"]["transaction_ids"]:
+        if transaction_id in MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week]["transactions"]["trades"]["transaction_ids"]:
             # Trade already processed for this week
             return
         
@@ -590,9 +588,9 @@ class TransactionProcessor:
             commish_action
         )
         
-        top_level_summary = self._cache[manager]["summary"]["transactions"]["trades"]
-        yearly_summary = self._cache[manager]["years"][self._year]["summary"]["transactions"]["trades"]
-        weekly_summary = self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"]["trades"]
+        top_level_summary = MANAGER_CACHE[manager]["summary"]["transactions"]["trades"]
+        yearly_summary = MANAGER_CACHE[manager]["years"][self._year]["summary"]["transactions"]["trades"]
+        weekly_summary = MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week]["transactions"]["trades"]
         summaries = [top_level_summary, yearly_summary, weekly_summary]
         
         # Add trade details in all summaries
@@ -662,7 +660,7 @@ class TransactionProcessor:
                 roster_id = adds[player_id]
                 
                 manager = self._weekly_roster_ids.get(roster_id, None)
-                player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
+                player_name = PLAYER_IDS_CACHE.get(player_id, {}).get("full_name", "unknown_player")
                 
                 transaction_id = transaction.get("transaction_id", "")
 
@@ -671,7 +669,7 @@ class TransactionProcessor:
                 if self._use_faab and transaction.get("settings", None) != None:
                     waiver_bid = transaction.get("settings", {}).get("waiver_bid", None)
                 self._add_add_or_drop_details_to_cache("add", manager, player_name, transaction_id, commish_action, waiver_bid)
-                update_players_cache(player_id, self._players_cache, self._player_ids)
+                update_players_cache(player_id)
                 
                 # add FAAB details to the cache
                 if self._use_faab and transaction.get("settings", None) != None:
@@ -684,13 +682,13 @@ class TransactionProcessor:
                 roster_id = drops[player_id]
                 
                 manager = self._weekly_roster_ids.get(roster_id, None)
-                player_name = self._player_ids.get(player_id, {}).get("full_name", "unknown_player")
+                player_name = PLAYER_IDS_CACHE.get(player_id, {}).get("full_name", "unknown_player")
                 
                 transaction_id = transaction.get("transaction_id", "")
 
                 # add drop details to the cache
                 self._add_add_or_drop_details_to_cache("drop", manager, player_name, transaction_id, commish_action)
-                update_players_cache(player_id, self._players_cache, self._player_ids)
+                update_players_cache(player_id)
     
     def _add_add_or_drop_details_to_cache(self, free_agent_type: str, manager: str,
                                          player_name: str, transaction_id: str,
@@ -717,7 +715,7 @@ class TransactionProcessor:
         if free_agent_type not in ["add", "drop"]:
             return
 
-        if transaction_id in self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"][f"{free_agent_type}s"]["transaction_ids"]:
+        if transaction_id in MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week]["transactions"][f"{free_agent_type}s"]["transaction_ids"]:
             # Add already processed for this week
             return
         
@@ -733,9 +731,9 @@ class TransactionProcessor:
             commish_action
         )
         
-        top_level_summary = self._cache[manager]["summary"]["transactions"][f"{free_agent_type}s"]
-        yearly_summary = self._cache[manager]["years"][self._year]["summary"]["transactions"][f"{free_agent_type}s"]
-        weekly_summary = self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"][f"{free_agent_type}s"]
+        top_level_summary = MANAGER_CACHE[manager]["summary"]["transactions"][f"{free_agent_type}s"]
+        yearly_summary = MANAGER_CACHE[manager]["years"][self._year]["summary"]["transactions"][f"{free_agent_type}s"]
+        weekly_summary = MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week]["transactions"][f"{free_agent_type}s"]
         summaries = [top_level_summary, yearly_summary, weekly_summary]
         
         # Add add details in all summaries
@@ -778,14 +776,14 @@ class TransactionProcessor:
             print("Trade transaction missing trade partner for FAAB processing:", transaction_type, manager, player_name, faab_amount, transaction_id)
             return
 
-        if transaction_id in self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"]["faab"]["transaction_ids"]:
+        if transaction_id in MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week]["transactions"]["faab"]["transaction_ids"]:
             # Waiver already processed for this week
             return
         
         
-        top_level_summary = self._cache[manager]["summary"]["transactions"]["faab"]
-        yearly_summary = self._cache[manager]["years"][self._year]["summary"]["transactions"]["faab"]
-        weekly_summary = self._cache[manager]["years"][self._year]["weeks"][self._week]["transactions"]["faab"]
+        top_level_summary = MANAGER_CACHE[manager]["summary"]["transactions"]["faab"]
+        yearly_summary = MANAGER_CACHE[manager]["years"][self._year]["summary"]["transactions"]["faab"]
+        weekly_summary = MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week]["transactions"]["faab"]
         summaries = [top_level_summary, yearly_summary, weekly_summary]
 
         if transaction_type in ["free_agent", "waiver", "commissioner"]:
@@ -874,8 +872,8 @@ class TransactionProcessor:
                 raise ValueError(f"Transaction type {transaction_info.get('type') } not a valid 'add_or_drop' type, needs to be one of: {valid_add_or_drop_types}")
         
         # If transaction not in cache, make a new object
-        if transaction_id not in self._transaction_ids_cache:
-            self._transaction_ids_cache[transaction_id] = {
+        if transaction_id not in TRANSACTION_IDS_CACHE:
+            TRANSACTION_IDS_CACHE[transaction_id] = {
                 "year":              self._year,
                 "week":              self._week,
                 "commish_action":    commish_action,
@@ -883,7 +881,7 @@ class TransactionProcessor:
                 "types":             [],
                 "players_involved":  []
             }
-        transaction_info_to_cache = self._transaction_ids_cache[transaction_id]
+        transaction_info_to_cache = TRANSACTION_IDS_CACHE[transaction_id]
 
         
 

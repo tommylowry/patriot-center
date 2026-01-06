@@ -6,6 +6,11 @@ All templates are pure functions with no side effects.
 """
 from copy import deepcopy
 
+from patriot_center_backend.cache import get_cache_manager
+
+CACHE_MANAGER = get_cache_manager()
+MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
+
 # faab_template used by both methods
 faab_template = {
     "total_lost_or_gained": 0,
@@ -29,7 +34,7 @@ faab_template = {
     }
 }
 
-def initialize_faab_template(manager: str, year: str, week: str, cache: dict) -> dict:
+def initialize_faab_template(manager: str, year: str, week: str) -> dict:
     """
     Initialize FAAB template for a specific year/week.
     
@@ -37,24 +42,17 @@ def initialize_faab_template(manager: str, year: str, week: str, cache: dict) ->
         manager: Manager needing the faab template
         year: Season year as string
         week: Week number as string
-        cache: Existing cache to check for prior FAAB values
-    
-    Returns:
-        FAAB template dictionary
     """
-    if "faab" not in cache[manager]["summary"]["transactions"]:
-        cache[manager]["summary"]["transactions"]["faab"] = deepcopy(faab_template)
+    if "faab" not in MANAGER_CACHE[manager]["summary"]["transactions"]:
+        MANAGER_CACHE[manager]["summary"]["transactions"]["faab"] = deepcopy(faab_template)
     
-    if "faab" not in cache[manager]["years"][year]["summary"]["transactions"]:
-        cache[manager]["years"][year]["summary"]["transactions"]["faab"] = deepcopy(faab_template)
+    if "faab" not in MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]:
+        MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["faab"] = deepcopy(faab_template)
         
-    if "faab" not in cache[manager]["years"][year]["weeks"][week]["transactions"]:
+    if "faab" not in MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]:
         faab_template_with_transaction_ids = deepcopy(faab_template)
         faab_template_with_transaction_ids["transaction_ids"] = []
-        cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"] = deepcopy(faab_template_with_transaction_ids)
-    
-    return cache
-
+        MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["faab"] = deepcopy(faab_template_with_transaction_ids)
 
 def initialize_summary_templates(use_faab: bool) -> dict:
     """

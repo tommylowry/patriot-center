@@ -522,5 +522,3 @@ def _get_all_rostered_players(roster_ids, season, week):
         rostered_players[imported_roster_ids[matchup['roster_id']]] = matchup['players']
     
     return rostered_players
-
-update_player_data_cache()

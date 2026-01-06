@@ -17,14 +17,23 @@ The API supports two response formats:
 """
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from copy import deepcopy
 
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
-from patriot_center_backend.utils.cache_utils import slug_to_player_name
+from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.utils.helpers import slug_to_player_name
+from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation, fetch_aggregated_managers
 from patriot_center_backend.managers import get_manager_metadata_manager
 
+
 MANAGER_METADATA_MANAGER = get_manager_metadata_manager()
+CACHE_MANAGER            = get_cache_manager()
+
+PLAYERS_CACHE = CACHE_MANAGER.get_players_cache()
+
 
 app = Flask(__name__)
+
 
 # Configure CORS for production (Netlify frontend)
 CORS(app, resources={
@@ -35,10 +44,10 @@ CORS(app, resources={
     r"/valid_options*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_player_manager_aggregation*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get/managers/list": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/api/managers/*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/slug_to_player_name/*": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/api/managers/*": {"origins": ["https://patriotcenter.netlify.app"]}
 })
 CORS(app)  # Enable CORS for all routes during development
+
 
 @app.route('/')
 def index():
@@ -57,7 +66,6 @@ def index():
             "/api/managers/<manager_name>/head-to-head/<opponent_name>",
             "/api/managers/<manager_name>/transactions",
             "/api/managers/<manager_name>/awards",
-            "/slug_to_player_name/<slug>",
             "/ping",
             "/health"
         ]
@@ -155,8 +163,6 @@ def get_aggregated_managers(player, arg2, arg3):
     Returns:
         Flask Response: JSON payload (aggregated manager stats or error).
     """
-    from patriot_center_backend.services.aggregated_data import fetch_aggregated_managers
-
     player = slug_to_player_name(player)  # Convert slug to player name
 
     try:
@@ -188,8 +194,6 @@ def get_player_manager_aggregation(player, manager, year, week):
     Returns:
         Flask Response: JSON payload (aggregated stats or error).
     """
-    from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation
-
     player = slug_to_player_name(player)  # Convert slug to player name
 
     data = fetch_player_manager_aggregation(player=player, manager=manager, season=year, week=week)
@@ -207,8 +211,8 @@ def list_players():
     """
     Endpoint to list all players in the system.
     """
-    from patriot_center_backend.services.players import fetch_players
-    data = fetch_players()
+    data = deepcopy(PLAYERS_CACHE)
+
     for manager in  NAME_TO_MANAGER_USERNAME.keys():
         data [manager] = {
             "type":      "manager",
@@ -376,26 +380,6 @@ def manager_awards(manager_name):
     response = jsonify(data)
     response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
     return response, 200
-
-
-@app.route('/slug_to_player_name/<string:slug>', methods=['GET'])
-def slug_to_player_name_endpoint(slug):
-    """
-    Convert a slug string to a player name.
-
-    Args:
-        slug (str): The slug string (e.g., "john%20doe").
-
-    Returns:
-        Flask Response: JSON payload with player name or error.
-    """
-    try:
-        player_name = slug_to_player_name(slug)
-        response = jsonify({"player_name": player_name})
-        response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
-        return response, 200
-    except ValueError as e:
-        return jsonify({"error": str(e)}), 400
 
     
 # /update_caches endpoint removed - cache updates now handled by GitHub Actions

@@ -16,40 +16,19 @@ Notes:
 - Weeks are capped at 17 (include playoff data).
 """
 
-import os
-from patriot_center_backend.utils.replacement_score_loader import load_replacement_score_cache
-from patriot_center_backend.utils.starters_loader import load_starters_cache
-from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
-from patriot_center_backend.constants import LEAGUE_IDS, PLAYERS_DATA_CACHE_FILE, USERNAME_TO_REAL_NAME
-from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.utils.player_ids_loader import load_player_ids
+from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 
-# Constants
-# Load and memoize supporting datasets at import time so subsequent calls can reuse them.
-# Be aware: these may perform network and disk I/O during import.
-REPLACEMENT_SCORES   = load_replacement_score_cache()
-STARTERS_CACHE       = load_starters_cache()
-PLAYER_IDS           = load_player_ids()
+from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
 
 
-def load_player_data_cache():
-    """
-    Load ffWAR cache from disk.
+CACHE_MANAGER = get_cache_manager()
 
-    Returns:
-        dict: ffWAR cache content.
-    """
-    cache = load_cache(PLAYERS_DATA_CACHE_FILE)
-    
-    if not cache:
-        # If the cache file does not exist or is invalid, return an empty dictionary
-        raise Exception("Player Data cache file not found or invalid.")
+PLAYER_DATA_CACHE  = CACHE_MANAGER.get_player_data_cache(for_update=True)
+REPLACEMENT_SCORES = CACHE_MANAGER.get_replacement_score_cache()
+STARTERS_CACHE     = CACHE_MANAGER.get_starters_cache()
+PLAYER_IDS         = CACHE_MANAGER.get_player_ids_cache()
 
-    # Remove metadata before returning.
-    cache.pop("Last_Updated_Season", None)
-    cache.pop("Last_Updated_Week", None)
-    
-    return cache
 
 def update_player_data_cache():
     """
@@ -60,9 +39,6 @@ def update_player_data_cache():
         - Cap weeks at 17.
         - Store progress via Last_Updated_* markers.
     """
-    # Load existing cache or initialize a new one if the file does not exist/cannot be parsed.
-    cache = load_cache(PLAYERS_DATA_CACHE_FILE)
-
     # Dynamically determine the current season and week according to Sleeper API/util logic.
     current_season, current_week = get_current_season_and_week()
     if current_week > 17:
@@ -75,29 +51,26 @@ def update_player_data_cache():
     for year in years:
         # Read progress markers from the cache to support incremental updates and resumability.
         # Cast Last_Updated_Season to int to allow numeric comparison with `year`.
-        last_updated_season = int(cache.get("Last_Updated_Season", 0))
-        last_updated_week = cache.get("Last_Updated_Week", 0)
+        last_updated_season = int(PLAYER_DATA_CACHE.get("Last_Updated_Season", 0))
+        last_updated_week = PLAYER_DATA_CACHE.get("Last_Updated_Week", 0)
 
         # Skip years that are already fully processed based on the last recorded season.
         if last_updated_season != 0:
             if year < last_updated_season:
                 continue
             if last_updated_season < year:
-                cache["Last_Updated_Week"] = 0  # Reset the week if moving to a new year
+                PLAYER_DATA_CACHE["Last_Updated_Week"] = 0  # Reset the week if moving to a new year
 
         # If the cache is already up-to-date for the current season and week, stop processing.
         if last_updated_season == int(current_season) and last_updated_week == current_week:
-            cache.pop("Last_Updated_Season", None)
-            cache.pop("Last_Updated_Week", None)
-
-            return cache
+            return
 
         year = int(year)  # Ensure year is an integer
         max_weeks = _get_max_weeks(year, current_season, current_week)
 
         # Determine the range of weeks to update.
         if year == current_season or year == last_updated_season:
-            last_updated_week = cache.get("Last_Updated_Week", 0)
+            last_updated_week = PLAYER_DATA_CACHE.get("Last_Updated_Week", 0)
             weeks_to_update = range(last_updated_week + 1, max_weeks + 1)
         else:
             weeks_to_update = range(1, max_weeks + 1)
@@ -111,28 +84,23 @@ def update_player_data_cache():
 
         # Fetch and update only the missing weeks for the year.
         for week in weeks_to_update:
-            if str(year) not in cache:
-                cache[str(year)] = {}
+            if str(year) not in PLAYER_DATA_CACHE:
+                PLAYER_DATA_CACHE[str(year)] = {}
 
             # Fetch ffWAR for the week.
-            cache[str(year)][str(week)] = _fetch_ffWAR(year, week, roster_ids)
+            PLAYER_DATA_CACHE[str(year)][str(week)] = _fetch_ffWAR(year, week, roster_ids)
 
             # Update the metadata for the last updated season and week.
-            cache["Last_Updated_Season"] = str(year)
-            cache["Last_Updated_Week"] = week
+            PLAYER_DATA_CACHE["Last_Updated_Season"] = str(year)
+            PLAYER_DATA_CACHE["Last_Updated_Week"] = week
 
             print("  Player Data cache updated internally for season {}, week {}".format(year, week))
 
     # Save the updated cache to the file.
-    save_cache(PLAYERS_DATA_CACHE_FILE, cache)
+    CACHE_MANAGER.save_player_data_cache()
 
-    # Remove metadata before returning.
-    # These fields are used internally for tracking updates but are not part of the final cache returned.
-    cache.pop("Last_Updated_Season", None)
-    cache.pop("Last_Updated_Week", None)
-
-    return cache
-
+    # Reload to remove the metadata fields
+    CACHE_MANAGER.get_player_data_cache(force_reload=True)
 
 def _get_max_weeks(season, current_season, current_week):
     """
@@ -338,24 +306,6 @@ def _calculate_ffWAR_position(scores, season, week, position, all_player_scores,
 
     return ffWAR_position
 
-
-
-
-"""
-year
-    week
-        playerid
-            name:
-            image_url:
-            score:
-            ffWAR:
-            position:
-            started: True/False
-
-"""
-
-
-
 def _get_all_player_scores(year, week):
     """
     Fetch and calculate fantasy scores for all NFL players in a given week.
@@ -395,17 +345,8 @@ def _get_all_player_scores(year, week):
         - Handles edge case of traded players with modified IDs.
     """
     # Fetch data from the Sleeper API for the given season and week
-    sleeper_response_week_data = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
-    if sleeper_response_week_data[1] != 200:
-        # Raise an exception if the API call fails
-        raise Exception(f"Failed to fetch week data from Sleeper API for season {year}, week {week}")
-     # Extract the data for the week
-    week_data = sleeper_response_week_data[0]
-    
-    sleeper_response_league_data = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(year)}")
-    if sleeper_response_league_data[1] != 200:
-        raise Exception(f"Failed to fetch league data from Sleeper API for season {year}")
-    scoring_settings = sleeper_response_league_data[0]["scoring_settings"]
+    week_data        = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
+    scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(year)}")['scoring_settings']
 
     final_week_scores = {
         "QB":  {},
@@ -455,7 +396,6 @@ def _get_all_player_scores(year, week):
 
     return final_week_scores
 
-
 def _calculate_player_score(player_data, scoring_settings):
     """
     Calculate a player's total fantasy score based on their stats and league scoring settings.
@@ -493,8 +433,6 @@ def _calculate_player_score(player_data, scoring_settings):
             total_score += stat_value * points_per_unit
     return round(total_score, 2)
 
-
-
 def _get_roster_ids(season):
     """
     Build a mapping of roster IDs to real manager names for a given season.
@@ -518,12 +456,12 @@ def _get_roster_ids(season):
         - Roster IDs are integers from the Sleeper API.
     """
     user_ids = {}
-    users_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/users")[0]
+    users_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/users")
     for user in users_data_response:
         user_ids[user['user_id']] = USERNAME_TO_REAL_NAME[user['display_name']]
     
     roster_ids = {}
-    user_rosters_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/rosters")[0]
+    user_rosters_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/rosters")
     for user in user_rosters_data_response:
         
         # Handle a known case where owner_id is None
@@ -534,10 +472,6 @@ def _get_roster_ids(season):
         roster_ids[user['roster_id']] = user_ids[user['owner_id']]
 
     return roster_ids
-
-
-
-
 
 def _get_all_rostered_players(roster_ids, season, week):
     """
@@ -582,12 +516,11 @@ def _get_all_rostered_players(roster_ids, season, week):
     rostered_players = {}
 
     
-    matchup_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/matchups/{week}")[0]
+    matchup_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/matchups/{week}")
 
     for matchup in matchup_data_response:
         rostered_players[imported_roster_ids[matchup['roster_id']]] = matchup['players']
     
     return rostered_players
 
-# roster_ids = _get_roster_ids(2023)
-# _fetch_ffWAR(2023, 12, roster_ids)
+update_player_data_cache()

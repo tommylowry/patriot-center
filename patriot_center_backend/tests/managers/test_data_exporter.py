@@ -535,8 +535,15 @@ class TestGetManagerAwards:
 
     @patch('patriot_center_backend.managers.data_exporter.get_manager_score_awards_from_cache')
     @patch('patriot_center_backend.managers.data_exporter.get_manager_awards_from_cache')
-    def test_get_awards(self, mock_awards, mock_score_awards, data_exporter):
+    @patch('patriot_center_backend.managers.data_exporter.get_current_manager_image_url')
+    @patch('patriot_center_backend.managers.data_exporter.get_image_url')
+    def test_get_awards(self, mock_image_url, mock_current_manager_url, mock_awards, mock_score_awards, data_exporter):
         """Test getting manager awards."""
+        mock_image_url.return_value = "https://sleepercdn.com/avatars/acb123"
+        mock_current_manager_url.return_value = {
+            "image_url": "https://sleepercdn.com/avatars/abc123",
+            "name": "Manager 1"
+        }
         mock_awards.return_value = {
             "first_place": 1,
             "second_place": 0,

@@ -11,7 +11,7 @@ from typing import Dict, Optional, Any
 
 from patriot_center_backend.cache import get_cache_manager
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
-from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
+from patriot_center_backend.utils.helpers import fetch_sleeper_data
 
 from patriot_center_backend.managers.templates import initialize_summary_templates, initialize_faab_template
 from patriot_center_backend.managers.transaction_processor import TransactionProcessor
@@ -56,8 +56,6 @@ class ManagerMetadataManager:
         
         # Load caches
         self._cache = self._cache_mgr.get_manager_cache()
-        if not self._cache:
-            self._cache = {}
         
         # Configuration state
         self._use_faab: Optional[bool] = None
@@ -161,7 +159,7 @@ class ManagerMetadataManager:
 
         if week == "1" or self._use_faab == None or self._playoff_week_start == None:
             # Fetch league settings to determine FAAB usage at start of season
-            league_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year))}")[0]
+            league_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year))}")
             self._use_faab = True if league_settings.get("settings", {}).get("waiver_type", 1)==2 else False
             self._playoff_week_start = league_settings.get("settings", {}).get("playoff_week_start", None)
 
@@ -172,11 +170,11 @@ class ManagerMetadataManager:
         if "user_id" not in self._cache[manager]["summary"]:
             username = NAME_TO_MANAGER_USERNAME.get(manager, "")
             if username:
-                user_payload, status_code = fetch_sleeper_data(f"user/{username}")
-                if status_code == 200 and "user_id" in user_payload:
+                user_payload = fetch_sleeper_data(f"user/{username}")
+                if "user_id" in user_payload:
                     self._cache[manager]["summary"]["user_id"] = user_payload["user_id"]
                 else:
-                    raise ValueError(f"Failed to fetch user data for manager {manager} with username {username}.")
+                    raise ValueError(f"Failed to fetch 'user_id' for manager {manager} with username {username}.")
             else:
                 raise ValueError(f"No username mapping found for manager {manager}.")
     

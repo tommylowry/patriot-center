@@ -132,8 +132,8 @@ class TestSetRosterId:
     def test_set_roster_id_calls_set_defaults(self, mock_fetch, manager):
         """Test that set_roster_id calls _set_defaults_if_missing."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
 
         with patch.object(manager, '_set_defaults_if_missing') as mock_defaults:
@@ -160,8 +160,8 @@ class TestSetRosterId:
     def test_set_roster_id_updates_roster_mapping(self, mock_fetch, manager):
         """Test that roster ID is mapped to manager."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
 
         manager.set_roster_id(
@@ -192,8 +192,8 @@ class TestSetRosterId:
     def test_set_roster_id_fetches_league_settings_week_1(self, mock_fetch, manager):
         """Test that league settings are fetched on week 1."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
 
         manager.set_roster_id(
@@ -218,8 +218,8 @@ class TestCacheWeekData:
     def test_cache_week_data_processes_matchups_and_transactions(self, mock_validate, mock_fetch, manager):
         """Test that cache_week_data processes both matchups and transactions."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
 
         manager.set_roster_id("Manager 1", "2023", "1", 1)
@@ -240,8 +240,8 @@ class TestCacheWeekData:
     def test_cache_week_data_checks_for_reversals(self, mock_validate, mock_fetch, manager):
         """Test that cache_week_data checks for transaction reversals."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
 
         manager.set_roster_id("Manager 1", "2023", "1", 1)
@@ -262,8 +262,8 @@ class TestCacheWeekData:
     def test_cache_week_data_processes_playoff_data(self, mock_season, mock_validate, mock_fetch, manager):
         """Test that playoff data is processed during playoff weeks."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
         mock_season.return_value = "playoffs"
 
@@ -284,8 +284,8 @@ class TestCacheWeekData:
     def test_cache_week_data_clears_state_after(self, mock_validate, mock_fetch, manager):
         """Test that session state is cleared after processing."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
 
         manager.set_roster_id("Manager 1", "2023", "1", 1)
@@ -310,8 +310,8 @@ class TestSetPlayoffPlacements:
     def test_set_playoff_placements_updates_cache(self, mock_fetch, manager):
         """Test that playoff placements are added to cache."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
 
         manager.set_roster_id("Manager 1", "2023", "1", 1)
@@ -552,8 +552,8 @@ class TestCacheIntegrity:
     def test_cache_references_are_consistent(self, mock_fetch, manager):
         """Test that cache references remain consistent."""
         mock_fetch.side_effect = [
-            ({"settings": {"waiver_type": 2, "playoff_week_start": 15}}, 200),
-            ({"user_id": "user123"}, 200)
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
         ]
 
         original_cache = manager._cache

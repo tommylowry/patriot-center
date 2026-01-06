@@ -138,8 +138,8 @@ def update_starters_cache():
 
     CACHE_MANAGER.save_all_caches()
 
-    STARTERS_CACHE.pop("Last_Updated_Season", None)
-    STARTERS_CACHE.pop("Last_Updated_Week", None)
+    # Reload to remove the metadata fields
+    STARTERS_CACHE = CACHE_MANAGER.get_starters_cache(force_reload=True)
 
 def _update_players_cache(player_meta):
     """

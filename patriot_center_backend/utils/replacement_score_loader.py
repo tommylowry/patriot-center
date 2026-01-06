@@ -99,6 +99,9 @@ def update_replacement_score_cache():
     # Save the updated cache to the file
     CACHE_MANAGER.save_replacement_score_cache()
 
+    # Reload to remove the metadata fields
+    CACHE_MANAGER.get_replacement_score_cache(force_reload=True)
+
 
 def _get_max_weeks(season, current_season, current_week):
     """

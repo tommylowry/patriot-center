@@ -32,6 +32,7 @@ def update_replacement_score_cache():
     - Computes only missing weeks (resumable).
     - Injects <POS>_3yr_avg once prior year - 3 data exists.
     """
+    global REPLACEMENT_SCORE_CACHE
 
     # Dynamically determine the current season and week
     current_season, current_week = get_current_season_and_week()
@@ -320,3 +321,5 @@ def _get_three_yr_avg(season, week, cache):
 
     # Return the updated current week's scores with three-year averages added
     return current_week_scores
+
+update_replacement_score_cache()

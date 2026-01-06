@@ -53,25 +53,47 @@ def update_player_ids():
     """
     if CACHE_MANAGER.is_player_ids_cache_stale():
 
-        # Slow path: stale or missing -> rebuild from expensive API
-        new_data = fetch_updated_player_ids()
+        response = fetch_sleeper_data("players/nfl")
+
+        old_data = deepcopy(PLAYER_IDS_CACHE)
+
+        for player_id, player_info in response.items():
+            # Insert synthetic team defense entries early; skip original payload
+            if player_id in TEAM_DEFENSE_NAMES:
+                PLAYER_IDS_CACHE[player_id] = {
+                    "full_name": TEAM_DEFENSE_NAMES[player_id]["full_name"],
+                    "first_name": TEAM_DEFENSE_NAMES[player_id]["first_name"],
+                    "last_name": TEAM_DEFENSE_NAMES[player_id]["last_name"],
+                    "team": player_id,
+                    "position": "DEF"
+                }
+                continue
+
+
+
+            # Select only desired fields (presence-checked)
+            PLAYER_IDS_CACHE[player_id] = {
+                key: player_info[key] for key in FIELDS_TO_KEEP if key in player_info
+            }
+        
+        # Fill in missing defenses that don't exist anymore (OAK, etc.)
+        for player_id in TEAM_DEFENSE_NAMES:
+            if player_id not in PLAYER_IDS_CACHE:
+                PLAYER_IDS_CACHE[player_id] = {
+                    "full_name": TEAM_DEFENSE_NAMES[player_id]["full_name"],
+                    "first_name": TEAM_DEFENSE_NAMES[player_id]["first_name"],
+                    "last_name": TEAM_DEFENSE_NAMES[player_id]["last_name"],
+                    "team": player_id,
+                    "position": "DEF"
+                }
+        
 
         # If players change their names they need to be changed throughout every cache file.
-        _update_new_names(new_data)
-
-        # Ensure all team defenses exist (avoid overwriting if already inserted)
-        for team_id, team_names in TEAM_DEFENSE_NAMES.items():
-            new_data.setdefault(team_id, {
-                "full_name": team_names["full_name"],
-                "first_name": team_names["first_name"],
-                "last_name": team_names["last_name"],
-                "team": team_id,
-                "position": "DEF"
-            })
-
-        _update_players_cache(new_data)
-
-        CACHE_MANAGER.save_player_ids_cache()
+        _update_new_names(old_data)
+        _update_players_cache()
+        
+        # save all the cache
+        CACHE_MANAGER.save_all_caches()
 
 def fetch_updated_player_ids():
     """
@@ -100,10 +122,7 @@ def fetch_updated_player_ids():
             key: player_info[key] for key in FIELDS_TO_KEEP if key in player_info
         }
 
-    # (Defense entries already ensured above)
-    return filtered_data
-
-def _update_players_cache(updated_player_ids_data):
+def _update_players_cache():
     """
     Internal utility to force-refresh player_ids.json cache.
 
@@ -114,7 +133,7 @@ def _update_players_cache(updated_player_ids_data):
     for player_dict in players_cache_copy.values():
         player = player_dict["full_name"]
         player_id = players_cache_copy[player]["player_id"]
-        player_meta = updated_player_ids_data.get(player_id, {})
+        player_meta = deepcopy(PLAYER_IDS_CACHE.get(player_id, {}))
 
         # In case players change their name, remove the old entry
         if player_meta["full_name"] not in PLAYERS_CACHE:
@@ -132,38 +151,30 @@ def _update_players_cache(updated_player_ids_data):
             "slug": slug,
             "player_id": player_id
         }
-
-    CACHE_MANAGER.save_players_cache()
     
-def _update_new_names(new_ids):
+def _update_new_names(old_ids):
     
-    for id in new_ids:
+    for id in PLAYER_IDS_CACHE:
         
         # New player entirely being added, continue
-        if id not in PLAYER_IDS_CACHE:
+        if id not in old_ids:
             continue
         
         # player did not change their name, continue
-        if PLAYER_IDS_CACHE[id]['full_name'] == new_ids[id]['full_name']:
+        if old_ids[id]['full_name'] == PLAYER_IDS_CACHE[id]['full_name']:
             continue
 
         print(f"New Player Name Found:")
-        print(f"     '{PLAYER_IDS_CACHE[id]['full_name']}' has changed his name to '{new_ids[id]['full_name']}'")
+        print(f"     '{old_ids[id]['full_name']}' has changed his name to '{PLAYER_IDS_CACHE[id]['full_name']}'")
 
-        old_player = PLAYER_IDS_CACHE[id]
-        new_player = new_ids[id]
+        old_player = old_ids[id]
+        new_player = PLAYER_IDS_CACHE[id]
 
         MANAGER_METADATA_CACHE = _recursive_replace(MANAGER_METADATA_CACHE, old_player['full_name'], new_player['full_name'])
         PLAYER_DATA_CACHE      = _recursive_replace(PLAYER_DATA_CACHE,      old_player['full_name'], new_player['full_name'])
         STARTERS_CACHE         = _recursive_replace(STARTERS_CACHE,         old_player['full_name'], new_player['full_name'])
         TRANSACTION_IDS_CACHE  = _recursive_replace(TRANSACTION_IDS_CACHE,  old_player['full_name'], new_player['full_name'])
         VALID_OPTIONS_CACHE    = _recursive_replace(VALID_OPTIONS_CACHE,    old_player['full_name'], new_player['full_name'])
-
-    CACHE_MANAGER.save_manager_cache()
-    CACHE_MANAGER.save_player_data_cache()
-    CACHE_MANAGER.save_starters_cache()
-    CACHE_MANAGER.save_transaction_ids_cache()
-    CACHE_MANAGER.save_valid_options_cache()
 
 def _recursive_replace(data, old_str, new_str):
     """

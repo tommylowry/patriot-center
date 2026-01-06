@@ -100,7 +100,7 @@ def update_player_data_cache():
     CACHE_MANAGER.save_player_data_cache()
 
     # Reload to remove the metadata fields
-    PLAYER_DATA_CACHE = CACHE_MANAGER.get_player_data_cache(force_reload=True)
+    CACHE_MANAGER.get_player_data_cache(force_reload=True)
 
 def _get_max_weeks(season, current_season, current_week):
     """
@@ -522,3 +522,5 @@ def _get_all_rostered_players(roster_ids, season, week):
         rostered_players[imported_roster_ids[matchup['roster_id']]] = matchup['players']
     
     return rostered_players
+
+update_player_data_cache()

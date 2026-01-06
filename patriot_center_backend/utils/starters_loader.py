@@ -50,7 +50,7 @@ def update_starters_cache():
         current_week = 17  # Regular season cap
 
     for year in LEAGUE_IDS.keys():
-        last_updated_season = int(STARTERS_CACHE.get("Last_Updated_Season", 0))
+        last_updated_season = int(STARTERS_CACHE.get("Last_Updated_Season", '0'))
         last_updated_week = STARTERS_CACHE.get("Last_Updated_Week", 0)
 
         # Skip previously finished seasons; reset week marker when advancing season.
@@ -66,7 +66,7 @@ def update_starters_cache():
                 
                 # Week 17 is the final playoff week; assign final placements if reached.
                 if current_week == 17:
-                    STARTERS_CACHE = retroactively_assign_team_placement_for_player(year)
+                    retroactively_assign_team_placement_for_player(year)
                 
                 break
 
@@ -139,7 +139,7 @@ def update_starters_cache():
     CACHE_MANAGER.save_all_caches()
 
     # Reload to remove the metadata fields
-    STARTERS_CACHE = CACHE_MANAGER.get_starters_cache(force_reload=True)
+    CACHE_MANAGER.get_starters_cache(force_reload=True)
 
 def _update_players_cache(player_meta):
     """
@@ -155,9 +155,6 @@ def _update_players_cache(player_meta):
 
     Returns:
         dict: Updated players_cache with new player added (if applicable).
-
-    Side effects:
-        Saves the updated cache to disk if a new player was added.
     """
 
     if player_meta.get("full_name") not in PLAYERS_CACHE:
@@ -333,7 +330,7 @@ def fetch_starters_for_week(season, week):
     positions_summary_array = []
     week_valid_data         = {}
 
-    managers = sleeper_response_users[0]
+    managers = sleeper_response_users
     week_data = {}
     for manager in managers:
         players_summary_array_per_manager   = []
@@ -357,7 +354,7 @@ def fetch_starters_for_week(season, week):
                 roster_id = 4
         
         # Initialize manager metadata for this season/week before skipping playoff filtering.
-        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id, playoff_roster_ids, sleeper_response_matchups[0])
+        MANAGER_METADATA.set_roster_id(real_name, str(season), str(week), roster_id, playoff_roster_ids, sleeper_response_matchups)
 
         if not roster_id:
             continue  # Skip unresolved roster
@@ -389,7 +386,7 @@ def fetch_starters_for_week(season, week):
 
     return week_data, managers_summary_array, players_summary_array, positions_summary_array, week_valid_data
 
-def get_roster_id(sleeper_response_rosters, user_id):
+def get_roster_id(rosters, user_id):
     """
     Resolve a roster_id for the given user_id.
 
@@ -400,13 +397,12 @@ def get_roster_id(sleeper_response_rosters, user_id):
     Returns:
         int | None: roster_id if found, else None.
     """
-    rosters = sleeper_response_rosters[0]
     for roster in rosters:
         if roster['owner_id'] == user_id:
             return roster['roster_id']
     return None
 
-def get_starters_data(sleeper_response_matchups,
+def get_starters_data(matchups,
                       roster_id,
                       players_summary_array,
                       positions_summary_array):
@@ -424,7 +420,6 @@ def get_starters_data(sleeper_response_matchups,
     Returns:
         dict | None: {player_name: {points, position}, Total_Points} or None if not found.
     """
-    matchups = sleeper_response_matchups[0]
     for matchup in matchups:
         if matchup['roster_id'] == roster_id:
             manager_data = {"Total_Points": 0.0}
@@ -504,5 +499,5 @@ def retroactively_assign_team_placement_for_player(season):
                             need_to_print = False
                         
                         STARTERS_CACHE[season_str][week][manager][player]['placement'] = placements[manager]
-    
-    CACHE_MANAGER.save_starters_cache()
+
+update_starters_cache()

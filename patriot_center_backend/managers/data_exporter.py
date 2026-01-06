@@ -200,7 +200,8 @@ class DataExporter:
         return_dict["transactions"] = get_transaction_details_from_cache(self._cache, year, manager,
                                                                          self._image_urls_cache, self._players_cache,
                                                                          self._player_ids)
-        return_dict["overall_data"] = get_overall_data_details_from_cache(self._cache, year, manager)
+        return_dict["overall_data"] = get_overall_data_details_from_cache(self._cache, year, manager, self._players_cache,
+                                                                          self._player_ids, self._image_urls_cache, self._starters_cache)
         return_dict["rankings"]     = get_ranking_details_from_cache(self._cache, manager, self._valid_options_cache, year=year)
         return_dict["head_to_head"] = get_head_to_head_details_from_cache(self._cache, manager, self._image_urls_cache, 
                                                                           self._players_cache, self._player_ids, year=year)

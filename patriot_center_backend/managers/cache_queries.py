@@ -232,7 +232,10 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     # Return final transaction summary
     return deepcopy(transaction_summary)
 
-def get_overall_data_details_from_cache(cache: dict, year: str, manager: str) -> Dict:
+def get_overall_data_details_from_cache(cache: dict, year: str, manager: str,
+                                        players_cache: dict, player_ids: dict,
+                                        image_urls_cache: dict,
+                                        starters_cache: dict) -> Dict:
     """
     Get career achievements including playoff appearances and season placements.
 
@@ -253,9 +256,23 @@ def get_overall_data_details_from_cache(cache: dict, year: str, manager: str) ->
     # ----- Other Overall Data -----
     placements = []
     for year in cached_overall_data.get("placement", {}):
+        
+        week = '17'
+        if int(year) <= 2020:
+            week = '16'
+         
+        opponent = cache.get(manager, {}).get('years', {}).get(year, {}).get('weeks', {}).get(week, {}).get('matchup_data', {}).get('opponent_manager', "")
+        
+        matchup_card = {}
+        if opponent == "":
+            print(f"WARNING: unable to retreive opponent for matchup card for year {year} week {week}")
+        else:
+            matchup_card = get_matchup_card(cache, manager, opponent, year, week, players_cache, player_ids, image_urls_cache, starters_cache)
+        
         placement_item = {
             "year": year,
-            "placement": cached_overall_data["placement"][year]
+            "placement": cached_overall_data["placement"][year],
+            'matchup_card': matchup_card
         }
         placements.append(placement_item)
 

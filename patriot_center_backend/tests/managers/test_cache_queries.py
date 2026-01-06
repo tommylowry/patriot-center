@@ -362,9 +362,22 @@ class TestGetTransactionDetailsFromCache:
 class TestGetOverallDataDetailsFromCache:
     """Test get_overall_data_details_from_cache function."""
 
-    def test_all_time_overall_data(self, sample_cache):
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_all_time_overall_data(self, mock_get_matchup_card, sample_cache):
         """Test getting all-time overall data."""
-        result = get_overall_data_details_from_cache(sample_cache, "all_time", "Manager 1")
+        mock_get_matchup_card.return_value = {"mock": "matchup_card"}
+
+        # Add week 17 data for 2023 and 2022 to sample_cache for opponent lookup
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+            "matchup_data": {"opponent_manager": "Manager 2"}
+        }
+        sample_cache["Manager 1"]["years"]["2022"] = {
+            "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
+        }
+
+        result = get_overall_data_details_from_cache(
+            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
+        )
 
         assert len(result["placements"]) == 2
         years = [p["year"] for p in result["placements"]]
@@ -372,22 +385,173 @@ class TestGetOverallDataDetailsFromCache:
         assert "2022" in years
         placement_2023 = next(p for p in result["placements"] if p["year"] == "2023")
         assert placement_2023["placement"] == 1
+        assert placement_2023["matchup_card"] == {"mock": "matchup_card"}
         assert result["playoff_appearances"] == 2
 
-    def test_single_season_overall_data(self, sample_cache):
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_single_season_overall_data(self, mock_get_matchup_card, sample_cache):
         """Test getting single season overall data."""
-        result = get_overall_data_details_from_cache(sample_cache, "2023", "Manager 1")
+        mock_get_matchup_card.return_value = {"mock": "matchup_card"}
+
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+            "matchup_data": {"opponent_manager": "Manager 2"}
+        }
+        sample_cache["Manager 1"]["years"]["2022"] = {
+            "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
+        }
+
+        result = get_overall_data_details_from_cache(
+            sample_cache, "2023", "Manager 1", {}, {}, {}, {}
+        )
 
         assert len(result["placements"]) == 2  # Still returns all-time data
         placement_2023 = next(p for p in result["placements"] if p["year"] == "2023")
         assert placement_2023["placement"] == 1
 
-    def test_manager_with_no_playoff_appearances(self, sample_cache):
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_manager_with_no_playoff_appearances(self, mock_get_matchup_card, sample_cache):
         """Test manager with no playoff appearances."""
-        result = get_overall_data_details_from_cache(sample_cache, "all_time", "Manager 3")
+        result = get_overall_data_details_from_cache(
+            sample_cache, "all_time", "Manager 3", {}, {}, {}, {}
+        )
 
         assert result["playoff_appearances"] == 0
         assert result["placements"] == []
+        mock_get_matchup_card.assert_not_called()
+
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_week_selection_for_year_2020_and_earlier(self, mock_get_matchup_card, sample_cache):
+        """Test that week 16 is used for years 2020 and earlier."""
+        mock_get_matchup_card.return_value = {"mock": "matchup_card"}
+
+        # Add placement for 2020
+        sample_cache["Manager 1"]["summary"]["overall_data"]["placement"]["2020"] = 2
+        sample_cache["Manager 1"]["years"]["2020"] = {
+            "weeks": {"16": {"matchup_data": {"opponent_manager": "Manager 2"}}}
+        }
+        # Also add week 17 data for other years
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+            "matchup_data": {"opponent_manager": "Manager 2"}
+        }
+        sample_cache["Manager 1"]["years"]["2022"] = {
+            "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
+        }
+
+        result = get_overall_data_details_from_cache(
+            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
+        )
+
+        # Find the call for 2020 - should use week '16'
+        calls = mock_get_matchup_card.call_args_list
+        call_for_2020 = [c for c in calls if c[0][3] == "2020"]
+        assert len(call_for_2020) == 1
+        assert call_for_2020[0][0][4] == "16"  # week parameter should be '16'
+
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_week_selection_for_year_after_2020(self, mock_get_matchup_card, sample_cache):
+        """Test that week 17 is used for years after 2020."""
+        mock_get_matchup_card.return_value = {"mock": "matchup_card"}
+
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+            "matchup_data": {"opponent_manager": "Manager 2"}
+        }
+        sample_cache["Manager 1"]["years"]["2022"] = {
+            "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
+        }
+
+        result = get_overall_data_details_from_cache(
+            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
+        )
+
+        # All calls should use week '17' since both years are after 2020
+        for call in mock_get_matchup_card.call_args_list:
+            assert call[0][4] == "17"  # week parameter should be '17'
+
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_missing_opponent_skips_matchup_card(self, mock_get_matchup_card, sample_cache, capsys):
+        """Test that missing opponent results in warning and empty matchup_card."""
+        mock_get_matchup_card.return_value = {"mock": "matchup_card"}
+
+        # Don't add week 17 data for 2022 - opponent will be missing
+        sample_cache["Manager 1"]["years"]["2022"] = {"weeks": {}}
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+            "matchup_data": {"opponent_manager": "Manager 2"}
+        }
+
+        result = get_overall_data_details_from_cache(
+            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
+        )
+
+        # Verify warning was printed for missing opponent
+        captured = capsys.readouterr()
+        assert "WARNING: unable to retreive opponent" in captured.out
+        assert "year 2022" in captured.out
+
+        # Verify get_matchup_card was NOT called for 2022 (missing opponent)
+        calls = mock_get_matchup_card.call_args_list
+        call_years = [c[0][3] for c in calls]
+        assert "2022" not in call_years
+        assert "2023" in call_years  # 2023 should still be called
+
+        # Verify the placement for 2022 has empty matchup_card
+        placement_2022 = next(p for p in result["placements"] if p["year"] == "2022")
+        assert placement_2022["matchup_card"] == {}
+
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_matchup_card_included_in_each_placement(self, mock_get_matchup_card, sample_cache):
+        """Test that matchup_card is included in each placement item."""
+        mock_get_matchup_card.side_effect = [
+            {"card": "2023_card"},
+            {"card": "2022_card"}
+        ]
+
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+            "matchup_data": {"opponent_manager": "Manager 2"}
+        }
+        sample_cache["Manager 1"]["years"]["2022"] = {
+            "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
+        }
+
+        result = get_overall_data_details_from_cache(
+            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
+        )
+
+        for placement in result["placements"]:
+            assert "matchup_card" in placement
+
+    @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
+    def test_passes_correct_caches_to_get_matchup_card(self, mock_get_matchup_card, sample_cache):
+        """Test that all cache parameters are passed to get_matchup_card."""
+        mock_get_matchup_card.return_value = {"mock": "matchup_card"}
+
+        players_cache = {"player": "data"}
+        player_ids = {"id": "123"}
+        image_urls_cache = {"url": "http://example.com"}
+        starters_cache = {"starter": "data"}
+
+        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+            "matchup_data": {"opponent_manager": "Manager 2"}
+        }
+        sample_cache["Manager 1"]["years"]["2022"] = {
+            "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
+        }
+
+        result = get_overall_data_details_from_cache(
+            sample_cache, "all_time", "Manager 1",
+            players_cache, player_ids, image_urls_cache, starters_cache
+        )
+
+        # Verify get_matchup_card was called with all the correct parameters
+        call_args = mock_get_matchup_card.call_args_list[0][0]
+        assert call_args[0] == sample_cache  # cache
+        assert call_args[1] == "Manager 1"   # manager
+        # call_args[2] is opponent
+        # call_args[3] is year
+        # call_args[4] is week
+        assert call_args[5] == players_cache
+        assert call_args[6] == player_ids
+        assert call_args[7] == image_urls_cache
+        assert call_args[8] == starters_cache
 
 
 class TestGetRankingDetailsFromCache:
@@ -670,6 +834,6 @@ class TestCacheImmutability:
         """Test that function doesn't modify cache."""
         original = deepcopy(sample_cache)
 
-        get_overall_data_details_from_cache(sample_cache, "all_time", "Manager 1")
+        get_overall_data_details_from_cache(sample_cache, "all_time", "Manager 1", {}, {}, {}, {})
 
         assert sample_cache == original

@@ -1382,25 +1382,29 @@ function OverviewTab({ overall, regularSeason, playoffs, trades, adds, drops, fa
         </Section>
 
         {/* Placement History */}
-        <Section title="Placements">
+        <Section title={
+          <>
+            Placements{' '}
+            {!isMobile && placements.length > 0 && (
+              <span style={{ fontSize: '0.75rem', fontWeight: 400, opacity: 0.6, letterSpacing: '0px' }}>
+                (hover for details)
+              </span>
+            )}
+          </>
+        }>
           {placements.length > 0 ? (
             <div>
               {placements.sort((a, b) => b.year - a.year).map((p, i) => (
-                <div key={i} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.25rem 0',
-                  borderBottom: i < placements.length - 1 ? '1px solid var(--border)' : 'none'
-                }}>
-                  <span>{p.year}</span>
-                  <span style={{ fontWeight: 700, opacity: 0.85 }}>
-                    {p.placement === 1 && '🥇 Champion'}
-                    {p.placement === 2 && '🥈 Runner-up'}
-                    {p.placement === 3 && '🥉 3rd Place'}
-                    {p.placement > 3 && `${p.placement}th`}
-                  </span>
-                </div>
+                <HoverablePlacement
+                  key={p.year}
+                  placement={p}
+                  hoveredMatchupId={hoveredMatchupId}
+                  setHoveredMatchupId={setHoveredMatchupId}
+                  hideTimeoutRef={hideTimeoutRef}
+                  isMobile={isMobile}
+                  managerName={managerName}
+                  isLast={i === placements.length - 1}
+                />
               ))}
             </div>
           ) : (
@@ -1737,6 +1741,170 @@ function StatRow({ label, value, color, small }) {
 }
 
 // HoverableMatchupStat Component - Shows MatchupCard on hover (desktop) or navigates to matchup page (mobile)
+function HoverablePlacement({ placement, hoveredMatchupId, setHoveredMatchupId, hideTimeoutRef, isMobile = false, managerName, isLast = false }) {
+  const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 });
+  const textRef = useRef(null);
+  const cardRef = useRef(null);
+
+  const id = `placement-${placement.year}`;
+  const isHovered = hoveredMatchupId === id;
+  const matchup = placement.matchup_card;
+  const hasMatchupCard = matchup && Object.keys(matchup).length > 0;
+
+  // Get placement display text
+  const getPlacementText = (place) => {
+    if (place === 1) return '🥇 Champion';
+    if (place === 2) return '🥈 Runner-up';
+    if (place === 3) return '🥉 3rd Place';
+    return `${place}th`;
+  };
+
+  useEffect(() => {
+    if (isHovered && textRef.current && cardRef.current) {
+      const textRect = textRef.current.getBoundingClientRect();
+      const cardRect = cardRef.current.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      const spacing = 16;
+
+      const spaceRight = viewportWidth - textRect.right;
+      const spaceLeft = textRect.left;
+      const spaceBelow = viewportHeight - textRect.bottom;
+
+      let top = 0;
+      let left = 0;
+
+      if (spaceRight >= cardRect.width + spacing) {
+        left = textRect.right + spacing;
+        top = textRect.top + (textRect.height / 2) - (cardRect.height / 2);
+      } else if (spaceLeft >= cardRect.width + spacing) {
+        left = textRect.left - cardRect.width - spacing;
+        top = textRect.top + (textRect.height / 2) - (cardRect.height / 2);
+      } else if (spaceBelow >= cardRect.height + spacing) {
+        top = textRect.bottom + spacing;
+        left = textRect.left + (textRect.width / 2) - (cardRect.width / 2);
+      } else {
+        top = textRect.top - cardRect.height - spacing;
+        left = textRect.left + (textRect.width / 2) - (cardRect.width / 2);
+      }
+
+      top = Math.max(spacing, Math.min(top, viewportHeight - cardRect.height - spacing));
+      left = Math.max(spacing, Math.min(left, viewportWidth - cardRect.width - spacing));
+
+      setCardPosition({ top, left });
+    }
+  }, [isHovered]);
+
+  // Construct matchup URL for mobile
+  const matchupUrl = hasMatchupCard ? `/matchup?year=${matchup.year}&week=${matchup.week}&manager1=${encodeURIComponent(managerName)}&manager2=${encodeURIComponent(matchup.manager_2?.name || '')}` : '#';
+
+  const rowStyle = {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '0.25rem 0',
+    borderBottom: isLast ? 'none' : '1px solid var(--border)'
+  };
+
+  // No matchup card available - render plain text
+  if (!hasMatchupCard) {
+    return (
+      <div style={rowStyle}>
+        <span>{placement.year}</span>
+        <span style={{ fontWeight: 700, opacity: 0.85 }}>
+          {getPlacementText(placement.placement)}
+        </span>
+      </div>
+    );
+  }
+
+  // Mobile version: clickable link
+  if (isMobile) {
+    return (
+      <Link
+        to={matchupUrl}
+        state={{ matchup }}
+        style={{
+          ...rowStyle,
+          textDecoration: 'none'
+        }}
+      >
+        <span style={{ color: 'var(--text)' }}>{placement.year}</span>
+        <span
+          style={{
+            fontWeight: 700,
+            color: 'var(--accent)',
+            opacity: 0.9
+          }}
+        >
+          {getPlacementText(placement.placement)} →
+        </span>
+      </Link>
+    );
+  }
+
+  // Desktop version: hover behavior
+  return (
+    <div style={{ ...rowStyle, position: 'relative' }}>
+      <span>{placement.year}</span>
+      <span
+        ref={textRef}
+        style={{
+          fontWeight: 700,
+          opacity: 0.85,
+          cursor: 'pointer',
+          borderBottom: isHovered ? '1px solid var(--text)' : '1px dotted rgba(255, 255, 255, 0.4)',
+          transition: 'border-bottom 0.2s ease'
+        }}
+        onMouseEnter={() => {
+          if (hideTimeoutRef.current) {
+            clearTimeout(hideTimeoutRef.current);
+          }
+          setHoveredMatchupId(id);
+        }}
+        onMouseLeave={() => {
+          hideTimeoutRef.current = setTimeout(() => {
+            setHoveredMatchupId(null);
+          }, 300);
+        }}
+      >
+        {getPlacementText(placement.placement)}
+      </span>
+
+      {/* Hovering MatchupCard */}
+      {isHovered && (
+        <div
+          ref={cardRef}
+          onMouseEnter={() => {
+            if (hideTimeoutRef.current) {
+              clearTimeout(hideTimeoutRef.current);
+            }
+            setHoveredMatchupId(id);
+          }}
+          onMouseLeave={() => {
+            setHoveredMatchupId(null);
+          }}
+          style={{
+            position: 'fixed',
+            top: `${cardPosition.top}px`,
+            left: `${cardPosition.left}px`,
+            zIndex: 9999,
+            pointerEvents: 'auto',
+            boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+            borderRadius: '12px',
+            backgroundColor: 'rgba(20, 20, 30, 0.92)',
+            border: '2px solid var(--accent)',
+            transition: 'opacity 0.2s ease',
+            opacity: cardPosition.top === 0 ? 0 : 1,
+          }}>
+          <MatchupCard matchup={matchup} />
+        </div>
+      )}
+    </div>
+  );
+}
+
 function HoverableMatchupStat({ id, label, displayText, matchup, showMargin = false, hoveredMatchupId, setHoveredMatchupId, hideTimeoutRef, isMobile = false, managerName }) {
   const [cardPosition, setCardPosition] = useState({ top: 0, left: 0 });
   const textRef = useRef(null);

@@ -381,9 +381,6 @@ def manager_awards(manager_name):
     response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
     return response, 200
 
-    
-# /update_caches endpoint removed - cache updates now handled by GitHub Actions
-# See .github/workflows/update-cache.yml
 
 def parse_arguments(arg1, arg2, arg3):
     """

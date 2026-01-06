@@ -12,32 +12,15 @@ Notes:
 - Current season/week is resolved at runtime and weeks are capped by era rules.
 """
 
-import os
-from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.constants import LEAGUE_IDS, REPLACEMENT_SCORE_CACHE_FILE
-from patriot_center_backend.utils.player_ids_loader import load_player_ids
-from patriot_center_backend.utils.cache_utils import load_cache, save_cache, get_current_season_and_week
-
-PLAYER_IDS = load_player_ids()
+from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
+from patriot_center_backend.constants import LEAGUE_IDS
 
 
-def load_replacement_score_cache():
-    """
-    Load the replacement score cache from disk.
+CACHE_MANAGER = get_cache_manager()
 
-    Returns:
-        dict: The replacement score cache.
-    """
-    cache = load_cache(REPLACEMENT_SCORE_CACHE_FILE)
-    
-    if not cache:
-        raise Exception("Replacement score cache is empty or missing.")
-
-    # Remove metadata before returning
-    cache.pop("Last_Updated_Season", None)
-    cache.pop("Last_Updated_Week", None)
-
-    return cache
+PLAYER_IDS              = CACHE_MANAGER.get_player_ids_cache()
+REPLACEMENT_SCORE_CACHE = CACHE_MANAGER.get_replacement_score_cache(for_update=True)
 
 
 def update_replacement_score_cache():
@@ -49,8 +32,6 @@ def update_replacement_score_cache():
     - Computes only missing weeks (resumable).
     - Injects <POS>_3yr_avg once prior year - 3 data exists.
     """
-    # Load existing cache or initialize a new one
-    cache = load_cache(REPLACEMENT_SCORE_CACHE_FILE)
 
     # Dynamically determine the current season and week
     current_season, current_week = get_current_season_and_week()
@@ -66,15 +47,15 @@ def update_replacement_score_cache():
 
     for year in years:
         # Get the last updated season and week from the cache
-        last_updated_season = int(cache.get("Last_Updated_Season", 0))
-        last_updated_week = cache.get("Last_Updated_Week", 0)
+        last_updated_season = int(REPLACEMENT_SCORE_CACHE.get("Last_Updated_Season", 0))
+        last_updated_week = REPLACEMENT_SCORE_CACHE.get("Last_Updated_Week", 0)
 
         # Skip years that are already fully processed
         if last_updated_season != 0:
             if year < last_updated_season:
                 continue
             if last_updated_season < year:
-                cache["Last_Updated_Week"] = 0  # Reset the week if moving to a new year
+                REPLACEMENT_SCORE_CACHE["Last_Updated_Week"] = 0  # Reset the week if moving to a new year
 
         # If the cache is already up-to-date for the current season and week, stop processing
         if last_updated_season == int(current_season) and last_updated_week == current_week:
@@ -85,7 +66,7 @@ def update_replacement_score_cache():
 
         # Determine the range of weeks to update
         if year == current_season or year == last_updated_season:
-            last_updated_week = cache.get("Last_Updated_Week", 0)
+            last_updated_week = REPLACEMENT_SCORE_CACHE.get("Last_Updated_Week", 0)
             weeks_to_update = range(last_updated_week + 1, max_weeks + 1)
         else:
             weeks_to_update = range(1, max_weeks + 1)
@@ -98,32 +79,25 @@ def update_replacement_score_cache():
 
         # Fetch and update only the missing weeks for the year
         for week in weeks_to_update:
-            if str(year) not in cache:
-                cache[str(year)] = {}
+            if str(year) not in REPLACEMENT_SCORE_CACHE:
+                REPLACEMENT_SCORE_CACHE[str(year)] = {}
 
             # Fetch replacement scores for the week
-            cache[str(year)][str(week)] = _fetch_replacement_score_for_week(year, week)
+            REPLACEMENT_SCORE_CACHE[str(year)][str(week)] = _fetch_replacement_score_for_week(year, week)
 
             # Compute the 3-year average if data from three years ago exists
-            if str(year - 3) in cache:
+            if str(year - 3) in REPLACEMENT_SCORE_CACHE:
                 # Augment with bye-aware 3-year rolling averages
-                cache[str(year)][str(week)] = _get_three_yr_avg(year, week, cache)
+                REPLACEMENT_SCORE_CACHE[str(year)][str(week)] = _get_three_yr_avg(year, week, REPLACEMENT_SCORE_CACHE)
 
             # Update the metadata for the last updated season and week
-            cache["Last_Updated_Season"] = str(year)
-            cache["Last_Updated_Week"] = week
+            REPLACEMENT_SCORE_CACHE["Last_Updated_Season"] = str(year)
+            REPLACEMENT_SCORE_CACHE["Last_Updated_Week"] = week
 
             print("  Replacement score cache updated internally for season {}, week {}".format(year, week))
 
     # Save the updated cache to the file
-    save_cache(REPLACEMENT_SCORE_CACHE_FILE, cache)
-
-    # Remove metadata before returning
-    # These fields are used internally for tracking updates but are not part of the final cache returned
-    cache.pop("Last_Updated_Season", None)
-    cache.pop("Last_Updated_Week", None)
-
-    return cache
+    CACHE_MANAGER.save_replacement_score_cache()
 
 
 def _get_max_weeks(season, current_season, current_week):

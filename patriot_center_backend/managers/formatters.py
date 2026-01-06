@@ -6,7 +6,7 @@ Formats matchup cards, trade cards, and determines season state.
 from typing import Dict, List, Optional, Any
 from copy import deepcopy
 
-from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
+from patriot_center_backend.utils.helpers import fetch_sleeper_data
 from patriot_center_backend.constants import LEAGUE_IDS
 
 from patriot_center_backend.managers.utilities import get_image_url

@@ -14,12 +14,23 @@ Notes:
 - Returned structure contains player/team entries (no metadata fields).
 """
 
-import json
-from datetime import datetime, timedelta
-import os
+from copy import deepcopy
 
-from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
-from patriot_center_backend.constants import *
+from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.utils.helpers import fetch_sleeper_data
+from patriot_center_backend.constants import TEAM_DEFENSE_NAMES
+
+
+CACHE_MANAGER = get_cache_manager()
+
+PLAYER_IDS_CACHE       = CACHE_MANAGER.get_player_ids_cache()
+MANAGER_METADATA_CACHE = CACHE_MANAGER.get_manager_cache()
+PLAYER_DATA_CACHE      = CACHE_MANAGER.get_player_data_cache()
+STARTERS_CACHE         = CACHE_MANAGER.get_starters_cache()
+TRANSACTION_IDS_CACHE  = CACHE_MANAGER.get_transaction_ids_cache()
+VALID_OPTIONS_CACHE    = CACHE_MANAGER.get_valid_options_cache()
+PLAYERS_CACHE          = CACHE_MANAGER.get_players_cache()
+
 
 # Fields to keep from Sleeper's player payload; reduces storage and surface area
 FIELDS_TO_KEEP = [
@@ -27,23 +38,6 @@ FIELDS_TO_KEEP = [
     "depth_chart_position", "fantasy_positions", "position", "number"
 ]
 
-
-def load_player_ids():
-    """
-    Load player metadata cache, refreshing if stale.
-
-    Wrapper around update_player_ids() for external callers.
-    """
-    try:
-        with open(PLAYER_IDS_CACHE_FILE, "r") as file:
-            data = json.load(file)
-    except:
-        raise RuntimeError("Player IDS cache does not exist or is currupted. Investigate why.")
-    
-    if not data:
-        raise RuntimeError("Player IDs cache is empty; please run update_player_ids() first.")
-    
-    return data
 
 def update_player_ids():
     """
@@ -57,61 +51,27 @@ def update_player_ids():
         - Only whitelisted fields retained.
         - Expensive Sleeper API only called if cache is >1 week old.
     """
-    # Fast path: existing cache present
-    data = {}
-    if os.path.exists(PLAYER_IDS_CACHE_FILE):
-        try:
-            with open(PLAYER_IDS_CACHE_FILE, "r") as file:
-                data = json.load(file)
-            
-            # Check file modification time to determine if cache is stale
-            file_mtime = os.path.getmtime(PLAYER_IDS_CACHE_FILE)
-            file_age = datetime.now() - datetime.fromtimestamp(file_mtime)
+    if CACHE_MANAGER.is_player_ids_cache_stale():
 
-            # If file was modified within the last week, reuse it
-            if file_age < timedelta(weeks=1):
+        # Slow path: stale or missing -> rebuild from expensive API
+        new_data = fetch_updated_player_ids()
 
-                # Ensure defense entries always present even on reuse
-                for team_code, team_names in TEAM_DEFENSE_NAMES.items():
-                    if team_code not in data or data[team_code].get("position") != "DEF":
-                        data[team_code] = {
-                            "full_name": team_names["full_name"],
-                            "first_name": team_names["first_name"],
-                            "last_name": team_names["last_name"],
-                            "team": team_code,
-                            "position": "DEF"
-                        }
-                
-                return data
+        # If players change their names they need to be changed throughout every cache file.
+        _update_new_names(new_data)
 
-            # File exists but is stale (>1 week old) - trigger refresh
+        # Ensure all team defenses exist (avoid overwriting if already inserted)
+        for team_id, team_names in TEAM_DEFENSE_NAMES.items():
+            new_data.setdefault(team_id, {
+                "full_name": team_names["full_name"],
+                "first_name": team_names["first_name"],
+                "last_name": team_names["last_name"],
+                "team": team_id,
+                "position": "DEF"
+            })
 
-        except (json.JSONDecodeError, OSError):
-            # File exists but is empty, corrupted, or unreadable - trigger refresh
-            pass
+        _update_players_cache(new_data)
 
-    # Slow path: stale or missing -> rebuild from expensive API
-    new_data = fetch_updated_player_ids()
-
-    # If players change their names they need to be changed throughout every cache file.
-    _update_new_names(data, new_data)
-
-    # Ensure all team defenses exist (avoid overwriting if already inserted)
-    for team_id, team_names in TEAM_DEFENSE_NAMES.items():
-        new_data.setdefault(team_id, {
-            "full_name": team_names["full_name"],
-            "first_name": team_names["first_name"],
-            "last_name": team_names["last_name"],
-            "team": team_id,
-            "position": "DEF"
-        })
-    
-    _update_players_cache(new_data)
-
-    with open(PLAYER_IDS_CACHE_FILE, "w") as file:
-        json.dump(new_data, file, indent=4)
-
-    return new_data
+        CACHE_MANAGER.save_player_ids_cache()
 
 def fetch_updated_player_ids():
     """
@@ -145,20 +105,13 @@ def fetch_updated_player_ids():
     # (Defense entries already ensured above)
     return filtered_data
 
-
 def _update_players_cache(updated_player_ids_data):
     """
     Internal utility to force-refresh player_ids.json cache.
 
     Primarily for development/testing; not called in normal operation.
     """
-    import copy
-
-    # Ensure all team defenses exist
-    with open(PLAYERS_CACHE_FILE, "r") as file:
-        players_cache = json.load(file)
-
-    players_cache_copy = copy.deepcopy(players_cache)
+    players_cache_copy = deepcopy(PLAYERS_CACHE)
     
     for player_dict in players_cache_copy.values():
         player = player_dict["full_name"]
@@ -166,13 +119,13 @@ def _update_players_cache(updated_player_ids_data):
         player_meta = updated_player_ids_data.get(player_id, {})
 
         # In case players change their name, remove the old entry
-        if player_meta["full_name"] not in players_cache:
-            players_cache.pop(player)
+        if player_meta["full_name"] not in PLAYERS_CACHE:
+            PLAYERS_CACHE.pop(player)
 
         slug = player_meta.get("full_name", "").lower()
         slug = slug.replace(" ", "%20")
         slug = slug.replace("'", "%27")
-        players_cache[player_meta["full_name"]] = {
+        PLAYERS_CACHE[player_meta["full_name"]] = {
             "full_name": player_meta.get("full_name", ""),
             "first_name": player_meta.get("first_name", ""),
             "last_name": player_meta.get("last_name", ""),
@@ -182,53 +135,38 @@ def _update_players_cache(updated_player_ids_data):
             "player_id": player_id
         }
 
-
-
-    with open(PLAYERS_CACHE_FILE, "w") as file:
-        json.dump(players_cache, file, indent=4)
+    CACHE_MANAGER.save_players_cache()
     
-
-def _update_new_names(old_ids, new_ids):
+def _update_new_names(new_ids):
     
     for id in new_ids:
         
         # New player entirely being added, continue
-        if id not in old_ids:
+        if id not in PLAYER_IDS_CACHE:
             continue
         
         # player did not change their name, continue
-        if old_ids[id]['full_name'] == new_ids[id]['full_name']:
+        if PLAYER_IDS_CACHE[id]['full_name'] == new_ids[id]['full_name']:
             continue
 
         print(f"New Player Name Found:")
-        print(f"     '{old_ids[id]['full_name']}' has changed his name to '{new_ids[id]['full_name']}'")
+        print(f"     '{PLAYER_IDS_CACHE[id]['full_name']}' has changed his name to '{new_ids[id]['full_name']}'")
 
-        old_player = old_ids[id]
+        old_player = PLAYER_IDS_CACHE[id]
         new_player = new_ids[id]
 
-        cache_files = [
-            MANAGER_METADATA_CACHE_FILE,
-            PLAYERS_DATA_CACHE_FILE,
-          # PLAYER_IDS_CACHE_FILE,         Omitted: File we are editing after this method is called.
-          # PLAYERS_CACHE_FILE,            Omitted: File we are editing after this method is called.
-          # REPLACEMENT_SCORE_CACHE_FILE,  Omitted: Player names are not saved in this file.
-            STARTERS_CACHE_FILE,
-            TRANSACTION_IDS_FILE,
-            VALID_OPTIONS_CACHE_FILE
-        ]
-        
-        for cache_file in cache_files:
-            if os.path.exists(cache_file):
-                with open(cache_file, "r") as file:
-                    old_cache = json.load(file)
-                
-                new_cache = _recursive_replace(old_cache, old_player['full_name'], new_player['full_name'])
-                
-                with open(cache_file, "w") as file:
-                    json.dump(new_cache, file, indent=4)
-            
+        MANAGER_METADATA_CACHE = _recursive_replace(MANAGER_METADATA_CACHE, old_player['full_name'], new_player['full_name'])
+        PLAYER_DATA_CACHE      = _recursive_replace(PLAYER_DATA_CACHE,      old_player['full_name'], new_player['full_name'])
+        STARTERS_CACHE         = _recursive_replace(STARTERS_CACHE,         old_player['full_name'], new_player['full_name'])
+        TRANSACTION_IDS_CACHE  = _recursive_replace(TRANSACTION_IDS_CACHE,  old_player['full_name'], new_player['full_name'])
+        VALID_OPTIONS_CACHE    = _recursive_replace(VALID_OPTIONS_CACHE,    old_player['full_name'], new_player['full_name'])
 
-        
+    CACHE_MANAGER.save_manager_cache()
+    CACHE_MANAGER.save_player_data_cache()
+    CACHE_MANAGER.save_starters_cache()
+    CACHE_MANAGER.save_transaction_ids_cache()
+    CACHE_MANAGER.save_valid_options_cache()
+
 def _recursive_replace(data, old_str, new_str):
     """
     Recursively finds and replaces all occurrences of a string in dictionary 

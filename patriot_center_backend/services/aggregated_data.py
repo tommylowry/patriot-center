@@ -15,16 +15,20 @@ Notes:
 - Results are simple dicts suitable for JSON responses.
 - Totals are rounded to two decimals via Decimal normalization (ffWAR to 3).
 """
-from patriot_center_backend.utils.player_data_loader import load_player_data_cache
-from patriot_center_backend.services.managers import fetch_starters
-from decimal import Decimal
-from patriot_center_backend.services.players import fetch_players
-from patriot_center_backend.utils import helpers
+
 from functools import lru_cache
+from decimal import Decimal
+
+from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.services.managers import fetch_starters
+from patriot_center_backend.utils import helpers
+
+
+CACHE_MANAGER = get_cache_manager()
 
 # Load caches at module import for fast access
-PLAYERS_CACHE     = fetch_players()
-PLAYER_DATA_CACHE = load_player_data_cache()
+PLAYERS_CACHE     = CACHE_MANAGER.get_players_cache()
+PLAYER_DATA_CACHE = CACHE_MANAGER.get_player_data_cache()
 
 def fetch_player_manager_aggregation(player, manager, season=None, week=None):
     """

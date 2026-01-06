@@ -8,7 +8,7 @@ from copy import deepcopy
 from typing import Dict, Any
 
 from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
-from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
+from patriot_center_backend.utils.helpers import fetch_sleeper_data
 
 
 def draft_pick_decipher(draft_pick_dict: Dict[str, Any], weekly_roster_ids: Dict[int, str]) -> str:

@@ -11,7 +11,7 @@ from typing import Dict, Optional, Any
 
 from patriot_center_backend.cache import get_cache_manager
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
-from patriot_center_backend.utils.sleeper_api_handler import fetch_sleeper_data
+from patriot_center_backend.utils.helpers import fetch_sleeper_data
 
 from patriot_center_backend.managers.templates import initialize_summary_templates, initialize_faab_template
 from patriot_center_backend.managers.transaction_processor import TransactionProcessor

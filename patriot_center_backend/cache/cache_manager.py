@@ -9,20 +9,27 @@ Single Responsibility: Manage all cache file I/O operations.
 import json
 import os
 from pathlib import Path
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 
-from patriot_center_backend.constants import (
-    MANAGER_METADATA_CACHE_FILE,
-    TRANSACTION_IDS_FILE,
-    PLAYERS_CACHE_FILE,
-    PLAYER_IDS_CACHE_FILE,
-    STARTERS_CACHE_FILE,
-    PLAYERS_DATA_CACHE_FILE,
-    REPLACEMENT_SCORE_CACHE_FILE,
-    VALID_OPTIONS_CACHE_FILE,
+from patriot_center_backend.constants import LEAGUE_IDS
 
-    LEAGUE_IDS
-)
+
+_CACHE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+# ===== WEEKLY DATA =====
+PLAYERS_CACHE_FILE             = os.path.join(_CACHE_DIR, "cached_data", "players_cache.json")
+REPLACEMENT_SCORE_CACHE_FILE   = os.path.join(_CACHE_DIR, "cached_data", "replacement_score_cache.json")
+STARTERS_CACHE_FILE            = os.path.join(_CACHE_DIR, "cached_data", "starters_cache.json")
+PLAYERS_DATA_CACHE_FILE        = os.path.join(_CACHE_DIR, "cached_data", "player_data_cache.json")
+VALID_OPTIONS_CACHE_FILE       = os.path.join(_CACHE_DIR, "cached_data", "valid_options_cache.json")
+
+# ===== MANAGER METADATA =====
+MANAGER_METADATA_CACHE_FILE    = os.path.join(_CACHE_DIR, "cached_data", "manager_metadata_cache.json")
+TRANSACTION_IDS_FILE           = os.path.join(_CACHE_DIR, "cached_data", "transaction_ids.json")
+
+# ===== SLEEPER PLAYER IDS =====
+PLAYER_IDS_CACHE_FILE          = os.path.join(_CACHE_DIR, "cached_data", "player_ids.json")
 
 
 class CacheManager:
@@ -213,6 +220,17 @@ class CacheManager:
             self._player_ids_cache = self._load_cache(PLAYER_IDS_CACHE_FILE)
         
         return self._player_ids_cache
+    
+    def is_player_ids_cache_stale(self) -> bool:
+        # Check file modification time to determine if cache is stale
+        file_mtime = os.path.getmtime(PLAYER_IDS_CACHE_FILE)
+        file_age = datetime.now() - datetime.fromtimestamp(file_mtime)
+
+        # If file was modified within the last week, reuse it
+        if file_age > timedelta(weeks=1):
+            return True
+        
+        return False
     
     def save_player_ids_cache(self, cache: Optional[Dict] = None) -> None:
         """

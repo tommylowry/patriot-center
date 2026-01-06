@@ -5179,7 +5179,7 @@
         "first_name": "Desmond",
         "last_name": "Ridder",
         "position": "QB",
-        "team": null,
+        "team": "GB",
         "slug": "desmond%20ridder",
         "player_id": "8159"
     },
@@ -6439,7 +6439,7 @@
         "first_name": "Sincere",
         "last_name": "McCormick",
         "position": "RB",
-        "team": null,
+        "team": "MIN",
         "slug": "sincere%20mccormick",
         "player_id": "8220"
     },
@@ -6493,7 +6493,7 @@
         "first_name": "Raheem",
         "last_name": "Blackshear",
         "position": "RB",
-        "team": null,
+        "team": "NYJ",
         "slug": "raheem%20blackshear",
         "player_id": "8255"
     },

@@ -321,5 +321,3 @@ def _get_three_yr_avg(season, week, cache):
 
     # Return the updated current week's scores with three-year averages added
     return current_week_scores
-
-update_replacement_score_cache()

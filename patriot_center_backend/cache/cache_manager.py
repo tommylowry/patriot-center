@@ -298,7 +298,7 @@ class CacheManager:
     
     # ===== PLAYER DATA CACHE (ffWAR) =====
     
-    def get_player_data_cache(self, force_reload: bool = False) -> Dict[str, Any]:
+    def get_player_data_cache(self, force_reload: bool = False, for_update: bool = False) -> Dict[str, Any]:
         """
         Get player data cache (ffWAR data).
         
@@ -310,6 +310,20 @@ class CacheManager:
         """
         if self._player_data_cache is None or force_reload:
             self._player_data_cache = self._load_cache(PLAYERS_DATA_CACHE_FILE)
+
+        if for_update:
+            if self._player_data_cache == {}:
+                # Initialize the cache with all years
+                self._player_data_cache = {"Last_Updated_Season": "0", "Last_Updated_Week": 0}
+
+                # Initialize an empty dict for each season
+                for year in list(LEAGUE_IDS.keys()):
+                    self._player_data_cache[str(year)] = {}
+        
+        # Remove metadata fields if we're not using this data to update
+        else:
+            self._player_data_cache.pop("Last_Updated_Season", None)
+            self._player_data_cache.pop("Last_Updated_Week", None)
         
         return self._player_data_cache
     
@@ -347,7 +361,7 @@ class CacheManager:
         if for_update:
             if self._replacement_score_cache == {}:
                 # If the cache is empty then initialize it with all years (plus historical years for replacement score caches)
-                cache = {"Last_Updated_Season": "0", "Last_Updated_Week": 0}
+                self._replacement_score_cache  = {"Last_Updated_Season": "0", "Last_Updated_Week": 0}
                 
                 years = list(LEAGUE_IDS.keys())
                 
@@ -359,12 +373,12 @@ class CacheManager:
 
                 # Initialize an empty dict for each season
                 for year in years:
-                    cache[str(year)] = {}
+                    self._replacement_score_cache [str(year)] = {}
         
         # Remove metadata fields if we're not using this data to update
         else:
-            self._starters_cache.pop("Last_Updated_Season", None)
-            self._starters_cache.pop("Last_Updated_Week", None)
+            self._replacement_score_cache.pop("Last_Updated_Season", None)
+            self._replacement_score_cache.pop("Last_Updated_Week", None)
         
         return self._replacement_score_cache
     

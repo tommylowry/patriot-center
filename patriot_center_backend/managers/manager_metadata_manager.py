@@ -56,8 +56,6 @@ class ManagerMetadataManager:
         
         # Load caches
         self._cache = self._cache_mgr.get_manager_cache()
-        if not self._cache:
-            self._cache = {}
         
         # Configuration state
         self._use_faab: Optional[bool] = None

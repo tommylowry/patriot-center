@@ -24,7 +24,7 @@ from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current
 
 CACHE_MANAGER = get_cache_manager()
 
-PLAYER_DATA_CACHE  = CACHE_MANAGER.get_player_data_cache()
+PLAYER_DATA_CACHE  = CACHE_MANAGER.get_player_data_cache(for_update=True)
 REPLACEMENT_SCORES = CACHE_MANAGER.get_replacement_score_cache()
 STARTERS_CACHE     = CACHE_MANAGER.get_starters_cache()
 PLAYER_IDS         = CACHE_MANAGER.get_player_ids_cache()
@@ -346,7 +346,7 @@ def _get_all_player_scores(year, week):
     """
     # Fetch data from the Sleeper API for the given season and week
     week_data        = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
-    scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(year)}")
+    scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(year)}")['scoring_settings']
 
     final_week_scores = {
         "QB":  {},

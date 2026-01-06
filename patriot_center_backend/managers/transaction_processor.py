@@ -100,7 +100,7 @@ class TransactionProcessor:
         if not league_id:
             raise ValueError(f"No league ID found for year {year}.")
         
-        transactions_list , _ = fetch_sleeper_data(f"league/{league_id}/transactions/{week}")
+        transactions_list = fetch_sleeper_data(f"league/{league_id}/transactions/{week}")
         
         # transactions come from sleeper newest first, we want to put them in oldest first so that when they're shown they show up its oldest at the top for a week.
         transactions_list.reverse()

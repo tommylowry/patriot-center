@@ -272,14 +272,14 @@ class TestScrubTransactionData:
     @patch('patriot_center_backend.managers.transaction_processor.fetch_sleeper_data')
     def test_scrub_transaction_data_processes_transactions(self, mock_fetch, processor):
         """Test that scrub_transaction_data fetches and processes transactions."""
-        mock_fetch.return_value = ([
+        mock_fetch.return_value = [
             {
                 "transaction_id": "trans1",
                 "type": "free_agent",
                 "adds": {"player1": 1},
                 "drops": None
             }
-        ], 200)
+        ]
 
         processor.set_session_state("2023", "1", {1: "Manager 1"}, True)
 
@@ -293,11 +293,11 @@ class TestScrubTransactionData:
     @patch('patriot_center_backend.managers.transaction_processor.fetch_sleeper_data')
     def test_scrub_transaction_data_reverses_order(self, mock_fetch, processor):
         """Test that transactions are reversed (oldest first)."""
-        mock_fetch.return_value = ([
+        mock_fetch.return_value = [
             {"transaction_id": "trans1", "type": "free_agent"},
             {"transaction_id": "trans2", "type": "free_agent"},
             {"transaction_id": "trans3", "type": "free_agent"}
-        ], 200)
+        ]
 
         processor.set_session_state("2023", "1", {1: "Manager 1"}, True)
 

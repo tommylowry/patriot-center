@@ -345,17 +345,8 @@ def _get_all_player_scores(year, week):
         - Handles edge case of traded players with modified IDs.
     """
     # Fetch data from the Sleeper API for the given season and week
-    sleeper_response_week_data = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
-    if sleeper_response_week_data[1] != 200:
-        # Raise an exception if the API call fails
-        raise Exception(f"Failed to fetch week data from Sleeper API for season {year}, week {week}")
-     # Extract the data for the week
-    week_data = sleeper_response_week_data[0]
-    
-    sleeper_response_league_data = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(year)}")
-    if sleeper_response_league_data[1] != 200:
-        raise Exception(f"Failed to fetch league data from Sleeper API for season {year}")
-    scoring_settings = sleeper_response_league_data[0]["scoring_settings"]
+    week_data        = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
+    scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(year)}")
 
     final_week_scores = {
         "QB":  {},
@@ -465,12 +456,12 @@ def _get_roster_ids(season):
         - Roster IDs are integers from the Sleeper API.
     """
     user_ids = {}
-    users_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/users")[0]
+    users_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/users")
     for user in users_data_response:
         user_ids[user['user_id']] = USERNAME_TO_REAL_NAME[user['display_name']]
     
     roster_ids = {}
-    user_rosters_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/rosters")[0]
+    user_rosters_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/rosters")
     for user in user_rosters_data_response:
         
         # Handle a known case where owner_id is None
@@ -525,7 +516,7 @@ def _get_all_rostered_players(roster_ids, season, week):
     rostered_players = {}
 
     
-    matchup_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/matchups/{week}")[0]
+    matchup_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/matchups/{week}")
 
     for matchup in matchup_data_response:
         rostered_players[imported_roster_ids[matchup['roster_id']]] = matchup['players']

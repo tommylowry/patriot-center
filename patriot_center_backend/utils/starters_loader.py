@@ -225,8 +225,6 @@ def _get_relevant_playoff_roster_ids(season, week, league_id):
         return {}
     
     sleeper_response_playoff_bracket = fetch_sleeper_data(f"league/{league_id}/winners_bracket")
-    if sleeper_response_playoff_bracket[1] == 200:
-        sleeper_response_playoff_bracket = sleeper_response_playoff_bracket[0]
 
     if week == 14:
         round = 1
@@ -283,25 +281,8 @@ def _get_playoff_placement(season):
     league_id = LEAGUE_IDS[int(season)]
 
     sleeper_response_playoff_bracket = fetch_sleeper_data(f"league/{league_id}/winners_bracket")
-    if sleeper_response_playoff_bracket[1] == 200:
-        sleeper_response_playoff_bracket = sleeper_response_playoff_bracket[0]
-    else:
-        print("Failed to fetch playoff bracket data")
-        return {}
-
-    sleeper_response_rosters = fetch_sleeper_data(f"league/{league_id}/rosters")
-    if sleeper_response_rosters[1] == 200:
-        sleeper_response_rosters = sleeper_response_rosters[0]
-    else:
-        print("Failed to fetch rosters data")
-        return {}
-    
-    sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
-    if sleeper_response_users[1] == 200:
-        sleeper_response_users = sleeper_response_users[0]
-    else:
-        print("Failed to fetch users data")
-        return {}
+    sleeper_response_rosters         = fetch_sleeper_data(f"league/{league_id}/rosters")
+    sleeper_response_users           = fetch_sleeper_data(f"league/{league_id}/users")
     
     
     championship = sleeper_response_playoff_bracket[-2]
@@ -340,24 +321,17 @@ def fetch_starters_for_week(season, week):
               Empty dict on API failure.
     """
     league_id = LEAGUE_IDS[int(season)]
-    sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
-    if sleeper_response_users[1] != 200:
-        return {}, [], [], [], {}
 
-    sleeper_response_rosters = fetch_sleeper_data(f"league/{league_id}/rosters")
-    if sleeper_response_rosters[1] != 200:
-        return {}, [], [], [], {}
-
+    sleeper_response_users    = fetch_sleeper_data(f"league/{league_id}/users")
+    sleeper_response_rosters  = fetch_sleeper_data(f"league/{league_id}/rosters")
     sleeper_response_matchups = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
-    if sleeper_response_matchups[1] != 200:
-        return {}, [], [], [], {}
     
     playoff_roster_ids = _get_relevant_playoff_roster_ids(season, week, league_id)
     
-    managers_summary_array = []
-    players_summary_array = []
+    managers_summary_array  = []
+    players_summary_array   = []
     positions_summary_array = []
-    week_valid_data = {}
+    week_valid_data         = {}
 
     managers = sleeper_response_users[0]
     week_data = {}

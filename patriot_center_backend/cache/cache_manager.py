@@ -223,9 +223,12 @@ class CacheManager:
     
     def is_player_ids_cache_stale(self) -> bool:
         # Check file modification time to determine if cache is stale
-        file_mtime = os.path.getmtime(PLAYER_IDS_CACHE_FILE)
-        file_age = datetime.now() - datetime.fromtimestamp(file_mtime)
-
+        try:
+            file_mtime = os.path.getmtime(PLAYER_IDS_CACHE_FILE)
+            file_age = datetime.now() - datetime.fromtimestamp(file_mtime)
+        except FileNotFoundError:
+            # If file doesn't exist then this needs to run
+            return True
         # If file was modified within the last week, reuse it
         if file_age > timedelta(weeks=1):
             return True

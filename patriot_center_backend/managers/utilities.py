@@ -200,8 +200,8 @@ def get_current_manager_image_url(manager: str, cache: dict,
 
     user_id = cache.get(manager, {}).get("summary", {}).get("user_id", "")
 
-    user_payload, status_code = fetch_sleeper_data(f"user/{user_id}")
-    if status_code == 200 and user_payload and "user_id" in user_payload:
+    user_payload = fetch_sleeper_data(f"user/{user_id}")
+    if user_payload and "user_id" in user_payload:
         image_urls_cache[manager] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
         return f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
 

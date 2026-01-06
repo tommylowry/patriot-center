@@ -80,9 +80,7 @@ def fetch_updated_player_ids():
     Skips:
         - Defense payload originals (synthetic entries override).
     """
-    response, status_code = fetch_sleeper_data("players/nfl")
-    if status_code != 200:
-        raise Exception("Failed to fetch player data from Sleeper API")
+    response = fetch_sleeper_data("players/nfl")
 
     filtered_data = {}
     for player_id, player_info in response.items():

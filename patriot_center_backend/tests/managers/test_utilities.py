@@ -429,7 +429,7 @@ class TestGetCurrentManagerImageUrl:
     @patch('patriot_center_backend.managers.utilities.fetch_sleeper_data')
     def test_manager_not_in_cache(self, mock_fetch):
         """Test fetching manager image URL when not in cache."""
-        mock_fetch.return_value = ({"user_id": "12345", "avatar": "abc123"}, 200)
+        mock_fetch.return_value = {"user_id": "12345", "avatar": "abc123"}
 
         manager = "Manager 1"
         cache = {
@@ -459,28 +459,9 @@ class TestGetCurrentManagerImageUrl:
         assert result == "https://sleepercdn.com/avatars/cached123"
 
     @patch('patriot_center_backend.managers.utilities.fetch_sleeper_data')
-    def test_api_failure(self, mock_fetch):
-        """Test when API returns non-200 status."""
-        mock_fetch.return_value = ({}, 404)
-
-        manager = "Manager 1"
-        cache = {
-            "Manager 1": {
-                "summary": {
-                    "user_id": "12345"
-                }
-            }
-        }
-        image_urls_cache = {}
-
-        result = get_current_manager_image_url(manager, cache, image_urls_cache)
-
-        assert result == ""
-
-    @patch('patriot_center_backend.managers.utilities.fetch_sleeper_data')
     def test_invalid_response(self, mock_fetch):
         """Test when API returns invalid response."""
-        mock_fetch.return_value = ({}, 200)
+        mock_fetch.return_value = {}
 
         manager = "Manager 1"
         cache = {
@@ -499,7 +480,7 @@ class TestGetCurrentManagerImageUrl:
     @patch('patriot_center_backend.managers.utilities.fetch_sleeper_data')
     def test_missing_user_id(self, mock_fetch):
         """Test when manager doesn't have user_id in cache."""
-        mock_fetch.return_value = ({"user_id": "", "avatar": "abc123"}, 200)
+        mock_fetch.return_value = {"user_id": "", "avatar": "abc123"}
 
         manager = "Manager 1"
         cache = {

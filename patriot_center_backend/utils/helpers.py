@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Tuple
+from typing import Dict, Tuple, Any
 import requests
 
 from patriot_center_backend.cache import get_cache_manager
@@ -102,12 +102,8 @@ def get_current_season_and_week() -> Tuple[int, int]:
     # return "2025", 10
 
     # Query Sleeper API for league metadata
-    sleeper_response_league = fetch_sleeper_data(f"league/{league_id}")
-    if sleeper_response_league[1] != 200:
-        # Surface a clear error if the upstream request fails
-        raise Exception("Failed to fetch league data from Sleeper API")
-
-    league_info = sleeper_response_league[0]
+    league_info = fetch_sleeper_data(f"league/{league_id}")
+    
     # Ensure current_season is an integer for downstream numeric comparisons
     current_season = int(league_info.get("season"))  # Ensure current_season is an integer
     # last_scored_leg is the latest completed/scored fantasy week
@@ -115,7 +111,7 @@ def get_current_season_and_week() -> Tuple[int, int]:
 
     return current_season, current_week
 
-def fetch_sleeper_data(endpoint: str):
+def fetch_sleeper_data(endpoint: str) -> Dict[str, Any]:
     """
     Perform GET request to Sleeper API and return parsed JSON.
 
@@ -133,20 +129,11 @@ def fetch_sleeper_data(endpoint: str):
     """
     # Construct full URL from configured base and endpoint
     url = f"{SLEEPER_API_URL}/{endpoint}"
-    
-    try:
-        response = requests.get(url)
-    except:
-        # Standardized error wrapper for upstream consumers
-        error_string = f"Failed to fetch data from Sleeper API with call to {url}"
-        print(error_string)
-        return {"error": error_string}, 500
+
+    response = requests.get(url)
     
     if response.status_code != 200:
-        # Standardized error wrapper for upstream consumers
-        error_string = f"Failed to fetch data from Sleeper API with call to {url}"
-        print(error_string)
-        return {"error": error_string}, 500
+        raise ConnectionAbortedError(f"Failed to fetch data from Sleeper API with call to {url}")
 
-    # Return parsed JSON along with success status
-    return response.json(), 200
+    # Return parsed JSON 
+    return response.json()

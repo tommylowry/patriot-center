@@ -96,7 +96,7 @@ class MatchupProcessor:
             raise ValueError(f"No league ID found for year {year}.")
         
         matchups_evaluated = []
-        manager_matchup_data , _ = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
+        manager_matchup_data = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
         for manager_1_data in manager_matchup_data:
             if get_season_state(self._week, self._year, self._playoff_week_start) == "playoffs" and manager_1_data.get("roster_id", None) not in self._playoff_roster_ids.get("round_roster_ids", []):
                 # Manager not in playoffs; skip

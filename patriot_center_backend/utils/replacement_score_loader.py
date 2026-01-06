@@ -139,10 +139,7 @@ def _fetch_replacement_score_for_week(season, week):
         dict: {QB, RB, WR, TE, byes}
     """
     # Fetch data from the Sleeper API for the given season and week
-    sleeper_response_week_data = fetch_sleeper_data(f"stats/nfl/regular/{season}/{week}")
-    if sleeper_response_week_data[1] != 200:
-        # Raise an exception if the API call fails
-        raise Exception(f"Failed to fetch week data from Sleeper API for season {season}, week {week}")
+    week_data = fetch_sleeper_data(f"stats/nfl/regular/{season}/{week}")
     
     final_week_scores = {"byes": None}
     yearly_scoring_settings = {}
@@ -150,13 +147,8 @@ def _fetch_replacement_score_for_week(season, week):
         if yr not in LEAGUE_IDS.keys():
             continue
         scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS[yr]}")
-        if scoring_settings[1] != 200:
-            raise Exception(f"Failed to fetch league data from Sleeper API for season {yr}")
-        yearly_scoring_settings[yr] = scoring_settings[0]["scoring_settings"]
+        yearly_scoring_settings[yr] = scoring_settings["scoring_settings"]
         final_week_scores[f"{yr}_scoring"] = {}
-    
-    # Extract the data for the week
-    week_data = sleeper_response_week_data[0]
 
     # Initialize the number of byes to 32 (all teams initially assumed to be playing)
     byes = 32

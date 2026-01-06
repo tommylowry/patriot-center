@@ -22,7 +22,7 @@ CACHE_MANAGER = get_cache_manager()
 
 # Load caches at module import time for fast access
 VALID_OPTIONS_CACHE = CACHE_MANAGER.get_valid_options_cache()
-PLAYERS_DATA        = CACHE_MANAGER.get_player_data_cache()
+PLAYERS_CACHE       = CACHE_MANAGER.get_players_cache()
 
 class ValidOptionsService:
     """
@@ -211,7 +211,7 @@ class ValidOptionsService:
                 self._manager = arg
             
             # Check if arg is a player
-            elif arg in PLAYERS_DATA:
+            elif arg in PLAYERS_CACHE:
                 
                 if self._player_selected():
                     raise ValueError("Multiple player arguments provided.")
@@ -368,7 +368,7 @@ class ValidOptionsService:
         self._weeks_list = [str(week) for week in self._weeks_list]
         
         return {
-            "years"    : sorted(self._years_list),
+            "years"    : sorted(self._years_list, reverse=True),
             "weeks"    : self._weeks_list,
             "managers" : sorted(self._managers_list),
             "positions": self._positions_list
@@ -806,7 +806,7 @@ class ValidOptionsService:
     def _plyr_selected(self):
 
         # Position can only be the position of the player (set once)
-        self._positions_list = list([PLAYERS_DATA[self._player]["position"]])
+        self._positions_list = list([PLAYERS_CACHE[self._player]["position"]])
 
         # Always reset the lists to find valid options for the player
         # Use original lists for iteration to avoid bugs from modified lists

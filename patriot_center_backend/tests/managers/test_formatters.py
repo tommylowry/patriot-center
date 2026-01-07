@@ -6,12 +6,7 @@ Tests formatting functions with both good and bad scenarios.
 import pytest
 from unittest.mock import patch, MagicMock
 from copy import deepcopy
-from patriot_center_backend.managers.formatters import (
-    get_season_state,
-    get_top_3_scorers_from_matchup_data,
-    get_matchup_card,
-    get_trade_card
-)
+from patriot_center_backend.managers.formatters import get_season_state
 
 
 class TestGetSeasonState:
@@ -153,8 +148,7 @@ class TestGetTop3ScorersFromMatchupData:
             "6": {"first_name": "Player", "last_name": "F"}
         }
 
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
         starters_cache = {
             "2023": {
@@ -175,10 +169,11 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        result = get_top_3_scorers_from_matchup_data(
-            matchup_data, manager_1, manager_2, players_cache,
-            player_ids, image_urls_cache, cache, starters_cache
-        )
+        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
+             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
+             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
+            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, image_urls)
 
         assert len(result["manager_1_top_3_scorers"]) == 3
         assert len(result["manager_2_top_3_scorers"]) == 3
@@ -193,9 +188,11 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
-            matchup_data, manager_1, manager_2, {}, {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
+             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', {}):
+            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         assert result["manager_1_top_3_scorers"] == []
         assert result["manager_2_top_3_scorers"] == []
@@ -208,9 +205,11 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
-            matchup_data, manager_1, manager_2, {}, {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
+             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', {}):
+            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         assert result["manager_1_top_3_scorers"] == []
         assert result["manager_2_top_3_scorers"] == []
@@ -232,9 +231,11 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        result = get_top_3_scorers_from_matchup_data(
-            matchup_data, manager_1, manager_2, {}, {}, {}, {}, starters_cache
-        )
+        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
+             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
+            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         assert result["manager_1_top_3_scorers"] == []
         assert result["manager_2_top_3_scorers"] == []
@@ -256,9 +257,11 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        result = get_top_3_scorers_from_matchup_data(
-            matchup_data, manager_1, manager_2, {}, {}, {}, {}, starters_cache
-        )
+        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
+             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
+            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         assert result["manager_1_top_3_scorers"] == []
         assert result["manager_2_top_3_scorers"] == []
@@ -302,10 +305,11 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        result = get_top_3_scorers_from_matchup_data(
-            matchup_data, manager_1, manager_2, players_cache,
-            player_ids, {}, {}, starters_cache
-        )
+        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
+             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
+             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
+            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         # Should return only 2 players for manager_1
         assert len(result["manager_1_top_3_scorers"]) == 2
@@ -360,10 +364,11 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        result = get_top_3_scorers_from_matchup_data(
-            matchup_data, manager_1, manager_2, players_cache,
-            player_ids, {}, {}, starters_cache
-        )
+        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
+             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
+             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
+            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         # Verify top 3 are in descending order
         assert result["manager_1_top_3_scorers"][0]["score"] == 25.0  # Player B
@@ -389,7 +394,7 @@ class TestGetMatchupCard:
             "manager_2_lowest_scorer": {}
         }
 
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -406,10 +411,9 @@ class TestGetMatchupCard:
             }
         }
 
-        result = get_matchup_card(
-            cache, "Manager 1", "Manager 2", "2023", "1",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers.formatters import get_matchup_card
+            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
 
         assert result["year"] == "2023"
         assert result["week"] == "1"
@@ -429,7 +433,7 @@ class TestGetMatchupCard:
             "manager_2_lowest_scorer": {}
         }
 
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -446,10 +450,9 @@ class TestGetMatchupCard:
             }
         }
 
-        result = get_matchup_card(
-            cache, "Manager 1", "Manager 2", "2023", "1",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers.formatters import get_matchup_card
+            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
 
         assert result["winner"] == "Manager 2"
 
@@ -465,7 +468,7 @@ class TestGetMatchupCard:
             "manager_2_lowest_scorer": {}
         }
 
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -482,16 +485,15 @@ class TestGetMatchupCard:
             }
         }
 
-        result = get_matchup_card(
-            cache, "Manager 1", "Manager 2", "2023", "1",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers.formatters import get_matchup_card
+            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
 
         assert result["winner"] == "Tie"
 
     def test_missing_matchup_data(self):
         """Test with missing matchup data."""
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -501,16 +503,15 @@ class TestGetMatchupCard:
             }
         }
 
-        result = get_matchup_card(
-            cache, "Manager 1", "Manager 2", "2023", "1",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers.formatters import get_matchup_card
+            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
 
         assert result == {}
 
     def test_zero_points_for(self):
         """Test with zero points_for (incomplete data)."""
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -527,16 +528,15 @@ class TestGetMatchupCard:
             }
         }
 
-        result = get_matchup_card(
-            cache, "Manager 1", "Manager 2", "2023", "1",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers.formatters import get_matchup_card
+            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
 
         assert result == {}
 
     def test_zero_points_against(self):
         """Test with zero points_against (incomplete data)."""
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -553,10 +553,9 @@ class TestGetMatchupCard:
             }
         }
 
-        result = get_matchup_card(
-            cache, "Manager 1", "Manager 2", "2023", "1",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers.formatters import get_matchup_card
+            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
 
         assert result == {}
 
@@ -592,9 +591,9 @@ class TestGetTradeCard:
             }
         }
 
-        result = get_trade_card(
-            "trade123", transaction_ids_cache, {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.TRANSACTION_IDS_CACHE', transaction_ids_cache):
+            from patriot_center_backend.managers.formatters import get_trade_card
+            result = get_trade_card("trade123", {})
 
         assert result["year"] == "2023"
         assert result["week"] == "5"
@@ -632,9 +631,9 @@ class TestGetTradeCard:
             }
         }
 
-        result = get_trade_card(
-            "trade456", transaction_ids_cache, {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.TRANSACTION_IDS_CACHE', transaction_ids_cache):
+            from patriot_center_backend.managers.formatters import get_trade_card
+            result = get_trade_card("trade456", {})
 
         assert len(result["managers_involved"]) == 3
         # Each manager sent and received one player
@@ -672,9 +671,9 @@ class TestGetTradeCard:
             }
         }
 
-        result = get_trade_card(
-            "trade789", transaction_ids_cache, {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.TRANSACTION_IDS_CACHE', transaction_ids_cache):
+            from patriot_center_backend.managers.formatters import get_trade_card
+            result = get_trade_card("trade789", {})
 
         # Manager 1 sent 2, received 1
         assert len(result["manager_1_sent"]) == 2
@@ -702,9 +701,9 @@ class TestGetTradeCard:
             }
         }
 
-        result = get_trade_card(
-            "trade999", transaction_ids_cache, {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.formatters.TRANSACTION_IDS_CACHE', transaction_ids_cache):
+            from patriot_center_backend.managers.formatters import get_trade_card
+            result = get_trade_card("trade999", {})
 
         # Should convert spaces to underscores and lowercase
         assert "john_smith_sent" in result

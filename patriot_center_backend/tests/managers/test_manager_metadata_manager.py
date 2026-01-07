@@ -16,7 +16,8 @@ from patriot_center_backend.managers.matchup_processor import MatchupProcessor
 
 @pytest.fixture(autouse=True)
 def patch_caches():
-    with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
+    with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}), \
+         patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER', MagicMock()):
         yield
 
 
@@ -398,16 +399,15 @@ class TestSave:
 
     def test_save_writes_all_caches(self, manager):
         """Test that save writes all caches to disk."""
-        manager._cache = {"Manager 1": {}}
-        manager._transaction_ids_cache = {}
-        manager._players_cache = {}
 
-        manager.save()
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {"Manager 1": {}}), \
+             patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER', MagicMock()):
+            from patriot_center_backend.managers import manager_metadata_manager
+            save_writes_all_caches_manager = manager_metadata_manager.ManagerMetadataManager()
+            
+            save_writes_all_caches_manager.save()
 
-        # Should call save methods on cache manager
-        assert manager._cache_mgr.save_manager_cache.called
-        assert manager._cache_mgr.save_transaction_ids_cache.called
-        assert manager._cache_mgr.save_players_cache.called
+            assert manager_metadata_manager.CACHE_MANAGER.save_all_caches.called
 
 
 class TestSetDefaultsIfMissing:

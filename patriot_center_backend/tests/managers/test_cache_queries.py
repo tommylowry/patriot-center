@@ -5,24 +5,13 @@ Tests all cache query functions with both good and bad scenarios.
 All functions are read-only and should not modify the cache.
 """
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 from copy import deepcopy
-from patriot_center_backend.managers.cache_queries import (
-    get_matchup_details_from_cache,
-    get_transaction_details_from_cache,
-    get_overall_data_details_from_cache,
-    get_ranking_details_from_cache,
-    get_head_to_head_details_from_cache,
-    get_head_to_head_overall_from_cache,
-    get_trade_history_between_two_managers,
-    get_manager_awards_from_cache,
-    get_manager_score_awards_from_cache
-)
 
 
 # Test fixture: Sample cache structure
 @pytest.fixture
-def sample_cache():
+def sample_manager_cache():
     """Create a sample cache for testing."""
     return {
         "Manager 1": {
@@ -250,12 +239,37 @@ def sample_cache():
     }
 
 
+@pytest.fixture
+def valid_options_cache():
+    """Create a sample valid options cache."""
+    return {
+        "2025": {
+            "managers": ["Manager 1", "Manager 2", "Manager 3"]
+        }
+    }
+
+
+@pytest.fixture
+def transaction_ids_cache():
+    """Create a sample transaction IDs cache."""
+    return {
+        "trade1": {
+            "year": "2023",
+            "week": "5",
+            "managers_involved": ["Manager 1", "Manager 2"],
+            "trade_details": {}
+        }
+    }
+
+
 class TestGetMatchupDetailsFromCache:
     """Test get_matchup_details_from_cache function."""
 
-    def test_all_time_stats(self, sample_cache):
+    def test_all_time_stats(self, sample_manager_cache):
         """Test getting all-time matchup stats."""
-        result = get_matchup_details_from_cache(sample_cache, "Manager 1")
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_matchup_details_from_cache
+            result = get_matchup_details_from_cache("Manager 1")
 
         assert result["overall"]["wins"] == 10
         assert result["overall"]["losses"] == 5
@@ -264,33 +278,41 @@ class TestGetMatchupDetailsFromCache:
         assert "average_points_for" in result["overall"]
         assert "average_points_against" in result["overall"]
 
-    def test_single_season_stats(self, sample_cache):
+    def test_single_season_stats(self, sample_manager_cache):
         """Test getting stats for a specific season."""
-        result = get_matchup_details_from_cache(sample_cache, "Manager 1", year="2023")
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_matchup_details_from_cache
+            result = get_matchup_details_from_cache("Manager 1", year="2023")
 
         assert result["overall"]["wins"] == 6
         assert result["overall"]["losses"] == 2
         assert result["overall"]["ties"] == 0
 
-    def test_manager_with_no_playoffs(self, sample_cache):
+    def test_manager_with_no_playoffs(self, sample_manager_cache):
         """Test manager who never made playoffs."""
-        result = get_matchup_details_from_cache(sample_cache, "Manager 3")
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_matchup_details_from_cache
+            result = get_matchup_details_from_cache("Manager 3")
 
         assert result["playoffs"]["wins"] == 0
         assert result["playoffs"]["losses"] == 0
         assert result["playoffs"]["win_percentage"] == 0.0
         assert result["playoffs"]["average_points_for"] == 0.0
 
-    def test_win_percentage_calculation(self, sample_cache):
+    def test_win_percentage_calculation(self, sample_manager_cache):
         """Test win percentage is calculated correctly."""
-        result = get_matchup_details_from_cache(sample_cache, "Manager 2")
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_matchup_details_from_cache
+            result = get_matchup_details_from_cache("Manager 2")
 
         # 5 wins out of 16 games (5+10+1) = 31.25%
         assert result["overall"]["win_percentage"] == 31.2  # Rounded to 1 decimal
 
-    def test_zero_matchups_no_division_by_zero(self, sample_cache):
+    def test_zero_matchups_no_division_by_zero(self, sample_manager_cache):
         """Test that zero matchups doesn't cause division by zero."""
-        result = get_matchup_details_from_cache(sample_cache, "Manager 3")
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_matchup_details_from_cache
+            result = get_matchup_details_from_cache("Manager 3")
 
         assert result["overall"]["win_percentage"] == 0.0
         assert result["overall"]["average_points_for"] == 0.0
@@ -300,36 +322,36 @@ class TestGetTransactionDetailsFromCache:
     """Test get_transaction_details_from_cache function."""
 
     @patch('patriot_center_backend.managers.cache_queries.extract_dict_data')
-    def test_all_time_transactions(self, mock_extract, sample_cache):
+    def test_all_time_transactions(self, mock_extract, sample_manager_cache):
         """Test getting all-time transaction stats."""
         mock_extract.return_value = []
 
-        result = get_transaction_details_from_cache(
-            sample_cache, None, "Manager 1", {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_transaction_details_from_cache
+            result = get_transaction_details_from_cache(None, "Manager 1", {})
 
         assert result["trades"]["total"] == 5
         assert result["adds"]["total"] == 10
         assert result["drops"]["total"] == 10
 
     @patch('patriot_center_backend.managers.cache_queries.extract_dict_data')
-    def test_single_season_transactions(self, mock_extract, sample_cache):
+    def test_single_season_transactions(self, mock_extract, sample_manager_cache):
         """Test getting stats for specific season."""
         mock_extract.return_value = []
 
-        result = get_transaction_details_from_cache(
-            sample_cache, "2023", "Manager 1", {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_transaction_details_from_cache
+            result = get_transaction_details_from_cache("2023", "Manager 1", {})
 
         assert result["trades"]["total"] == 2
         assert result["adds"]["total"] == 5
         assert result["drops"]["total"] == 5
 
     @patch('patriot_center_backend.managers.cache_queries.extract_dict_data')
-    def test_transactions_with_faab_data(self, mock_extract, sample_cache):
+    def test_transactions_with_faab_data(self, mock_extract, sample_manager_cache):
         """Test getting transaction stats when FAAB data exists."""
         # Setup cache with FAAB data
-        sample_cache["Manager 1"]["summary"]["transactions"]["faab"] = {
+        sample_manager_cache["Manager 1"]["summary"]["transactions"]["faab"] = {
             "total_lost_or_gained": -150,
             "players": {
                 "Player A": {"num_bids_won": 2, "total_faab_spent": 100},
@@ -347,9 +369,9 @@ class TestGetTransactionDetailsFromCache:
 
         mock_extract.return_value = []
 
-        result = get_transaction_details_from_cache(
-            sample_cache, None, "Manager 1", {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_transaction_details_from_cache
+            result = get_transaction_details_from_cache(None, "Manager 1", {})
 
         # Assert FAAB summary was created
         assert "faab" in result
@@ -363,21 +385,21 @@ class TestGetOverallDataDetailsFromCache:
     """Test get_overall_data_details_from_cache function."""
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_all_time_overall_data(self, mock_get_matchup_card, sample_cache):
+    def test_all_time_overall_data(self, mock_get_matchup_card, sample_manager_cache):
         """Test getting all-time overall data."""
         mock_get_matchup_card.return_value = {"mock": "matchup_card"}
 
-        # Add week 17 data for 2023 and 2022 to sample_cache for opponent lookup
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+        # Add week 17 data for 2023 and 2022 to sample_manager_cache for opponent lookup
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
-        sample_cache["Manager 1"]["years"]["2022"] = {
+        sample_manager_cache["Manager 1"]["years"]["2022"] = {
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache(
-            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         assert len(result["placements"]) == 2
         years = [p["year"] for p in result["placements"]]
@@ -389,98 +411,98 @@ class TestGetOverallDataDetailsFromCache:
         assert result["playoff_appearances"] == 2
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_single_season_overall_data(self, mock_get_matchup_card, sample_cache):
+    def test_single_season_overall_data(self, mock_get_matchup_card, sample_manager_cache):
         """Test getting single season overall data."""
         mock_get_matchup_card.return_value = {"mock": "matchup_card"}
 
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
-        sample_cache["Manager 1"]["years"]["2022"] = {
+        sample_manager_cache["Manager 1"]["years"]["2022"] = {
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache(
-            sample_cache, "2023", "Manager 1", {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            result = get_overall_data_details_from_cache("2023", "Manager 1", {})
 
         assert len(result["placements"]) == 2  # Still returns all-time data
         placement_2023 = next(p for p in result["placements"] if p["year"] == "2023")
         assert placement_2023["placement"] == 1
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_manager_with_no_playoff_appearances(self, mock_get_matchup_card, sample_cache):
+    def test_manager_with_no_playoff_appearances(self, mock_get_matchup_card, sample_manager_cache):
         """Test manager with no playoff appearances."""
-        result = get_overall_data_details_from_cache(
-            sample_cache, "all_time", "Manager 3", {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            result = get_overall_data_details_from_cache("all_time", "Manager 3", {})
 
         assert result["playoff_appearances"] == 0
         assert result["placements"] == []
         mock_get_matchup_card.assert_not_called()
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_week_selection_for_year_2020_and_earlier(self, mock_get_matchup_card, sample_cache):
+    def test_week_selection_for_year_2020_and_earlier(self, mock_get_matchup_card, sample_manager_cache):
         """Test that week 16 is used for years 2020 and earlier."""
         mock_get_matchup_card.return_value = {"mock": "matchup_card"}
 
         # Add placement for 2020
-        sample_cache["Manager 1"]["summary"]["overall_data"]["placement"]["2020"] = 2
-        sample_cache["Manager 1"]["years"]["2020"] = {
+        sample_manager_cache["Manager 1"]["summary"]["overall_data"]["placement"]["2020"] = 2
+        sample_manager_cache["Manager 1"]["years"]["2020"] = {
             "weeks": {"16": {"matchup_data": {"opponent_manager": "Manager 2"}}}
         }
         # Also add week 17 data for other years
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
-        sample_cache["Manager 1"]["years"]["2022"] = {
+        sample_manager_cache["Manager 1"]["years"]["2022"] = {
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache(
-            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         # Find the call for 2020 - should use week '16'
         calls = mock_get_matchup_card.call_args_list
-        call_for_2020 = [c for c in calls if c[0][3] == "2020"]
+        call_for_2020 = [c for c in calls if c[0][2] == "2020"]
         assert len(call_for_2020) == 1
-        assert call_for_2020[0][0][4] == "16"  # week parameter should be '16'
+        assert call_for_2020[0][0][3] == "16"  # week parameter should be '16'
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_week_selection_for_year_after_2020(self, mock_get_matchup_card, sample_cache):
+    def test_week_selection_for_year_after_2020(self, mock_get_matchup_card, sample_manager_cache):
         """Test that week 17 is used for years after 2020."""
         mock_get_matchup_card.return_value = {"mock": "matchup_card"}
 
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
-        sample_cache["Manager 1"]["years"]["2022"] = {
+        sample_manager_cache["Manager 1"]["years"]["2022"] = {
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache(
-            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         # All calls should use week '17' since both years are after 2020
         for call in mock_get_matchup_card.call_args_list:
-            assert call[0][4] == "17"  # week parameter should be '17'
+            assert call[0][3] == "17"  # week parameter should be '17'
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_missing_opponent_skips_matchup_card(self, mock_get_matchup_card, sample_cache, capsys):
+    def test_missing_opponent_skips_matchup_card(self, mock_get_matchup_card, sample_manager_cache, capsys):
         """Test that missing opponent results in warning and empty matchup_card."""
         mock_get_matchup_card.return_value = {"mock": "matchup_card"}
 
         # Don't add week 17 data for 2022 - opponent will be missing
-        sample_cache["Manager 1"]["years"]["2022"] = {"weeks": {}}
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+        sample_manager_cache["Manager 1"]["years"]["2022"] = {"weeks": {}}
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
 
-        result = get_overall_data_details_from_cache(
-            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         # Verify warning was printed for missing opponent
         captured = capsys.readouterr()
@@ -489,7 +511,7 @@ class TestGetOverallDataDetailsFromCache:
 
         # Verify get_matchup_card was NOT called for 2022 (missing opponent)
         calls = mock_get_matchup_card.call_args_list
-        call_years = [c[0][3] for c in calls]
+        call_years = [c[0][2] for c in calls]
         assert "2022" not in call_years
         assert "2023" in call_years  # 2023 should still be called
 
@@ -498,76 +520,63 @@ class TestGetOverallDataDetailsFromCache:
         assert placement_2022["matchup_card"] == {}
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_matchup_card_included_in_each_placement(self, mock_get_matchup_card, sample_cache):
+    def test_matchup_card_included_in_each_placement(self, mock_get_matchup_card, sample_manager_cache):
         """Test that matchup_card is included in each placement item."""
         mock_get_matchup_card.side_effect = [
             {"card": "2023_card"},
             {"card": "2022_card"}
         ]
 
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
-        sample_cache["Manager 1"]["years"]["2022"] = {
+        sample_manager_cache["Manager 1"]["years"]["2022"] = {
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache(
-            sample_cache, "all_time", "Manager 1", {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         for placement in result["placements"]:
             assert "matchup_card" in placement
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_passes_correct_caches_to_get_matchup_card(self, mock_get_matchup_card, sample_cache):
-        """Test that all cache parameters are passed to get_matchup_card."""
+    def test_passes_correct_params_to_get_matchup_card(self, mock_get_matchup_card, sample_manager_cache):
+        """Test that all parameters are passed to get_matchup_card."""
         mock_get_matchup_card.return_value = {"mock": "matchup_card"}
 
-        players_cache = {"player": "data"}
-        player_ids = {"id": "123"}
-        image_urls_cache = {"url": "http://example.com"}
-        starters_cache = {"starter": "data"}
+        image_urls = {"url": "http://example.com"}
 
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
-        sample_cache["Manager 1"]["years"]["2022"] = {
+        sample_manager_cache["Manager 1"]["years"]["2022"] = {
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache(
-            sample_cache, "all_time", "Manager 1",
-            players_cache, player_ids, image_urls_cache, starters_cache
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            result = get_overall_data_details_from_cache("all_time", "Manager 1", image_urls)
 
-        # Verify get_matchup_card was called with all the correct parameters
+        # Verify get_matchup_card was called with the correct parameters
         call_args = mock_get_matchup_card.call_args_list[0][0]
-        assert call_args[0] == sample_cache  # cache
-        assert call_args[1] == "Manager 1"   # manager
-        # call_args[2] is opponent
-        # call_args[3] is year
-        # call_args[4] is week
-        assert call_args[5] == players_cache
-        assert call_args[6] == player_ids
-        assert call_args[7] == image_urls_cache
-        assert call_args[8] == starters_cache
+        assert call_args[0] == "Manager 1"   # manager
+        # call_args[1] is opponent
+        # call_args[2] is year
+        # call_args[3] is week
+        assert call_args[4] == image_urls
 
 
 class TestGetRankingDetailsFromCache:
     """Test get_ranking_details_from_cache function."""
 
-    def test_get_rankings(self, sample_cache):
+    def test_get_rankings(self, sample_manager_cache, valid_options_cache):
         """Test getting ranking details."""
-        valid_options = {
-            "2025": {
-                "managers": ["Manager 1", "Manager 2", "Manager 3"]
-            }
-        }
-
-        result = get_ranking_details_from_cache(
-            sample_cache, "Manager 1", valid_options
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache), \
+             patch('patriot_center_backend.managers.cache_queries.VALID_OPTIONS_CACHE', valid_options_cache):
+            from patriot_center_backend.managers.cache_queries import get_ranking_details_from_cache
+            result = get_ranking_details_from_cache("Manager 1")
 
         # Should return dictionary with rankings
         assert isinstance(result, dict)
@@ -579,11 +588,11 @@ class TestGetRankingDetailsFromCache:
 class TestGetHeadToHeadDetailsFromCache:
     """Test get_head_to_head_details_from_cache function."""
 
-    def test_get_h2h_details(self, sample_cache):
+    def test_get_h2h_details(self, sample_manager_cache):
         """Test getting head-to-head details."""
-        result = get_head_to_head_details_from_cache(
-            sample_cache, "Manager 1", {}, {}, {}, year=None, opponent="Manager 2"
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_head_to_head_details_from_cache
+            result = get_head_to_head_details_from_cache("Manager 1", {}, year=None, opponent="Manager 2")
 
         # Should return single opponent dict
         assert isinstance(result, dict)
@@ -595,36 +604,35 @@ class TestGetHeadToHeadDetailsFromCache:
 class TestGetHeadToHeadOverallFromCache:
     """Test get_head_to_head_overall_from_cache function."""
 
-    def test_h2h_overall_stats(self, sample_cache):
+    def test_h2h_overall_stats(self, sample_manager_cache):
         """Test comprehensive H2H stats calculation."""
-        cache_copy = deepcopy(sample_cache)
+        cache_copy = deepcopy(sample_manager_cache)
 
-        result = get_head_to_head_overall_from_cache(
-            cache_copy, "Manager 1", "Manager 2",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', cache_copy):
+            from patriot_center_backend.managers.cache_queries import get_head_to_head_overall_from_cache
+            result = get_head_to_head_overall_from_cache("Manager 1", "Manager 2", {})
 
         # Check for manager-specific win keys
         assert "manager_1_wins" in result
         assert "manager_2_wins" in result
         assert "ties" in result
 
-    def test_h2h_no_matchups(self, sample_cache):
+    def test_h2h_no_matchups(self, sample_manager_cache):
         """Test H2H when managers never played."""
-        result = get_head_to_head_overall_from_cache(
-            sample_cache, "Manager 1", "Manager 3",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_head_to_head_overall_from_cache
+            result = get_head_to_head_overall_from_cache("Manager 1", "Manager 3", {})
 
         # Should handle gracefully even with no matchups
         assert result is not None
         assert isinstance(result, dict)
-
+    
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
-    def test_h2h_list_all_matchups(self, mock_matchup_card, sample_cache):
+    @patch('patriot_center_backend.managers.cache_queries.validate_matchup_data')
+    def test_h2h_list_all_matchups(self, mock_validator, mock_matchup_card, sample_manager_cache):
         """Test H2H with list_all_matchups=True returns matchup history."""
         # Setup weeks data with matchups
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
                 "matchup_data": {
                     "opponent_manager": "Manager 2",
@@ -645,13 +653,15 @@ class TestGetHeadToHeadOverallFromCache:
             }
         }
 
+        mock_validator.return_value = ""
         mock_matchup_card.return_value = {"year": "2023", "week": "1"}
 
-        result = get_head_to_head_overall_from_cache(
-            sample_cache, "Manager 1", "Manager 2",
-            {}, {}, {}, {},
-            list_all_matchups=True
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_head_to_head_overall_from_cache
+            result = get_head_to_head_overall_from_cache(
+                "Manager 1", "Manager 2", {},
+                list_all_matchups=True
+            )
 
         # Should return a list of matchup cards
         assert isinstance(result, list)
@@ -659,10 +669,10 @@ class TestGetHeadToHeadOverallFromCache:
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
     @patch('patriot_center_backend.managers.cache_queries.get_head_to_head_details_from_cache')
-    def test_h2h_with_specific_year(self, mock_h2h_details, mock_matchup_card, sample_cache):
+    def test_h2h_with_specific_year(self, mock_h2h_details, mock_matchup_card, sample_manager_cache):
         """Test H2H stats filtered to specific year."""
         # Setup weeks data
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
                 "matchup_data": {
                     "opponent_manager": "Manager 2",
@@ -673,18 +683,19 @@ class TestGetHeadToHeadOverallFromCache:
                 "transactions": {}
             }
         }
-        sample_cache["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]["points_for"]["opponents"]["Manager 2"] = 120.5
-        sample_cache["Manager 2"] = deepcopy(sample_cache["Manager 1"])
-        sample_cache["Manager 2"]["years"]["2023"]["summary"]["matchup_data"]["overall"]["points_for"]["opponents"] = {"Manager 1": 100.0}
+        sample_manager_cache["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]["points_for"]["opponents"]["Manager 2"] = 120.5
+        sample_manager_cache["Manager 2"] = deepcopy(sample_manager_cache["Manager 1"])
+        sample_manager_cache["Manager 2"]["years"]["2023"]["summary"]["matchup_data"]["overall"]["points_for"]["opponents"] = {"Manager 1": 100.0}
 
         mock_h2h_details.return_value = {"wins": 1, "losses": 0, "ties": 0}
         mock_matchup_card.return_value = {"year": "2023", "week": "1"}
 
-        result = get_head_to_head_overall_from_cache(
-            sample_cache, "Manager 1", "Manager 2",
-            {}, {}, {}, {},
-            year="2023"
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_head_to_head_overall_from_cache
+            result = get_head_to_head_overall_from_cache(
+                "Manager 1", "Manager 2", {},
+                year="2023"
+            )
 
         # Should return dict with stats
         assert isinstance(result, dict)
@@ -692,10 +703,10 @@ class TestGetHeadToHeadOverallFromCache:
 
     @patch('patriot_center_backend.managers.cache_queries.get_matchup_card')
     @patch('patriot_center_backend.managers.cache_queries.get_head_to_head_details_from_cache')
-    def test_h2h_manager2_wins(self, mock_h2h_details, mock_matchup_card, sample_cache):
+    def test_h2h_manager2_wins(self, mock_h2h_details, mock_matchup_card, sample_manager_cache):
         """Test H2H when manager2 wins (result='loss' for manager1)."""
         # Setup weeks data where Manager 2 wins
-        sample_cache["Manager 1"]["years"]["2023"]["weeks"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
                 "matchup_data": {
                     "opponent_manager": "Manager 2",
@@ -716,15 +727,14 @@ class TestGetHeadToHeadOverallFromCache:
             }
         }
 
-        sample_cache["Manager 2"] = deepcopy(sample_cache["Manager 1"])
+        sample_manager_cache["Manager 2"] = deepcopy(sample_manager_cache["Manager 1"])
 
         mock_h2h_details.return_value = {"wins": 0, "losses": 2, "ties": 0}
         mock_matchup_card.return_value = {"year": "2023", "week": "1", "margin": 20.0}
 
-        result = get_head_to_head_overall_from_cache(
-            sample_cache, "Manager 1", "Manager 2",
-            {}, {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_head_to_head_overall_from_cache
+            result = get_head_to_head_overall_from_cache("Manager 1", "Manager 2", {})
 
         # Should process manager2's wins correctly
         assert isinstance(result, dict)
@@ -735,7 +745,7 @@ class TestGetTradeHistoryBetweenTwoManagers:
     """Test get_trade_history_between_two_managers function."""
 
     @patch('patriot_center_backend.managers.cache_queries.get_trade_card')
-    def test_trade_history(self, mock_trade_card, sample_cache):
+    def test_trade_history(self, mock_trade_card, sample_manager_cache, transaction_ids_cache):
         """Test getting trade history between managers."""
         mock_trade_card.return_value = {
             "year": "2023",
@@ -743,19 +753,15 @@ class TestGetTradeHistoryBetweenTwoManagers:
             "managers_involved": ["Manager 1", "Manager 2"]
         }
 
-        transaction_ids_cache = {
-            "trade1": {
-                "year": "2023",
-                "week": "5",
-                "managers_involved": ["Manager 1", "Manager 2"],
-                "trade_details": {}
-            }
+        # Add transaction_ids to the cache
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"] = {
+            "trades": {"transaction_ids": ["trade1"]}
         }
 
-        result = get_trade_history_between_two_managers(
-            sample_cache, "Manager 1", "Manager 2",
-            transaction_ids_cache, "all_time", {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache), \
+             patch('patriot_center_backend.managers.cache_queries.TRANSACTION_IDS_CACHE', transaction_ids_cache):
+            from patriot_center_backend.managers.cache_queries import get_trade_history_between_two_managers
+            result = get_trade_history_between_two_managers("Manager 1", "Manager 2", {})
 
         assert isinstance(result, list)
 
@@ -763,11 +769,11 @@ class TestGetTradeHistoryBetweenTwoManagers:
 class TestGetManagerAwardsFromCache:
     """Test get_manager_awards_from_cache function."""
 
-    def test_manager_awards(self, sample_cache):
+    def test_manager_awards(self, sample_manager_cache):
         """Test getting manager awards."""
-        result = get_manager_awards_from_cache(
-            sample_cache, "Manager 1", {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_manager_awards_from_cache
+            result = get_manager_awards_from_cache("Manager 1", {})
 
         # Should include various award categories
         assert "first_place" in result
@@ -781,23 +787,12 @@ class TestGetManagerAwardsFromCache:
 class TestGetManagerScoreAwardsFromCache:
     """Test get_manager_score_awards_from_cache function."""
 
-    def test_score_awards(self, sample_cache):
+    def test_score_awards(self, sample_manager_cache):
         """Test getting scoring-related awards."""
-        # Add starters cache for score awards
-        starters_cache = {
-            "2023": {
-                "1": {
-                    "Manager 1": {
-                        "Player A": {"points": 25.5, "position": "QB"},
-                        "Total_Points": 120.5
-                    }
-                }
-            }
-        }
-
-        result = get_manager_score_awards_from_cache(
-            sample_cache, "Manager 1", {}, {}, {}, starters_cache
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache), \
+             patch('patriot_center_backend.managers.cache_queries.STARTERS_CACHE', {}):
+            from patriot_center_backend.managers.cache_queries import get_manager_score_awards_from_cache
+            result = get_manager_score_awards_from_cache("Manager 1", {})
 
         # Should include score-based awards
         assert isinstance(result, dict)
@@ -810,30 +805,34 @@ class TestGetManagerScoreAwardsFromCache:
 class TestCacheImmutability:
     """Test that cache query functions don't modify the cache."""
 
-    def test_get_matchup_details_immutable(self, sample_cache):
+    def test_get_matchup_details_immutable(self, sample_manager_cache):
         """Test that function doesn't modify cache."""
-        original = deepcopy(sample_cache)
+        original = deepcopy(sample_manager_cache)
 
-        get_matchup_details_from_cache(sample_cache, "Manager 1")
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_matchup_details_from_cache
+            get_matchup_details_from_cache("Manager 1")
 
-        assert sample_cache == original
+        assert sample_manager_cache == original
 
     @patch('patriot_center_backend.managers.cache_queries.extract_dict_data')
-    def test_get_transaction_details_immutable(self, mock_extract, sample_cache):
+    def test_get_transaction_details_immutable(self, mock_extract, sample_manager_cache):
         """Test that function doesn't modify cache."""
         mock_extract.return_value = []
-        original = deepcopy(sample_cache)
+        original = deepcopy(sample_manager_cache)
 
-        get_transaction_details_from_cache(
-            sample_cache, None, "Manager 1", {}, {}, {}
-        )
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_transaction_details_from_cache
+            get_transaction_details_from_cache(None, "Manager 1", {})
 
-        assert sample_cache == original
+        assert sample_manager_cache == original
 
-    def test_get_overall_data_immutable(self, sample_cache):
+    def test_get_overall_data_immutable(self, sample_manager_cache):
         """Test that function doesn't modify cache."""
-        original = deepcopy(sample_cache)
+        original = deepcopy(sample_manager_cache)
 
-        get_overall_data_details_from_cache(sample_cache, "all_time", "Manager 1", {}, {}, {}, {})
+        with patch('patriot_center_backend.managers.cache_queries.MANAGER_CACHE', sample_manager_cache):
+            from patriot_center_backend.managers.cache_queries import get_overall_data_details_from_cache
+            get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
-        assert sample_cache == original
+        assert sample_manager_cache == original

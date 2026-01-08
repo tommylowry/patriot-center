@@ -1,4 +1,6 @@
 {
+    "isort.check": true,
+    "isort.showNotifications": "onWarning",
     "python.testing.cwd": "${workspaceFolder}",
     "python.testing.pytestArgs": [
         "patriot_center_backend/tests",

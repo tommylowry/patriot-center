@@ -708,9 +708,6 @@ class TransactionProcessor:
             transaction_id: Unique transaction ID
             commish_action: Whether this is a commissioner action
             waiver_bid: FAAB amount bid (for adds only)
-
-        Returns:
-            Weekly summary dictionary
         """
         if free_agent_type not in ["add", "drop"]:
             return
@@ -745,8 +742,6 @@ class TransactionProcessor:
         
         # Finally, add transaction ID to weekly summary to avoid double counting
         weekly_summary["transaction_ids"].append(transaction_id)
-
-        return deepcopy(weekly_summary)
     
     def _add_faab_details_to_cache(self, transaction_type: str, manager: str,
                                    player_name: str, faab_amount: int,

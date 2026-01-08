@@ -168,11 +168,10 @@ def patch_caches(mock_manager_cache):
 
 
 @pytest.fixture
-def processor(mock_manager_cache):
-    with patch('patriot_center_backend.managers.matchup_processor.MANAGER_CACHE', mock_manager_cache):
-        """Create MatchupProcessor instance."""
-        from patriot_center_backend.managers.matchup_processor import MatchupProcessor
-        return MatchupProcessor(playoff_week_start=15)
+def processor():
+    """Create MatchupProcessor instance."""
+    from patriot_center_backend.managers.matchup_processor import MatchupProcessor
+    return MatchupProcessor(playoff_week_start=15)
 
 
 class TestMatchupProcessorInit:

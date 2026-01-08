@@ -6,13 +6,12 @@ All tests mock underlying cache_queries functions.
 """
 import pytest
 from unittest.mock import patch, MagicMock
-from patriot_center_backend.managers.data_exporter import DataExporter
 
 
 @pytest.fixture
-def sample_caches():
-    """Create sample caches for testing."""
-    cache = {
+def sample_manager_cache():
+    """Create a sample cache for testing."""
+    return {
         "Manager 1": {
             "summary": {
                 "matchup_data": {
@@ -82,72 +81,47 @@ def sample_caches():
         }
     }
 
-    transaction_ids_cache = {}
-    players_cache = {}
-    player_ids = {}
-    valid_options_cache = {
+
+@pytest.fixture
+def transaction_ids_cache():
+    """Create a sample transaction ids cache."""
+    return {}
+
+
+@pytest.fixture
+def valid_options_cache():
+    """Create a sample valid options cache."""
+    return {
         "2025": {
             "managers": ["Manager 1", "Manager 2"]
         }
     }
-    starters_cache = {}
 
-    return {
-        "cache": cache,
-        "transaction_ids_cache": transaction_ids_cache,
-        "players_cache": players_cache,
-        "player_ids": player_ids,
-        "valid_options_cache": valid_options_cache,
-        "starters_cache": starters_cache
-    }
+
+@pytest.fixture(autouse=True)
+def patch_caches(sample_manager_cache, transaction_ids_cache, valid_options_cache):
+    with patch('patriot_center_backend.managers.data_exporter.MANAGER_CACHE', sample_manager_cache), \
+         patch('patriot_center_backend.managers.data_exporter.TRANSACTION_IDS_CACHE', transaction_ids_cache), \
+         patch('patriot_center_backend.managers.data_exporter.VALID_OPTIONS_CACHE', valid_options_cache):
+        yield
 
 
 @pytest.fixture
-def data_exporter(sample_caches):
+def data_exporter():
     """Create DataExporter instance with sample caches."""
-    return DataExporter(
-        cache=sample_caches["cache"],
-        transaction_ids_cache=sample_caches["transaction_ids_cache"],
-        players_cache=sample_caches["players_cache"],
-        valid_options_cache=sample_caches["valid_options_cache"],
-        starters_cache=sample_caches["starters_cache"],
-        player_ids=sample_caches["player_ids"]
-    )
+    from patriot_center_backend.managers.data_exporter import DataExporter
+    return DataExporter()
 
 
 class TestDataExporterInit:
     """Test DataExporter initialization."""
 
-    def test_init_stores_caches(self, sample_caches):
-        """Test that __init__ stores all caches as instance variables."""
-        exporter = DataExporter(
-            cache=sample_caches["cache"],
-            transaction_ids_cache=sample_caches["transaction_ids_cache"],
-            players_cache=sample_caches["players_cache"],
-            valid_options_cache=sample_caches["valid_options_cache"],
-            starters_cache=sample_caches["starters_cache"],
-            player_ids=sample_caches["player_ids"]
-        )
-
-        assert exporter._cache == sample_caches["cache"]
-        assert exporter._transaction_ids_cache == sample_caches["transaction_ids_cache"]
-        assert exporter._players_cache == sample_caches["players_cache"]
-        assert exporter._player_ids == sample_caches["player_ids"]
-        assert exporter._valid_options_cache == sample_caches["valid_options_cache"]
-        assert exporter._starters_cache == sample_caches["starters_cache"]
-
-    def test_init_creates_empty_image_cache(self, sample_caches):
+    def test_init_creates_empty_image_cache(self):
         """Test that __init__ creates empty image URL cache."""
-        exporter = DataExporter(
-            cache=sample_caches["cache"],
-            transaction_ids_cache=sample_caches["transaction_ids_cache"],
-            players_cache=sample_caches["players_cache"],
-            valid_options_cache=sample_caches["valid_options_cache"],
-            starters_cache=sample_caches["starters_cache"],
-            player_ids=sample_caches["player_ids"]
-        )
+        from patriot_center_backend.managers.data_exporter import DataExporter
+        exporter = DataExporter()
 
-        assert exporter._image_urls_cache == {}
+        assert exporter._image_urls == {}
 
 
 class TestGetManagersList:
@@ -178,7 +152,7 @@ class TestGetManagersList:
                 "worst": 10
             }
         }
-
+        
         result = data_exporter.get_managers_list(active_only=True)
 
         assert "managers" in result
@@ -224,7 +198,7 @@ class TestGetManagersList:
         """Test that managers are sorted by weight (best first)."""
         mock_image_url.return_value = "http://example.com/manager.jpg"
 
-        def ranking_side_effect(cache, manager, valid_options, manager_summary_usage, active_only):
+        def ranking_side_effect(manager, manager_summary_usage, active_only):
             # Manager 1 should have better stats
             if manager == "Manager 1":
                 return {
@@ -272,6 +246,7 @@ class TestGetManagersList:
 class TestGetManagerSummary:
     """Test get_manager_summary method."""
 
+    @patch('patriot_center_backend.managers.data_exporter.get_head_to_head_details_from_cache')
     @patch('patriot_center_backend.managers.data_exporter.get_manager_score_awards_from_cache')
     @patch('patriot_center_backend.managers.data_exporter.get_manager_awards_from_cache')
     @patch('patriot_center_backend.managers.data_exporter.get_ranking_details_from_cache')
@@ -281,7 +256,7 @@ class TestGetManagerSummary:
     @patch('patriot_center_backend.managers.data_exporter.get_current_manager_image_url')
     def test_get_manager_summary_all_time(self, mock_image, mock_matchup, mock_trans,
                                           mock_overall, mock_ranking, mock_awards,
-                                          mock_score_awards, data_exporter):
+                                          mock_score_awards, mock_h2h, data_exporter):
         """Test getting manager summary for all-time stats."""
         mock_image.return_value = "http://example.com/manager.jpg"
         mock_matchup.return_value = {"overall": {"wins": 10}}
@@ -290,6 +265,7 @@ class TestGetManagerSummary:
         mock_ranking.return_value = {"ranks": {}, "values": {}}
         mock_awards.return_value = {}
         mock_score_awards.return_value = {}
+        mock_h2h.return_value = {}
 
         result = data_exporter.get_manager_summary("Manager 1")
 
@@ -301,6 +277,7 @@ class TestGetManagerSummary:
         assert "rankings" in result
         assert "head_to_head" in result
 
+    @patch('patriot_center_backend.managers.data_exporter.get_head_to_head_details_from_cache')
     @patch('patriot_center_backend.managers.data_exporter.get_manager_score_awards_from_cache')
     @patch('patriot_center_backend.managers.data_exporter.get_manager_awards_from_cache')
     @patch('patriot_center_backend.managers.data_exporter.get_ranking_details_from_cache')
@@ -310,7 +287,7 @@ class TestGetManagerSummary:
     @patch('patriot_center_backend.managers.data_exporter.get_current_manager_image_url')
     def test_get_manager_summary_single_year(self, mock_image, mock_matchup, mock_trans,
                                              mock_overall, mock_ranking, mock_awards,
-                                             mock_score_awards, data_exporter):
+                                             mock_score_awards, mock_h2h, data_exporter):
         """Test getting manager summary for specific year."""
         mock_image.return_value = "http://example.com/manager.jpg"
         mock_matchup.return_value = {"overall": {"wins": 6}}
@@ -319,6 +296,7 @@ class TestGetManagerSummary:
         mock_ranking.return_value = {"ranks": {}, "values": {}}
         mock_awards.return_value = {}
         mock_score_awards.return_value = {}
+        mock_h2h.return_value = {}
 
         result = data_exporter.get_manager_summary("Manager 1", year="2023")
 
@@ -405,10 +383,12 @@ class TestGetManagerTransactions:
 
     @patch('patriot_center_backend.managers.data_exporter.get_trade_card')
     @patch('patriot_center_backend.managers.data_exporter.get_image_url')
-    def test_get_transactions_with_trades(self, mock_image_url, mock_trade_card, data_exporter):
+    def test_get_transactions_with_trades(self, mock_image_url, mock_trade_card,
+                                          sample_manager_cache, transaction_ids_cache,
+                                          valid_options_cache):
         """Test get_manager_transactions processes trade transactions."""
         # Setup cache with trade transaction IDs
-        data_exporter._cache["Manager 1"]["years"]["2023"]["weeks"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
                 "transactions": {
                     "trades": {
@@ -425,7 +405,12 @@ class TestGetManagerTransactions:
             "managers_involved": ["Manager 1", "Manager 2"]
         }
 
-        result = data_exporter.get_manager_transactions("Manager 1", year="2023")
+        with patch('patriot_center_backend.managers.data_exporter.MANAGER_CACHE', sample_manager_cache), \
+             patch('patriot_center_backend.managers.data_exporter.TRANSACTION_IDS_CACHE', transaction_ids_cache), \
+             patch('patriot_center_backend.managers.data_exporter.VALID_OPTIONS_CACHE', valid_options_cache):
+            from patriot_center_backend.managers.data_exporter import DataExporter
+            get_trans_w_trades_exporter = DataExporter()
+            result = get_trans_w_trades_exporter.get_manager_transactions("Manager 1", year="2023")
 
         # Should have processed 2 trades
         assert result["total_count"] == 2
@@ -433,10 +418,11 @@ class TestGetManagerTransactions:
         assert len(trades) == 2
 
     @patch('patriot_center_backend.managers.data_exporter.get_image_url')
-    def test_get_transactions_with_adds(self, mock_image_url, data_exporter):
+    def test_get_transactions_with_adds(self, mock_image_url, sample_manager_cache,
+                                        transaction_ids_cache, valid_options_cache):
         """Test get_manager_transactions processes add transactions."""
         # Setup cache with add transaction
-        data_exporter._cache["Manager 1"]["years"]["2023"]["weeks"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
                 "transactions": {
                     "adds": {
@@ -446,7 +432,7 @@ class TestGetManagerTransactions:
             }
         }
 
-        data_exporter._transaction_ids_cache["add1"] = {
+        transaction_ids_cache["add1"] = {
             "types": ["add"],
             "add": "Player A",
             "faab_spent": 50
@@ -454,7 +440,12 @@ class TestGetManagerTransactions:
 
         mock_image_url.return_value = {"name": "Player A", "image_url": "http://example.com/player.jpg"}
 
-        result = data_exporter.get_manager_transactions("Manager 1", year="2023")
+        with patch('patriot_center_backend.managers.data_exporter.MANAGER_CACHE', sample_manager_cache), \
+             patch('patriot_center_backend.managers.data_exporter.TRANSACTION_IDS_CACHE', transaction_ids_cache), \
+             patch('patriot_center_backend.managers.data_exporter.VALID_OPTIONS_CACHE', valid_options_cache):
+            from patriot_center_backend.managers.data_exporter import DataExporter
+            get_trans_w_adds_exporter = DataExporter()
+            result = get_trans_w_adds_exporter.get_manager_transactions("Manager 1", year="2023")
 
         # Should have 1 add transaction
         adds = [t for t in result["transactions"] if t["type"] == "add"]
@@ -462,10 +453,11 @@ class TestGetManagerTransactions:
         assert adds[0]["faab_spent"] == 50
 
     @patch('patriot_center_backend.managers.data_exporter.get_image_url')
-    def test_get_transactions_with_drops(self, mock_image_url, data_exporter):
+    def test_get_transactions_with_drops(self, mock_image_url, sample_manager_cache,
+                                         transaction_ids_cache, valid_options_cache):
         """Test get_manager_transactions processes drop transactions."""
         # Setup cache with drop transaction
-        data_exporter._cache["Manager 1"]["years"]["2023"]["weeks"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
                 "transactions": {
                     "drops": {
@@ -475,14 +467,19 @@ class TestGetManagerTransactions:
             }
         }
 
-        data_exporter._transaction_ids_cache["drop1"] = {
+        transaction_ids_cache["drop1"] = {
             "types": ["drop"],
             "drop": "Player B"
         }
 
         mock_image_url.return_value = {"name": "Player B", "image_url": "http://example.com/player.jpg"}
 
-        result = data_exporter.get_manager_transactions("Manager 1", year="2023")
+        with patch('patriot_center_backend.managers.data_exporter.MANAGER_CACHE', sample_manager_cache), \
+             patch('patriot_center_backend.managers.data_exporter.TRANSACTION_IDS_CACHE', transaction_ids_cache), \
+             patch('patriot_center_backend.managers.data_exporter.VALID_OPTIONS_CACHE', valid_options_cache):
+            from patriot_center_backend.managers.data_exporter import DataExporter
+            get_trans_w_drops_exporter = DataExporter()
+            result = get_trans_w_drops_exporter.get_manager_transactions("Manager 1", year="2023")
 
         # Should have 1 drop transaction
         drops = [t for t in result["transactions"] if t["type"] == "drop"]
@@ -490,10 +487,11 @@ class TestGetManagerTransactions:
         assert drops[0]["player"]["name"] == "Player B"
 
     @patch('patriot_center_backend.managers.data_exporter.get_image_url')
-    def test_get_transactions_with_add_and_drop(self, mock_image_url, data_exporter):
+    def test_get_transactions_with_add_and_drop(self, mock_image_url, sample_manager_cache,
+                                                transaction_ids_cache, valid_options_cache):
         """Test get_manager_transactions processes add_and_drop transactions."""
         # Setup cache with add_and_drop transaction
-        data_exporter._cache["Manager 1"]["years"]["2023"]["weeks"] = {
+        sample_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
                 "transactions": {
                     "adds": {
@@ -503,7 +501,7 @@ class TestGetManagerTransactions:
             }
         }
 
-        data_exporter._transaction_ids_cache["add_drop1"] = {
+        transaction_ids_cache["add_drop1"] = {
             "types": ["add", "drop"],
             "add": "Player A",
             "drop": "Player B",
@@ -520,7 +518,12 @@ class TestGetManagerTransactions:
 
         mock_image_url.side_effect = image_url_side_effect
 
-        result = data_exporter.get_manager_transactions("Manager 1", year="2023")
+        with patch('patriot_center_backend.managers.data_exporter.MANAGER_CACHE', sample_manager_cache), \
+             patch('patriot_center_backend.managers.data_exporter.TRANSACTION_IDS_CACHE', transaction_ids_cache), \
+             patch('patriot_center_backend.managers.data_exporter.VALID_OPTIONS_CACHE', valid_options_cache):
+            from patriot_center_backend.managers.data_exporter import DataExporter
+            get_trans_w_adds_and_drop_exporter = DataExporter()
+            result = get_trans_w_adds_and_drop_exporter.get_manager_transactions("Manager 1", year="2023")
 
         # Should have 1 add_and_drop transaction
         add_drops = [t for t in result["transactions"] if t["type"] == "add_and_drop"]
@@ -575,7 +578,8 @@ class TestCacheImmutability:
 
     @patch('patriot_center_backend.managers.data_exporter.get_ranking_details_from_cache')
     @patch('patriot_center_backend.managers.data_exporter.get_current_manager_image_url')
-    def test_get_managers_list_immutable(self, mock_image, mock_ranking, sample_caches):
+    def test_get_managers_list_immutable(self, mock_image, mock_ranking, sample_manager_cache,
+                                         transaction_ids_cache, valid_options_cache):
         """Test that get_managers_list doesn't modify cache."""
         from copy import deepcopy
 
@@ -590,17 +594,13 @@ class TestCacheImmutability:
                      "is_active_manager": True, "worst": 10}
         }
 
-        original = deepcopy(sample_caches["cache"])
+        original = deepcopy(sample_manager_cache)
 
-        exporter = DataExporter(
-            cache=sample_caches["cache"],
-            transaction_ids_cache=sample_caches["transaction_ids_cache"],
-            players_cache=sample_caches["players_cache"],
-            valid_options_cache=sample_caches["valid_options_cache"],
-            starters_cache=sample_caches["starters_cache"],
-            player_ids=sample_caches["player_ids"]
-        )
+        with patch('patriot_center_backend.managers.data_exporter.MANAGER_CACHE', sample_manager_cache), \
+             patch('patriot_center_backend.managers.data_exporter.TRANSACTION_IDS_CACHE', transaction_ids_cache), \
+             patch('patriot_center_backend.managers.data_exporter.VALID_OPTIONS_CACHE', valid_options_cache):
+            from patriot_center_backend.managers.data_exporter import DataExporter
+            exporter = DataExporter()
+            exporter.get_managers_list(active_only=True)
 
-        exporter.get_managers_list(active_only=True)
-
-        assert sample_caches["cache"] == original
+        assert sample_manager_cache == original

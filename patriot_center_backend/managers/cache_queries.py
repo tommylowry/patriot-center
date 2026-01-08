@@ -8,14 +8,24 @@ from typing import Dict, List
 from copy import deepcopy
 from decimal import Decimal
 
+from patriot_center_backend.cache import get_cache_manager
 from patriot_center_backend.managers.validators import validate_matchup_data
 from patriot_center_backend.managers.formatters import get_trade_card, get_matchup_card
 from patriot_center_backend.managers.utilities import extract_dict_data, get_image_url
-
 from patriot_center_backend.constants import LEAGUE_IDS
 
 
-def get_matchup_details_from_cache(cache: dict, manager: str, year: str = None) -> Dict:
+CACHE_MANAGER = get_cache_manager()
+
+MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
+PLAYERS_CACHE         = CACHE_MANAGER.get_players_cache()
+PLAYER_IDS_CACHE      = CACHE_MANAGER.get_player_ids_cache()
+STARTERS_CACHE        = CACHE_MANAGER.get_starters_cache()
+VALID_OPTIONS_CACHE   = CACHE_MANAGER.get_valid_options_cache()
+TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
+
+
+def get_matchup_details_from_cache(manager: str, year: str = None) -> Dict:
     """
     Get comprehensive matchup statistics broken down by season state.
 
@@ -27,7 +37,6 @@ def get_matchup_details_from_cache(cache: dict, manager: str, year: str = None) 
     Handles cases where manager has no playoff appearances.
 
     Args:
-        cache: Full manager cache (read-only)
         manager: Manager name
         year: Season year (optional - defaults to all-time stats)
 
@@ -41,19 +50,19 @@ def get_matchup_details_from_cache(cache: dict, manager: str, year: str = None) 
     }
 
     # Get all-time stats by default, or single season stats if year specified
-    cached_matchup_data = deepcopy(cache[manager]["summary"]["matchup_data"])
+    cached_matchup_data = deepcopy(MANAGER_CACHE[manager]["summary"]["matchup_data"])
     if year:
-        cached_matchup_data = deepcopy(cache[manager]["years"][year]["summary"]["matchup_data"])
+        cached_matchup_data = deepcopy(MANAGER_CACHE[manager]["years"][year]["summary"]["matchup_data"])
 
     for season_state in ["overall", "regular_season", "playoffs"]:
 
         # Handle managers with no playoff appearances
         if season_state == "playoffs":
             playoff = True
-            playoff_appearances = cache[manager]["summary"]["overall_data"]["playoff_appearances"]
+            playoff_appearances = MANAGER_CACHE[manager]["summary"]["overall_data"]["playoff_appearances"]
             if len(playoff_appearances) == 0:
                 playoff = False
-            elif year is not None and year not in cache[manager]["years"]:
+            elif year is not None and year not in MANAGER_CACHE[manager]["years"]:
                 playoff = False
 
             # Return zero stats if manager never made playoffs
@@ -107,9 +116,8 @@ def get_matchup_details_from_cache(cache: dict, manager: str, year: str = None) 
 
     return deepcopy(matchup_data)
 
-def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
-                                       image_urls_cache: dict, players_cache: dict,
-                                       player_ids: dict) -> Dict:
+def get_transaction_details_from_cache(year: str, manager: str,
+                                       image_urls: dict) -> Dict:
     """
     Get comprehensive transaction summary with formatted data and image URLs.
 
@@ -121,11 +129,9 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     All player/manager names enriched with image URLs.
 
     Args:
-        cache: Full manager cache (read-only)
         year: Season year (optional - defaults to all-time stats)
         manager: Manager name
-        image_urls_cache: Cache of image URLs
-        players_cache: Player cache
+        image_urls: Dict of image URLs
         player_ids: Player ID to metadata mapping
 
     Returns:
@@ -139,9 +145,9 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     }
 
     # Get all-time stats by default, or single season stats if year specified
-    cached_transaction_data = deepcopy(cache[manager]["summary"]["transactions"])
+    cached_transaction_data = deepcopy(MANAGER_CACHE[manager]["summary"]["transactions"])
     if year:
-        cached_transaction_data = deepcopy(cache[manager]["years"][year]["summary"]["transactions"])
+        cached_transaction_data = deepcopy(MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"])
 
     # Flatten FAAB player data to just total spent (if FAAB exists)
     if 'faab' in cached_transaction_data:
@@ -150,30 +156,25 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     
     trades = {
         "total":              cached_transaction_data["trades"]["total"],
-        "top_trade_partners": extract_dict_data(deepcopy(cached_transaction_data["trades"]["trade_partners"]),
-                                                players_cache, player_ids, image_urls_cache, cache)
+        "top_trade_partners": extract_dict_data(deepcopy(cached_transaction_data["trades"]["trade_partners"]), image_urls)
     }
 
     # ---- Trades Summary ----
     
     # Most Aquired Players
     trade_players_acquired = cached_transaction_data["trades"]["trade_players_acquired"]
-    most_acquired_players = extract_dict_data(deepcopy(trade_players_acquired),
-                                              players_cache, player_ids, image_urls_cache, cache)
+    most_acquired_players = extract_dict_data(deepcopy(trade_players_acquired), image_urls)
     for player in most_acquired_players:
         player_details = deepcopy(trade_players_acquired[player["name"]])
-        player["from"] = extract_dict_data(deepcopy(player_details.get("trade_partners", {})),
-                                           players_cache, player_ids, image_urls_cache, cache, cutoff=0)
+        player["from"] = extract_dict_data(deepcopy(player_details.get("trade_partners", {})), image_urls, cutoff=0)
     trades["most_acquired_players"] = most_acquired_players
 
     # Most Sent Players
     trade_players_sent = cached_transaction_data["trades"]["trade_players_sent"]
-    most_sent_players = extract_dict_data(deepcopy(trade_players_sent),
-                                          players_cache, player_ids, image_urls_cache, cache)
+    most_sent_players = extract_dict_data(deepcopy(trade_players_sent), image_urls)
     for player in most_sent_players:
         player_details = deepcopy(trade_players_sent.get(player["name"], {}))
-        player["to"] = extract_dict_data(player_details.get("trade_partners", {}),
-                                         players_cache, player_ids, image_urls_cache, cache, cutoff=0)
+        player["to"] = extract_dict_data(player_details.get("trade_partners", {}), image_urls, cutoff=0)
     trades["most_sent_players"] = most_sent_players
 
     transaction_summary["trades"] = trades
@@ -182,8 +183,7 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     # ---- Adds Summary ----
     adds = {
         "total":             cached_transaction_data["adds"]["total"],
-        "top_players_added": extract_dict_data(deepcopy(cached_transaction_data["adds"]["players"]),
-                                               players_cache, player_ids, image_urls_cache, cache)
+        "top_players_added": extract_dict_data(deepcopy(cached_transaction_data["adds"]["players"]), image_urls)
     }
     transaction_summary["adds"] = adds
     
@@ -191,8 +191,7 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     # ---- Drops Summary ----
     drops = {
             "total":               cached_transaction_data["drops"]["total"],
-            "top_players_dropped": extract_dict_data(deepcopy(cached_transaction_data["drops"]["players"]),
-                                                     players_cache, player_ids, image_urls_cache, cache)
+            "top_players_dropped": extract_dict_data(deepcopy(cached_transaction_data["drops"]["players"]), image_urls)
     }
     transaction_summary["drops"] = drops
 
@@ -202,9 +201,7 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     if "faab" in cached_transaction_data and cached_transaction_data["faab"]:
         faab = {
             "total_spent": abs(cached_transaction_data["faab"]["total_lost_or_gained"]),
-            "biggest_acquisitions": extract_dict_data(deepcopy(cached_transaction_data["faab"]["players"]),
-                                                      players_cache, player_ids, image_urls_cache, cache,
-                                                      value_name = "amount")
+            "biggest_acquisitions": extract_dict_data(deepcopy(cached_transaction_data["faab"]["players"]), image_urls, value_name="amount")
         }
 
         # FAAB Traded
@@ -232,10 +229,8 @@ def get_transaction_details_from_cache(cache: dict, year: str, manager: str,
     # Return final transaction summary
     return deepcopy(transaction_summary)
 
-def get_overall_data_details_from_cache(cache: dict, year: str, manager: str,
-                                        players_cache: dict, player_ids: dict,
-                                        image_urls_cache: dict,
-                                        starters_cache: dict) -> Dict:
+def get_overall_data_details_from_cache(year: str, manager: str,
+                                        image_urls: dict) -> Dict:
     """
     Get career achievements including playoff appearances and season placements.
 
@@ -247,7 +242,7 @@ def get_overall_data_details_from_cache(cache: dict, year: str, manager: str,
     Returns:
         Dictionary with playoff_appearances count and list of placements by year
     """
-    cached_overall_data = deepcopy(cache[manager]["summary"]["overall_data"])
+    cached_overall_data = deepcopy(MANAGER_CACHE[manager]["summary"]["overall_data"])
         
     overall_data = {
         "playoff_appearances": len(cached_overall_data.get("playoff_appearances", []))
@@ -261,13 +256,13 @@ def get_overall_data_details_from_cache(cache: dict, year: str, manager: str,
         if int(year) <= 2020:
             week = '16'
          
-        opponent = cache.get(manager, {}).get('years', {}).get(year, {}).get('weeks', {}).get(week, {}).get('matchup_data', {}).get('opponent_manager', "")
+        opponent = MANAGER_CACHE.get(manager, {}).get('years', {}).get(year, {}).get('weeks', {}).get(week, {}).get('matchup_data', {}).get('opponent_manager', "")
         
         matchup_card = {}
         if opponent == "":
             print(f"WARNING: unable to retreive opponent for matchup card for year {year} week {week}")
         else:
-            matchup_card = get_matchup_card(cache, manager, opponent, year, week, players_cache, player_ids, image_urls_cache, starters_cache)
+            matchup_card = get_matchup_card(manager, opponent, year, week, image_urls)
         
         placement_item = {
             "year": year,
@@ -280,9 +275,8 @@ def get_overall_data_details_from_cache(cache: dict, year: str, manager: str,
 
     return deepcopy(overall_data)
 
-def get_ranking_details_from_cache(cache: dict, manager: str, valid_options_cache: dict,
-                                   manager_summary_usage: bool = False, active_only: bool = True,
-                                   year: str|None = None) -> Dict:
+def get_ranking_details_from_cache(manager: str, manager_summary_usage: bool = False,
+                                   active_only: bool = True, year: str|None = None) -> Dict:
     """
     Calculate manager rankings across all statistical categories.
 
@@ -297,9 +291,7 @@ def get_ranking_details_from_cache(cache: dict, manager: str, valid_options_cach
     Handles ties properly - managers with same stat value get same rank.
 
     Args:
-        cache: Full manager cache (read-only)
         manager: Manager to rank
-        valid_options_cache: Cache of active managers by year
         manager_summary_usage: If True, returns both values and ranks
         active_only: If True, only rank against active managers
         year: Season year (optional - defaults to all-time stats)
@@ -331,23 +323,23 @@ def get_ranking_details_from_cache(cache: dict, manager: str, valid_options_cach
     if not year:
         current_year = str(max(LEAGUE_IDS.keys()))
 
-    managers = valid_options_cache[current_year]["managers"]
+    managers = deepcopy(VALID_OPTIONS_CACHE[current_year]["managers"])
 
     returning_dictionary["is_active_manager"] = True
     if manager not in managers:
         returning_dictionary["is_active_manager"] = False
-        managers = list(cache.keys())
+        managers = list(MANAGER_CACHE.keys())
     
     if not active_only:
-        managers = list(cache.keys())
+        managers = list(MANAGER_CACHE.keys())
 
     returning_dictionary["worst"] = len(managers)
     
     for m in managers:
         
-        summary_section = deepcopy(cache.get(m, {}).get("summary", {}))
+        summary_section = deepcopy(MANAGER_CACHE.get(m, {}).get("summary", {}))
         if year:
-            summary_section = deepcopy(cache.get(m, {}).get("years", {}).get(year, {}).get("summary", {}))
+            summary_section = deepcopy(MANAGER_CACHE.get(m, {}).get("years", {}).get(year, {}).get("summary", {}))
 
             # Extract record components
         num_wins = summary_section["matchup_data"]["overall"]["wins"]["total"]
@@ -375,7 +367,7 @@ def get_ranking_details_from_cache(cache: dict, manager: str, valid_options_cach
             average_point_differential = float(Decimal(((total_point_differential) / num_matchups)).quantize(Decimal('0.01')))
         
         num_trades = summary_section["transactions"]["trades"]["total"]
-        num_playoffs = len(cache.get(m, {}).get("summary", {}).get("overall_data", {}).get("playoff_appearances", []))
+        num_playoffs = len(MANAGER_CACHE.get(m, {}).get("summary", {}).get("overall_data", {}).get("playoff_appearances", []))
         
         manager_rankings["win_percentage"].append({m: win_percentage})
         manager_rankings["average_points_for"].append({m: average_points_for})
@@ -415,9 +407,8 @@ def get_ranking_details_from_cache(cache: dict, manager: str, valid_options_cach
     
     return deepcopy(returning_dictionary)
 
-def get_head_to_head_details_from_cache(cache: dict, manager: str,
-                                        image_urls_cache: dict, players_cache: dict,
-                                        player_ids: dict, year: str|None = None,
+def get_head_to_head_details_from_cache(manager: str, image_urls: dict,
+                                        year: str|None = None,
                                         opponent: str|None = None) -> Dict:
     """
     Get head-to-head record(s) for a manager against opponent(s).
@@ -426,11 +417,8 @@ def get_head_to_head_details_from_cache(cache: dict, manager: str,
     If no opponent, returns list of H2H records against all opponents.
 
     Args:
-        cache: Full manager cache (read-only)
         manager: Manager name
-        image_urls_cache: Cache of image URLs
-        players_cache: Player cache
-        player_ids: Player ID to metadata mapping
+        image_urls: Dict of image URLs
         year: Season year (optional - defaults to all-time)
         opponent: Specific opponent (optional - defaults to all opponents)
 
@@ -439,11 +427,11 @@ def get_head_to_head_details_from_cache(cache: dict, manager: str,
     """
     head_to_head_data = []
         
-    cached_head_to_head_data = deepcopy(cache[manager]["summary"]["matchup_data"]["overall"])
-    trade_data = deepcopy(cache[manager]["summary"]["transactions"]["trades"])
+    cached_head_to_head_data = deepcopy(MANAGER_CACHE[manager]["summary"]["matchup_data"]["overall"])
+    trade_data = deepcopy(MANAGER_CACHE[manager]["summary"]["transactions"]["trades"])
     if year:
-        cached_head_to_head_data = deepcopy(cache[manager]["years"][year]["summary"]["matchup_data"]["overall"])
-        trade_data = deepcopy(cache[manager]["years"][year]["summary"]["transactions"]["trades"])
+        cached_head_to_head_data = deepcopy(MANAGER_CACHE[manager]["years"][year]["summary"]["matchup_data"]["overall"])
+        trade_data = deepcopy(MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["trades"])
     
     opponents = [opponent] if opponent else list(deepcopy(cached_head_to_head_data.get("points_for", {}).get("opponents", {})).keys())
     
@@ -451,7 +439,7 @@ def get_head_to_head_details_from_cache(cache: dict, manager: str,
     for opponent in opponents:
 
         opponent_data = {
-            "opponent":           get_image_url(opponent, players_cache, player_ids, image_urls_cache, cache, dictionary=True),
+            "opponent":           get_image_url(opponent, image_urls, dictionary=True),
             "wins":               cached_head_to_head_data["wins"]["opponents"].get(opponent, 0),
             "losses":             cached_head_to_head_data["losses"]["opponents"].get(opponent, 0),
             "ties":               cached_head_to_head_data["ties"]["opponents"].get(opponent, 0),
@@ -466,10 +454,8 @@ def get_head_to_head_details_from_cache(cache: dict, manager: str,
     
     return deepcopy(head_to_head_data)
 
-def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: str,
-                                        players_cache: dict, player_ids: dict,
-                                        image_urls_cache: dict,  starters_cache,
-                                        year: str|None = None,
+def get_head_to_head_overall_from_cache(manager1: str, manager2: str,
+                                        image_urls: dict, year: str|None = None,
                                         list_all_matchups: bool = False) -> Dict:
     """
     Get comprehensive head-to-head analysis between two managers.
@@ -481,13 +467,9 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
     - Biggest blowout for each manager
 
     Args:
-        cache: Full manager cache (read-only)
         manager1: First manager name
         manager2: Second manager name
-        players_cache: Player cache
-        player_ids: Player ID to metadata mapping
-        image_urls_cache: Cache of image URLs
-        starters_cache: Cache of starting lineups
+        image_urls: Dict of image URLs
         year: Season year (optional - defaults to all-time)
         list_all_matchups: If True, returns list of all matchup cards instead of summary stats
 
@@ -496,15 +478,14 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
         Otherwise: Dict with record, average margins, last wins, and biggest blowouts
     """
     if list_all_matchups:
-        years = list(cache[manager1].get("years", {}).keys())
+        years = list(MANAGER_CACHE[manager1].get("years", {}).keys())
         if year:
             years = [year]
         matchup_history = []
     else:
         head_to_head_overall = {}
 
-        head_to_head_data = get_head_to_head_details_from_cache(cache, manager1, image_urls_cache,
-                                                                players_cache, player_ids,
+        head_to_head_data = get_head_to_head_details_from_cache(manager1, image_urls,
                                                                 year=year, opponent=manager2)
 
         head_to_head_overall[f"{manager1.lower().replace(' ', '_')}_wins"] = head_to_head_data.get("wins")
@@ -513,13 +494,13 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
 
 
         # Get average margin of victory, last win, biggest blowout
-        years = list(cache[manager1].get("years", {}).keys())
-        manager_1_points_for = cache[manager1].get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager2, 0.0)
-        manager_2_points_for = cache[manager2].get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager1, 0.0)
+        years = list(MANAGER_CACHE[manager1].get("years", {}).keys())
+        manager_1_points_for = MANAGER_CACHE[manager1].get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager2, 0.0)
+        manager_2_points_for = MANAGER_CACHE[manager2].get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager1, 0.0)
         if year:
             years = [year]
-            manager_1_points_for = cache[manager1].get("years", {}).get(year, {}).get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager2, 0.0)
-            manager_2_points_for = cache[manager2].get("years", {}).get(year, {}).get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager1, 0.0)
+            manager_1_points_for = MANAGER_CACHE[manager1].get("years", {}).get(year, {}).get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager2, 0.0)
+            manager_2_points_for = MANAGER_CACHE[manager2].get("years", {}).get(year, {}).get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager1, 0.0)
 
         manager_1_victory_margins = []
         manager_1_last_win        = {}
@@ -532,7 +513,7 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
 
     for y in years:
         
-        weeks = deepcopy(cache[manager1]["years"][y]["weeks"])
+        weeks = deepcopy(MANAGER_CACHE[manager1]["years"][y]["weeks"])
         
         for w in weeks:
             matchup_data = deepcopy(weeks.get(w, {}).get("matchup_data", {}))
@@ -541,7 +522,7 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
             if matchup_data == {}:
                 continue
 
-            validation = validate_matchup_data(matchup_data, cache)
+            validation = validate_matchup_data(matchup_data)
             if "Warning" in validation:
                 print(f"{validation} {manager1}, year {y}, week {w}")
                 continue
@@ -558,7 +539,7 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
                 if matchup_data.get("result", "") == "win":
 
                     if list_all_matchups:
-                        matchup_history.append(get_matchup_card(cache, manager1, manager2, y, w, players_cache, player_ids, image_urls_cache, starters_cache))
+                        matchup_history.append(get_matchup_card(manager1, manager2, y, w, image_urls))
                         continue
 
 
@@ -575,7 +556,7 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
                         apply = True
 
                     if apply:
-                        manager_1_last_win = get_matchup_card(cache, manager1, manager2, y, w, players_cache, player_ids, image_urls_cache, starters_cache)
+                        manager_1_last_win = get_matchup_card(manager1, manager2, y, w, image_urls)
 
                     # Determine if this is manager_1's biggest blowout
                     apply = False
@@ -585,13 +566,13 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
                         apply = True
 
                     if apply:
-                        manager_1_biggest_blowout = get_matchup_card(cache, manager1, manager2, y, w, players_cache, player_ids, image_urls_cache, starters_cache)
+                        manager_1_biggest_blowout = get_matchup_card(manager1, manager2, y, w, image_urls)
                 
                 # manager_2 won
                 if matchup_data.get("result", "") == "loss":
                     
                     if list_all_matchups:
-                        matchup_history.append(get_matchup_card(cache, manager1, manager2, y, w, players_cache, player_ids, image_urls_cache, starters_cache))
+                        matchup_history.append(get_matchup_card(manager1, manager2, y, w, image_urls))
                         continue
 
 
@@ -608,7 +589,7 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
                         apply = True
 
                     if apply:
-                        manager_2_last_win = get_matchup_card(cache, manager1, manager2, y, w, players_cache, player_ids, image_urls_cache, starters_cache)
+                        manager_2_last_win = get_matchup_card(manager1, manager2, y, w, image_urls)
 
                     # Determine if this is manager_2's biggest blowout
                     apply = False
@@ -618,12 +599,12 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
                         apply = True
 
                     if apply:
-                        manager_2_biggest_blowout = get_matchup_card(cache, manager1, manager2, y, w, players_cache, player_ids, image_urls_cache, starters_cache)
+                        manager_2_biggest_blowout = get_matchup_card(manager1, manager2, y, w, image_urls)
                 
                 else: # Tie
                     
                     if list_all_matchups:
-                        matchup_history.append(get_matchup_card(cache, manager1, manager2, y, w, players_cache, player_ids, image_urls_cache, starters_cache))
+                        matchup_history.append(get_matchup_card(manager1, manager2, y, w, image_urls))
                         continue
     
     if list_all_matchups:
@@ -659,58 +640,50 @@ def get_head_to_head_overall_from_cache(cache: dict, manager1: str, manager2: st
 
     return deepcopy(head_to_head_overall)
     
-def get_trade_history_between_two_managers(cache: dict, manager1: str, manager2: str,
-                                           transaction_ids_cache: dict,
-                                           image_urls_cache: dict, players_cache: dict,
-                                           player_ids: dict, year: str|None = None) -> List:
+def get_trade_history_between_two_managers(manager1: str, manager2: str,
+                                           image_urls: dict, year: str|None = None) -> List:
     """
     Get complete trade history between two managers.
 
     Finds all trades involving both managers and returns formatted trade cards.
 
     Args:
-        cache: Full manager cache (read-only)
         manager1: First manager name
         manager2: Second manager name
-        transaction_ids_cache: Cache of all transactions
-        image_urls_cache: Cache of image URLs
-        players_cache: Player cache
-        player_ids: Player ID to metadata mapping
+        image_urls: Dict of image URLs
         year: Season year (optional - defaults to all-time)
 
     Returns:
         List of trade cards in reverse chronological order (newest first)
     """
-    years = list(cache[manager1].get("years", {}).keys())
+    years = list(MANAGER_CACHE[manager1].get("years", {}).keys())
     if year:
         years = [year]
     
     # Gather all transaction IDs for manager_1
     transaction_ids = []
     for y in years:
-        weeks = deepcopy(cache[manager1]["years"][y]["weeks"])
+        weeks = deepcopy(MANAGER_CACHE[manager1]["years"][y]["weeks"])
         for w in weeks:
-            weekly_trade_transaction_ids = deepcopy(cache.get(manager1, {}).get("years", {}).get(y, {}).get("weeks", {}).get(w, {}).get("transactions", {}).get("trades", {}).get("transaction_ids", []))
+            weekly_trade_transaction_ids = deepcopy(MANAGER_CACHE.get(manager1, {}).get("years", {}).get(y, {}).get("weeks", {}).get(w, {}).get("transactions", {}).get("trades", {}).get("transaction_ids", []))
             transaction_ids.extend(weekly_trade_transaction_ids)
 
 
     # Filter to only those involving both managers
     for tid in deepcopy(transaction_ids):
-        if manager2 not in transaction_ids_cache.get(tid, {}).get("managers_involved", []):
+        if manager2 not in TRANSACTION_IDS_CACHE.get(tid, {}).get("managers_involved", []):
             transaction_ids.remove(tid)
 
     trades_between = []
     
 
     for t in transaction_ids:
-        trades_between.append(get_trade_card(t, transaction_ids_cache, image_urls_cache, players_cache, player_ids, cache))
+        trades_between.append(get_trade_card(t, image_urls))
     
     trades_between.reverse()
     return trades_between
 
-def get_manager_awards_from_cache(cache: dict, manager: str,
-                                  players_cache: dict, player_ids: dict,
-                                  image_urls_cache: dict) -> Dict:
+def get_manager_awards_from_cache(manager: str, image_urls: dict) -> Dict:
     """
     Get manager career achievements and awards.
 
@@ -721,18 +694,15 @@ def get_manager_awards_from_cache(cache: dict, manager: str,
     - Biggest FAAB bid
 
     Args:
-        cache: Full manager cache (read-only)
         manager: Manager name
-        players_cache: Player cache
-        player_ids: Player ID to metadata mapping
-        image_urls_cache: Cache of image URLs
+        image_urls: Dict of image URLs
 
     Returns:
         Dictionary with all awards and achievements
     """
     awards = {}
 
-    cached_overall_data = deepcopy(cache[manager]["summary"]["overall_data"])
+    cached_overall_data = deepcopy(MANAGER_CACHE[manager]["summary"]["overall_data"])
     
     # First/Second/Third Place Finishes
     placement_counts = {
@@ -759,8 +729,8 @@ def get_manager_awards_from_cache(cache: dict, manager: str,
         "count": 0,
         "year":  ""
     }
-    for year in cache[manager].get("years", {}):
-        num_trades = cache[manager]["years"][year]["summary"]["transactions"]["trades"]["total"]
+    for year in MANAGER_CACHE[manager].get("years", {}):
+        num_trades = MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["trades"]["total"]
         if num_trades > most_trades_in_year["count"]:
             most_trades_in_year["count"] = num_trades
             most_trades_in_year["year"] = year
@@ -774,11 +744,11 @@ def get_manager_awards_from_cache(cache: dict, manager: str,
         "year":   ""
     }
     # Check if FAAB data exists in summary before accessing
-    if "faab" in cache[manager].get("summary", {}).get("transactions", {}) and cache[manager]["summary"]["transactions"]["faab"]:
+    if "faab" in MANAGER_CACHE[manager].get("summary", {}).get("transactions", {}) and MANAGER_CACHE[manager]["summary"]["transactions"]["faab"]:
 
-        for year in cache[manager].get("years", {}):
+        for year in MANAGER_CACHE[manager].get("years", {}):
             
-            weeks = deepcopy(cache[manager]["years"][year]["weeks"])
+            weeks = deepcopy(MANAGER_CACHE[manager]["years"][year]["weeks"])
             for week in weeks:
                 
                 weekly_faab_bids = deepcopy(weeks.get(week, {}).get("transactions", {}).get("faab", {}).get("players", {}))
@@ -786,18 +756,15 @@ def get_manager_awards_from_cache(cache: dict, manager: str,
                     
                     bid_amount = weekly_faab_bids[player]["total_faab_spent"]
                     if bid_amount > biggest_faab_bid["amount"]:
-                        biggest_faab_bid["player"] = get_image_url(player, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+                        biggest_faab_bid["player"] = get_image_url(player, image_urls, dictionary=True)
                         biggest_faab_bid["amount"] = bid_amount
                         biggest_faab_bid["year"]   = year
     
     awards["biggest_faab_bid"] = deepcopy(biggest_faab_bid)
 
-    
     return deepcopy(awards)
 
-def get_manager_score_awards_from_cache(cache: dict, manager: str, players_cache: dict,
-                                        player_ids: dict, image_urls_cache: dict,
-                                        starters_cache: dict) -> Dict:
+def get_manager_score_awards_from_cache(manager: str, image_urls: dict) -> Dict:
     """
     Get manager scoring records and extremes.
 
@@ -810,12 +777,8 @@ def get_manager_score_awards_from_cache(cache: dict, manager: str, players_cache
     Each record includes full matchup card with top/lowest scorers.
 
     Args:
-        cache: Full manager cache (read-only)
         manager: Manager name
-        players_cache: Player cache
-        player_ids: Player ID to metadata mapping
-        image_urls_cache: Cache of image URLs
-        starters_cache: Cache of starting lineups
+        image_urls: Dict of image URLs
 
     Returns:
         Dictionary with all scoring records
@@ -828,12 +791,12 @@ def get_manager_score_awards_from_cache(cache: dict, manager: str, players_cache
     biggest_blowout_loss = {}
 
 
-    for year in cache[manager].get("years", {}):
-        weeks = deepcopy(cache[manager]["years"][year]["weeks"])
+    for year in MANAGER_CACHE[manager].get("years", {}):
+        weeks = deepcopy(MANAGER_CACHE[manager]["years"][year]["weeks"])
         for week in weeks:
             matchup_data = deepcopy(weeks.get(week, {}).get("matchup_data", {}))
 
-            validation = validate_matchup_data(matchup_data, cache)
+            validation = validate_matchup_data(matchup_data)
             if "Warning" in validation:
                 print(f"{validation} {manager}, year {year}, week {week}")
                 continue
@@ -846,25 +809,21 @@ def get_manager_score_awards_from_cache(cache: dict, manager: str, players_cache
 
             # Highest Weekly Score
             if points_for > highest_weekly_score.get("manager_1_score", 0.0):
-                highest_weekly_score = get_matchup_card(cache, manager, matchup_data.get("opponent_manager", ""), year, week,
-                                                        players_cache, player_ids, image_urls_cache, starters_cache)
+                highest_weekly_score = get_matchup_card(manager, matchup_data.get("opponent_manager", ""), year, week, image_urls)
 
             # Lowest Weekly Score
             if points_for < lowest_weekly_score.get("manager_1_score", float('inf')):
-                lowest_weekly_score = get_matchup_card(cache, manager, matchup_data.get("opponent_manager", ""), year, week,
-                                                       players_cache, player_ids, image_urls_cache, starters_cache)
+                lowest_weekly_score = get_matchup_card(manager, matchup_data.get("opponent_manager", ""), year, week, image_urls)
 
             # Biggest Blowout Win
             if point_differential > biggest_blowout_win.get("differential", 0.0):
-                biggest_blowout_win = get_matchup_card(cache, manager, matchup_data.get("opponent_manager", ""), year, week,
-                                                       players_cache, player_ids, image_urls_cache, starters_cache)
+                biggest_blowout_win = get_matchup_card(manager, matchup_data.get("opponent_manager", ""), year, week, image_urls)
                 biggest_blowout_win["differential"] = point_differential
                 
 
             # Biggest Blowout Loss
             if point_differential < biggest_blowout_loss.get("differential", 0.0):
-                biggest_blowout_loss = get_matchup_card(cache, manager, matchup_data.get("opponent_manager", ""), year, week,
-                                                        players_cache, player_ids, image_urls_cache, starters_cache)
+                biggest_blowout_loss = get_matchup_card(manager, matchup_data.get("opponent_manager", ""), year, week, image_urls)
                 biggest_blowout_loss["differential"] = point_differential
 
     score_awards["highest_weekly_score"] = deepcopy(highest_weekly_score)

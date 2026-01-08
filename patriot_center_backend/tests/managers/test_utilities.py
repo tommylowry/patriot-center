@@ -8,10 +8,7 @@ from unittest.mock import Mock, patch, MagicMock
 from copy import deepcopy
 from patriot_center_backend.managers.utilities import (
     draft_pick_decipher,
-    extract_dict_data,
-    get_image_url,
-    get_current_manager_image_url,
-    update_players_cache
+    extract_dict_data
 )
 
 
@@ -114,12 +111,9 @@ class TestExtractDictData:
             "Player C": 6,
             "Player D": 4
         }
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls= {}
 
-        result = extract_dict_data(data, players_cache, player_ids, image_urls_cache, cache)
+        result = extract_dict_data(data, image_urls)
 
         assert len(result) == 3
         assert result[0]["name"] == "Player A"
@@ -140,12 +134,9 @@ class TestExtractDictData:
             "Player C": {"total": 6, "other": "data"},
             "Player D": {"total": 4, "other": "data"}
         }
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls= {}
 
-        result = extract_dict_data(data, players_cache, player_ids, image_urls_cache, cache)
+        result = extract_dict_data(data, image_urls)
 
         assert len(result) == 3
         assert result[0]["name"] == "Player A"
@@ -162,12 +153,9 @@ class TestExtractDictData:
             "Player C": 6,
             "Player D": 4
         }
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls= {}
 
-        result = extract_dict_data(data, players_cache, player_ids, image_urls_cache, cache, cutoff=0)
+        result = extract_dict_data(data, image_urls, cutoff=0)
 
         assert len(result) == 4
 
@@ -184,12 +172,9 @@ class TestExtractDictData:
             "Player E": 6,  # Tied with Player C and D
             "Player F": 4
         }
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls= {}
 
-        result = extract_dict_data(data, players_cache, player_ids, image_urls_cache, cache, cutoff=3)
+        result = extract_dict_data(data, image_urls, cutoff=3)
 
         # Should include all tied items at position 3
         assert len(result) == 5  # A, B, C, D, E all included
@@ -203,15 +188,11 @@ class TestExtractDictData:
             "Player A": 10,
             "Player B": 8
         }
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls= {}
 
-        result = extract_dict_data(
-            data, players_cache, player_ids, image_urls_cache, cache,
-            key_name="player_name", value_name="score"
-        )
+        result = extract_dict_data(data, image_urls,
+                                   key_name="player_name",
+                                   value_name="score")
 
         assert result[0]["player_name"] == "Player A"
         assert result[0]["score"] == 10
@@ -227,12 +208,9 @@ class TestExtractDictData:
             "Player A": 10,
             "Player B": 8
         }
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
-        result = extract_dict_data(data, players_cache, player_ids, image_urls_cache, cache, cutoff=5)
+        result = extract_dict_data(data, image_urls, cutoff=5)
 
         assert len(result) == 2
 
@@ -243,24 +221,26 @@ class TestGetImageUrl:
     def test_draft_pick_string_url(self):
         """Test draft pick returns NFL Draft logo URL."""
         item = "Manager 1's 2023 Round 3 Draft Pick"
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_image_url
+
+            result = get_image_url(item, image_urls)
 
         assert "NFL_Draft_logo" in result
 
     def test_draft_pick_dictionary(self):
         """Test draft pick returns dict when dictionary=True."""
         item = "Manager 1's 2023 Round 3 Draft Pick"
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_image_url
+            
+            result = get_image_url(item, image_urls, dictionary=True)
 
         assert isinstance(result, dict)
         assert "NFL_Draft_logo" in result["image_url"]
@@ -270,24 +250,26 @@ class TestGetImageUrl:
     def test_faab_string_url(self):
         """Test FAAB returns Mario coin URL."""
         item = "$50 FAAB"
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_image_url
+
+            result = get_image_url(item, image_urls)
 
         assert "Mario-Coin" in result
 
     def test_faab_dictionary(self):
         """Test FAAB returns dict when dictionary=True."""
         item = "$50 FAAB"
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_image_url
+
+            result = get_image_url(item, image_urls, dictionary=True)
 
         assert isinstance(result, dict)
         assert "Mario-Coin" in result["image_url"]
@@ -301,12 +283,13 @@ class TestGetImageUrl:
         mock_get_manager_url.return_value = "http://sleepercdn.com/avatars/avatar123"
 
         item = "Manager 1"
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_image_url
+
+            result = get_image_url(item, image_urls)
 
         assert result == "http://sleepercdn.com/avatars/avatar123"
 
@@ -317,12 +300,13 @@ class TestGetImageUrl:
         mock_get_manager_url.return_value = "http://sleepercdn.com/avatars/avatar123"
 
         item = "Manager 1"
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_image_url
+
+            result = get_image_url(item, image_urls, dictionary=True)
 
         assert isinstance(result, dict)
         assert result["image_url"] == "http://sleepercdn.com/avatars/avatar123"
@@ -330,39 +314,47 @@ class TestGetImageUrl:
 
     def test_player_numeric_id_url(self):
         """Test player with numeric ID returns player headshot URL."""
-        item = "Patrick Mahomes"
-        players_cache = {
+        mock_players_cache = {
             "Patrick Mahomes": {"player_id": "4046"}
         }
-        player_ids = {
+        mock_player_ids_cache = {
             "4046": {
                 "first_name": "Patrick",
                 "last_name": "Mahomes"
             }
         }
-        image_urls_cache = {}
-        cache = {}
+        
+        item = "Patrick Mahomes"
+        image_urls = {}
+        
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers.utilities import get_image_url
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache)
+            result = get_image_url(item, image_urls)
 
         assert result == "https://sleepercdn.com/content/nfl/players/4046.jpg"
 
     def test_player_numeric_id_dictionary(self):
         """Test player with numeric ID returns dict when dictionary=True."""
-        item = "Patrick Mahomes"
-        players_cache = {
+        mock_players_cache = {
             "Patrick Mahomes": {"player_id": "4046"}
         }
-        player_ids = {
+        mock_player_ids_cache = {
             "4046": {
                 "first_name": "Patrick",
                 "last_name": "Mahomes"
             }
         }
-        image_urls_cache = {}
-        cache = {}
+        
+        item = "Patrick Mahomes"
+        image_urls = {}
+        
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers.utilities import get_image_url
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+            result = get_image_url(item, image_urls, dictionary=True)
 
         assert isinstance(result, dict)
         assert result["image_url"] == "https://sleepercdn.com/content/nfl/players/4046.jpg"
@@ -371,39 +363,47 @@ class TestGetImageUrl:
 
     def test_team_defense_url(self):
         """Test team defense (non-numeric ID) returns team logo URL."""
-        item = "Chiefs Defense"
-        players_cache = {
-            "Chiefs Defense": {"player_id": "KC"}
+        mock_players_cache = {
+            "Kansas City Chiefs": {"player_id": "KC"}
         }
-        player_ids = {
+        mock_player_ids_cache = {
             "KC": {
                 "first_name": "Kansas City",
                 "last_name": "Chiefs"
             }
         }
-        image_urls_cache = {}
-        cache = {}
+        
+        item = "Kansas City Chiefs"
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers.utilities import get_image_url
+
+            result = get_image_url(item, image_urls)
 
         assert result == "https://sleepercdn.com/images/team_logos/nfl/kc.png"
 
     def test_team_defense_dictionary(self):
         """Test team defense returns dict when dictionary=True."""
-        item = "Chiefs Defense"
-        players_cache = {
-            "Chiefs Defense": {"player_id": "KC"}
+        mock_players_cache = {
+            "Kansas City Chiefs": {"player_id": "KC"}
         }
-        player_ids = {
+        mock_player_ids_cache = {
             "KC": {
                 "first_name": "Kansas City",
                 "last_name": "Chiefs"
             }
         }
-        image_urls_cache = {}
-        cache = {}
+        
+        item = "Kansas City Chiefs"
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers.utilities import get_image_url
+
+            result = get_image_url(item, image_urls, dictionary=True)
 
         assert isinstance(result, dict)
         assert result["image_url"] == "https://sleepercdn.com/images/team_logos/nfl/kc.png"
@@ -413,12 +413,13 @@ class TestGetImageUrl:
     def test_unknown_item(self):
         """Test with unknown item returns empty string."""
         item = "Unknown Item"
-        players_cache = {}
-        player_ids = {}
-        image_urls_cache = {}
-        cache = {}
+        image_urls = {}
 
-        result = get_image_url(item, players_cache, player_ids, image_urls_cache, cache)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', {}), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_image_url
+
+            result = get_image_url(item, image_urls)
 
         assert result == ""
 
@@ -431,69 +432,55 @@ class TestGetCurrentManagerImageUrl:
         """Test fetching manager image URL when not in cache."""
         mock_fetch.return_value = {"user_id": "12345", "avatar": "abc123"}
 
-        manager = "Manager 1"
-        cache = {
+        mock_manager_cache = {
             "Manager 1": {
                 "summary": {
                     "user_id": "12345"
                 }
             }
         }
-        image_urls_cache = {}
+        
+        manager = "Manager 1"
+        image_urls = {}
 
-        result = get_current_manager_image_url(manager, cache, image_urls_cache)
+        with patch('patriot_center_backend.managers.utilities.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers.utilities import get_current_manager_image_url
+            
+            result = get_current_manager_image_url(manager, image_urls)
 
-        assert result == "https://sleepercdn.com/avatars/abc123"
-        assert image_urls_cache["Manager 1"] == "https://sleepercdn.com/avatars/abc123"
+            assert result == "https://sleepercdn.com/avatars/abc123"
+            assert image_urls["Manager 1"] == "https://sleepercdn.com/avatars/abc123"
 
     def test_manager_already_in_cache(self):
         """Test returning cached manager image URL."""
         manager = "Manager 1"
-        cache = {}
-        image_urls_cache = {
+        image_urls = {
             "Manager 1": "https://sleepercdn.com/avatars/cached123"
         }
 
-        result = get_current_manager_image_url(manager, cache, image_urls_cache)
+        with patch('patriot_center_backend.managers.utilities.MANAGER_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_current_manager_image_url
+            
+            result = get_current_manager_image_url(manager, image_urls)
 
         assert result == "https://sleepercdn.com/avatars/cached123"
 
-    @patch('patriot_center_backend.managers.utilities.fetch_sleeper_data')
-    def test_invalid_response(self, mock_fetch):
-        """Test when API returns invalid response."""
-        mock_fetch.return_value = {}
-
-        manager = "Manager 1"
-        cache = {
-            "Manager 1": {
-                "summary": {
-                    "user_id": "12345"
-                }
-            }
-        }
-        image_urls_cache = {}
-
-        result = get_current_manager_image_url(manager, cache, image_urls_cache)
-
-        assert result == ""
-
-    @patch('patriot_center_backend.managers.utilities.fetch_sleeper_data')
-    def test_missing_user_id(self, mock_fetch):
+    def test_missing_user_id(self):
         """Test when manager doesn't have user_id in cache."""
-        mock_fetch.return_value = {"user_id": "", "avatar": "abc123"}
-
-        manager = "Manager 1"
-        cache = {
+        mock_manager_cache = {
             "Manager 1": {
                 "summary": {}
             }
         }
-        image_urls_cache = {}
 
-        result = get_current_manager_image_url(manager, cache, image_urls_cache)
+        with patch('patriot_center_backend.managers.utilities.MANAGER_CACHE', {}):
+            from patriot_center_backend.managers.utilities import get_current_manager_image_url
 
-        # Should still call API with empty user_id
-        mock_fetch.assert_called_once_with("user/")
+            manager = "Manager 1"
+            image_urls = {}
+
+            with pytest.raises(ValueError, match="Manager Manager 1 does not have a user_id in MANAGER_CACHE."):
+                get_current_manager_image_url(manager, image_urls)
 
 
 class TestUpdatePlayersCache:
@@ -501,9 +488,8 @@ class TestUpdatePlayersCache:
 
     def test_update_with_single_player_id(self):
         """Test updating cache with single player ID."""
-        item = "4046"
-        players_cache = {}
-        player_ids = {
+        mock_players_cache = {}
+        mock_player_ids_cache = {
             "4046": {
                 "full_name": "Patrick Mahomes",
                 "first_name": "Patrick",
@@ -513,18 +499,22 @@ class TestUpdatePlayersCache:
             }
         }
 
-        update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import utilities
+            
+            item = "4046"
+            utilities.update_players_cache(item)
 
-        assert "Patrick Mahomes" in players_cache
-        assert players_cache["Patrick Mahomes"]["player_id"] == "4046"
-        assert players_cache["Patrick Mahomes"]["position"] == "QB"
-        assert players_cache["Patrick Mahomes"]["slug"] == "patrick%20mahomes"
+            assert "Patrick Mahomes" in utilities.PLAYERS_CACHE
+            assert utilities.PLAYERS_CACHE["Patrick Mahomes"]["player_id"] == "4046"
+            assert utilities.PLAYERS_CACHE["Patrick Mahomes"]["position"] == "QB"
+            assert utilities.PLAYERS_CACHE["Patrick Mahomes"]["slug"] == "patrick%20mahomes"
 
     def test_update_with_apostrophe_in_name(self):
         """Test URL slug creation with apostrophe in name."""
-        item = "5678"
-        players_cache = {}
-        player_ids = {
+        mock_players_cache = {}
+        mock_player_ids_cache = {
             "5678": {
                 "full_name": "D'Andre Swift",
                 "first_name": "D'Andre",
@@ -534,22 +524,26 @@ class TestUpdatePlayersCache:
             }
         }
 
-        update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import utilities
+            
+            item = "5678"
+            utilities.update_players_cache(item)
 
-        assert "D'Andre Swift" in players_cache
-        assert players_cache["D'Andre Swift"]["slug"] == "d%27andre%20swift"
+            assert "D'Andre Swift" in utilities.PLAYERS_CACHE
+            assert utilities.PLAYERS_CACHE["D'Andre Swift"]["slug"] == "d%27andre%20swift"
 
     def test_player_already_in_cache(self):
         """Test that player already in cache is not re-added."""
-        item = "4046"
-        players_cache = {
+        mock_players_cache = {
             "Patrick Mahomes": {
                 "player_id": "4046",
                 "position": "QB",
                 "slug": "patrick%20mahomes"
             }
         }
-        player_ids = {
+        mock_player_ids_cache = {
             "4046": {
                 "full_name": "Patrick Mahomes",
                 "first_name": "Patrick",
@@ -559,24 +553,22 @@ class TestUpdatePlayersCache:
             }
         }
 
-        original_cache = deepcopy(players_cache)
-        update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import utilities
 
-        # Cache should remain unchanged
-        assert players_cache == original_cache
+            original_cache = deepcopy(utilities.PLAYERS_CACHE)
+            
+            item = "4046"
+            utilities.update_players_cache(item)
+
+            # Cache should remain unchanged
+            assert utilities.PLAYERS_CACHE == original_cache
 
     def test_update_with_matchup_list(self):
         """Test updating cache with list of matchup data."""
-        item = [
-            {
-                "players": ["4046", "5678"]
-            },
-            {
-                "players": ["9999"]
-            }
-        ]
-        players_cache = {}
-        player_ids = {
+        mock_players_cache = {}
+        mock_player_ids_cache = {
             "4046": {
                 "full_name": "Patrick Mahomes",
                 "first_name": "Patrick",
@@ -600,56 +592,92 @@ class TestUpdatePlayersCache:
             }
         }
 
-        update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import utilities
 
-        assert len(players_cache) == 3
-        assert "Patrick Mahomes" in players_cache
-        assert "Travis Kelce" in players_cache
-        assert "Test Player" in players_cache
+            item = [
+                {
+                    "players": ["4046", "5678"]
+                },
+                {
+                    "players": ["9999"]
+                }
+            ]
+            utilities.update_players_cache(item)
+
+            assert len(utilities.PLAYERS_CACHE) == 3
+            assert "Patrick Mahomes" in utilities.PLAYERS_CACHE
+            assert "Travis Kelce" in utilities.PLAYERS_CACHE
+            assert "Test Player" in utilities.PLAYERS_CACHE
     
     def test_player_not_in_player_ids(self):
         """Test handling player ID not in player_ids dict."""
-        item = "9999"
-        players_cache = {}
-        player_ids = {}
+        mock_players_cache = {}
+        mock_player_ids_cache = {}
 
-        update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import utilities
 
-        # Should handle gracefully - player won't be added since no metadata
-        assert len(players_cache) == 0
+            item = "9999"
+            utilities.update_players_cache(item)
+
+            # Should handle gracefully - player won't be added since no metadata
+            assert len(utilities.PLAYERS_CACHE) == 0
 
     def test_update_with_none_raises_error(self):
         """Test that None item raises ValueError."""
-        item = None
-        players_cache = {}
-        player_ids = {}
+        mock_players_cache = {}
+        mock_player_ids_cache = {}
 
-        with pytest.raises(ValueError, match="cannot be None or empty"):
-            update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers.utilities import update_players_cache
+
+            item = None
+
+            with pytest.raises(ValueError, match="cannot be None or empty"):
+                update_players_cache(item)
 
     def test_update_with_empty_string_raises_error(self):
         """Test that empty string raises ValueError."""
-        item = ""
-        players_cache = {}
-        player_ids = {}
+        mock_players_cache = {}
+        mock_player_ids_cache = {}
 
-        with pytest.raises(ValueError, match="cannot be None or empty"):
-            update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers.utilities import update_players_cache
+
+            item = ""
+
+            with pytest.raises(ValueError, match="cannot be None or empty"):
+                update_players_cache(item)
 
     def test_update_with_empty_list_raises_error(self):
         """Test that empty list raises ValueError."""
-        item = []
-        players_cache = {}
-        player_ids = {}
+        mock_players_cache = {}
+        mock_player_ids_cache = {}
 
-        with pytest.raises(ValueError, match="cannot be None or empty"):
-            update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers.utilities import update_players_cache
+
+            item = []
+
+            with pytest.raises(ValueError, match="cannot be None or empty"):
+                update_players_cache(item)
 
     def test_update_with_invalid_type_raises_error(self):
         """Test that invalid type raises ValueError."""
-        item = 12345  # Integer instead of string or list
-        players_cache = {}
-        player_ids = {}
+        mock_players_cache = {}
+        mock_player_ids_cache = {}
 
-        with pytest.raises(ValueError, match="Either matchups or player_id must be provided"):
-            update_players_cache(item, players_cache, player_ids)
+        with patch('patriot_center_backend.managers.utilities.PLAYERS_CACHE', mock_players_cache), \
+             patch('patriot_center_backend.managers.utilities.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers.utilities import update_players_cache
+
+            item = 12345  # Integer instead of string or list
+
+            with pytest.raises(ValueError, match="Either matchups or player_id must be provided"):
+                update_players_cache(item)

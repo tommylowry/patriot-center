@@ -499,3 +499,5 @@ def retroactively_assign_team_placement_for_player(season):
                             need_to_print = False
                         
                         STARTERS_CACHE[season_str][week][manager][player]['placement'] = placements[manager]
+
+update_starters_cache()

@@ -6,10 +6,20 @@ Formats matchup cards, trade cards, and determines season state.
 from typing import Dict, List, Optional, Any
 from copy import deepcopy
 
+from patriot_center_backend.cache import get_cache_manager
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
+from patriot_center_backend.managers.utilities import get_image_url
 from patriot_center_backend.constants import LEAGUE_IDS
 
-from patriot_center_backend.managers.utilities import get_image_url
+
+CACHE_MANAGER = get_cache_manager()
+
+MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
+STARTERS_CACHE        = CACHE_MANAGER.get_starters_cache()
+PLAYERS_CACHE         = CACHE_MANAGER.get_players_cache()
+PLAYER_IDS_CACHE      = CACHE_MANAGER.get_player_ids_cache()
+TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
+
 
 def get_season_state(week: str, year: str, playoff_week_start: Optional[int]) -> str:
     """
@@ -38,8 +48,8 @@ def get_season_state(week: str, year: str, playoff_week_start: Optional[int]) ->
         return "playoffs"
     return "regular_season"
 
-def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, manager_2: str, players_cache: dict,
-                                        player_ids: dict, image_urls_cache: dict, cache: dict, starters_cache: dict) -> List[Dict]:
+def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str,
+                                        manager_2: str, image_urls: dict) -> List[Dict]:
     """
     Extract top 3 and lowest scorers from matchup data for both managers.
 
@@ -50,11 +60,7 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, mana
         matchup_data: Matchup data dictionary (modified in-place)
         manager_1: First manager name
         manager_2: Second manager name
-        players_cache: Player cache for lookups
-        player_ids: Player ID to metadata mapping
-        image_urls_cache: Cache of image URLs
-        cache: Full manager cache
-        starters_cache: Cache of starting lineups by year/week/manager
+        image_urls: Dict of image URLs
 
     Returns:
         Dictionary containing top 3 and lowest scorers for both managers
@@ -75,7 +81,7 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, mana
         }
     
     # Validate that starter data exists for both managers
-    if manager_1 not in starters_cache.get(matchup_data["year"], {}).get(matchup_data["week"], {}) or manager_2 not in starters_cache.get(matchup_data["year"], {}).get(matchup_data["week"], {}):
+    if manager_1 not in STARTERS_CACHE.get(matchup_data["year"], {}).get(matchup_data["week"], {}) or manager_2 not in STARTERS_CACHE.get(matchup_data["year"], {}).get(matchup_data["week"], {}):
         print(f"WARNING: Starter data missing for week {matchup_data['week']}, year {matchup_data['year']}. Cannot get top 3 scorers for {manager_1} vs {manager_2}.")
         
         matchup_data["manager_1_top_3_scorers"] = []
@@ -90,8 +96,8 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, mana
         }
 
 
-    manager_1_starters = deepcopy(starters_cache[matchup_data["year"]][matchup_data["week"]][manager_1])
-    manager_2_starters = deepcopy(starters_cache[matchup_data["year"]][matchup_data["week"]][manager_2])
+    manager_1_starters = deepcopy(STARTERS_CACHE[matchup_data["year"]][matchup_data["week"]][manager_1])
+    manager_2_starters = deepcopy(STARTERS_CACHE[matchup_data["year"]][matchup_data["week"]][manager_2])
     # Remove total points aggregate, we only want individual players
     manager_1_starters.pop("Total_Points")
     manager_2_starters.pop("Total_Points")
@@ -100,11 +106,11 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, mana
     manager_1_top_scorers = []
     manager_1_lowest_scorer = {"score": 10000.0}  # Initialize with high value to find minimum
     for player in manager_1_starters:
-        player_dict = get_image_url(player, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+        player_dict = get_image_url(player, image_urls, dictionary=True)
         
-        player_id =  players_cache[player]["player_id"]
-        first_name = player_ids[player_id]['first_name']
-        last_name =  player_ids[player_id]['last_name']
+        player_id =  PLAYERS_CACHE[player]["player_id"]
+        first_name = PLAYER_IDS_CACHE[player_id]['first_name']
+        last_name =  PLAYER_IDS_CACHE[player_id]['last_name']
         
         player_dict.update(
             {
@@ -143,11 +149,11 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, mana
     manager_2_top_scorers = []
     manager_2_lowest_scorer = {"score": 10000.0}  # Initialize with high value to find minimum
     for player in manager_2_starters:
-        player_dict = get_image_url(player, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+        player_dict = get_image_url(player, image_urls, dictionary=True)
         
-        player_id =  players_cache[player]["player_id"]
-        first_name = player_ids[player_id]['first_name']
-        last_name =  player_ids[player_id]['last_name']
+        player_id =  PLAYERS_CACHE[player]["player_id"]
+        first_name = PLAYER_IDS_CACHE[player_id]['first_name']
+        last_name =  PLAYER_IDS_CACHE[player_id]['last_name']
 
         player_dict.update(
             {
@@ -193,9 +199,8 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str, mana
             "manager_2_lowest_scorer": manager_2_lowest_scorer
         }
 
-def get_matchup_card(cache: dict, manager_1: str, manager_2: str, year: str, week: str,
-                    players_cache: dict, player_ids: dict,
-                    image_urls_cache: dict, starters_cache: dict) -> Dict[str, Any]:
+def get_matchup_card(manager_1: str, manager_2: str, year: str, week: str,
+                     image_urls: dict) -> Dict[str, Any]:
     """
     Generate complete matchup card with scores, winner, and top performers.
 
@@ -203,21 +208,17 @@ def get_matchup_card(cache: dict, manager_1: str, manager_2: str, year: str, wee
     the winner determination, and top 3/lowest scorers for each team.
 
     Args:
-        cache: Full manager cache
         manager_1: First manager name
         manager_2: Second manager name
         year: Season year as string
         week: Week number as string
-        players_cache: Player cache
-        player_ids: Player ID to metadata mapping
-        image_urls_cache: Image URL cache
-        starters_cache: Cache of starting lineups
+        image_urls: Image URL cache
 
     Returns:
         Dictionary containing matchup details, scores, winner, and top performers
         Empty dict if matchup data incomplete
     """
-    matchup_data = cache[manager_1]["years"].get(year, {}).get("weeks", {}).get(week, {}).get("matchup_data", {})
+    matchup_data = MANAGER_CACHE[manager_1]["years"].get(year, {}).get("weeks", {}).get(week, {}).get("matchup_data", {})
     manager_1_score = matchup_data.get("points_for", 0.0)
     manager_2_score = matchup_data.get("points_against", 0.0)
 
@@ -237,20 +238,18 @@ def get_matchup_card(cache: dict, manager_1: str, manager_2: str, year: str, wee
     matchup = {
         "year": year,
         "week": week,
-        "manager_1": {"name": manager_1, "image_url": get_image_url(manager_1, players_cache, player_ids, image_urls_cache, cache)},
-        "manager_2": {"name": manager_2, "image_url": get_image_url(manager_2, players_cache, player_ids, image_urls_cache, cache)},
+        "manager_1": {"name": manager_1, "image_url": get_image_url(manager_1, image_urls)},
+        "manager_2": {"name": manager_2, "image_url": get_image_url(manager_2, image_urls)},
         "manager_1_score": manager_1_score,
         "manager_2_score": manager_2_score,
         "winner": winner
     }
 
-    get_top_3_scorers_from_matchup_data(matchup, manager_1, manager_2, players_cache, player_ids, image_urls_cache, cache, starters_cache)
+    get_top_3_scorers_from_matchup_data(matchup, manager_1, manager_2, image_urls)
 
     return deepcopy(matchup)
 
-def get_trade_card(transaction_id: str, transaction_ids_cache: dict,
-                  image_urls_cache: dict, players_cache: dict,
-                  player_ids: dict, cache: dict) -> Dict[str, Any]:
+def get_trade_card(transaction_id: str, image_urls: dict) -> Dict[str, Any]:
     """
     Generate formatted trade card showing all players/assets exchanged.
 
@@ -259,16 +258,12 @@ def get_trade_card(transaction_id: str, transaction_ids_cache: dict,
 
     Args:
         transaction_id: Transaction ID to look up
-        transaction_ids_cache: Cache of all transactions
-        image_urls_cache: Image URL cache
-        players_cache: Player cache
-        player_ids: Player ID to metadata mapping
-        cache: Full manager cache
+        image_urls: Dict of image URLs
 
     Returns:
         Trade card dictionary with year, week, managers, and items exchanged
     """
-    trans =  transaction_ids_cache[transaction_id]
+    trans =  TRANSACTION_IDS_CACHE[transaction_id]
     trade_item = {
         "year": trans["year"],
         "week": trans["week"],
@@ -279,14 +274,14 @@ def get_trade_card(transaction_id: str, transaction_ids_cache: dict,
     for m in trans["managers_involved"]:
         trade_item[f"{m.lower().replace(' ', '_')}_received"] = []
         trade_item[f"{m.lower().replace(' ', '_')}_sent"] = []
-        trade_item["managers_involved"].append(get_image_url(m, players_cache, player_ids, image_urls_cache, cache, dictionary=True))
+        trade_item["managers_involved"].append(get_image_url(m, image_urls, dictionary=True))
 
     # Populate sent/received arrays with players/assets
     for player in trans['trade_details']:
         old_manager = trans['trade_details'][player]['old_manager'].lower().replace(' ', '_')
         new_manager = trans['trade_details'][player]['new_manager'].lower().replace(' ', '_')
 
-        player_dict = get_image_url(player, players_cache, player_ids, image_urls_cache, cache, dictionary=True)
+        player_dict = get_image_url(player, image_urls, dictionary=True)
 
         trade_item[f"{old_manager}_sent"].append(deepcopy(player_dict))
         trade_item[f"{new_manager}_received"].append(deepcopy(player_dict))

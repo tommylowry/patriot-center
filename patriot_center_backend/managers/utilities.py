@@ -7,8 +7,16 @@ draft pick parsing, and player cache management.
 from copy import deepcopy
 from typing import Dict, Any
 
-from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
+from patriot_center_backend.cache import get_cache_manager
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
+from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
+
+
+CACHE_MANAGER = get_cache_manager()
+
+MANAGER_CACHE    = CACHE_MANAGER.get_manager_cache()
+PLAYERS_CACHE    = CACHE_MANAGER.get_players_cache()
+PLAYER_IDS_CACHE = CACHE_MANAGER.get_player_ids_cache()
 
 
 def draft_pick_decipher(draft_pick_dict: Dict[str, Any], weekly_roster_ids: Dict[int, str]) -> str:
@@ -39,10 +47,8 @@ def draft_pick_decipher(draft_pick_dict: Dict[str, Any], weekly_roster_ids: Dict
 
     return f"{origin_manager}'s {season} Round {round_num} Draft Pick"
 
-def extract_dict_data(data: dict, players_cache: dict, player_ids: dict,
-                     image_urls_cache: dict, cache: dict,
-                     key_name: str = "name", value_name: str = "count",
-                     cutoff: int = 3) -> list:
+def extract_dict_data(data: dict, image_urls: dict, key_name: str = "name",
+                      value_name: str = "count", cutoff: int = 3) -> list:
     """
     Extract top N items from a dictionary and format with image URLs.
 
@@ -51,10 +57,7 @@ def extract_dict_data(data: dict, players_cache: dict, player_ids: dict,
 
     Args:
         data: Raw data dictionary (may contain nested dicts with "total" keys)
-        players_cache: Cache of player metadata
-        player_ids: Player ID to metadata mapping
-        image_urls_cache: Cache of image URLs
-        cache: Full manager cache
+        image_urls: Dict of image URLs
         key_name: Name of the key field in output (default: "name")
         value_name: Name of the value field in output (default: "count")
         cutoff: Number of top items to include (0 means all items)
@@ -92,14 +95,12 @@ def extract_dict_data(data: dict, players_cache: dict, player_ids: dict,
         long_dict = {}
         long_dict[key_name] = item
         long_dict[value_name] = top_three[item]
-        long_dict["image_url"] = get_image_url(item, players_cache, player_ids,
-                                      image_urls_cache, cache)
+        long_dict["image_url"] = get_image_url(item, image_urls)
         items.append(deepcopy(long_dict))
 
     return deepcopy(items)
 
-def get_image_url(item: str, players_cache: dict, player_ids: dict,
-                  image_urls_cache: dict, cache: dict, dictionary: bool = False) -> str:
+def get_image_url(item: str, image_urls: dict, dictionary: bool = False) -> str:
     """
     Get image URL for various entity types (draft picks, FAAB, managers, players).
 
@@ -112,10 +113,7 @@ def get_image_url(item: str, players_cache: dict, player_ids: dict,
 
     Args:
         item: Entity name/identifier string
-        players_cache: Cache of player data
-        player_ids: Player ID to metadata mapping
-        image_urls_cache: Cache of image URLs
-        cache: Full manager cache
+        image_urls: Dict of image URLs
         dictionary: If True, returns dict with name components; if False, returns URL string
 
     Returns:
@@ -151,15 +149,15 @@ def get_image_url(item: str, players_cache: dict, player_ids: dict,
     # Manager: identified by presence in manager username mapping
     if item in NAME_TO_MANAGER_USERNAME:
         if dictionary:
-            returning_dict["image_url"] = get_current_manager_image_url(item, cache, image_urls_cache)
+            returning_dict["image_url"] = get_current_manager_image_url(item, image_urls)
             return deepcopy(returning_dict)
-        return get_current_manager_image_url(item, cache, image_urls_cache)
+        return get_current_manager_image_url(item, image_urls)
 
     # Player: identified by presence in players cache
-    if item in players_cache:
-        player_id = players_cache[item]["player_id"]
-        first_name = player_ids[player_id]['first_name']
-        last_name = player_ids[player_id]['last_name']
+    if item in PLAYERS_CACHE:
+        player_id = PLAYERS_CACHE[item]["player_id"]
+        first_name = PLAYER_IDS_CACHE[player_id]['first_name']
+        last_name = PLAYER_IDS_CACHE[player_id]['last_name']
         # Numeric IDs are individual players (use player headshots)
         if player_id.isnumeric():
             url = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
@@ -182,33 +180,33 @@ def get_image_url(item: str, players_cache: dict, player_ids: dict,
     print("WARNING: Could not find image URL for item:", item)
     return ""
 
-def get_current_manager_image_url(manager: str, cache: dict, 
-                                  image_urls_cache: dict) -> str:
+def get_current_manager_image_url(manager: str, image_urls: dict) -> str:
     """
     Get current manager's avatar image URL.
     
     Args:
         manager: Manager name
-        cache: Full manager cache
-        image_urls_cache: Cache of image URLs (mutable, will be updated)
+        image_urls: Dict of image URLs (mutable, will be updated)
     
     Returns:
         Image URL string
     """
-    if manager in image_urls_cache:
-        return image_urls_cache[manager]
+    if manager in image_urls:
+        return image_urls[manager]
 
-    user_id = cache.get(manager, {}).get("summary", {}).get("user_id", "")
+    user_id = MANAGER_CACHE.get(manager, {}).get("summary", {}).get("user_id", "")
+
+    if user_id == "":
+        raise ValueError(f"Manager {manager} does not have a user_id in MANAGER_CACHE.")
 
     user_payload = fetch_sleeper_data(f"user/{user_id}")
     if user_payload and "user_id" in user_payload:
-        image_urls_cache[manager] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+        image_urls[manager] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
         return f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
 
     return ""
 
-def update_players_cache(item: list|str, players_cache: dict,
-                         player_ids: dict) -> None:
+def update_players_cache(item: list|str) -> None:
     """
     Update players cache with player metadata from matchup data or individual player ID.
 
@@ -219,11 +217,9 @@ def update_players_cache(item: list|str, players_cache: dict,
 
     Args:
         item: Either list of matchup data or single player_id string
-        players_cache: Existing player cache (will be modified in-place)
-        player_ids: Player ID to metadata mapping
 
     Returns:
-        None (modifies players_cache in-place)
+        None (modifies PLAYERS_CACHE in-place)
 
     Raises:
         ValueError: If item is None or empty, or if wrong type provided
@@ -233,21 +229,21 @@ def update_players_cache(item: list|str, players_cache: dict,
 
     # Handle single player ID
     if isinstance(item, str):
-        player_name = player_ids.get(item, {}).get("full_name", "")
+        player_name = PLAYER_IDS_CACHE.get(item, {}).get("full_name", "")
 
         if player_name == '':
             print(f"WARNING: player_id {item} not found in player_ids")
             return
 
-        if player_name not in players_cache:
-            player_meta = player_ids.get(item, {})
+        if player_name not in PLAYERS_CACHE:
+            player_meta = PLAYER_IDS_CACHE.get(item, {})
 
             # Create URL-encoded slug for player name (for API/URL usage)
             slug = player_meta.get("full_name", "").lower()
             slug = slug.replace(" ", "%20")
             slug = slug.replace("'", "%27")
             
-            players_cache[player_meta["full_name"]] = {
+            PLAYERS_CACHE[player_meta["full_name"]] = {
                 "full_name": player_meta.get("full_name", ""),
                 "first_name": player_meta.get("first_name", ""),
                 "last_name": player_meta.get("last_name", ""),
@@ -256,27 +252,26 @@ def update_players_cache(item: list|str, players_cache: dict,
                 "slug": slug,
                 "player_id": item
             }
-
-
+            
         return
 
     # Handle list of matchup data
     elif isinstance(item, list):
         for matchup in item:
             for player_id in matchup['players']:
-                player_meta = player_ids.get(player_id, {})
+                player_meta = PLAYER_IDS_CACHE.get(player_id, {})
 
                 player_meta = deepcopy(player_meta)
                 player_meta["player_id"] = player_id
 
-                if player_meta.get("full_name") not in players_cache:
+                if player_meta.get("full_name") not in PLAYERS_CACHE:
 
                     # Create URL-encoded slug for player name
                     slug = player_meta.get("full_name", "").lower()
                     slug = slug.replace(" ", "%20")
                     slug = slug.replace("'", "%27")
                     
-                    players_cache[player_meta["full_name"]] = {
+                    PLAYERS_CACHE[player_meta["full_name"]] = {
                         "full_name": player_meta.get("full_name", ""),
                         "first_name": player_meta.get("first_name", ""),
                         "last_name": player_meta.get("last_name", ""),

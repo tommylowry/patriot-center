@@ -7,24 +7,34 @@ All methods delegate to cache_queries for data extraction.
 from typing import Dict, Any
 from copy import deepcopy
 
+from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.cache import get_cache_manager
-from patriot_center_backend.managers.utilities import get_current_manager_image_url
-from patriot_center_backend.managers.cache_queries import (
-    get_matchup_details_from_cache,
-    get_transaction_details_from_cache,
-    get_overall_data_details_from_cache,
-    get_ranking_details_from_cache,
-    get_head_to_head_details_from_cache,
-    get_head_to_head_overall_from_cache,
-    get_trade_history_between_two_managers,
+from patriot_center_backend.managers.cache_queries.award_queries import (
     get_manager_awards_from_cache,
     get_manager_score_awards_from_cache
 )
-from patriot_center_backend.managers.formatters import get_image_url, get_trade_card
-from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+    get_head_to_head_details_from_cache,
+    get_head_to_head_overall_from_cache
+)
+from patriot_center_backend.managers.cache_queries.matchup_queries import (
+    get_matchup_details_from_cache,
+    get_overall_data_details_from_cache
+)
+from patriot_center_backend.managers.cache_queries.ranking_queries import get_ranking_details_from_cache
+from patriot_center_backend.managers.cache_queries.transaction_queries import (
+    get_trade_history_between_two_managers,
+    get_transaction_details_from_cache
+)
+from patriot_center_backend.managers.formatters import (
+    get_image_url,
+    get_trade_card
+)
+from patriot_center_backend.managers.utilities import get_current_manager_image_url
 
 
-CACHE_MANAGER = get_cache_manager()
+from patriot_center_backend.cache import get_cache_manager
+CACHE_MANAGER         = get_cache_manager()
 
 MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
 VALID_OPTIONS_CACHE   = CACHE_MANAGER.get_valid_options_cache()

@@ -160,12 +160,17 @@ def mock_player_ids_cache():
         "player2": {"full_name": "Player Two"}
     }
 
+@pytest.fixture
+def mock_transaction_ids_cache():
+    """Create a blank transaction ids cache for testing."""
+    return {}
+
 
 @pytest.fixture(autouse=True)
-def patch_caches(mock_manager_cache, mock_player_ids_cache):
+def patch_caches(mock_manager_cache, mock_player_ids_cache, mock_transaction_ids_cache):
     with patch('patriot_center_backend.managers.transaction_processor.MANAGER_CACHE', mock_manager_cache), \
          patch('patriot_center_backend.managers.transaction_processor.PLAYER_IDS_CACHE', mock_player_ids_cache), \
-         patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', {}):
+         patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache):
         yield
 
 
@@ -888,7 +893,7 @@ class TestAddToTransactionIdsCache:
 class TestRevertAddDropTransaction:
     """Test _revert_add_drop_transaction method - unit tests calling function directly."""
 
-    def test_revert_add_removes_from_cache_and_transaction_ids(self, mock_manager_cache):
+    def test_revert_add_removes_from_cache_and_transaction_ids(self, mock_manager_cache, mock_transaction_ids_cache):
         """Test _revert_add_drop_transaction removes add from cache."""
         # Setup cache as if add was processed
         mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
@@ -898,16 +903,14 @@ class TestRevertAddDropTransaction:
         mock_manager_cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
         mock_manager_cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
 
-        mock_transaction_ids_cache = {
-            "trans1": {
-                "year": "2023",
-                "week": "1",
-                "commish_action": True,
-                "managers_involved": ["Manager 1"],
-                "types": ["add"],
-                "players_involved": ["Player One"],
-                "add": "Player One"
-            }
+        mock_transaction_ids_cache["trans1"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": True,
+            "managers_involved": ["Manager 1"],
+            "types": ["add"],
+            "players_involved": ["Player One"],
+            "add": "Player One"
         }
 
         with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache), \
@@ -925,14 +928,12 @@ class TestRevertAddDropTransaction:
             # Assert only THIS function's behavior
             assert transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["adds"]["total"] == 0
             assert "Player One" not in transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["adds"]["players"]
-            assert "trans1" not in mock_transaction_ids_cache
+            assert "trans1" not in transaction_processor.TRANSACTION_IDS_CACHE
             assert "trans1" not in processor._weekly_transaction_ids
             assert result is True
 
-    def test_revert_drop_removes_from_cache(self, mock_manager_cache):
+    def test_revert_drop_removes_from_cache(self, mock_manager_cache, mock_transaction_ids_cache):
         """Test _revert_add_drop_transaction removes drop from cache."""
-        
-
         mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["total"] = 1
         mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["drops"]["players"]["Player Two"] = 1
         mock_manager_cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["drops"]["total"] = 1
@@ -940,16 +941,14 @@ class TestRevertAddDropTransaction:
         mock_manager_cache["Manager 1"]["summary"]["transactions"]["drops"]["total"] = 1
         mock_manager_cache["Manager 1"]["summary"]["transactions"]["drops"]["players"]["Player Two"] = 1
 
-        mock_transaction_ids_cache = {
-            "trans2": {
-                "year": "2023",
-                "week": "1",
-                "commish_action": False,
-                "managers_involved": ["Manager 1"],
-                "types": ["drop"],
-                "players_involved": ["Player Two"],
-                "drop": "Player Two"
-            }
+        mock_transaction_ids_cache["trans2"] = {
+            "year": "2023",
+            "week": "1",
+            "commish_action": False,
+            "managers_involved": ["Manager 1"],
+            "types": ["drop"],
+            "players_involved": ["Player Two"],
+            "drop": "Player Two"
         }
 
         with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache), \
@@ -965,31 +964,27 @@ class TestRevertAddDropTransaction:
 
             assert transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["drops"]["total"] == 0
             assert "Player Two" not in transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["drops"]["players"]
-            assert "trans2" not in mock_transaction_ids_cache
+            assert "trans2" not in transaction_processor.TRANSACTION_IDS_CACHE
             assert result is True
 
-    def test_revert_add_with_faab_removes_faab_data(self, processor):
+    def test_revert_add_with_faab_removes_faab_data(self, mock_manager_cache, mock_transaction_ids_cache):
         """Test _revert_add_drop_transaction removes FAAB data when reverting add."""
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = True
-
         # Setup add and FAAB data
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+        mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
+        mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
+        mock_manager_cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
+        mock_manager_cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+        mock_manager_cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
+        mock_manager_cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
 
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["transaction_ids"] = ["trans1"]
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["players"]["Player One"] = {
+        mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["transaction_ids"] = ["trans1"]
+        mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["players"]["Player One"] = {
             "num_bids_won": 1, "total_faab_spent": 50
         }
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["faab"]["players"]["Player One"] = {
+        mock_manager_cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["faab"]["players"]["Player One"] = {
             "num_bids_won": 1, "total_faab_spent": 50
         }
-        processor._cache["Manager 1"]["summary"]["transactions"]["faab"]["players"]["Player One"] = {
+        mock_manager_cache["Manager 1"]["summary"]["transactions"]["faab"]["players"]["Player One"] = {
             "num_bids_won": 1, "total_faab_spent": 50
         }
 
@@ -1003,26 +998,33 @@ class TestRevertAddDropTransaction:
             "add": "Player One",
             "faab_spent": 50
         }
-        processor._weekly_transaction_ids = ["trans1"]
+        
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache), \
+             patch('patriot_center_backend.managers.transaction_processor.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
 
-        result = processor._revert_add_drop_transaction("trans1", "add")
+            processor._year = "2023"
+            processor._week = "1"
+            processor._use_faab = True
 
-        # Assert FAAB data was removed
-        assert "Player One" not in processor._cache["Manager 1"]["summary"]["transactions"]["faab"]["players"]
-        assert "trans1" not in processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["transaction_ids"]
-        assert result is True
+            processor._weekly_transaction_ids = ["trans1"]
 
-    def test_revert_partial_transaction_keeps_other_type(self, processor):
+            result = processor._revert_add_drop_transaction("trans1", "add")
+
+            # Assert FAAB data was removed
+            assert "Player One" not in transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["faab"]["players"]
+            assert "trans1" not in transaction_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["transaction_ids"]
+            assert result is True
+
+    def test_revert_partial_transaction_keeps_other_type(self, mock_manager_cache, mock_transaction_ids_cache):
         """Test reverting only add portion of add+drop transaction keeps drop."""
-        processor._year = "2023"
-        processor._week = "1"
-
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
-        processor._cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+        mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["total"] = 1
+        mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["adds"]["players"]["Player One"] = 1
+        mock_manager_cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["total"] = 1
+        mock_manager_cache["Manager 1"]["years"]["2023"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
+        mock_manager_cache["Manager 1"]["summary"]["transactions"]["adds"]["total"] = 1
+        mock_manager_cache["Manager 1"]["summary"]["transactions"]["adds"]["players"]["Player One"] = 1
 
         mock_transaction_ids_cache["trans1"] = {
             "year": "2023",
@@ -1034,22 +1036,28 @@ class TestRevertAddDropTransaction:
             "add": "Player One",
             "drop": "Player Two"
         }
-        processor._weekly_transaction_ids = ["trans1"]
 
-        result = processor._revert_add_drop_transaction("trans1", "add")
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache), \
+             patch('patriot_center_backend.managers.transaction_processor.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
+        
+        
+            processor._year = "2023"
+            processor._week = "1"
+            processor._weekly_transaction_ids = ["trans1"]
 
-        # Transaction should still exist (drop remains)
-        assert "trans1" in mock_transaction_ids_cache
-        assert "add" not in mock_transaction_ids_cache["trans1"]
-        assert "drop" in mock_transaction_ids_cache["trans1"]
-        assert "trans1" in processor._weekly_transaction_ids
-        assert result is False  # Not fully removed
+            result = processor._revert_add_drop_transaction("trans1", "add")
 
-    def test_revert_invalid_type_returns_none(self, processor):
+            # Transaction should still exist (drop remains)
+            assert "trans1" in transaction_processor.TRANSACTION_IDS_CACHE
+            assert "add" not in transaction_processor.TRANSACTION_IDS_CACHE["trans1"]
+            assert "drop" in transaction_processor.TRANSACTION_IDS_CACHE["trans1"]
+            assert "trans1" in processor._weekly_transaction_ids
+            assert result is False  # Not fully removed
+
+    def test_revert_invalid_type_returns_none(self, mock_transaction_ids_cache):
         """Test _revert_add_drop_transaction returns None for invalid type."""
-        processor._year = "2023"
-        processor._week = "1"
-
         mock_transaction_ids_cache["trans1"] = {
             "year": "2023",
             "week": "1",
@@ -1060,14 +1068,17 @@ class TestRevertAddDropTransaction:
             "add": "Player One"
         }
 
-        result = processor._revert_add_drop_transaction("trans1", "invalid_type")
-        assert result is None
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache):
+            from patriot_center_backend.managers.transaction_processor import TransactionProcessor
+            processor = TransactionProcessor(use_faab=True)
 
-    def test_revert_raises_on_multiple_managers(self, processor):
+            processor._year = "2023"
+            processor._week = "1"
+            result = processor._revert_add_drop_transaction("trans1", "invalid_type")
+            assert result is None
+
+    def test_revert_raises_on_multiple_managers(self, mock_transaction_ids_cache):
         """Test _revert_add_drop_transaction raises error for multiple managers."""
-        processor._year = "2023"
-        processor._week = "1"
-
         mock_transaction_ids_cache["trans1"] = {
             "year": "2023",
             "week": "1",
@@ -1078,52 +1089,57 @@ class TestRevertAddDropTransaction:
             "add": "Player One"
         }
 
-        with pytest.raises(Exception, match="Weird add with multiple managers"):
-            processor._revert_add_drop_transaction("trans1", "add")
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache):
+            from patriot_center_backend.managers.transaction_processor import TransactionProcessor
+            processor = TransactionProcessor(use_faab=True)
+            
+            processor._year = "2023"
+            processor._week = "1"
+
+            with pytest.raises(Exception, match="Weird add with multiple managers"):
+                processor._revert_add_drop_transaction("trans1", "add")
 
 
 class TestRevertTradeTransaction:
     """Test _revert_trade_transaction method - unit tests calling function directly."""
 
-    def test_revert_simple_trade_removes_both_transactions(self, processor):
+    def test_revert_simple_trade_removes_both_transactions(self, mock_manager_cache, mock_transaction_ids_cache):
         """Test _revert_trade_transaction removes both trades from cache."""
-        processor._year = "2023"
-        processor._week = "1"
 
         # Setup cache for both managers - use total=2 since we're removing all trades
         for manager in ["Manager 1", "Manager 2"]:
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 2
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2"]
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 2
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2"]
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 2
             }
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 2
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 2
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 2
             }
-            processor._cache[manager]["summary"]["transactions"]["trades"]["total"] = 2
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["total"] = 2
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 2
             }
 
             # Setup acquired/sent
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {
                 "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
                 "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
                 "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
 
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {
                 "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
                 "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
                 "Player One": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
 
@@ -1149,79 +1165,86 @@ class TestRevertTradeTransaction:
                 "Player One": {"old_manager": "Manager 2", "new_manager": "Manager 1"}
             }
         }
-        processor._weekly_transaction_ids = ["trade1", "trade2"]
 
-        # Call function directly
-        processor._revert_trade_transaction("trade1", "trade2")
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache), \
+             patch('patriot_center_backend.managers.transaction_processor.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
 
-        # Assert only THIS function's behavior
-        assert "trade1" not in mock_transaction_ids_cache
-        assert "trade2" not in mock_transaction_ids_cache
-        assert len(processor._weekly_transaction_ids) == 0
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["trades"]["total"] == 0
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["trades"]["trade_partners"] == {}
+            processor._year = "2023"
+            processor._week = "1"
 
-    def test_revert_trade_with_faab_removes_faab_data(self, processor):
+
+            processor._weekly_transaction_ids = ["trade1", "trade2"]
+
+            # Call function directly
+            processor._revert_trade_transaction("trade1", "trade2")
+
+            # Assert only THIS function's behavior
+            assert "trade1" not in transaction_processor.TRANSACTION_IDS_CACHE
+            assert "trade2" not in transaction_processor.TRANSACTION_IDS_CACHE
+            assert len(processor._weekly_transaction_ids) == 0
+            assert transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["trades"]["total"] == 0
+            assert transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["trades"]["trade_partners"] == {}
+
+    def test_revert_trade_with_faab_removes_faab_data(self, mock_manager_cache, mock_transaction_ids_cache):
         """Test _revert_trade_transaction removes FAAB data."""
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = True
 
         # Setup basic trade cache - use 4 total so after decrementing 2, there are still 2 left
         # (if total goes to 0, the code continues and skips FAAB decrement logic)
         for manager in ["Manager 1", "Manager 2"]:
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 4
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2"]
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 4
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2"]
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 2
             }
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 4
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 4
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 2
             }
-            processor._cache[manager]["summary"]["transactions"]["trades"]["total"] = 4
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["total"] = 4
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 2
             }
 
             # Setup acquired/sent for FAAB
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {
                 "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
                 "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {
                 "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
 
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {
                 "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
                 "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {
                 "$100 FAAB": {"total": 1, "trade_partners": {"Manager 2" if manager == "Manager 1" else "Manager 1": 1}}
             }
 
         # Setup FAAB cache - the code decrements both traded_away and acquired_from for each manager
         # Set up both fields for both managers
         for manager, partner in [("Manager 1", "Manager 2"), ("Manager 2", "Manager 1")]:
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["traded_away"]["total"] = 100
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["acquired_from"]["total"] = 100
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["traded_away"]["total"] = 100
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["acquired_from"]["total"] = 100
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
 
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["traded_away"]["total"] = 100
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["acquired_from"]["total"] = 100
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["traded_away"]["total"] = 100
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["acquired_from"]["total"] = 100
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
 
-            processor._cache[manager]["summary"]["transactions"]["faab"]["traded_away"]["total"] = 100
-            processor._cache[manager]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
-            processor._cache[manager]["summary"]["transactions"]["faab"]["acquired_from"]["total"] = 100
-            processor._cache[manager]["summary"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
+            mock_manager_cache[manager]["summary"]["transactions"]["faab"]["traded_away"]["total"] = 100
+            mock_manager_cache[manager]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
+            mock_manager_cache[manager]["summary"]["transactions"]["faab"]["acquired_from"]["total"] = 100
+            mock_manager_cache[manager]["summary"]["transactions"]["faab"]["acquired_from"]["trade_partners"] = {partner: 100}
 
         mock_transaction_ids_cache["trade1"] = {
             "year": "2023",
@@ -1245,42 +1268,50 @@ class TestRevertTradeTransaction:
                 "$100 FAAB": {"old_manager": "Manager 2", "new_manager": "Manager 1"}
             }
         }
-        processor._weekly_transaction_ids = ["trade1", "trade2"]
 
-        processor._revert_trade_transaction("trade1", "trade2")
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache), \
+             patch('patriot_center_backend.managers.transaction_processor.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
 
-        # Assert FAAB was removed
-        assert processor._cache["Manager 1"]["summary"]["transactions"]["faab"]["traded_away"]["total"] == 0
-        assert processor._cache["Manager 2"]["summary"]["transactions"]["faab"]["acquired_from"]["total"] == 0
-        assert "Manager 2" not in processor._cache["Manager 1"]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"]
+            processor._year = "2023"
+            processor._week = "1"
+            processor._use_faab = True
 
-    def test_revert_trade_removes_from_weekly_transaction_ids(self, processor):
+            processor._weekly_transaction_ids = ["trade1", "trade2"]
+
+            processor._revert_trade_transaction("trade1", "trade2")
+
+            # Assert FAAB was removed
+            assert transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["faab"]["traded_away"]["total"] == 0
+            assert transaction_processor.MANAGER_CACHE["Manager 2"]["summary"]["transactions"]["faab"]["acquired_from"]["total"] == 0
+            assert "Manager 2" not in transaction_processor.MANAGER_CACHE["Manager 1"]["summary"]["transactions"]["faab"]["traded_away"]["trade_partners"]
+
+    def test_revert_trade_removes_from_weekly_transaction_ids(self, mock_manager_cache, mock_transaction_ids_cache):
         """Test _revert_trade_transaction removes IDs from weekly list."""
-        processor._year = "2023"
-        processor._week = "1"
 
         # Setup with 3 trades total
         for manager in ["Manager 1", "Manager 2"]:
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 3
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2", "trade3"]
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 3
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2", "trade3"]
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 3
             }
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 3
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 3
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 3
             }
-            processor._cache[manager]["summary"]["transactions"]["trades"]["total"] = 3
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["total"] = 3
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 3
             }
 
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {}
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {}
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {}
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {}
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {}
-            processor._cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {}
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_acquired"] = {}
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {}
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_players_acquired"] = {}
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["trade_players_sent"] = {}
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["trade_players_sent"] = {}
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["trade_players_sent"] = {}
 
         mock_transaction_ids_cache["trade1"] = {
             "year": "2023",
@@ -1300,15 +1331,24 @@ class TestRevertTradeTransaction:
             "players_involved": [],
             "trade_details": {}
         }
-        processor._weekly_transaction_ids = ["trade1", "trade2", "trade3"]
 
-        processor._revert_trade_transaction("trade1", "trade2")
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache), \
+             patch('patriot_center_backend.managers.transaction_processor.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
+        
+            processor._year = "2023"
+            processor._week = "1"
+            
+            processor._weekly_transaction_ids = ["trade1", "trade2", "trade3"]
 
-        # Assert trade3 still exists
-        assert "trade3" in processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"]
-        assert "trade1" not in processor._weekly_transaction_ids
-        assert "trade2" not in processor._weekly_transaction_ids
-        assert "trade3" in processor._weekly_transaction_ids
+            processor._revert_trade_transaction("trade1", "trade2")
+
+            # Assert trade3 still exists
+            assert "trade3" in transaction_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"]
+            assert "trade1" not in processor._weekly_transaction_ids
+            assert "trade2" not in processor._weekly_transaction_ids
+            assert "trade3" in processor._weekly_transaction_ids
 
 
 class TestCacheModification:
@@ -1341,16 +1381,15 @@ class TestCacheModification:
 class TestProcessTradeTransaction:
     """Test _process_trade_transaction with actual trade processing."""
 
-    def test_process_simple_two_team_trade(self, processor):
+    def test_process_simple_two_team_trade(self):
         """Test processing a simple 2-team player swap."""
+        from patriot_center_backend.managers import transaction_processor
+        processor = transaction_processor.TransactionProcessor(use_faab=True)
+        
         processor._year = "2023"
         processor._week = "1"
         processor._use_faab = False
         processor._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
-        processor._player_ids = {
-            "player1": {"full_name": "Player One"},
-            "player2": {"full_name": "Player Two"}
-        }
 
         transaction = {
             "type": "trade",
@@ -1365,134 +1404,153 @@ class TestProcessTradeTransaction:
         processor._process_trade_transaction(transaction, commish_action=False)
 
         # Verify Manager 1 acquired player1
-        assert processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] == 1
-        assert "trade1" in processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"]
+        assert transaction_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] == 1
+        assert "trade1" in transaction_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"]
 
         # Verify Manager 2 acquired player2
-        assert processor._cache["Manager 2"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] == 1
+        assert transaction_processor.MANAGER_CACHE["Manager 2"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] == 1
 
-    def test_process_trade_with_draft_picks(self, processor):
+    def test_process_trade_with_draft_picks(self, mock_player_ids_cache):
         """Test processing trade that includes draft picks."""
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = False
-        processor._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
-        processor._player_ids = {"player1": {"full_name": "Player One"}}
+        mock_player_ids_cache = {"player1": {"full_name": "Player One"}}
 
-        transaction = {
-            "type": "trade",
-            "transaction_id": "trade2",
-            "roster_ids": [1, 2],
-            "adds": {"player1": 1},
-            "drops": {"player1": 2},
-            "draft_picks": [
-                {
-                    "season": "2024",
-                    "round": 1,
-                    "roster_id": 2,  # Manager 1 acquired this pick
-                    "owner_id": 1,
-                    "previous_owner_id": 2
-                }
-            ],
-            "waiver_budget": []
-        }
+        with patch('patriot_center_backend.managers.transaction_processor.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
+        
+            processor._year = "2023"
+            processor._week = "1"
+            processor._use_faab = False
+            processor._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        processor._process_trade_transaction(transaction, commish_action=False)
+            transaction = {
+                "type": "trade",
+                "transaction_id": "trade2",
+                "roster_ids": [1, 2],
+                "adds": {"player1": 1},
+                "drops": {"player1": 2},
+                "draft_picks": [
+                    {
+                        "season": "2024",
+                        "round": 1,
+                        "roster_id": 2,  # Manager 1 acquired this pick
+                        "owner_id": 1,
+                        "previous_owner_id": 2
+                    }
+                ],
+                "waiver_budget": []
+            }
 
-        # Should process successfully
-        assert processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] == 1
+            processor._process_trade_transaction(transaction, commish_action=False)
 
-    def test_process_trade_with_faab(self, processor):
+            # Should process successfully
+            assert transaction_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] == 1
+
+    def test_process_trade_with_faab(self, mock_player_ids_cache):
         """Test processing trade that includes FAAB exchange."""
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = True
-        processor._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
-        processor._player_ids = {"player1": {"full_name": "Player One"}}
+        mock_player_ids_cache = {"player1": {"full_name": "Player One"}}
+        
+        with patch('patriot_center_backend.managers.transaction_processor.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
 
-        transaction = {
-            "type": "trade",
-            "transaction_id": "trade3",
-            "roster_ids": [1, 2],
-            "adds": {"player1": 1},
-            "drops": {"player1": 2},
-            "draft_picks": None,
-            "waiver_budget": [
-                {
-                    "sender": 1,
-                    "receiver": 2,
-                    "amount": 50
-                }
-            ]
-        }
+            processor._year = "2023"
+            processor._week = "1"
+            processor._use_faab = True
+            processor._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        processor._process_trade_transaction(transaction, commish_action=False)
+            transaction = {
+                "type": "trade",
+                "transaction_id": "trade3",
+                "roster_ids": [1, 2],
+                "adds": {"player1": 1},
+                "drops": {"player1": 2},
+                "draft_picks": None,
+                "waiver_budget": [
+                    {
+                        "sender": 1,
+                        "receiver": 2,
+                        "amount": 50
+                    }
+                ]
+            }
 
-        # Verify FAAB was tracked
-        assert processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["traded_away"]["total"] == 50
-        assert processor._cache["Manager 2"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["acquired_from"]["total"] == 50
+            processor._process_trade_transaction(transaction, commish_action=False)
+
+            # Verify FAAB was tracked
+            assert transaction_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["traded_away"]["total"] == 50
+            assert transaction_processor.MANAGER_CACHE["Manager 2"]["years"]["2023"]["weeks"]["1"]["transactions"]["faab"]["acquired_from"]["total"] == 50
 
 
 class TestCommissionerTransactionTypes:
     """Test commissioner transaction type detection in _process_transaction."""
 
     @patch('patriot_center_backend.managers.transaction_processor.validate_transaction')
-    def test_commissioner_add_only(self, mock_validate, processor):
+    def test_commissioner_add_only(self, mock_validate, mock_player_ids_cache):
         """Test commissioner action with only adds (no drops)."""
         mock_validate.return_value = True
-        processor._year = "2023"
-        processor._week = "1"
-        processor._weekly_roster_ids = {1: "Manager 1"}
-        processor._player_ids = {"player1": {"full_name": "Player One"}}
+        
+        mock_player_ids_cache = {"player1": {"full_name": "Player One"}}
+        
+        with patch('patriot_center_backend.managers.transaction_processor.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
 
-        transaction = {
-            "type": "commissioner",
-            "transaction_id": "comm1",
-            "adds": {"player1": 1},
-            "drops": None  # No drops means add_or_drop type
-        }
+            processor._year = "2023"
+            processor._week = "1"
+            processor._weekly_roster_ids = {1: "Manager 1"}
 
-        with patch.object(processor, '_process_add_or_drop_transaction') as mock_add_drop:
-            processor._process_transaction(transaction)
-            # Should call add_or_drop processor with commish_action=True
-            assert mock_add_drop.called
-            assert mock_add_drop.call_args[0][1] == True  # commish_action
+            transaction = {
+                "type": "commissioner",
+                "transaction_id": "comm1",
+                "adds": {"player1": 1},
+                "drops": None  # No drops means add_or_drop type
+            }
+
+            with patch.object(processor, '_process_add_or_drop_transaction') as mock_add_drop:
+                processor._process_transaction(transaction)
+                # Should call add_or_drop processor with commish_action=True
+                assert mock_add_drop.called
+                assert mock_add_drop.call_args[0][1] == True  # commish_action
 
     @patch('patriot_center_backend.managers.transaction_processor.validate_transaction')
-    def test_commissioner_forced_trade(self, mock_validate, processor):
+    def test_commissioner_forced_trade(self, mock_validate, mock_player_ids_cache):
         """Test commissioner action with multiple players (forced trade)."""
         mock_validate.return_value = True
-        processor._year = "2023"
-        processor._week = "1"
-        processor._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
-        processor._player_ids = {
+        
+        mock_player_ids_cache = {
             "player1": {"full_name": "Player One"},
             "player2": {"full_name": "Player Two"}
         }
+        
+        with patch('patriot_center_backend.managers.transaction_processor.PLAYER_IDS_CACHE', mock_player_ids_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
+        
+            processor._year = "2023"
+            processor._week = "1"
+            processor._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        transaction = {
-            "type": "commissioner",
-            "transaction_id": "comm2",
-            "roster_ids": [1, 2],
-            "adds": {"player1": 1, "player2": 2},
-            "drops": {"player1": 2, "player2": 1}
-        }
+            transaction = {
+                "type": "commissioner",
+                "transaction_id": "comm2",
+                "roster_ids": [1, 2],
+                "adds": {"player1": 1, "player2": 2},
+                "drops": {"player1": 2, "player2": 1}
+            }
 
-        with patch.object(processor, '_process_trade_transaction') as mock_trade:
-            processor._process_transaction(transaction)
-            # Should call trade processor with commish_action=True
-            assert mock_trade.called
-            assert mock_trade.call_args[0][1] == True  # commish_action
+            with patch.object(processor, '_process_trade_transaction') as mock_trade:
+                processor._process_transaction(transaction)
+                # Should call trade processor with commish_action=True
+                assert mock_trade.called
+                assert mock_trade.call_args[0][1] == True  # commish_action
 
 
 class TestTradeReversalDetection:
     """Test trade reversal detection (joke trades)."""
 
-    def test_trade_reversal_same_players_opposite_direction(self, processor):
+    def test_trade_reversal_same_players_opposite_direction(self, mock_transaction_ids_cache, mock_manager_cache):
         """Test detecting and reverting joke trade (same players swapped back)."""
-        processor._year = "2023"
-        processor._week = "1"
-        processor._use_faab = False
 
         # Setup: Two trades with same players, opposite directions
         mock_transaction_ids_cache = {
@@ -1521,28 +1579,35 @@ class TestTradeReversalDetection:
                 }
             }
         }
-        processor._weekly_transaction_ids = ["trade1", "trade2"]
 
         # Setup cache as if trades were processed
         for manager in ["Manager 1", "Manager 2"]:
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 2
-            processor._cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2"]
-            processor._cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 2
-            processor._cache[manager]["summary"]["transactions"]["trades"]["total"] = 2
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["total"] = 2
+            mock_manager_cache[manager]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]["transaction_ids"] = ["trade1", "trade2"]
+            mock_manager_cache[manager]["years"]["2023"]["summary"]["transactions"]["trades"]["total"] = 2
+            mock_manager_cache[manager]["summary"]["transactions"]["trades"]["total"] = 2
 
-        # Detect and revert
-        processor.check_for_reverse_transactions()
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache), \
+             patch('patriot_center_backend.managers.transaction_processor.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
 
-        # Both trades should be removed
-        assert "trade1" not in mock_transaction_ids_cache
-        assert "trade2" not in mock_transaction_ids_cache
-        assert len(processor._weekly_transaction_ids) == 0
+            processor._year = "2023"
+            processor._week = "1"
+            processor._use_faab = False
+            
+            processor._weekly_transaction_ids = ["trade1", "trade2"]
 
-    def test_trade_no_reversal_different_players(self, processor):
+            # Detect and revert
+            processor.check_for_reverse_transactions()
+
+            # Both trades should be removed
+            assert "trade1" not in transaction_processor.TRANSACTION_IDS_CACHE
+            assert "trade2" not in transaction_processor.TRANSACTION_IDS_CACHE
+            assert len(processor._weekly_transaction_ids) == 0
+
+    def test_trade_no_reversal_different_players(self, mock_transaction_ids_cache):
         """Test that different trades don't get reversed."""
-        processor._year = "2023"
-        processor._week = "1"
-
         mock_transaction_ids_cache = {
             "trade1": {
                 "year": "2023",
@@ -1567,13 +1632,20 @@ class TestTradeReversalDetection:
                 }
             }
         }
-        processor._weekly_transaction_ids = ["trade1", "trade2"]
 
-        processor.check_for_reverse_transactions()
+        with patch('patriot_center_backend.managers.transaction_processor.TRANSACTION_IDS_CACHE', mock_transaction_ids_cache):
+            from patriot_center_backend.managers import transaction_processor
+            processor = transaction_processor.TransactionProcessor(use_faab=True)
+        
+            processor._year = "2023"
+            processor._week = "1"
+            processor._weekly_transaction_ids = ["trade1", "trade2"]
 
-        # Trades should NOT be removed (different players)
-        assert "trade1" in mock_transaction_ids_cache
-        assert "trade2" in mock_transaction_ids_cache
+            processor.check_for_reverse_transactions()
+
+            # Trades should NOT be removed (different players)
+            assert "trade1" in transaction_processor.TRANSACTION_IDS_CACHE
+            assert "trade2" in transaction_processor.TRANSACTION_IDS_CACHE
 
 
 class TestProcessAddOrDropTransaction:

@@ -4,8 +4,9 @@ Unit tests for matchup_processor module.
 Tests the MatchupProcessor class which handles matchup and playoff data processing.
 All tests mock API calls and avoid modifying real cache files.
 """
-import pytest
 from unittest.mock import patch
+
+import pytest
 
 
 @pytest.fixture

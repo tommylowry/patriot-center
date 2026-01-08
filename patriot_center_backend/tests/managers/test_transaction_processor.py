@@ -4,9 +4,9 @@ Unit tests for transaction_processor module.
 Tests the TransactionProcessor class which handles all transaction-related operations.
 All tests mock API calls and avoid touching real cache files.
 """
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from copy import deepcopy
 
 
 @pytest.fixture

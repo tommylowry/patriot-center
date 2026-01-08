@@ -17,19 +17,17 @@ Notes:
 from decimal import Decimal
 
 from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.managers import get_manager_metadata_manager
 from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
-from patriot_center_backend.managers import get_manager_metadata_manager
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
-
 
 CACHE_MANAGER    = get_cache_manager()
 MANAGER_METADATA = get_manager_metadata_manager()
 
+PLAYER_IDS_CACHE    = CACHE_MANAGER.get_player_ids_cache()
+PLAYERS_CACHE       = CACHE_MANAGER.get_players_cache()
 STARTERS_CACHE      = CACHE_MANAGER.get_starters_cache(for_update=True)
 VALID_OPTIONS_CACHE = CACHE_MANAGER.get_valid_options_cache()
-PLAYERS_CACHE       = CACHE_MANAGER.get_players_cache()
-PLAYER_IDS_CACHE    = CACHE_MANAGER.get_player_ids_cache()
 
 
 def update_starters_cache():

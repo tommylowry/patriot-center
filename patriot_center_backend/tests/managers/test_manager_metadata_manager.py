@@ -4,11 +4,12 @@ Unit tests for manager_metadata_manager module.
 Tests the ManagerMetadataManager class (singleton orchestrator).
 All tests mock file I/O and API calls to avoid touching real cache files.
 """
-import pytest
-from unittest.mock import patch, MagicMock, call
+from unittest.mock import MagicMock, patch
 
-from patriot_center_backend.managers.transaction_processor import TransactionProcessor
+import pytest
+
 from patriot_center_backend.managers.matchup_processor import MatchupProcessor
+from patriot_center_backend.managers.transaction_processor import TransactionProcessor
 
 
 @pytest.fixture(autouse=True)
@@ -45,9 +46,10 @@ class TestManagerMetadataManagerInit:
 
     def test_singleton_pattern(self):
         """Test that get_manager_metadata_manager returns singleton."""
-        from patriot_center_backend.managers.manager_metadata_manager import get_manager_metadata_manager
-        
         import patriot_center_backend.managers.manager_metadata_manager as mmm
+        from patriot_center_backend.managers.manager_metadata_manager import (
+            get_manager_metadata_manager,
+        )
         mmm._manager_metadata_instance = None
 
         mgr1 = get_manager_metadata_manager()
@@ -119,7 +121,9 @@ class TestSetRosterId:
         }
 
         with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.manager_metadata_manager import ManagerMetadataManager
+            from patriot_center_backend.managers.manager_metadata_manager import (
+                ManagerMetadataManager,
+            )
             set_roster_id_calls_set_defaults_manager = ManagerMetadataManager()
 
             with patch.object(set_roster_id_calls_set_defaults_manager, '_set_defaults_if_missing') as mock_defaults:

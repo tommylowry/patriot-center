@@ -3,10 +3,9 @@ Validation functions for manager metadata processing.
 
 Validates preconditions, matchup data, and transaction data.
 """
-from typing import Dict, Optional, Callable
+from typing import Callable, Dict, Optional
 
 from patriot_center_backend.cache import get_cache_manager
-
 
 CACHE_MANAGER = get_cache_manager()
 

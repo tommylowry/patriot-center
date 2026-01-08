@@ -9,7 +9,6 @@ Notes:
 - STARTERS_CACHE is loaded at import time to serve requests quickly.
 - Returns empty dicts on missing seasons/weeks/managers instead of raising.
 """
-
 from patriot_center_backend.cache import get_cache_manager
 
 CACHE_MANAGER = get_cache_manager()

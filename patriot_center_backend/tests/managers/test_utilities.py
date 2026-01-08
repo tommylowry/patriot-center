@@ -3,13 +3,12 @@ Unit tests for utilities module.
 
 Tests utility functions with both good and bad scenarios.
 """
-import pytest
-from unittest.mock import Mock, patch, MagicMock
 from copy import deepcopy
-from patriot_center_backend.managers.utilities import (
-    draft_pick_decipher,
-    extract_dict_data
-)
+from unittest.mock import patch
+
+import pytest
+
+from patriot_center_backend.managers.utilities import draft_pick_decipher, extract_dict_data
 
 
 class TestDraftPickDecipher:

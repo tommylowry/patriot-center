@@ -3,9 +3,10 @@ Unit tests for formatters module.
 
 Tests formatting functions with both good and bad scenarios.
 """
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
-from copy import deepcopy
+
 from patriot_center_backend.managers.formatters import get_season_state
 
 
@@ -172,7 +173,9 @@ class TestGetTop3ScorersFromMatchupData:
         with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
              patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
              patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            from patriot_center_backend.managers.formatters import (
+                get_top_3_scorers_from_matchup_data,
+            )
             result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, image_urls)
 
         assert len(result["manager_1_top_3_scorers"]) == 3
@@ -191,7 +194,9 @@ class TestGetTop3ScorersFromMatchupData:
         with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
              patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
              patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', {}):
-            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            from patriot_center_backend.managers.formatters import (
+                get_top_3_scorers_from_matchup_data,
+            )
             result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         assert result["manager_1_top_3_scorers"] == []
@@ -208,7 +213,9 @@ class TestGetTop3ScorersFromMatchupData:
         with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
              patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
              patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', {}):
-            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            from patriot_center_backend.managers.formatters import (
+                get_top_3_scorers_from_matchup_data,
+            )
             result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         assert result["manager_1_top_3_scorers"] == []
@@ -234,7 +241,9 @@ class TestGetTop3ScorersFromMatchupData:
         with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
              patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
              patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            from patriot_center_backend.managers.formatters import (
+                get_top_3_scorers_from_matchup_data,
+            )
             result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         assert result["manager_1_top_3_scorers"] == []
@@ -260,7 +269,9 @@ class TestGetTop3ScorersFromMatchupData:
         with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
              patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
              patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            from patriot_center_backend.managers.formatters import (
+                get_top_3_scorers_from_matchup_data,
+            )
             result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         assert result["manager_1_top_3_scorers"] == []
@@ -308,7 +319,9 @@ class TestGetTop3ScorersFromMatchupData:
         with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
              patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
              patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            from patriot_center_backend.managers.formatters import (
+                get_top_3_scorers_from_matchup_data,
+            )
             result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         # Should return only 2 players for manager_1
@@ -367,7 +380,9 @@ class TestGetTop3ScorersFromMatchupData:
         with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
              patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
              patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import get_top_3_scorers_from_matchup_data
+            from patriot_center_backend.managers.formatters import (
+                get_top_3_scorers_from_matchup_data,
+            )
             result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
 
         # Verify top 3 are in descending order

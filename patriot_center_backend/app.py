@@ -15,25 +15,26 @@ The API supports two response formats:
 - Default: Flattened record list suitable for tabular display
 - format=json: Nested hierarchical structure preserving original cache shape
 """
-from flask import Flask, jsonify, request
-from flask_cors import CORS
 from copy import deepcopy
 
-from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
-from patriot_center_backend.cache import get_cache_manager
-from patriot_center_backend.utils.helpers import slug_to_player_name
-from patriot_center_backend.services.aggregated_data import fetch_player_manager_aggregation, fetch_aggregated_managers
-from patriot_center_backend.managers import get_manager_metadata_manager
+from flask import Flask, jsonify, request
+from flask_cors import CORS
 
+from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
+from patriot_center_backend.managers import get_manager_metadata_manager
+from patriot_center_backend.services.aggregated_data import (
+    fetch_aggregated_managers,
+    fetch_player_manager_aggregation,
+)
+from patriot_center_backend.utils.helpers import slug_to_player_name
 
 MANAGER_METADATA_MANAGER = get_manager_metadata_manager()
 CACHE_MANAGER            = get_cache_manager()
 
 PLAYERS_CACHE = CACHE_MANAGER.get_players_cache()
 
-
 app = Flask(__name__)
-
 
 # Configure CORS for production (Netlify frontend)
 CORS(app, resources={

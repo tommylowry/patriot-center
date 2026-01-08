@@ -3,13 +3,13 @@ Matchup and playoff processing for manager metadata.
 
 Handles matchup data collection and playoff bracket processing.
 """
-from typing import Dict, Optional
 from decimal import Decimal
+from typing import Dict, Optional
 
 from patriot_center_backend.cache import get_cache_manager
-from patriot_center_backend.utils.helpers import fetch_sleeper_data
-from patriot_center_backend.managers.formatters import get_season_state
 from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.managers.formatters import get_season_state
+from patriot_center_backend.utils.helpers import fetch_sleeper_data
 
 CACHE_MANAGER = get_cache_manager()
 

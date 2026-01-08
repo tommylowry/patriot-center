@@ -7,11 +7,10 @@ the transaction view of data.
 from copy import deepcopy
 from typing import Dict, List
 
+from patriot_center_backend.cache import get_cache_manager
 from patriot_center_backend.managers.formatters import get_trade_card
 from patriot_center_backend.managers.utilities import extract_dict_data
 
-
-from patriot_center_backend.cache import get_cache_manager
 CACHE_MANAGER = get_cache_manager()
 
 MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()

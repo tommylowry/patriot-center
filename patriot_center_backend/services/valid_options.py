@@ -20,7 +20,6 @@ from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAM
 
 CACHE_MANAGER = get_cache_manager()
 
-# Load caches at module import time for fast access
 VALID_OPTIONS_CACHE = CACHE_MANAGER.get_valid_options_cache()
 PLAYERS_CACHE       = CACHE_MANAGER.get_players_cache()
 

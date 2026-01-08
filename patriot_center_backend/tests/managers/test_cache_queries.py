@@ -4,9 +4,10 @@ Unit tests for cache_queries module.
 Tests all cache query functions with both good and bad scenarios.
 All functions are read-only and should not modify the cache.
 """
-import pytest
-from unittest.mock import patch
 from copy import deepcopy
+from unittest.mock import patch
+
+import pytest
 
 
 # Test fixture: Sample cache structure
@@ -271,7 +272,9 @@ class TestAwardQueries:
     def test_manager_awards(self, sample_manager_cache):
         """Test getting manager awards."""
         with patch('patriot_center_backend.managers.cache_queries.award_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.award_queries import get_manager_awards_from_cache
+            from patriot_center_backend.managers.cache_queries.award_queries import (
+                get_manager_awards_from_cache,
+            )
             result = get_manager_awards_from_cache("Manager 1", {})
 
         # Should include various award categories
@@ -289,7 +292,9 @@ class TestAwardQueries:
     def test_score_awards(self, sample_manager_cache):
         """Test getting scoring-related awards."""
         with patch('patriot_center_backend.managers.cache_queries.award_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.award_queries import get_manager_score_awards_from_cache
+            from patriot_center_backend.managers.cache_queries.award_queries import (
+                get_manager_score_awards_from_cache,
+            )
             result = get_manager_score_awards_from_cache("Manager 1", {})
 
         # Should include score-based awards
@@ -310,7 +315,9 @@ class TestHeadToHeadQueries:
     def test_get_h2h_details(self, sample_manager_cache):
         """Test getting head-to-head details."""
         with patch('patriot_center_backend.managers.cache_queries.head_to_head_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.head_to_head_queries import get_head_to_head_details_from_cache
+            from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+                get_head_to_head_details_from_cache,
+            )
             result = get_head_to_head_details_from_cache("Manager 1", {}, year=None, opponent="Manager 2")
 
         # Should return single opponent dict
@@ -326,7 +333,9 @@ class TestHeadToHeadQueries:
         cache_copy = deepcopy(sample_manager_cache)
 
         with patch('patriot_center_backend.managers.cache_queries.head_to_head_queries.MANAGER_CACHE', cache_copy):
-            from patriot_center_backend.managers.cache_queries.head_to_head_queries import get_head_to_head_overall_from_cache
+            from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+                get_head_to_head_overall_from_cache,
+            )
             result = get_head_to_head_overall_from_cache("Manager 1", "Manager 2", {})
 
         # Check for manager-specific win keys
@@ -337,7 +346,9 @@ class TestHeadToHeadQueries:
     def test_h2h_no_matchups(self, sample_manager_cache):
         """Test H2H when managers never played."""
         with patch('patriot_center_backend.managers.cache_queries.head_to_head_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.head_to_head_queries import get_head_to_head_overall_from_cache
+            from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+                get_head_to_head_overall_from_cache,
+            )
             result = get_head_to_head_overall_from_cache("Manager 1", "Manager 3", {})
 
         # Should handle gracefully even with no matchups
@@ -374,7 +385,9 @@ class TestHeadToHeadQueries:
         mock_matchup_card.return_value = {"year": "2023", "week": "1"}
 
         with patch('patriot_center_backend.managers.cache_queries.head_to_head_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.head_to_head_queries import get_head_to_head_overall_from_cache
+            from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+                get_head_to_head_overall_from_cache,
+            )
             result = get_head_to_head_overall_from_cache(
                 "Manager 1", "Manager 2", {},
                 list_all_matchups=True
@@ -408,7 +421,9 @@ class TestHeadToHeadQueries:
         mock_matchup_card.return_value = {"year": "2023", "week": "1"}
 
         with patch('patriot_center_backend.managers.cache_queries.head_to_head_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.head_to_head_queries import get_head_to_head_overall_from_cache
+            from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+                get_head_to_head_overall_from_cache,
+            )
             result = get_head_to_head_overall_from_cache(
                 "Manager 1", "Manager 2", {},
                 year="2023"
@@ -450,7 +465,9 @@ class TestHeadToHeadQueries:
         mock_matchup_card.return_value = {"year": "2023", "week": "1", "margin": 20.0}
 
         with patch('patriot_center_backend.managers.cache_queries.head_to_head_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.head_to_head_queries import get_head_to_head_overall_from_cache
+            from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+                get_head_to_head_overall_from_cache,
+            )
             result = get_head_to_head_overall_from_cache("Manager 1", "Manager 2", {})
 
         # Should process manager2's wins correctly
@@ -468,7 +485,9 @@ class TestMatchupQueries:
     def test_all_time_stats(self, sample_manager_cache):
         """Test getting all-time matchup stats."""
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_matchup_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_matchup_details_from_cache,
+            )
             result = get_matchup_details_from_cache("Manager 1")
 
         assert result["overall"]["wins"] == 10
@@ -481,7 +500,9 @@ class TestMatchupQueries:
     def test_single_season_stats(self, sample_manager_cache):
         """Test getting stats for a specific season."""
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_matchup_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_matchup_details_from_cache,
+            )
             result = get_matchup_details_from_cache("Manager 1", year="2023")
 
         assert result["overall"]["wins"] == 6
@@ -491,7 +512,9 @@ class TestMatchupQueries:
     def test_manager_with_no_playoffs(self, sample_manager_cache):
         """Test manager who never made playoffs."""
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_matchup_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_matchup_details_from_cache,
+            )
             result = get_matchup_details_from_cache("Manager 3")
 
         assert result["playoffs"]["wins"] == 0
@@ -502,7 +525,9 @@ class TestMatchupQueries:
     def test_win_percentage_calculation(self, sample_manager_cache):
         """Test win percentage is calculated correctly."""
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_matchup_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_matchup_details_from_cache,
+            )
             result = get_matchup_details_from_cache("Manager 2")
 
         # 5 wins out of 16 games (5+10+1) = 31.25%
@@ -511,7 +536,9 @@ class TestMatchupQueries:
     def test_zero_matchups_no_division_by_zero(self, sample_manager_cache):
         """Test that zero matchups doesn't cause division by zero."""
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_matchup_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_matchup_details_from_cache,
+            )
             result = get_matchup_details_from_cache("Manager 3")
 
         assert result["overall"]["win_percentage"] == 0.0
@@ -522,7 +549,9 @@ class TestMatchupQueries:
         original = deepcopy(sample_manager_cache)
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_matchup_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_matchup_details_from_cache,
+            )
             get_matchup_details_from_cache("Manager 1")
 
         assert sample_manager_cache == original
@@ -545,7 +574,9 @@ class TestMatchupQueries:
         }
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         assert len(result["placements"]) == 2
@@ -570,7 +601,9 @@ class TestMatchupQueries:
         }
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             result = get_overall_data_details_from_cache("2023", "Manager 1", {})
 
         assert len(result["placements"]) == 2  # Still returns all-time data
@@ -581,7 +614,9 @@ class TestMatchupQueries:
     def test_manager_with_no_playoff_appearances(self, mock_get_matchup_card, sample_manager_cache):
         """Test manager with no playoff appearances."""
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             result = get_overall_data_details_from_cache("all_time", "Manager 3", {})
 
         assert result["playoff_appearances"] == 0
@@ -607,7 +642,9 @@ class TestMatchupQueries:
         }
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         # Find the call for 2020 - should use week '16'
@@ -629,7 +666,9 @@ class TestMatchupQueries:
         }
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         # All calls should use week '17' since both years are after 2020
@@ -648,7 +687,9 @@ class TestMatchupQueries:
         }
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         # Verify warning was printed for missing opponent
@@ -682,7 +723,9 @@ class TestMatchupQueries:
         }
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         for placement in result["placements"]:
@@ -703,7 +746,9 @@ class TestMatchupQueries:
         }
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             result = get_overall_data_details_from_cache("all_time", "Manager 1", image_urls)
 
         # Verify get_matchup_card was called with the correct parameters
@@ -719,7 +764,9 @@ class TestMatchupQueries:
         original = deepcopy(sample_manager_cache)
 
         with patch('patriot_center_backend.managers.cache_queries.matchup_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.matchup_queries import get_overall_data_details_from_cache
+            from patriot_center_backend.managers.cache_queries.matchup_queries import (
+                get_overall_data_details_from_cache,
+            )
             get_overall_data_details_from_cache("all_time", "Manager 1", {})
 
         assert sample_manager_cache == original
@@ -736,7 +783,9 @@ class TestRankingQueries:
         """Test getting ranking details."""
         with patch('patriot_center_backend.managers.cache_queries.ranking_queries.MANAGER_CACHE', sample_manager_cache), \
              patch('patriot_center_backend.managers.cache_queries.ranking_queries.VALID_OPTIONS_CACHE', valid_options_cache):
-            from patriot_center_backend.managers.cache_queries.ranking_queries import get_ranking_details_from_cache
+            from patriot_center_backend.managers.cache_queries.ranking_queries import (
+                get_ranking_details_from_cache,
+            )
             result = get_ranking_details_from_cache("Manager 1")
 
         # Should return dictionary with rankings
@@ -769,7 +818,9 @@ class TestTransactionQueries:
 
         with patch('patriot_center_backend.managers.cache_queries.transaction_queries.MANAGER_CACHE', sample_manager_cache), \
              patch('patriot_center_backend.managers.cache_queries.transaction_queries.TRANSACTION_IDS_CACHE', transaction_ids_cache):
-            from patriot_center_backend.managers.cache_queries.transaction_queries import get_trade_history_between_two_managers
+            from patriot_center_backend.managers.cache_queries.transaction_queries import (
+                get_trade_history_between_two_managers,
+            )
             result = get_trade_history_between_two_managers("Manager 1", "Manager 2", {})
 
         assert isinstance(result, list)
@@ -784,7 +835,9 @@ class TestTransactionQueries:
         mock_extract.return_value = []
 
         with patch('patriot_center_backend.managers.cache_queries.transaction_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.transaction_queries import get_transaction_details_from_cache
+            from patriot_center_backend.managers.cache_queries.transaction_queries import (
+                get_transaction_details_from_cache,
+            )
             result = get_transaction_details_from_cache(None, "Manager 1", {})
 
         assert result["trades"]["total"] == 5
@@ -797,7 +850,9 @@ class TestTransactionQueries:
         mock_extract.return_value = []
 
         with patch('patriot_center_backend.managers.cache_queries.transaction_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.transaction_queries import get_transaction_details_from_cache
+            from patriot_center_backend.managers.cache_queries.transaction_queries import (
+                get_transaction_details_from_cache,
+            )
             result = get_transaction_details_from_cache("2023", "Manager 1", {})
 
         assert result["trades"]["total"] == 2
@@ -827,7 +882,9 @@ class TestTransactionQueries:
         mock_extract.return_value = []
 
         with patch('patriot_center_backend.managers.cache_queries.transaction_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.transaction_queries import get_transaction_details_from_cache
+            from patriot_center_backend.managers.cache_queries.transaction_queries import (
+                get_transaction_details_from_cache,
+            )
             result = get_transaction_details_from_cache(None, "Manager 1", {})
 
         # Assert FAAB summary was created
@@ -844,7 +901,9 @@ class TestTransactionQueries:
         original = deepcopy(sample_manager_cache)
 
         with patch('patriot_center_backend.managers.cache_queries.transaction_queries.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.cache_queries.transaction_queries import get_transaction_details_from_cache
+            from patriot_center_backend.managers.cache_queries.transaction_queries import (
+                get_transaction_details_from_cache,
+            )
             get_transaction_details_from_cache(None, "Manager 1", {})
 
         assert sample_manager_cache == original

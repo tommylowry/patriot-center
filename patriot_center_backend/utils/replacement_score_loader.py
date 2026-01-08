@@ -11,11 +11,9 @@ Notes:
 - Seed player metadata via load_player_ids to filter and position players.
 - Current season/week is resolved at runtime and weeks are capped by era rules.
 """
-
 from patriot_center_backend.cache import get_cache_manager
-from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
 from patriot_center_backend.constants import LEAGUE_IDS
-
+from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
 
 CACHE_MANAGER = get_cache_manager()
 

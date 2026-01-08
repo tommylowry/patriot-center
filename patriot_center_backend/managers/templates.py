@@ -11,6 +11,7 @@ from patriot_center_backend.cache import get_cache_manager
 CACHE_MANAGER = get_cache_manager()
 MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
 
+
 # faab_template used by both methods
 faab_template = {
     "total_lost_or_gained": 0,

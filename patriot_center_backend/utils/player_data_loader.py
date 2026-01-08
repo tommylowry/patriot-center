@@ -15,12 +15,9 @@ Notes:
 - Import-time cache loading performs I/O and possible network calls.
 - Weeks are capped at 17 (include playoff data).
 """
-
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
-
 from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
-
 
 CACHE_MANAGER = get_cache_manager()
 

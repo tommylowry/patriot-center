@@ -4,8 +4,9 @@ Unit tests for data_exporter module.
 Tests the DataExporter class which provides public API for manager data.
 All tests mock underlying cache_queries functions.
 """
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, MagicMock
 
 
 @pytest.fixture

@@ -3,13 +3,10 @@ Unit tests for templates module.
 
 Tests template initialization with both good and bad scenarios.
 """
-import pytest
-from unittest.mock import patch
 from copy import deepcopy
-from patriot_center_backend.managers.templates import (
-    faab_template,
-    initialize_summary_templates
-)
+from unittest.mock import patch
+
+from patriot_center_backend.managers.templates import faab_template, initialize_summary_templates
 
 
 class TestFaabTemplate:

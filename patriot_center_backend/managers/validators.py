@@ -5,6 +5,13 @@ Validates preconditions, matchup data, and transaction data.
 """
 from typing import Dict, Optional, Callable
 
+from patriot_center_backend.cache import get_cache_manager
+
+
+CACHE_MANAGER = get_cache_manager()
+
+MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
+
 
 class ValidationError(Exception):
     """Raised when validation fails."""
@@ -43,7 +50,7 @@ def validate_caching_preconditions(weekly_roster_ids: Dict[int, str],
     if not week:
         raise ValidationError("Week not set. Cannot cache week data.")
 
-def validate_matchup_data(matchup_data: dict, cache: dict) -> None:
+def validate_matchup_data(matchup_data: dict) -> None:
     """
     Validate matchup data structure and logical consistency.
 
@@ -54,7 +61,6 @@ def validate_matchup_data(matchup_data: dict, cache: dict) -> None:
 
     Args:
         matchup_data: Matchup data containing opponent, result, and points
-        cache: Manager cache for validating opponent existence
 
     Returns:
         Empty string if valid
@@ -73,7 +79,7 @@ def validate_matchup_data(matchup_data: dict, cache: dict) -> None:
     # Validate opponent manager
     if opponent_manager == "":
         return "Warning, no opponent_data in matchup_data"
-    if opponent_manager not in list(cache.keys()):
+    if opponent_manager not in list(MANAGER_CACHE.keys()):
         return f"Warning, {opponent_manager} is an invalid manager"
 
     # Validate points are positive

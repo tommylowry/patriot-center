@@ -5,13 +5,11 @@ Tests the MatchupProcessor class which handles matchup and playoff data processi
 All tests mock API calls and avoid modifying real cache files.
 """
 import pytest
-from unittest.mock import patch, MagicMock
-from copy import deepcopy
-from patriot_center_backend.managers.matchup_processor import MatchupProcessor
+from unittest.mock import patch
 
 
 @pytest.fixture
-def sample_cache():
+def mock_manager_cache():
     """Create a sample cache for testing."""
     return {
         "Manager 1": {
@@ -163,25 +161,34 @@ def sample_cache():
     }
 
 
+@pytest.fixture(autouse=True)
+def patch_caches(mock_manager_cache):
+    with patch('patriot_center_backend.managers.matchup_processor.MANAGER_CACHE', mock_manager_cache):
+        yield
+
+
 @pytest.fixture
-def processor(sample_cache):
-    """Create MatchupProcessor instance."""
-    return MatchupProcessor(cache=sample_cache, playoff_week_start=15)
+def processor(mock_manager_cache):
+    with patch('patriot_center_backend.managers.matchup_processor.MANAGER_CACHE', mock_manager_cache):
+        """Create MatchupProcessor instance."""
+        from patriot_center_backend.managers.matchup_processor import MatchupProcessor
+        return MatchupProcessor(playoff_week_start=15)
 
 
 class TestMatchupProcessorInit:
     """Test MatchupProcessor initialization."""
 
-    def test_init_stores_cache(self, sample_cache):
+    def test_init_stores_init_data(self):
         """Test that __init__ stores cache reference."""
-        processor = MatchupProcessor(cache=sample_cache, playoff_week_start=15)
+        from patriot_center_backend.managers.matchup_processor import MatchupProcessor
+        processor = MatchupProcessor(playoff_week_start=15)
 
-        assert processor._cache == sample_cache
         assert processor._playoff_week_start == 15
 
-    def test_init_sets_default_session_state(self, sample_cache):
+    def test_init_sets_default_session_state(self):
         """Test that __init__ initializes empty session state."""
-        processor = MatchupProcessor(cache=sample_cache, playoff_week_start=15)
+        from patriot_center_backend.managers.matchup_processor import MatchupProcessor
+        processor = MatchupProcessor(playoff_week_start=15)
 
         assert processor._year is None
         assert processor._week is None
@@ -235,135 +242,155 @@ class TestAddMatchupDetailsToCache:
     """Test _add_matchup_details_to_cache method - unit tests calling function directly."""
 
     @patch('patriot_center_backend.managers.matchup_processor.get_season_state')
-    def test_add_matchup_details_updates_weekly_cache(self, mock_season_state, processor):
+    def test_add_matchup_details_updates_weekly_cache(self, mock_season_state, mock_manager_cache):
         """Test _add_matchup_details_to_cache updates weekly matchup data."""
         mock_season_state.return_value = "regular_season"
-        processor._year = "2023"
-        processor._week = "1"
-        processor._playoff_week_start = 15
+        
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import matchup_processor
+            proc = matchup_processor.MatchupProcessor(playoff_week_start=15)
 
-        matchup_data = {
-            "manager": "Manager 1",
-            "opponent_manager": "Manager 2",
-            "points_for": 120.5,
-            "points_against": 100.0,
-            "result": "win"
-        }
+            proc._year = "2023"
+            proc._week = "1"
 
-        processor._add_matchup_details_to_cache(matchup_data)
+            matchup_data = {
+                "manager": "Manager 1",
+                "opponent_manager": "Manager 2",
+                "points_for": 120.5,
+                "points_against": 100.0,
+                "result": "win"
+            }
 
-        # Assert weekly cache was updated
-        weekly_data = processor._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["matchup_data"]
-        assert weekly_data["opponent_manager"] == "Manager 2"
-        assert weekly_data["points_for"] == 120.5
-        assert weekly_data["points_against"] == 100.0
-        assert weekly_data["result"] == "win"
+            proc._add_matchup_details_to_cache(matchup_data)
+
+            # Assert weekly cache was updated
+            weekly_data = matchup_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]["matchup_data"]
+            assert weekly_data["opponent_manager"] == "Manager 2"
+            assert weekly_data["points_for"] == 120.5
+            assert weekly_data["points_against"] == 100.0
+            assert weekly_data["result"] == "win"
 
     @patch('patriot_center_backend.managers.matchup_processor.get_season_state')
-    def test_add_matchup_details_updates_yearly_summary(self, mock_season_state, processor):
+    def test_add_matchup_details_updates_yearly_summary(self, mock_season_state, mock_manager_cache):
         """Test _add_matchup_details_to_cache updates yearly summary stats."""
         mock_season_state.return_value = "regular_season"
-        processor._year = "2023"
-        processor._week = "1"
-        processor._playoff_week_start = 15
+        
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import matchup_processor
+            proc = matchup_processor.MatchupProcessor(playoff_week_start=15)
+        
+            proc._year = "2023"
+            proc._week = "1"
 
-        matchup_data = {
-            "manager": "Manager 1",
-            "opponent_manager": "Manager 2",
-            "points_for": 120.5,
-            "points_against": 100.0,
-            "result": "win"
-        }
+            matchup_data = {
+                "manager": "Manager 1",
+                "opponent_manager": "Manager 2",
+                "points_for": 120.5,
+                "points_against": 100.0,
+                "result": "win"
+            }
 
-        processor._add_matchup_details_to_cache(matchup_data)
+            proc._add_matchup_details_to_cache(matchup_data)
 
-        # Assert yearly overall summary was updated
-        yearly_overall = processor._cache["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]
-        assert yearly_overall["wins"]["total"] == 1
-        assert yearly_overall["wins"]["opponents"]["Manager 2"] == 1
-        assert yearly_overall["points_for"]["total"] == 120.5
-        assert yearly_overall["points_for"]["opponents"]["Manager 2"] == 120.5
-        assert yearly_overall["total_matchups"]["total"] == 1
+            # Assert yearly overall summary was updated
+            yearly_overall = matchup_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]
+            assert yearly_overall["wins"]["total"] == 1
+            assert yearly_overall["wins"]["opponents"]["Manager 2"] == 1
+            assert yearly_overall["points_for"]["total"] == 120.5
+            assert yearly_overall["points_for"]["opponents"]["Manager 2"] == 120.5
+            assert yearly_overall["total_matchups"]["total"] == 1
 
-        # Assert yearly season-state summary was updated
-        yearly_season = processor._cache["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["regular_season"]
-        assert yearly_season["wins"]["total"] == 1
-        assert yearly_season["points_for"]["total"] == 120.5
+            # Assert yearly season-state summary was updated
+            yearly_season = matchup_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["regular_season"]
+            assert yearly_season["wins"]["total"] == 1
+            assert yearly_season["points_for"]["total"] == 120.5
 
     @patch('patriot_center_backend.managers.matchup_processor.get_season_state')
-    def test_add_matchup_details_updates_top_level_summary(self, mock_season_state, processor):
+    def test_add_matchup_details_updates_top_level_summary(self, mock_season_state, mock_manager_cache):
         """Test _add_matchup_details_to_cache updates top-level summary stats."""
         mock_season_state.return_value = "playoffs"
-        processor._year = "2023"
-        processor._week = "15"
-        processor._playoff_week_start = 15
+        
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import matchup_processor
+            proc = matchup_processor.MatchupProcessor(playoff_week_start=15)
+        
+            proc._year = "2023"
+            proc._week = "15"
 
-        matchup_data = {
-            "manager": "Manager 1",
-            "opponent_manager": "Manager 2",
-            "points_for": 150.0,
-            "points_against": 145.5,
-            "result": "win"
-        }
+            matchup_data = {
+                "manager": "Manager 1",
+                "opponent_manager": "Manager 2",
+                "points_for": 150.0,
+                "points_against": 145.5,
+                "result": "win"
+            }
 
-        processor._add_matchup_details_to_cache(matchup_data)
+            proc._add_matchup_details_to_cache(matchup_data)
 
-        # Assert top-level overall summary was updated
-        top_overall = processor._cache["Manager 1"]["summary"]["matchup_data"]["overall"]
-        assert top_overall["wins"]["total"] == 1
-        assert top_overall["points_for"]["total"] == 150.0
+            # Assert top-level overall summary was updated
+            top_overall = matchup_processor.MANAGER_CACHE["Manager 1"]["summary"]["matchup_data"]["overall"]
+            assert top_overall["wins"]["total"] == 1
+            assert top_overall["points_for"]["total"] == 150.0
 
-        # Assert top-level playoff summary was updated
-        top_playoffs = processor._cache["Manager 1"]["summary"]["matchup_data"]["playoffs"]
-        assert top_playoffs["wins"]["total"] == 1
-        assert top_playoffs["points_for"]["total"] == 150.0
+            # Assert top-level playoff summary was updated
+            top_playoffs = matchup_processor.MANAGER_CACHE["Manager 1"]["summary"]["matchup_data"]["playoffs"]
+            assert top_playoffs["wins"]["total"] == 1
+            assert top_playoffs["points_for"]["total"] == 150.0
 
     @patch('patriot_center_backend.managers.matchup_processor.get_season_state')
-    def test_add_matchup_details_handles_loss(self, mock_season_state, processor):
+    def test_add_matchup_details_handles_loss(self, mock_season_state, mock_manager_cache):
         """Test _add_matchup_details_to_cache correctly handles a loss."""
         mock_season_state.return_value = "regular_season"
-        processor._year = "2023"
-        processor._week = "1"
-        processor._playoff_week_start = 15
+        
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import matchup_processor
+            proc = matchup_processor.MatchupProcessor(playoff_week_start=15)
+        
+            proc._year = "2023"
+            proc._week = "1"
 
-        matchup_data = {
-            "manager": "Manager 1",
-            "opponent_manager": "Manager 2",
-            "points_for": 90.0,
-            "points_against": 110.5,
-            "result": "loss"
-        }
+            matchup_data = {
+                "manager": "Manager 1",
+                "opponent_manager": "Manager 2",
+                "points_for": 90.0,
+                "points_against": 110.5,
+                "result": "loss"
+            }
 
-        processor._add_matchup_details_to_cache(matchup_data)
+            proc._add_matchup_details_to_cache(matchup_data)
 
-        # Assert loss was recorded
-        yearly_overall = processor._cache["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]
-        assert yearly_overall["losses"]["total"] == 1
-        assert yearly_overall["losses"]["opponents"]["Manager 2"] == 1
-        assert yearly_overall["wins"]["total"] == 0
+            # Assert loss was recorded
+            yearly_overall = matchup_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]
+            assert yearly_overall["losses"]["total"] == 1
+            assert yearly_overall["losses"]["opponents"]["Manager 2"] == 1
+            assert yearly_overall["wins"]["total"] == 0
 
     @patch('patriot_center_backend.managers.matchup_processor.get_season_state')
-    def test_add_matchup_details_handles_tie(self, mock_season_state, processor):
+    def test_add_matchup_details_handles_tie(self, mock_season_state, mock_manager_cache):
         """Test _add_matchup_details_to_cache correctly handles a tie."""
         mock_season_state.return_value = "regular_season"
-        processor._year = "2023"
-        processor._week = "1"
-        processor._playoff_week_start = 15
+        
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import matchup_processor
+            proc = matchup_processor.MatchupProcessor(playoff_week_start=15)
+        
+            proc._year = "2023"
+            proc._week = "1"
 
-        matchup_data = {
-            "manager": "Manager 1",
-            "opponent_manager": "Manager 2",
-            "points_for": 100.0,
-            "points_against": 100.0,
-            "result": "tie"
-        }
+            matchup_data = {
+                "manager": "Manager 1",
+                "opponent_manager": "Manager 2",
+                "points_for": 100.0,
+                "points_against": 100.0,
+                "result": "tie"
+            }
 
-        processor._add_matchup_details_to_cache(matchup_data)
+            proc._add_matchup_details_to_cache(matchup_data)
 
-        # Assert tie was recorded
-        yearly_overall = processor._cache["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]
-        assert yearly_overall["ties"]["total"] == 1
-        assert yearly_overall["ties"]["opponents"]["Manager 2"] == 1
+            # Assert loss was recorded
+            yearly_overall = matchup_processor.MANAGER_CACHE["Manager 1"]["years"]["2023"]["summary"]["matchup_data"]["overall"]
+            assert yearly_overall["ties"]["total"] == 1
+            assert yearly_overall["ties"]["opponents"]["Manager 2"] == 1
 
     @patch('patriot_center_backend.managers.matchup_processor.get_season_state')
     def test_add_matchup_details_raises_on_invalid_data(self, mock_season_state, processor):
@@ -505,7 +532,7 @@ class TestScrubPlayoffData:
     """Test scrub_playoff_data method."""
 
     @patch('patriot_center_backend.managers.matchup_processor.fetch_sleeper_data')
-    def test_scrub_playoff_data_adds_appearances(self, mock_fetch, processor):
+    def test_scrub_playoff_data_adds_appearances(self, mock_fetch, mock_manager_cache):
         """Test that scrub_playoff_data adds playoff appearances."""
         mock_fetch.return_value = {
             "bracket": [
@@ -513,44 +540,52 @@ class TestScrubPlayoffData:
                 {"r": 1, "m": 2}   # Round 1, matchup 2
             ]
         }
+        
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import matchup_processor
+            proc = matchup_processor.MatchupProcessor(playoff_week_start=15)
 
-        processor.set_session_state(
-            year="2023",
-            week="15",
-            weekly_roster_ids={1: "Manager 1", 2: "Manager 2"},
-            playoff_roster_ids={"round_roster_ids": [1, 2]},
-            playoff_week_start=15
-        )
+            proc.set_session_state(
+                year="2023",
+                week="15",
+                weekly_roster_ids={1: "Manager 1", 2: "Manager 2"},
+                playoff_roster_ids={"round_roster_ids": [1, 2]},
+                playoff_week_start=15
+            )
 
-        processor.scrub_playoff_data()
+            proc.scrub_playoff_data()
 
-        # Check that playoff appearances were added
-        assert "2023" in processor._cache["Manager 1"]["summary"]["overall_data"]["playoff_appearances"]
-        assert "2023" in processor._cache["Manager 2"]["summary"]["overall_data"]["playoff_appearances"]
+            # Check that playoff appearances were added
+            assert "2023" in matchup_processor.MANAGER_CACHE["Manager 1"]["summary"]["overall_data"]["playoff_appearances"]
+            assert "2023" in matchup_processor.MANAGER_CACHE["Manager 2"]["summary"]["overall_data"]["playoff_appearances"]
 
     @patch('patriot_center_backend.managers.matchup_processor.fetch_sleeper_data')
-    def test_scrub_playoff_data_skips_duplicates(self, mock_fetch, processor):
+    def test_scrub_playoff_data_skips_duplicates(self, mock_fetch, mock_manager_cache):
         """Test that duplicate playoff appearances are not added."""
         # Pre-populate with existing playoff appearance
-        processor._cache["Manager 1"]["summary"]["overall_data"]["playoff_appearances"].append("2023")
+        mock_manager_cache["Manager 1"]["summary"]["overall_data"]["playoff_appearances"].append("2023")
 
         mock_fetch.return_value = {
             "bracket": [{"r": 1, "m": 1}]
         }
 
-        processor.set_session_state(
-            year="2023",
-            week="15",
-            weekly_roster_ids={1: "Manager 1"},
-            playoff_roster_ids={"round_roster_ids": [1]},
-            playoff_week_start=15
-        )
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import matchup_processor
+            proc = matchup_processor.MatchupProcessor(playoff_week_start=15)
 
-        processor.scrub_playoff_data()
+            proc.set_session_state(
+                year="2023",
+                week="15",
+                weekly_roster_ids={1: "Manager 1"},
+                playoff_roster_ids={"round_roster_ids": [1]},
+                playoff_week_start=15
+            )
 
-        # Should still only have one appearance
-        appearances = processor._cache["Manager 1"]["summary"]["overall_data"]["playoff_appearances"]
-        assert appearances.count("2023") == 1
+            proc.scrub_playoff_data()
+
+            # Should still only have one appearance
+            appearances = matchup_processor.MANAGER_CACHE["Manager 1"]["summary"]["overall_data"]["playoff_appearances"]
+            assert appearances.count("2023") == 1
 
 
 class TestCacheModification:
@@ -558,27 +593,35 @@ class TestCacheModification:
 
     @patch('patriot_center_backend.managers.matchup_processor.fetch_sleeper_data')
     @patch('patriot_center_backend.managers.matchup_processor.get_season_state')
-    def test_processor_modifies_cache_in_place(self, mock_season_state, mock_fetch, sample_cache):
+    def test_processor_modifies_cache_in_place(self, mock_season_state, mock_fetch, mock_manager_cache):
         """Test that processor modifies the cache that was passed in."""
+
+        @pytest.fixture()
+        def patch_caches():
+            yield
+        
         mock_season_state.return_value = "regular_season"
         mock_fetch.return_value = [
             {"matchup_id": 1, "roster_id": 1, "points": 120.5, "players": []},
             {"matchup_id": 1, "roster_id": 2, "points": 100.0, "players": []}
         ]
 
-        original_cache = sample_cache
-        processor = MatchupProcessor(cache=sample_cache, playoff_week_start=15)
+        with patch('patriot_center_backend.managers.matchup_processor.MANAGER_CACHE', mock_manager_cache):
+            from patriot_center_backend.managers import matchup_processor
 
-        processor.set_session_state(
-            year="2023",
-            week="1",
-            weekly_roster_ids={1: "Manager 1", 2: "Manager 2"},
-            playoff_roster_ids={},
-            playoff_week_start=15
-        )
+            original_cache = mock_manager_cache
+            proc = matchup_processor.MatchupProcessor(playoff_week_start=15)
 
-        processor.scrub_matchup_data("2023", "1")
+            proc.set_session_state(
+                year="2023",
+                week="1",
+                weekly_roster_ids={1: "Manager 1", 2: "Manager 2"},
+                playoff_roster_ids={},
+                playoff_week_start=15
+            )
 
-        # Verify cache was modified (same object reference)
-        assert processor._cache is original_cache
-        assert original_cache["Manager 1"]["summary"]["matchup_data"]["overall"]["wins"]["total"] == 1
+            proc.scrub_matchup_data("2023", "1")
+
+            # Verify cache was modified (same object reference)
+            assert matchup_processor.MANAGER_CACHE is original_cache
+            assert original_cache["Manager 1"]["summary"]["matchup_data"]["overall"]["wins"]["total"] == 1

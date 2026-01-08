@@ -196,6 +196,9 @@ def get_current_manager_image_url(manager: str, image_urls: dict) -> str:
 
     user_id = MANAGER_CACHE.get(manager, {}).get("summary", {}).get("user_id", "")
 
+    if user_id == "":
+        raise ValueError(f"Manager {manager} does not have a user_id in MANAGER_CACHE.")
+
     user_payload = fetch_sleeper_data(f"user/{user_id}")
     if user_payload and "user_id" in user_payload:
         image_urls[manager] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"

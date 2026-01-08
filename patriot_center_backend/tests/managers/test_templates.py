@@ -4,10 +4,10 @@ Unit tests for templates module.
 Tests template initialization with both good and bad scenarios.
 """
 import pytest
+from unittest.mock import patch
 from copy import deepcopy
 from patriot_center_backend.managers.templates import (
     faab_template,
-    initialize_faab_template,
     initialize_summary_templates
 )
 
@@ -45,7 +45,7 @@ class TestInitializeFaabTemplate:
         manager = "Manager 1"
         year = "2023"
         week = "1"
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "summary": {
                     "transactions": {}
@@ -65,27 +65,30 @@ class TestInitializeFaabTemplate:
             }
         }
 
-        result = initialize_faab_template(manager, year, week, cache)
+        with patch('patriot_center_backend.managers.templates.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers import templates
 
-        # Top-level summary
-        assert "faab" in result[manager]["summary"]["transactions"]
-        assert result[manager]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 0
+            templates.initialize_faab_template(manager, year, week)
 
-        # Yearly summary
-        assert "faab" in result[manager]["years"][year]["summary"]["transactions"]
-        assert result[manager]["years"][year]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 0
+            # Top-level summary
+            assert "faab" in templates.MANAGER_CACHE[manager]["summary"]["transactions"]
+            assert templates.MANAGER_CACHE[manager]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 0
 
-        # Weekly summary
-        assert "faab" in result[manager]["years"][year]["weeks"][week]["transactions"]
-        assert "transaction_ids" in result[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
-        assert result[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"] == []
+            # Yearly summary
+            assert "faab" in templates.MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]
+            assert templates.MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 0
+
+            # Weekly summary
+            assert "faab" in templates.MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]
+            assert "transaction_ids" in templates.MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
+            assert templates.MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"] == []
 
     def test_skip_existing_top_level_faab(self):
         """Test that existing top-level FAAB is not overwritten."""
         manager = "Manager 1"
         year = "2023"
         week = "1"
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "summary": {
                     "transactions": {
@@ -110,18 +113,21 @@ class TestInitializeFaabTemplate:
             }
         }
 
-        result = initialize_faab_template(manager, year, week, cache)
+        with patch('patriot_center_backend.managers.templates.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers import templates
 
-        # Existing FAAB should be preserved
-        assert result[manager]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 50
-        assert "Player A" in result[manager]["summary"]["transactions"]["faab"]["players"]
+            templates.initialize_faab_template(manager, year, week)
+
+            # Existing FAAB should be preserved
+            assert templates.MANAGER_CACHE[manager]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 50
+            assert "Player A" in templates.MANAGER_CACHE[manager]["summary"]["transactions"]["faab"]["players"]
 
     def test_skip_existing_yearly_faab(self):
         """Test that existing yearly FAAB is not overwritten."""
         manager = "Manager 1"
         year = "2023"
         week = "1"
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "summary": {
                     "transactions": {}
@@ -146,17 +152,22 @@ class TestInitializeFaabTemplate:
             }
         }
 
-        result = initialize_faab_template(manager, year, week, cache)
+        
 
-        # Existing yearly FAAB should be preserved
-        assert result[manager]["years"][year]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 30
+        with patch('patriot_center_backend.managers.templates.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers import templates
+
+            templates.initialize_faab_template(manager, year, week)
+
+            # Existing yearly FAAB should be preserved
+            assert templates.MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 30
 
     def test_skip_existing_weekly_faab(self):
         """Test that existing weekly FAAB is not overwritten."""
         manager = "Manager 1"
         year = "2023"
         week = "1"
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "summary": {
                     "transactions": {}
@@ -181,18 +192,21 @@ class TestInitializeFaabTemplate:
             }
         }
 
-        result = initialize_faab_template(manager, year, week, cache)
+        with patch('patriot_center_backend.managers.templates.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers import templates
 
-        # Existing weekly FAAB should be preserved
-        assert result[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["total_lost_or_gained"] == 20
-        assert len(result[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"]) == 2
+            templates.initialize_faab_template(manager, year, week)
+
+            # Existing weekly FAAB should be preserved
+            assert templates.MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["total_lost_or_gained"] == 20
+            assert len(templates.MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"]) == 2
 
     def test_weekly_template_has_transaction_ids(self):
         """Test that weekly FAAB template includes transaction_ids."""
         manager = "Manager 1"
         year = "2023"
         week = "1"
-        cache = {
+        manager_cache = {
             "Manager 1": {
                 "summary": {
                     "transactions": {}
@@ -212,12 +226,15 @@ class TestInitializeFaabTemplate:
             }
         }
 
-        result = initialize_faab_template(manager, year, week, cache)
+        with patch('patriot_center_backend.managers.templates.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers import templates
 
-        # Weekly should have transaction_ids, but top-level and yearly should not
-        assert "transaction_ids" in result[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
-        assert "transaction_ids" not in result[manager]["summary"]["transactions"]["faab"]
-        assert "transaction_ids" not in result[manager]["years"][year]["summary"]["transactions"]["faab"]
+            templates.initialize_faab_template(manager, year, week)
+
+            # Weekly should have transaction_ids, but top-level and yearly should not
+            assert "transaction_ids" in templates.MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
+            assert "transaction_ids" not in templates.MANAGER_CACHE[manager]["summary"]["transactions"]["faab"]
+            assert "transaction_ids" not in templates.MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["faab"]
 
 
 class TestInitializeSummaryTemplates:

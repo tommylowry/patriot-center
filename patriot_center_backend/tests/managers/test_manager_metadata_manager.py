@@ -397,15 +397,15 @@ class TestGetManagerAwards:
 class TestSave:
     """Test save method."""
 
-    def test_save_writes_all_caches(self, manager):
+    def test_save_writes_all_caches(self):
         """Test that save writes all caches to disk."""
 
         with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {"Manager 1": {}}), \
              patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER', MagicMock()):
             from patriot_center_backend.managers import manager_metadata_manager
-            save_writes_all_caches_manager = manager_metadata_manager.ManagerMetadataManager()
+            mgr = manager_metadata_manager.ManagerMetadataManager()
             
-            save_writes_all_caches_manager.save()
+            mgr.save()
 
             assert manager_metadata_manager.CACHE_MANAGER.save_all_caches.called
 
@@ -414,112 +414,139 @@ class TestSetDefaultsIfMissing:
     """Test _set_defaults_if_missing method - unit tests calling function directly."""
 
     @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_creates_manager_entry(self, mock_season_state, manager):
+    def test_set_defaults_creates_manager_entry(self, mock_season_state):
         """Test _set_defaults_if_missing creates manager entry if not exists."""
         mock_season_state.return_value = "regular_season"
-        manager._year = "2023"
-        manager._week = "1"
-        manager._use_faab = True
-        manager._playoff_week_start = 15
-        manager._playoff_roster_ids = []
-        manager._weekly_roster_ids[1] = "Manager 1"
 
-        # Call directly
-        manager._set_defaults_if_missing(1)
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
+            from patriot_center_backend.managers import manager_metadata_manager
+            mgr = manager_metadata_manager.ManagerMetadataManager()
 
-        # Should create manager entry
-        assert "Manager 1" in manager._cache
-        assert "summary" in manager._cache["Manager 1"]
-        assert "years" in manager._cache["Manager 1"]
+            mgr._year = "2023"
+            mgr._week = "1"
+            mgr._use_faab = False
+            mgr._playoff_week_start = 15
+            mgr._playoff_roster_ids = []
+            mgr._weekly_roster_ids[1] = "Manager 1"
+            
+            # Call directly
+            mgr._set_defaults_if_missing(1)
+
+            # Should create manager entry
+            assert "Manager 1" in manager_metadata_manager.MANAGER_CACHE
+            assert "summary" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]
+            assert "years" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]
 
     @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_creates_year_entry(self, mock_season_state, manager):
+    def test_set_defaults_creates_year_entry(self, mock_season_state):
         """Test _set_defaults_if_missing creates year entry if not exists."""
         mock_season_state.return_value = "regular_season"
-        manager._year = "2023"
-        manager._week = "1"
-        manager._use_faab = True
-        manager._playoff_week_start = 15
-        manager._playoff_roster_ids = []
-        manager._weekly_roster_ids[1] = "Manager 1"
+        
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
+            from patriot_center_backend.managers import manager_metadata_manager
+            mgr = manager_metadata_manager.ManagerMetadataManager()
 
-        # Call directly
-        manager._set_defaults_if_missing(1)
+            mgr._year = "2023"
+            mgr._week = "1"
+            mgr._use_faab = False
+            mgr._playoff_week_start = 15
+            mgr._playoff_roster_ids = []
+            mgr._weekly_roster_ids[1] = "Manager 1"
+            
+            # Call directly
+            mgr._set_defaults_if_missing(1)
 
-        # Should create year entry
-        assert "2023" in manager._cache["Manager 1"]["years"]
-        assert "summary" in manager._cache["Manager 1"]["years"]["2023"]
-        assert "weeks" in manager._cache["Manager 1"]["years"]["2023"]
+            # Should create year entry
+            assert "2023" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]
+            assert "summary" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]
+            assert "weeks" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]
 
     @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_creates_week_entry(self, mock_season_state, manager):
+    def test_set_defaults_creates_week_entry(self, mock_season_state):
         """Test _set_defaults_if_missing creates week entry with correct template."""
         mock_season_state.return_value = "regular_season"
-        manager._year = "2023"
-        manager._week = "1"
-        manager._use_faab = True
-        manager._playoff_week_start = 15
-        manager._playoff_roster_ids = []
-        manager._weekly_roster_ids[1] = "Manager 1"
 
-        # Call directly
-        manager._set_defaults_if_missing(1)
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
+            from patriot_center_backend.managers import manager_metadata_manager
+            mgr = manager_metadata_manager.ManagerMetadataManager()
+            
+            mgr._year = "2023"
+            mgr._week = "1"
+            mgr._use_faab = False
+            mgr._playoff_week_start = 15
+            mgr._playoff_roster_ids = []
+            mgr._weekly_roster_ids[1] = "Manager 1"
 
-        # Should create week entry with matchup_data
-        assert "1" in manager._cache["Manager 1"]["years"]["2023"]["weeks"]
-        assert "matchup_data" in manager._cache["Manager 1"]["years"]["2023"]["weeks"]["1"]
+            # Call directly
+            mgr._set_defaults_if_missing(1)
+
+            # Should create week entry with matchup_data
+            assert "1" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]
+            assert "matchup_data" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]
 
     @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_uses_playoff_template_when_not_in_playoffs(self, mock_season_state, manager):
+    def test_set_defaults_uses_playoff_template_when_not_in_playoffs(self, mock_season_state):
         """Test _set_defaults_if_missing uses playoff template for non-playoff teams."""
         mock_season_state.return_value = "playoffs"
-        manager._year = "2023"
-        manager._week = "15"
-        manager._use_faab = True
-        manager._playoff_week_start = 15
-        manager._playoff_roster_ids = [2, 3]  # Roster 1 is NOT in playoffs
-        manager._weekly_roster_ids[1] = "Manager 1"
 
-        # Call directly
-        manager._set_defaults_if_missing(1)
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
+            from patriot_center_backend.managers import manager_metadata_manager
+            mgr = manager_metadata_manager.ManagerMetadataManager()
+            
+            mgr._year = "2023"
+            mgr._week = "15"
+            mgr._use_faab = False
+            mgr._playoff_week_start = 15
+            mgr._playoff_roster_ids = [2, 3]
+            mgr._weekly_roster_ids[1] = "Manager 1"
 
-        # Should use weekly_summary_not_in_playoffs_template (empty matchup_data)
-        week_data = manager._cache["Manager 1"]["years"]["2023"]["weeks"]["15"]
-        assert week_data["matchup_data"] == {}
+            # Call directly
+            mgr._set_defaults_if_missing(1)
+
+            # Should use weekly_summary_not_in_playoffs_template (empty matchup_data)
+            week_data = manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["15"]
+            assert week_data["matchup_data"] == {}
 
     @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_skips_existing_entries(self, mock_season_state, manager):
+    def test_set_defaults_skips_existing_entries(self, mock_season_state):
         """Test _set_defaults_if_missing does not overwrite existing data."""
         from patriot_center_backend.managers.templates import initialize_summary_templates
 
-        mock_season_state.return_value = "regular_season"
-        manager._year = "2023"
-        manager._week = "1"
-        manager._use_faab = True
-        manager._playoff_week_start = 15
-        manager._playoff_roster_ids = []
-        manager._weekly_roster_ids[1] = "Manager 1"
-
         # Initialize with proper template structure plus custom data
         templates = initialize_summary_templates(use_faab=True)
-        manager._cache["Manager 1"] = {
-            "existing": "data",
-            "summary": templates['top_level_summary_template'],
-            "years": {}
+        manager_cache = {
+            "Manager 1": {
+                "existing": "data",
+                "summary": templates['top_level_summary_template'],
+                "years": {}
+            }
         }
 
-        # Call directly
-        manager._set_defaults_if_missing(1)
+        mock_season_state.return_value = "regular_season"
+        
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', manager_cache):
+            from patriot_center_backend.managers import manager_metadata_manager
+            mgr = manager_metadata_manager.ManagerMetadataManager()
+            
+            mgr._year = "2023"
+            mgr._week = "1"
+            mgr._use_faab = False
+            mgr._playoff_week_start = 15
+            mgr._playoff_roster_ids = [2, 3]
+            mgr._weekly_roster_ids[1] = "Manager 1"
 
-        # Should not overwrite existing key
-        assert manager._cache["Manager 1"]["existing"] == "data"
+            # Call directly
+            mgr._set_defaults_if_missing(1)
+
+            # Should not overwrite existing key
+            assert manager_metadata_manager.MANAGER_CACHE["Manager 1"]["existing"] == "data"
 
     @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
     @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
     def test_set_defaults_initializes_faab_when_enabled(self, mock_init_faab, mock_season_state, manager):
         """Test _set_defaults_if_missing initializes FAAB template when FAAB is enabled."""
         mock_season_state.return_value = "regular_season"
-        mock_init_faab.return_value = manager._cache
+        mock_init_faab.return_value = None
 
         manager._year = "2023"
         manager._week = "1"
@@ -533,7 +560,7 @@ class TestSetDefaultsIfMissing:
 
         # Should call initialize_faab_template
         assert mock_init_faab.called
-        mock_init_faab.assert_called_once_with("Manager 1", "2023", "1", manager._cache)
+        mock_init_faab.assert_called_once_with("Manager 1", "2023", "1")
 
 
 class TestCacheIntegrity:
@@ -544,16 +571,20 @@ class TestCacheIntegrity:
     def test_cache_references_are_consistent(self, mock_fetch, manager):
         """Test that cache references remain consistent."""
         mock_fetch.side_effect = [
-            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"settings": {"waiver_type": 1, "playoff_week_start": 15}},
             {"user_id": "user123"}
         ]
 
-        original_cache = manager._cache
+        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
+            from patriot_center_backend.managers import manager_metadata_manager
+            mgr = manager_metadata_manager.ManagerMetadataManager()
 
-        manager.set_roster_id("Manager 1", "2023", "1", 1)
+            original_cache = manager_metadata_manager.MANAGER_CACHE
 
-        # Cache reference should not change
-        assert manager._cache is original_cache
+            mgr.set_roster_id("Manager 1", "2023", "1", 1)
+
+            # Cache reference should not change
+            assert manager_metadata_manager.MANAGER_CACHE is original_cache
 
 
 class TestClearWeeklyMetadata:

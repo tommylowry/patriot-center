@@ -34,7 +34,7 @@ faab_template = {
     }
 }
 
-def initialize_faab_template(manager: str, year: str, week: str) -> dict:
+def initialize_faab_template(manager: str, year: str, week: str) -> None:
     """
     Initialize FAAB template for a specific year/week.
     

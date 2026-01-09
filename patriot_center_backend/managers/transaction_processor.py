@@ -57,7 +57,7 @@ class TransactionProcessor:
         self._year: Optional[str] = None
         self._week: Optional[str] = None
         self._weekly_roster_ids: Dict[int, str] = {}
-        self._weekly_transaction_ids: List[Dict[str, Any]] = []
+        self._weekly_transaction_ids: List[str] = []
     
     def set_session_state(self, year: str, week: str, weekly_roster_ids: Dict[int, str], use_faab: bool) -> None:
         """

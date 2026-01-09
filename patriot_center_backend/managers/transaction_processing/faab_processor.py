@@ -1,8 +1,4 @@
-from patriot_center_backend.cache import get_cache_manager
-
-CACHE_MANAGER = get_cache_manager()
-
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
+from patriot_center_backend.cache import CACHE_MANAGER
 
 
 def add_faab_details_to_cache(year: str, week: str,
@@ -35,15 +31,15 @@ def add_faab_details_to_cache(year: str, week: str,
     if transaction_type == "trade" and trade_partner is None:
         print("Trade transaction missing trade partner for FAAB processing:", transaction_type, manager, player_name, faab_amount, transaction_id)
         return
+    
+    manager_cache = CACHE_MANAGER.get_manager_cache()
 
-    if transaction_id in MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"]:
-        # Waiver already processed for this week
-        return
+    if transaction_id in manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"]:
+        return # Waiver already processed for this week
     
-    
-    top_level_summary = MANAGER_CACHE[manager]["summary"]["transactions"]["faab"]
-    yearly_summary = MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["faab"]
-    weekly_summary = MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
+    top_level_summary = manager_cache[manager]["summary"]["transactions"]["faab"]
+    yearly_summary    = manager_cache[manager]["years"][year]["summary"]["transactions"]["faab"]
+    weekly_summary    = manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
     summaries = [top_level_summary, yearly_summary, weekly_summary]
 
     if transaction_type in ["free_agent", "waiver", "commissioner"]:

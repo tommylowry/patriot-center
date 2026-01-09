@@ -18,11 +18,9 @@ Notes:
 from decimal import Decimal
 from functools import lru_cache
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.services.managers import fetch_starters
 from patriot_center_backend.utils import helpers
-
-CACHE_MANAGER = get_cache_manager()
 
 PLAYERS_CACHE     = CACHE_MANAGER.get_players_cache()
 PLAYER_DATA_CACHE = CACHE_MANAGER.get_player_data_cache()

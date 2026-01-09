@@ -7,11 +7,9 @@ draft pick parsing, and player cache management.
 from copy import deepcopy
 from typing import Any, Dict
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
-
-CACHE_MANAGER = get_cache_manager()
 
 MANAGER_CACHE    = CACHE_MANAGER.get_manager_cache()
 PLAYERS_CACHE    = CACHE_MANAGER.get_players_cache()

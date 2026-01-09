@@ -1,8 +1,8 @@
 
 from copy import deepcopy
-from typing import Any, Dict, List
+from typing import List
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.managers.transaction_processing.faab_processor import (
     add_faab_details_to_cache,
 )
@@ -10,12 +10,6 @@ from patriot_center_backend.managers.transaction_processing.transaction_id_proce
     add_to_transaction_ids,
 )
 from patriot_center_backend.managers.utilities import update_players_cache
-
-CACHE_MANAGER = get_cache_manager()
-
-PLAYER_IDS_CACHE = CACHE_MANAGER.get_player_ids_cache()
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
-TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
 
 
 def process_add_or_drop_transaction(year: str, week: str, transaction: dict,
@@ -48,12 +42,14 @@ def process_add_or_drop_transaction(year: str, week: str, transaction: dict,
         print("Waiver transaction with no adds or drops:", transaction)
         return
     
+    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+    
     if adds:
         for player_id in adds:
             roster_id = adds[player_id]
             
             manager = roster_ids.get(roster_id, None)
-            player_name = PLAYER_IDS_CACHE.get(player_id, {}).get("full_name", "unknown_player")
+            player_name = player_ids_cache.get(player_id, {}).get("full_name", "unknown_player")
             
             transaction_id = transaction.get("transaction_id", "")
 
@@ -63,7 +59,7 @@ def process_add_or_drop_transaction(year: str, week: str, transaction: dict,
                 waiver_bid = transaction.get("settings", {}).get("waiver_bid", None)
             add_add_or_drop_details_to_cache(year, week, weekly_transaction_ids, "add",
                                              manager, player_name, transaction_id,
-                                             commish_action, waiver_bid)
+                                             commish_action, use_faab, waiver_bid)
             update_players_cache(player_id)
             
             # add FAAB details to the cache
@@ -78,18 +74,19 @@ def process_add_or_drop_transaction(year: str, week: str, transaction: dict,
             roster_id = drops[player_id]
             
             manager = roster_ids.get(roster_id, None)
-            player_name = PLAYER_IDS_CACHE.get(player_id, {}).get("full_name", "unknown_player")
+            player_name = player_ids_cache.get(player_id, {}).get("full_name", "unknown_player")
             
             transaction_id = transaction.get("transaction_id", "")
 
             # add drop details to the cache
             add_add_or_drop_details_to_cache(year, week, weekly_transaction_ids, "drop",
-                                             manager, player_name, transaction_id, commish_action)
+                                             manager, player_name, transaction_id,
+                                             commish_action, use_faab)
             update_players_cache(player_id)
 
 def add_add_or_drop_details_to_cache(year: str, week: str, weekly_transaction_ids: List[str],
                                      free_agent_type: str, manager: str, player_name: str,
-                                     transaction_id: str, commish_action: bool,
+                                     transaction_id: str, commish_action: bool, use_faab: bool,
                                      waiver_bid: int|None = None) -> None:
     """
     Update cache with add or drop details at all aggregation levels.
@@ -107,12 +104,15 @@ def add_add_or_drop_details_to_cache(year: str, week: str, weekly_transaction_id
         player_name: Full player name
         transaction_id: Unique transaction ID
         commish_action: Whether this is a commissioner action
+        use_faab: Whether faab was used that season
         waiver_bid: FAAB amount bid (for adds only)
     """
     if free_agent_type not in ["add", "drop"]:
         return
+    
+    manager_cache = CACHE_MANAGER.get_manager_cache()
 
-    if transaction_id in MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"][f"{free_agent_type}s"]["transaction_ids"]:
+    if transaction_id in manager_cache[manager]["years"][year]["weeks"][week]["transactions"][f"{free_agent_type}s"]["transaction_ids"]:
         # Add already processed for this week
         return
     
@@ -124,11 +124,11 @@ def add_add_or_drop_details_to_cache(year: str, week: str, weekly_transaction_id
         "transaction_id": transaction_id,
         "waiver_bid": waiver_bid
     }
-    add_to_transaction_ids(year, week, transaction_info, weekly_transaction_ids, commish_action)
+    add_to_transaction_ids(year, week, transaction_info, weekly_transaction_ids, commish_action, use_faab)
     
-    top_level_summary = MANAGER_CACHE[manager]["summary"]["transactions"][f"{free_agent_type}s"]
-    yearly_summary = MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"][f"{free_agent_type}s"]
-    weekly_summary = MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"][f"{free_agent_type}s"]
+    top_level_summary = manager_cache[manager]["summary"]["transactions"][f"{free_agent_type}s"]
+    yearly_summary    = manager_cache[manager]["years"][year]["summary"]["transactions"][f"{free_agent_type}s"]
+    weekly_summary    = manager_cache[manager]["years"][year]["weeks"][week]["transactions"][f"{free_agent_type}s"]
     summaries = [top_level_summary, yearly_summary, weekly_summary]
     
     # Add add details in all summaries
@@ -142,7 +142,7 @@ def add_add_or_drop_details_to_cache(year: str, week: str, weekly_transaction_id
     weekly_summary["transaction_ids"].append(transaction_id)
 
 def revert_add_drop_transaction(transaction_id: str, transaction_type: str,
-                                weekly_transaction_ids: List[Dict[str, Any]]) -> bool:
+                                weekly_transaction_ids: List[str]) -> bool:
     """
     Revert a specific add or drop from a transaction (used for commissioner reversals).
 
@@ -162,8 +162,11 @@ def revert_add_drop_transaction(transaction_id: str, transaction_type: str,
     if transaction_type != "add" and transaction_type != "drop":
         print(f"Cannot revert type {transaction_type} in _revert_add_or_drop_transaction for transaction_id {transaction_id}")
         return
+    
+    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
+    manager_cache         = CACHE_MANAGER.get_manager_cache()
 
-    transaction = deepcopy(TRANSACTION_IDS_CACHE[transaction_id])
+    transaction = deepcopy(transaction_ids_cache[transaction_id])
 
     year    = transaction['year']
     week    = transaction['week']
@@ -174,9 +177,9 @@ def revert_add_drop_transaction(transaction_id: str, transaction_type: str,
         raise Exception(f"Weird {transaction_type} with multiple managers")
     
     places_to_change = []
-    places_to_change.append(MANAGER_CACHE[manager]['summary']['transactions'][f"{transaction_type}s"])
-    places_to_change.append(MANAGER_CACHE[manager]['years'][year]['summary']['transactions'][f"{transaction_type}s"])
-    places_to_change.append(MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions'][f"{transaction_type}s"])
+    places_to_change.append(manager_cache[manager]['summary']['transactions'][f"{transaction_type}s"])
+    places_to_change.append(manager_cache[manager]['years'][year]['summary']['transactions'][f"{transaction_type}s"])
+    places_to_change.append(manager_cache[manager]['years'][year]['weeks'][week]['transactions'][f"{transaction_type}s"])
 
     for d in places_to_change:
 
@@ -189,13 +192,13 @@ def revert_add_drop_transaction(transaction_id: str, transaction_type: str,
 
     # If this transaction had faab spent and the transaction to remove is add, remove the transaction id from the faab spent portion.
     if "faab_spent" in transaction and transaction_type == "add":
-        if transaction_id in MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions']['faab']['transaction_ids']:
-            MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions']['faab']['transaction_ids'].remove(transaction_id)
+        if transaction_id in manager_cache[manager]['years'][year]['weeks'][week]['transactions']['faab']['transaction_ids']:
+            manager_cache[manager]['years'][year]['weeks'][week]['transactions']['faab']['transaction_ids'].remove(transaction_id)
         
         places_to_change = []
-        places_to_change.append(MANAGER_CACHE[manager]['summary']['transactions']["faab"])
-        places_to_change.append(MANAGER_CACHE[manager]['years'][year]['summary']['transactions']["faab"])
-        places_to_change.append(MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions']["faab"])
+        places_to_change.append(manager_cache[manager]['summary']['transactions']["faab"])
+        places_to_change.append(manager_cache[manager]['years'][year]['summary']['transactions']["faab"])
+        places_to_change.append(manager_cache[manager]['years'][year]['weeks'][week]['transactions']["faab"])
 
         for d in places_to_change:
                 
@@ -205,13 +208,13 @@ def revert_add_drop_transaction(transaction_id: str, transaction_type: str,
     
 
     # remove the transaction_type portion of this transaction and keep it intact incase there was a the other type involved
-    del TRANSACTION_IDS_CACHE[transaction_id][transaction_type]
-    TRANSACTION_IDS_CACHE[transaction_id]['types'].remove(transaction_type)
-    TRANSACTION_IDS_CACHE[transaction_id]['players_involved'].remove(player)
+    del transaction_ids_cache[transaction_id][transaction_type]
+    transaction_ids_cache[transaction_id]['types'].remove(transaction_type)
+    transaction_ids_cache[transaction_id]['players_involved'].remove(player)
 
     # this was the only data in the transaction so it can be fully removed
-    if len(TRANSACTION_IDS_CACHE[transaction_id]['types']) == 0:
-        del TRANSACTION_IDS_CACHE[transaction_id]
+    if len(transaction_ids_cache[transaction_id]['types']) == 0:
+        del transaction_ids_cache[transaction_id]
         if transaction_id in weekly_transaction_ids:
             weekly_transaction_ids.remove(transaction_id)
         return True # return True if transaction_id was deleted

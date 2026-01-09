@@ -1,7 +1,7 @@
 from copy import deepcopy
-from typing import Any, Dict, List
+from typing import Dict, List
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.managers.transaction_processing.faab_processor import (
     add_faab_details_to_cache,
 )
@@ -9,12 +9,6 @@ from patriot_center_backend.managers.transaction_processing.transaction_id_proce
     add_to_transaction_ids,
 )
 from patriot_center_backend.managers.utilities import draft_pick_decipher, update_players_cache
-
-CACHE_MANAGER = get_cache_manager()
-
-MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
-PLAYER_IDS_CACHE      = CACHE_MANAGER.get_player_ids_cache()
-TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
 
 
 def process_trade_transaction(year: str, week: str, transaction: dict,
@@ -41,6 +35,8 @@ def process_trade_transaction(year: str, week: str, transaction: dict,
         commish_action: Whether this is a commissioner-forced trade
         use_faab: Whether FAAB is used
     """
+    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+
     for roster_id in transaction.get("roster_ids", []):
         manager = roster_ids.get(roster_id, None)
 
@@ -55,7 +51,7 @@ def process_trade_transaction(year: str, week: str, transaction: dict,
         if "adds" in transaction and transaction["adds"] != None:
             for player_id in transaction.get("adds", {}):
                 if transaction["adds"][player_id] == roster_id:
-                    player_name = PLAYER_IDS_CACHE.get(player_id, {}).get("full_name", "unknown_player")
+                    player_name = player_ids_cache.get(player_id, {}).get("full_name", "unknown_player")
                     acquired[player_name] = roster_ids.get(transaction["drops"][player_id], "unknown_manager")
                     update_players_cache(player_id)
         
@@ -64,7 +60,7 @@ def process_trade_transaction(year: str, week: str, transaction: dict,
         if "drops" in transaction and transaction["drops"] != None:
             for player_id in transaction.get("drops", {}):
                 if transaction["drops"][player_id] == roster_id:
-                    player_name = PLAYER_IDS_CACHE.get(player_id, {}).get("full_name", "unknown_player")
+                    player_name = player_ids_cache.get(player_id, {}).get("full_name", "unknown_player")
                     sent[player_name] = roster_ids.get(transaction["adds"][player_id], "unknown_manager")
                     update_players_cache(player_id)
         
@@ -146,6 +142,8 @@ def add_trade_details_to_cache(year: str, week: str, manager: str,
         transaction_id: Unique transaction ID
         commish_action: Whether this is a commissioner-forced trade
     """
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
     player_initial_dict = {
         "total": 0,
         "trade_partners": {
@@ -153,7 +151,7 @@ def add_trade_details_to_cache(year: str, week: str, manager: str,
         }
     }
 
-    if transaction_id in MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["trades"]["transaction_ids"]:
+    if transaction_id in manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["trades"]["transaction_ids"]:
         # Trade already processed for this week
         return
     
@@ -167,9 +165,9 @@ def add_trade_details_to_cache(year: str, week: str, manager: str,
     }
     add_to_transaction_ids(year, week, transaction_info, weekly_transaction_ids, commish_action, use_faab)
     
-    top_level_summary = MANAGER_CACHE[manager]["summary"]["transactions"]["trades"]
-    yearly_summary = MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["trades"]
-    weekly_summary = MANAGER_CACHE[manager]["years"][year]["weeks"][week]["transactions"]["trades"]
+    top_level_summary = manager_cache[manager]["summary"]["transactions"]["trades"]
+    yearly_summary    = manager_cache[manager]["years"][year]["summary"]["transactions"]["trades"]
+    weekly_summary    = manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["trades"]
     summaries = [top_level_summary, yearly_summary, weekly_summary]
     
     # Add trade details in all summaries
@@ -211,7 +209,7 @@ def add_trade_details_to_cache(year: str, week: str, manager: str,
     weekly_summary["transaction_ids"].append(transaction_id)
 
 def revert_trade_transaction(transaction_id1: str, transaction_id2: str,
-                             weekly_transaction_ids: List[Dict[str, Any]]) -> None:
+                             weekly_transaction_ids: List[str]) -> None:
     """
     Revert two trade transactions that cancel each other out.
 
@@ -224,16 +222,19 @@ def revert_trade_transaction(transaction_id1: str, transaction_id2: str,
         weekly_transaction_ids: A list of weekly transaction IDs for the current week.
                                 This list is updated to remove the reverted transaction IDs.
     """
-    transaction = deepcopy(TRANSACTION_IDS_CACHE[transaction_id1])
+    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
+    manager_cache         = CACHE_MANAGER.get_manager_cache()
+
+    transaction = deepcopy(transaction_ids_cache[transaction_id1])
     
     year = transaction['year']
     week = transaction['week']
 
     for manager in transaction['managers_involved']:
         
-        overall_trades = MANAGER_CACHE[manager]['summary']['transactions']
-        yearly_trades  = MANAGER_CACHE[manager]['years'][year]['summary']['transactions']
-        weekly_trades  = MANAGER_CACHE[manager]['years'][year]['weeks'][week]['transactions']
+        overall_trades = manager_cache[manager]['summary']['transactions']
+        yearly_trades  = manager_cache[manager]['years'][year]['summary']['transactions']
+        weekly_trades  = manager_cache[manager]['years'][year]['weeks'][week]['transactions']
 
         if transaction_id1 in weekly_trades['trades']['transaction_ids']:
             weekly_trades['trades']['transaction_ids'].remove(transaction_id1)
@@ -320,8 +321,8 @@ def revert_trade_transaction(transaction_id1: str, transaction_id2: str,
                     if d['faab']['acquired_from']['trade_partners'][trade_partner] == 0:
                         del d['faab']['acquired_from']['trade_partners'][trade_partner]
     
-    del TRANSACTION_IDS_CACHE[transaction_id1]
-    del TRANSACTION_IDS_CACHE[transaction_id2]
+    del transaction_ids_cache[transaction_id1]
+    del transaction_ids_cache[transaction_id2]
     if transaction_id1 in weekly_transaction_ids:
         weekly_transaction_ids.remove(transaction_id1)
     if transaction_id2 in weekly_transaction_ids:

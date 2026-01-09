@@ -6,12 +6,10 @@ Formats matchup cards, trade cards, and determines season state.
 from copy import deepcopy
 from typing import Any, Dict, List, Optional
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.managers.utilities import get_image_url
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
-
-CACHE_MANAGER = get_cache_manager()
 
 MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
 STARTERS_CACHE        = CACHE_MANAGER.get_starters_cache()

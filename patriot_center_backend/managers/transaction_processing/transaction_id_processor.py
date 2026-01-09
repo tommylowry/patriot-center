@@ -1,10 +1,6 @@
 from typing import List
 
-from patriot_center_backend.cache import get_cache_manager
-
-CACHE_MANAGER = get_cache_manager()
-
-TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
+from patriot_center_backend.cache import CACHE_MANAGER
 
 
 def add_to_transaction_ids(year: str, week: str, transaction_info: dict,
@@ -54,9 +50,11 @@ def add_to_transaction_ids(year: str, week: str, transaction_info: dict,
         if transaction_type not in valid_add_or_drop_types:
             raise ValueError(f"Transaction type {transaction_info.get('type') } not a valid 'add_or_drop' type, needs to be one of: {valid_add_or_drop_types}")
     
+    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
+
     # If transaction not in cache, make a new object
-    if transaction_id not in TRANSACTION_IDS_CACHE:
-        TRANSACTION_IDS_CACHE[transaction_id] = {
+    if transaction_id not in transaction_ids_cache:
+        transaction_ids_cache[transaction_id] = {
             "year":              year,
             "week":              week,
             "commish_action":    commish_action,
@@ -64,7 +62,7 @@ def add_to_transaction_ids(year: str, week: str, transaction_info: dict,
             "types":             [],
             "players_involved":  []
         }
-    transaction_info_to_cache = TRANSACTION_IDS_CACHE[transaction_id]
+    transaction_info_to_cache = transaction_ids_cache[transaction_id]
 
     
     if manager not in transaction_info_to_cache["managers_involved"]:

@@ -15,10 +15,8 @@ Key constraints:
 """
 from copy import deepcopy
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
-
-CACHE_MANAGER = get_cache_manager()
 
 VALID_OPTIONS_CACHE = CACHE_MANAGER.get_valid_options_cache()
 PLAYERS_CACHE       = CACHE_MANAGER.get_players_cache()

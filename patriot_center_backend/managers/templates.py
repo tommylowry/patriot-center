@@ -6,9 +6,8 @@ All templates are pure functions with no side effects.
 """
 from copy import deepcopy
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 
-CACHE_MANAGER = get_cache_manager()
 MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
 
 

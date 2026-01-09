@@ -9,7 +9,7 @@ Single Responsibility: Orchestrate sub-processors and manage persistence.
 from copy import deepcopy
 from typing import Any, Dict, Optional
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.managers.data_exporter import DataExporter
 from patriot_center_backend.managers.formatters import get_season_state
@@ -18,12 +18,10 @@ from patriot_center_backend.managers.templates import (
     initialize_faab_template,
     initialize_summary_templates,
 )
-from patriot_center_backend.managers.transaction_processor import TransactionProcessor
+from patriot_center_backend.managers.transaction_processing.base_processor import TransactionProcessor
 from patriot_center_backend.managers.utilities import update_players_cache
 from patriot_center_backend.managers.validators import validate_caching_preconditions
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
-
-CACHE_MANAGER = get_cache_manager()
 
 MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
 

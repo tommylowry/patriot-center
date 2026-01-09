@@ -5,9 +5,7 @@ Validates preconditions, matchup data, and transaction data.
 """
 from typing import Callable, Dict, Optional
 
-from patriot_center_backend.cache import get_cache_manager
-
-CACHE_MANAGER = get_cache_manager()
+from patriot_center_backend.cache import CACHE_MANAGER
 
 MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
 
@@ -104,8 +102,7 @@ def validate_matchup_data(matchup_data: dict) -> None:
     return ""
 
 def validate_transaction(transaction: dict, transaction_type: str,
-                         process_transaction_type: Optional[Callable[[dict], bool]],
-                         weekly_roster_ids: Dict[int, str]) -> bool:
+                         roster_ids: Dict[int, str]) -> bool:
     """
     Validate if transaction should be processed.
 
@@ -115,7 +112,6 @@ def validate_transaction(transaction: dict, transaction_type: str,
     Args:
         transaction: Transaction data from Sleeper API
         transaction_type: Type of transaction ("trade" or "add_or_drop")
-        process_transaction_type: Whether this transaction type should be processed
         weekly_roster_ids: Roster ID to manager mapping for the week
 
     Returns:
@@ -133,11 +129,6 @@ def validate_transaction(transaction: dict, transaction_type: str,
     # Validate transaction type
     if transaction_type not in {"trade", "add_or_drop"}:
         print("Unexpected transaction type:", transaction)
-        return False
-
-    # Check if processor exists for this type
-    if not process_transaction_type:
-        print("No processor for transaction type:", transaction)
         return False
 
     # Additional validation for trade transactions
@@ -158,7 +149,7 @@ def validate_transaction(transaction: dict, transaction_type: str,
             return False
 
         # At least one involved roster must be relevant to current caching session
-        if not any(roster_id in weekly_roster_ids for roster_id in transaction["roster_ids"]):
+        if not any(roster_id in roster_ids for roster_id in transaction["roster_ids"]):
             return False
 
     return True

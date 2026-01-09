@@ -11,8 +11,6 @@ from typing import Dict
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.managers.formatters import get_matchup_card
 
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
-
 
 def get_matchup_details_from_cache(manager: str, year: str = None) -> Dict:
     """
@@ -32,6 +30,8 @@ def get_matchup_details_from_cache(manager: str, year: str = None) -> Dict:
     Returns:
         Dictionary with matchup stats for overall, regular_season, and playoffs
     """
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
     matchup_data = {
         "overall":        {},
         "regular_season": {},
@@ -39,19 +39,19 @@ def get_matchup_details_from_cache(manager: str, year: str = None) -> Dict:
     }
 
     # Get all-time stats by default, or single season stats if year specified
-    cached_matchup_data = deepcopy(MANAGER_CACHE[manager]["summary"]["matchup_data"])
+    cached_matchup_data = deepcopy(manager_cache[manager]["summary"]["matchup_data"])
     if year:
-        cached_matchup_data = deepcopy(MANAGER_CACHE[manager]["years"][year]["summary"]["matchup_data"])
+        cached_matchup_data = deepcopy(manager_cache[manager]["years"][year]["summary"]["matchup_data"])
 
     for season_state in ["overall", "regular_season", "playoffs"]:
 
         # Handle managers with no playoff appearances
         if season_state == "playoffs":
             playoff = True
-            playoff_appearances = MANAGER_CACHE[manager]["summary"]["overall_data"]["playoff_appearances"]
+            playoff_appearances = manager_cache[manager]["summary"]["overall_data"]["playoff_appearances"]
             if len(playoff_appearances) == 0:
                 playoff = False
-            elif year is not None and year not in MANAGER_CACHE[manager]["years"]:
+            elif year is not None and year not in manager_cache[manager]["years"]:
                 playoff = False
 
             # Return zero stats if manager never made playoffs
@@ -118,7 +118,9 @@ def get_overall_data_details_from_cache(year: str, manager: str,
     Returns:
         Dictionary with playoff_appearances count and list of placements by year
     """
-    cached_overall_data = deepcopy(MANAGER_CACHE[manager]["summary"]["overall_data"])
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
+    cached_overall_data = deepcopy(manager_cache[manager]["summary"]["overall_data"])
         
     overall_data = {
         "playoff_appearances": len(cached_overall_data.get("playoff_appearances", []))
@@ -132,7 +134,7 @@ def get_overall_data_details_from_cache(year: str, manager: str,
         if int(year) <= 2020:
             week = '16'
          
-        opponent = MANAGER_CACHE.get(manager, {}).get('years', {}).get(year, {}).get('weeks', {}).get(week, {}).get('matchup_data', {}).get('opponent_manager', "")
+        opponent = manager_cache.get(manager, {}).get('years', {}).get(year, {}).get('weeks', {}).get(week, {}).get('matchup_data', {}).get('opponent_manager', "")
         
         matchup_card = {}
         if opponent == "":

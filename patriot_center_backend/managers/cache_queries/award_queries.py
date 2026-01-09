@@ -13,8 +13,6 @@ from patriot_center_backend.managers.formatters import get_matchup_card
 from patriot_center_backend.managers.utilities import get_image_url
 from patriot_center_backend.managers.validators import validate_matchup_data
 
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
-
 
 def get_manager_awards_from_cache(manager: str, image_urls: dict) -> Dict:
     """
@@ -33,9 +31,11 @@ def get_manager_awards_from_cache(manager: str, image_urls: dict) -> Dict:
     Returns:
         Dictionary with all awards and achievements
     """
-    awards = {}
+    manager_cache = CACHE_MANAGER.get_manager_cache()
 
-    cached_overall_data = deepcopy(MANAGER_CACHE[manager]["summary"]["overall_data"])
+    awards = {}
+    
+    cached_overall_data = deepcopy(manager_cache[manager]["summary"]["overall_data"])
     
     # First/Second/Third Place Finishes
     placement_counts = {
@@ -62,8 +62,8 @@ def get_manager_awards_from_cache(manager: str, image_urls: dict) -> Dict:
         "count": 0,
         "year":  ""
     }
-    for year in MANAGER_CACHE[manager].get("years", {}):
-        num_trades = MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["trades"]["total"]
+    for year in manager_cache[manager].get("years", {}):
+        num_trades = manager_cache[manager]["years"][year]["summary"]["transactions"]["trades"]["total"]
         if num_trades > most_trades_in_year["count"]:
             most_trades_in_year["count"] = num_trades
             most_trades_in_year["year"] = year
@@ -77,11 +77,11 @@ def get_manager_awards_from_cache(manager: str, image_urls: dict) -> Dict:
         "year":   ""
     }
     # Check if FAAB data exists in summary before accessing
-    if "faab" in MANAGER_CACHE[manager].get("summary", {}).get("transactions", {}) and MANAGER_CACHE[manager]["summary"]["transactions"]["faab"]:
+    if "faab" in manager_cache[manager].get("summary", {}).get("transactions", {}) and manager_cache[manager]["summary"]["transactions"]["faab"]:
 
-        for year in MANAGER_CACHE[manager].get("years", {}):
+        for year in manager_cache[manager].get("years", {}):
             
-            weeks = deepcopy(MANAGER_CACHE[manager]["years"][year]["weeks"])
+            weeks = deepcopy(manager_cache[manager]["years"][year]["weeks"])
             for week in weeks:
                 
                 weekly_faab_bids = deepcopy(weeks.get(week, {}).get("transactions", {}).get("faab", {}).get("players", {}))
@@ -116,6 +116,8 @@ def get_manager_score_awards_from_cache(manager: str, image_urls: dict) -> Dict:
     Returns:
         Dictionary with all scoring records
     """
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
     score_awards = {}
 
     highest_weekly_score = {}
@@ -124,8 +126,8 @@ def get_manager_score_awards_from_cache(manager: str, image_urls: dict) -> Dict:
     biggest_blowout_loss = {}
 
 
-    for year in MANAGER_CACHE[manager].get("years", {}):
-        weeks = deepcopy(MANAGER_CACHE[manager]["years"][year]["weeks"])
+    for year in manager_cache[manager].get("years", {}):
+        weeks = deepcopy(manager_cache[manager]["years"][year]["weeks"])
         for week in weeks:
             matchup_data = deepcopy(weeks.get(week, {}).get("matchup_data", {}))
 

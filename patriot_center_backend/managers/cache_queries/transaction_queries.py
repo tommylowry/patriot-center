@@ -11,9 +11,6 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.managers.formatters import get_trade_card
 from patriot_center_backend.managers.utilities import extract_dict_data
 
-MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
-TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
-
 
 def get_transaction_details_from_cache(year: str, manager: str,
                                        image_urls: dict) -> Dict:
@@ -36,6 +33,8 @@ def get_transaction_details_from_cache(year: str, manager: str,
     Returns:
         Dictionary with trades, adds, drops, and faab summaries
     """
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
     transaction_summary = {
         "trades":      {},
         "adds":        {},
@@ -44,9 +43,9 @@ def get_transaction_details_from_cache(year: str, manager: str,
     }
 
     # Get all-time stats by default, or single season stats if year specified
-    cached_transaction_data = deepcopy(MANAGER_CACHE[manager]["summary"]["transactions"])
+    cached_transaction_data = deepcopy(manager_cache[manager]["summary"]["transactions"])
     if year:
-        cached_transaction_data = deepcopy(MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"])
+        cached_transaction_data = deepcopy(manager_cache[manager]["years"][year]["summary"]["transactions"])
 
     # Flatten FAAB player data to just total spent (if FAAB exists)
     if 'faab' in cached_transaction_data:
@@ -144,22 +143,25 @@ def get_trade_history_between_two_managers(manager1: str, manager2: str,
     Returns:
         List of trade cards in reverse chronological order (newest first)
     """
-    years = list(MANAGER_CACHE[manager1].get("years", {}).keys())
+    manager_cache         = CACHE_MANAGER.get_manager_cache()
+    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
+
+    years = list(manager_cache[manager1].get("years", {}).keys())
     if year:
         years = [year]
     
     # Gather all transaction IDs for manager_1
     transaction_ids = []
     for y in years:
-        weeks = deepcopy(MANAGER_CACHE[manager1]["years"][y]["weeks"])
+        weeks = deepcopy(manager_cache[manager1]["years"][y]["weeks"])
         for w in weeks:
-            weekly_trade_transaction_ids = deepcopy(MANAGER_CACHE.get(manager1, {}).get("years", {}).get(y, {}).get("weeks", {}).get(w, {}).get("transactions", {}).get("trades", {}).get("transaction_ids", []))
+            weekly_trade_transaction_ids = deepcopy(manager_cache.get(manager1, {}).get("years", {}).get(y, {}).get("weeks", {}).get(w, {}).get("transactions", {}).get("trades", {}).get("transaction_ids", []))
             transaction_ids.extend(weekly_trade_transaction_ids)
 
 
     # Filter to only those involving both managers
     for tid in deepcopy(transaction_ids):
-        if manager2 not in TRANSACTION_IDS_CACHE.get(tid, {}).get("managers_involved", []):
+        if manager2 not in transaction_ids_cache.get(tid, {}).get("managers_involved", []):
             transaction_ids.remove(tid)
 
     trades_between = []

@@ -11,9 +11,6 @@ from typing import Dict
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
 
-MANAGER_CACHE       = CACHE_MANAGER.get_manager_cache()
-VALID_OPTIONS_CACHE = CACHE_MANAGER.get_valid_options_cache()
-
 
 def get_ranking_details_from_cache(manager: str, manager_summary_usage: bool = False,
                                    active_only: bool = True, year: str|None = None) -> Dict:
@@ -39,6 +36,9 @@ def get_ranking_details_from_cache(manager: str, manager_summary_usage: bool = F
     Returns:
         Dictionary of rankings by category, or dict with 'values' and 'ranks' if manager_summary_usage=True
     """
+    manager_cache       = CACHE_MANAGER.get_manager_cache()
+    valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
+
     returning_dictionary = {}
     
     manager_rankings = {
@@ -63,23 +63,23 @@ def get_ranking_details_from_cache(manager: str, manager_summary_usage: bool = F
     if not year:
         current_year = str(max(LEAGUE_IDS.keys()))
 
-    managers = deepcopy(VALID_OPTIONS_CACHE[current_year]["managers"])
+    managers = deepcopy(valid_options_cache[current_year]["managers"])
 
     returning_dictionary["is_active_manager"] = True
     if manager not in managers:
         returning_dictionary["is_active_manager"] = False
-        managers = list(MANAGER_CACHE.keys())
+        managers = list(manager_cache.keys())
     
     if not active_only:
-        managers = list(MANAGER_CACHE.keys())
+        managers = list(manager_cache.keys())
 
     returning_dictionary["worst"] = len(managers)
     
     for m in managers:
         
-        summary_section = deepcopy(MANAGER_CACHE.get(m, {}).get("summary", {}))
+        summary_section = deepcopy(manager_cache.get(m, {}).get("summary", {}))
         if year:
-            summary_section = deepcopy(MANAGER_CACHE.get(m, {}).get("years", {}).get(year, {}).get("summary", {}))
+            summary_section = deepcopy(manager_cache.get(m, {}).get("years", {}).get(year, {}).get("summary", {}))
 
             # Extract record components
         num_wins = summary_section["matchup_data"]["overall"]["wins"]["total"]
@@ -107,7 +107,7 @@ def get_ranking_details_from_cache(manager: str, manager_summary_usage: bool = F
             average_point_differential = float(Decimal(((total_point_differential) / num_matchups)).quantize(Decimal('0.01')))
         
         num_trades = summary_section["transactions"]["trades"]["total"]
-        num_playoffs = len(MANAGER_CACHE.get(m, {}).get("summary", {}).get("overall_data", {}).get("playoff_appearances", []))
+        num_playoffs = len(manager_cache.get(m, {}).get("summary", {}).get("overall_data", {}).get("playoff_appearances", []))
         
         manager_rankings["win_percentage"].append({m: win_percentage})
         manager_rankings["average_points_for"].append({m: average_points_for})

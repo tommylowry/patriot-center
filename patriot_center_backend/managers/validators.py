@@ -47,7 +47,7 @@ def validate_caching_preconditions(weekly_roster_ids: Dict[int, str],
     if not week:
         raise ValidationError("Week not set. Cannot cache week data.")
 
-def validate_matchup_data(matchup_data: dict) -> None:
+def validate_matchup_data(matchup_data: dict) -> str:
     """
     Validate matchup data structure and logical consistency.
 

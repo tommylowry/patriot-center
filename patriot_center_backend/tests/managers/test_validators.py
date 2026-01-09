@@ -393,7 +393,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is True
 
     def test_valid_add_or_drop_transaction(self):
@@ -404,7 +404,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "add_or_drop", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "add_or_drop", weekly_roster_ids)
         assert result is True
 
     def test_failed_transaction(self):
@@ -419,7 +419,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_incomplete_transaction(self):
@@ -434,7 +434,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_invalid_transaction_type(self):
@@ -445,22 +445,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "unknown", True, weekly_roster_ids)
-        assert result is False
-
-    def test_no_processor(self):
-        """Test with no processor available - should return False."""
-        transaction = {
-            "status": "complete",
-            "type": "trade",
-            "transaction_id": "12345",
-            "roster_ids": [1, 2],
-            "adds": {"player1": 1},
-            "drops": {"player2": 2}
-        }
-        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
-
-        result = validate_transaction(transaction, "trade", False, weekly_roster_ids)
+        result = validate_transaction(transaction, "unknown", weekly_roster_ids)
         assert result is False
 
     def test_trade_missing_transaction_id(self):
@@ -474,7 +459,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_trade_missing_roster_ids(self):
@@ -488,7 +473,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_trade_single_roster(self):
@@ -503,7 +488,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_trade_missing_adds(self):
@@ -517,7 +502,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_trade_missing_drops(self):
@@ -531,7 +516,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_trade_no_relevant_rosters(self):
@@ -546,7 +531,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_trade_partially_relevant_rosters(self):
@@ -561,7 +546,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is True
 
     def test_multi_team_trade(self):
@@ -576,5 +561,5 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2", 3: "Manager 3"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is True

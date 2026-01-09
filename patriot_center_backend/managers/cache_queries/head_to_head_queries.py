@@ -13,8 +13,55 @@ from patriot_center_backend.managers.formatters import get_matchup_card
 from patriot_center_backend.managers.utilities import get_image_url
 from patriot_center_backend.managers.validators import validate_matchup_data
 
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
 
+def get_head_to_head_details_from_cache(manager: str, image_urls: dict,
+                                        year: str|None = None,
+                                        opponent: str|None = None) -> Dict:
+    """
+    Get head-to-head record(s) for a manager against opponent(s).
+
+    If opponent specified, returns single H2H record.
+    If no opponent, returns list of H2H records against all opponents.
+
+    Args:
+        manager: Manager name
+        image_urls: Dict of image URLs
+        year: Season year (optional - defaults to all-time)
+        opponent: Specific opponent (optional - defaults to all opponents)
+
+    Returns:
+        Single opponent dict if opponent specified, otherwise list of all opponent dicts
+    """
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
+    head_to_head_data = []
+        
+    cached_head_to_head_data = deepcopy(manager_cache[manager]["summary"]["matchup_data"]["overall"])
+    trade_data = deepcopy(manager_cache[manager]["summary"]["transactions"]["trades"])
+    if year:
+        cached_head_to_head_data = deepcopy(manager_cache[manager]["years"][year]["summary"]["matchup_data"]["overall"])
+        trade_data = deepcopy(manager_cache[manager]["years"][year]["summary"]["transactions"]["trades"])
+    
+    opponents = [opponent] if opponent else list(deepcopy(cached_head_to_head_data.get("points_for", {}).get("opponents", {})).keys())
+    
+    
+    for opponent in opponents:
+
+        opponent_data = {
+            "opponent":           get_image_url(opponent, image_urls, dictionary=True),
+            "wins":               cached_head_to_head_data["wins"]["opponents"].get(opponent, 0),
+            "losses":             cached_head_to_head_data["losses"]["opponents"].get(opponent, 0),
+            "ties":               cached_head_to_head_data["ties"]["opponents"].get(opponent, 0),
+            "points_for":         cached_head_to_head_data["points_for"]["opponents"].get(opponent, 0.0),
+            "points_against":     cached_head_to_head_data["points_against"]["opponents"].get(opponent, 0.0),
+            "num_trades_between": trade_data["trade_partners"].get(opponent, 0)
+        }
+        head_to_head_data.append(deepcopy(opponent_data))
+    
+    if len(head_to_head_data) == 1:
+        return deepcopy(head_to_head_data[0])
+    
+    return deepcopy(head_to_head_data)
 
 def get_head_to_head_overall_from_cache(manager1: str, manager2: str,
                                         image_urls: dict, year: str|None = None,
@@ -39,8 +86,10 @@ def get_head_to_head_overall_from_cache(manager1: str, manager2: str,
         If list_all_matchups=True: List of all matchup cards
         Otherwise: Dict with record, average margins, last wins, and biggest blowouts
     """
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
     if list_all_matchups:
-        years = list(MANAGER_CACHE[manager1].get("years", {}).keys())
+        years = list(manager_cache[manager1].get("years", {}).keys())
         if year:
             years = [year]
         matchup_history = []
@@ -56,13 +105,13 @@ def get_head_to_head_overall_from_cache(manager1: str, manager2: str,
 
 
         # Get average margin of victory, last win, biggest blowout
-        years = list(MANAGER_CACHE[manager1].get("years", {}).keys())
-        manager_1_points_for = MANAGER_CACHE[manager1].get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager2, 0.0)
-        manager_2_points_for = MANAGER_CACHE[manager2].get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager1, 0.0)
+        years = list(manager_cache[manager1].get("years", {}).keys())
+        manager_1_points_for = manager_cache[manager1].get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager2, 0.0)
+        manager_2_points_for = manager_cache[manager2].get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager1, 0.0)
         if year:
             years = [year]
-            manager_1_points_for = MANAGER_CACHE[manager1].get("years", {}).get(year, {}).get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager2, 0.0)
-            manager_2_points_for = MANAGER_CACHE[manager2].get("years", {}).get(year, {}).get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager1, 0.0)
+            manager_1_points_for = manager_cache[manager1].get("years", {}).get(year, {}).get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager2, 0.0)
+            manager_2_points_for = manager_cache[manager2].get("years", {}).get(year, {}).get("summary", {}).get("matchup_data", {}).get("overall", {}).get("points_for", {}).get("opponents", {}).get(manager1, 0.0)
 
         manager_1_victory_margins = []
         manager_1_last_win        = {}
@@ -75,7 +124,7 @@ def get_head_to_head_overall_from_cache(manager1: str, manager2: str,
 
     for y in years:
         
-        weeks = deepcopy(MANAGER_CACHE[manager1]["years"][y]["weeks"])
+        weeks = deepcopy(manager_cache[manager1]["years"][y]["weeks"])
         
         for w in weeks:
             matchup_data = deepcopy(weeks.get(w, {}).get("matchup_data", {}))
@@ -201,50 +250,3 @@ def get_head_to_head_overall_from_cache(manager1: str, manager2: str,
     
 
     return deepcopy(head_to_head_overall)
-
-def get_head_to_head_details_from_cache(manager: str, image_urls: dict,
-                                        year: str|None = None,
-                                        opponent: str|None = None) -> Dict:
-    """
-    Get head-to-head record(s) for a manager against opponent(s).
-
-    If opponent specified, returns single H2H record.
-    If no opponent, returns list of H2H records against all opponents.
-
-    Args:
-        manager: Manager name
-        image_urls: Dict of image URLs
-        year: Season year (optional - defaults to all-time)
-        opponent: Specific opponent (optional - defaults to all opponents)
-
-    Returns:
-        Single opponent dict if opponent specified, otherwise list of all opponent dicts
-    """
-    head_to_head_data = []
-        
-    cached_head_to_head_data = deepcopy(MANAGER_CACHE[manager]["summary"]["matchup_data"]["overall"])
-    trade_data = deepcopy(MANAGER_CACHE[manager]["summary"]["transactions"]["trades"])
-    if year:
-        cached_head_to_head_data = deepcopy(MANAGER_CACHE[manager]["years"][year]["summary"]["matchup_data"]["overall"])
-        trade_data = deepcopy(MANAGER_CACHE[manager]["years"][year]["summary"]["transactions"]["trades"])
-    
-    opponents = [opponent] if opponent else list(deepcopy(cached_head_to_head_data.get("points_for", {}).get("opponents", {})).keys())
-    
-    
-    for opponent in opponents:
-
-        opponent_data = {
-            "opponent":           get_image_url(opponent, image_urls, dictionary=True),
-            "wins":               cached_head_to_head_data["wins"]["opponents"].get(opponent, 0),
-            "losses":             cached_head_to_head_data["losses"]["opponents"].get(opponent, 0),
-            "ties":               cached_head_to_head_data["ties"]["opponents"].get(opponent, 0),
-            "points_for":         cached_head_to_head_data["points_for"]["opponents"].get(opponent, 0.0),
-            "points_against":     cached_head_to_head_data["points_against"]["opponents"].get(opponent, 0.0),
-            "num_trades_between": trade_data["trade_partners"].get(opponent, 0)
-        }
-        head_to_head_data.append(deepcopy(opponent_data))
-    
-    if len(head_to_head_data) == 1:
-        return deepcopy(head_to_head_data[0])
-    
-    return deepcopy(head_to_head_data)

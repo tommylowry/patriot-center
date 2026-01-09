@@ -160,7 +160,7 @@ def revert_add_drop_transaction(transaction_id: str, transaction_type: str,
         Exception: If transaction involves multiple managers (unexpected)
     """
     if transaction_type != "add" and transaction_type != "drop":
-        print(f"Cannot revert type {transaction_type} in _revert_add_or_drop_transaction for transaction_id {transaction_id}")
+        print(f"Cannot revert type {transaction_type} in revert_add_or_drop_transaction for transaction_id {transaction_id}")
         return
     
     transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()

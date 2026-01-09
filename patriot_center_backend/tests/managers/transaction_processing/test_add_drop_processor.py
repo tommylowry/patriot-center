@@ -245,7 +245,7 @@ class TestRevertAddDropTransaction:
         assert "trans1" in self.weekly_transaction_ids
         assert result is False  # Not fully removed
     
-    def test_revert_invalid_type_returns_none(self):
+    def test_revert_invalid_type_returns_none(self, capsys):
         """Test revert_add_drop_transaction returns None for invalid type."""
         self.mock_transaction_ids_cache["trans1"].update(
             {
@@ -261,6 +261,11 @@ class TestRevertAddDropTransaction:
             transaction_type="invalid_type",
             weekly_transaction_ids=[]
         )
+
+        # Verify warning was printed for missing opponent
+        captured = capsys.readouterr()
+        assert "Cannot revert type invalid_type in" in captured.out
+        assert "for transaction_id trans1" in captured.out
         
         assert result is None
 

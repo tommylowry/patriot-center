@@ -153,12 +153,20 @@ def mock_manager_cache():
 class TestAddTradeDetailsToCache:
     """Test add_trade_details_to_cache method."""
 
-    @patch('patriot_center_backend.managers.transaction_processing.trade_processor.CACHE_MANAGER.get_manager_cache')
-    @patch('patriot_center_backend.managers.transaction_processing.trade_processor.update_players_cache')
-    def test_add_trade_details_updates_cache(self, mock_update, mock_get_manager_cache, mock_manager_cache):
+    @pytest.fixture(autouse=True)
+    def setup(self, mock_manager_cache):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.transaction_processing.trade_processor.CACHE_MANAGER.get_manager_cache') as mock_get_manager, \
+             patch('patriot_center_backend.managers.transaction_processing.trade_processor.update_players_cache'):
+            
+            self.mock_manager_cache = mock_manager_cache
+            
+            mock_get_manager.return_value = self.mock_manager_cache
+            
+            yield
+
+    def test_add_trade_details_updates_cache(self):
         """Test that trade details are added to cache at all levels."""
-        mock_get_manager_cache.return_value = mock_manager_cache
-        
         add_trade_details_to_cache(
             year = "2023",
             week = "1",
@@ -173,17 +181,14 @@ class TestAddTradeDetailsToCache:
         )
 
         # Check weekly summary
-        weekly = mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]
+        weekly = self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]
         assert weekly["total"] == 1
         assert "Manager 2" in weekly["trade_partners"]
         assert "Player One" in weekly["trade_players_acquired"]
         assert "Player Two" in weekly["trade_players_sent"]
 
-    @patch('patriot_center_backend.managers.transaction_processing.trade_processor.CACHE_MANAGER.get_manager_cache')
-    @patch('patriot_center_backend.managers.transaction_processing.trade_processor.update_players_cache')
-    def test_add_trade_details_prevents_duplicates(self, mock_update, mock_get_manager_cache, mock_manager_cache):
+    def test_add_trade_details_prevents_duplicates(self):
         """Test that duplicate transaction IDs are not processed twice."""
-        mock_get_manager_cache.return_value = mock_manager_cache
 
         # Add once
         add_trade_details_to_cache(
@@ -214,5 +219,5 @@ class TestAddTradeDetailsToCache:
         )
 
         # Should only have 1 trade
-        weekly = mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]
+        weekly = self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]["transactions"]["trades"]
         assert weekly["total"] == 1

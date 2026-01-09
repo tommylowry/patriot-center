@@ -101,7 +101,7 @@ def process_trade_transaction(year: str, week: str, transaction: dict,
         # add trade details to the cache
         add_trade_details_to_cache(year, week, manager, trade_partners, acquired,
                                    sent, weekly_transaction_ids, transaction_id,
-                                   commish_action)
+                                   commish_action, use_faab)
     
 
     # Faab Trading

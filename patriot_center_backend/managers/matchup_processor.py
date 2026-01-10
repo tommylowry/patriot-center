@@ -11,8 +11,6 @@ from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.managers.formatters import get_season_state
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
 
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
-
 
 class MatchupProcessor:
     """
@@ -170,6 +168,8 @@ class MatchupProcessor:
         Raises:
             ValueError: If matchup data is invalid or missing required fields
         """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
         manager = matchup_data.get("manager", None)
         opponent_manager = matchup_data.get("opponent_manager", None)
         points_for = matchup_data.get("points_for", 0.0)
@@ -180,18 +180,18 @@ class MatchupProcessor:
             raise ValueError("Invalid matchup data for caching:", matchup_data)
         
         # Update weekly summary
-        weekly_summary = MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week]["matchup_data"]
+        weekly_summary = manager_cache[manager]["years"][self._year]["weeks"][self._week]["matchup_data"]
         weekly_summary["opponent_manager"] = opponent_manager
         weekly_summary["points_for"] = points_for
         weekly_summary["points_against"] = points_against
         weekly_summary["result"] = result
 
         # Prepare yearly and top-level summaries
-        yearly_overall_summary         = MANAGER_CACHE[manager]["years"][self._year]["summary"]["matchup_data"]["overall"]
-        yearly_season_state_summary    = MANAGER_CACHE[manager]["years"][self._year]["summary"]["matchup_data"][get_season_state(self._week, self._year, self._playoff_week_start)]
+        yearly_overall_summary         = manager_cache[manager]["years"][self._year]["summary"]["matchup_data"]["overall"]
+        yearly_season_state_summary    = manager_cache[manager]["years"][self._year]["summary"]["matchup_data"][get_season_state(self._week, self._year, self._playoff_week_start)]
 
-        top_level_overall_summary      = MANAGER_CACHE[manager]["summary"]["matchup_data"]["overall"]
-        top_level_season_state_summary = MANAGER_CACHE[manager]["summary"]["matchup_data"][get_season_state(self._week, self._year, self._playoff_week_start)]
+        top_level_overall_summary      = manager_cache[manager]["summary"]["matchup_data"]["overall"]
+        top_level_season_state_summary = manager_cache[manager]["summary"]["matchup_data"][get_season_state(self._week, self._year, self._playoff_week_start)]
         
         summaries = [yearly_overall_summary, yearly_season_state_summary,
                      top_level_overall_summary, top_level_season_state_summary]
@@ -248,12 +248,14 @@ class MatchupProcessor:
         Adds the current year to each playoff team's playoff_appearances list
         if not already present. This is used for awards and playoff streak tracking.
         """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
         for roster_ids in self._playoff_roster_ids.get("round_roster_ids", []):
             manager = self._weekly_roster_ids.get(roster_ids, None)
             if not manager:
                 continue
 
-            manager_overall_data = MANAGER_CACHE[manager]["summary"]["overall_data"]
+            manager_overall_data = manager_cache[manager]["summary"]["overall_data"]
 
             # Mark week as playoff week in the weekly summary
             if self._year not in manager_overall_data["playoff_appearances"]:

@@ -283,7 +283,7 @@ class DataExporter:
             ValueError: If manager or year not found in cache
         """
         manager_cache         = CACHE_MANAGER.get_manager_cache()
-        transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache
+        transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
 
         if manager_name not in manager_cache:
             raise ValueError(f"Manager {manager_name} not found in cache.")
@@ -321,7 +321,7 @@ class DataExporter:
                 transaction_ids = deepcopy(weekly_transactions.get("adds", {}).get("transaction_ids", []))
                 transaction_ids.reverse()
                 for transaction_id in transaction_ids:
-                    add_details = manager_cache.get(transaction_id, {})
+                    add_details = transaction_ids_cache.get(transaction_id, {})
                     if add_details:
                         
                         # Only include adds portion of a transaction for "add" filter

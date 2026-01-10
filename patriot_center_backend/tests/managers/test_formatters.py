@@ -10,7 +10,10 @@ import pytest
 from patriot_center_backend.managers.formatters import (
     draft_pick_decipher,
     extract_dict_data,
+    get_matchup_card,
     get_season_state,
+    get_top_3_scorers_from_matchup_data,
+    get_trade_card,
 )
 
 
@@ -20,7 +23,8 @@ class TestGetSeasonState:
     @pytest.fixture(autouse=True)
     def setup(self):
         """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.formatters.fetch_sleeper_data') as mock_fetch_sleeper:
+        with patch('patriot_center_backend.managers.formatters.fetch_sleeper_data') as mock_fetch_sleeper, \
+             patch('patriot_center_backend.managers.formatters.LEAGUE_IDS', {2023: "league123"}):
             
             self.mock_fetch_sleeper = mock_fetch_sleeper
             
@@ -37,8 +41,7 @@ class TestGetSeasonState:
         assert result == "regular_season"
         self.mock_fetch_sleeper.assert_not_called()
 
-    @patch('patriot_center_backend.managers.formatters.fetch_sleeper_data')
-    def test_playoffs(self, mock_fetch):
+    def test_playoffs(self):
         """Test playoff detection."""
         week = "15"
         year = "2023"
@@ -47,10 +50,9 @@ class TestGetSeasonState:
         result = get_season_state(week, year, playoff_week_start)
 
         assert result == "playoffs"
-        mock_fetch.assert_not_called()
+        self.mock_fetch_sleeper.assert_not_called()
 
-    @patch('patriot_center_backend.managers.formatters.fetch_sleeper_data')
-    def test_playoffs_late_week(self, mock_fetch):
+    def test_playoffs_late_week(self):
         """Test playoff detection in late weeks."""
         week = "17"
         year = "2023"
@@ -60,11 +62,9 @@ class TestGetSeasonState:
 
         assert result == "playoffs"
 
-    @patch('patriot_center_backend.managers.formatters.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.formatters.LEAGUE_IDS', {2023: "league123"})
-    def test_fetch_playoff_week_from_api(self, mock_fetch):
+    def test_fetch_playoff_week_from_api(self):
         """Test fetching playoff_week_start from API when not provided."""
-        mock_fetch.return_value = {
+        self.mock_fetch_sleeper.return_value = {
             "settings": {
                 "playoff_week_start": 15
             }
@@ -77,7 +77,7 @@ class TestGetSeasonState:
         result = get_season_state(week, year, playoff_week_start)
 
         assert result == "regular_season"
-        mock_fetch.assert_called_once_with("league/league123")
+        self.mock_fetch_sleeper.assert_called_once_with("league/league123")
 
     def test_missing_week_raises_error(self):
         """Test that missing week raises ValueError."""
@@ -115,8 +115,7 @@ class TestGetSeasonState:
         with pytest.raises(ValueError, match="Week or Year not set"):
             get_season_state(week, year, playoff_week_start)
 
-    @patch('patriot_center_backend.managers.formatters.fetch_sleeper_data')
-    def test_boundary_week_before_playoffs(self, mock_fetch):
+    def test_boundary_week_before_playoffs(self):
         """Test week just before playoffs."""
         week = "14"
         year = "2023"
@@ -130,20 +129,34 @@ class TestGetSeasonState:
 class TestGetTop3ScorersFromMatchupData:
     """Test get_top_3_scorers_from_matchup_data function."""
 
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_valid_matchup_data(self, mock_get_image_url):
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_player_ids_cache') as mock_get_player_ids, \
+             patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_players_cache') as mock_get_players_cache, \
+             patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_starters_cache') as mock_get_starters_cache, \
+             patch('patriot_center_backend.managers.formatters.get_image_url') as mock_get_image_url:
+            
+            self.mock_get_player_ids = mock_get_player_ids
+            self.mock_get_player_ids.return_value = {}
+
+            self.mock_get_players_cache = mock_get_players_cache
+            self.mock_get_players_cache.return_value = {}
+
+            self.mock_get_starters_cache = mock_get_starters_cache
+            self.mock_get_starters_cache.return_value = {}
+
+            self.mock_get_image_url = mock_get_image_url
+            
+            yield
+
+    def test_valid_matchup_data(self):
         """Test with valid matchup data and starters."""
-        # Return a NEW dict each time to avoid mutation issues
-        mock_get_image_url.side_effect = lambda *args, **kwargs: {
+        self.mock_get_image_url.side_effect = lambda *args, **kwargs: {
             "name": "Player",
             "image_url": "http://example.com/image.jpg"
         }
-
-        matchup_data = {"year": "2023", "week": "1"}
-        manager_1 = "Manager 1"
-        manager_2 = "Manager 2"
-
-        players_cache = {
+        self.mock_get_players_cache.return_value = {
             "Player A": {"player_id": "1"},
             "Player B": {"player_id": "2"},
             "Player C": {"player_id": "3"},
@@ -151,8 +164,7 @@ class TestGetTop3ScorersFromMatchupData:
             "Player E": {"player_id": "5"},
             "Player F": {"player_id": "6"}
         }
-
-        player_ids = {
+        self.mock_get_player_ids.return_value = {
             "1": {"first_name": "Player", "last_name": "A"},
             "2": {"first_name": "Player", "last_name": "B"},
             "3": {"first_name": "Player", "last_name": "C"},
@@ -160,10 +172,7 @@ class TestGetTop3ScorersFromMatchupData:
             "5": {"first_name": "Player", "last_name": "E"},
             "6": {"first_name": "Player", "last_name": "F"}
         }
-
-        image_urls = {}
-
-        starters_cache = {
+        self.mock_get_starters_cache.return_value = {
             "2023": {
                 "1": {
                     "Manager 1": {
@@ -182,13 +191,16 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
-             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
-             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import (
-                get_top_3_scorers_from_matchup_data,
-            )
-            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, image_urls)
+        matchup_data = {"year": "2023", "week": "1"}
+        manager_1 = "Manager 1"
+        manager_2 = "Manager 2"
+
+        result = get_top_3_scorers_from_matchup_data(
+            matchup_data=matchup_data,
+            manager_1=manager_1,
+            manager_2=manager_2,
+            image_urls={}
+        )
 
         assert len(result["manager_1_top_3_scorers"]) == 3
         assert len(result["manager_2_top_3_scorers"]) == 3
@@ -197,49 +209,51 @@ class TestGetTop3ScorersFromMatchupData:
         assert result["manager_2_top_3_scorers"][0]["score"] == 30.0
         assert result["manager_2_lowest_scorer"]["score"] == 10.0
 
-    def test_missing_year_in_matchup_data(self):
+    def test_missing_year_in_matchup_data(self, capsys):
         """Test with missing year in matchup_data."""
         matchup_data = {"week": "1"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
-             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
-             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', {}):
-            from patriot_center_backend.managers.formatters import (
-                get_top_3_scorers_from_matchup_data,
-            )
-            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
+        result = get_top_3_scorers_from_matchup_data(
+            matchup_data=matchup_data,
+            manager_1=manager_1,
+            manager_2=manager_2,
+            image_urls={}
+        )
+
+        # Verify warning was printed for missing data
+        captured = capsys.readouterr()
+        assert "matchup_data missing" in captured.out
 
         assert result["manager_1_top_3_scorers"] == []
         assert result["manager_2_top_3_scorers"] == []
         assert result["manager_1_lowest_scorer"] == []
         assert result["manager_2_lowest_scorer"] == []
 
-    def test_missing_week_in_matchup_data(self):
+    def test_missing_week_in_matchup_data(self, capsys):
         """Test with missing week in matchup_data."""
         matchup_data = {"year": "2023"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
-             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
-             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', {}):
-            from patriot_center_backend.managers.formatters import (
-                get_top_3_scorers_from_matchup_data,
-            )
-            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
+        result = get_top_3_scorers_from_matchup_data(
+            matchup_data=matchup_data,
+            manager_1=manager_1,
+            manager_2=manager_2,
+            image_urls={}
+        )
+
+        # Verify warning was printed for missing data
+        captured = capsys.readouterr()
+        assert "matchup_data missing" in captured.out
 
         assert result["manager_1_top_3_scorers"] == []
         assert result["manager_2_top_3_scorers"] == []
 
-    def test_missing_manager_1_starters(self):
+    def test_missing_manager_1_starters(self, capsys):
         """Test with manager_1 missing from starters_cache."""
-        matchup_data = {"year": "2023", "week": "1"}
-        manager_1 = "Manager 1"
-        manager_2 = "Manager 2"
-
-        starters_cache = {
+        self.mock_get_starters_cache.return_value = {
             "2023": {
                 "1": {
                     "Manager 2": {
@@ -249,25 +263,30 @@ class TestGetTop3ScorersFromMatchupData:
                 }
             }
         }
-
-        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
-             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
-             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import (
-                get_top_3_scorers_from_matchup_data,
-            )
-            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
-
-        assert result["manager_1_top_3_scorers"] == []
-        assert result["manager_2_top_3_scorers"] == []
-
-    def test_missing_manager_2_starters(self):
-        """Test with manager_2 missing from starters_cache."""
+        
         matchup_data = {"year": "2023", "week": "1"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        starters_cache = {
+        result = get_top_3_scorers_from_matchup_data(
+            matchup_data=matchup_data,
+            manager_1=manager_1,
+            manager_2=manager_2,
+            image_urls={}
+        )
+
+        # Verify warning was printed for missing data
+        captured = capsys.readouterr()
+        assert "data missing" in captured.out
+        assert "week 1" in captured.out
+        assert "2023" in captured.out
+
+        assert result["manager_1_top_3_scorers"] == []
+        assert result["manager_2_top_3_scorers"] == []
+
+    def test_missing_manager_2_starters(self, capsys):
+        """Test with manager_2 missing from starters_cache."""
+        self.mock_get_starters_cache.return_value = {
             "2023": {
                 "1": {
                     "Manager 1": {
@@ -277,42 +296,42 @@ class TestGetTop3ScorersFromMatchupData:
                 }
             }
         }
-
-        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', {}), \
-             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', {}), \
-             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import (
-                get_top_3_scorers_from_matchup_data,
-            )
-            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
-
-        assert result["manager_1_top_3_scorers"] == []
-        assert result["manager_2_top_3_scorers"] == []
-
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_fewer_than_3_players(self, mock_get_image_url):
-        """Test with fewer than 3 starters."""
-        # Return a NEW dict each time to avoid mutation issues
-        mock_get_image_url.side_effect = lambda *args, **kwargs: {
-            "name": "Player",
-            "image_url": "http://example.com/image.jpg"
-        }
-
+        
         matchup_data = {"year": "2023", "week": "1"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        players_cache = {
+        result = get_top_3_scorers_from_matchup_data(
+            matchup_data=matchup_data,
+            manager_1=manager_1,
+            manager_2=manager_2,
+            image_urls={}
+        )
+
+        # Verify warning was printed for missing data
+        captured = capsys.readouterr()
+        assert "data missing" in captured.out
+        assert "week 1" in captured.out
+        assert "2023" in captured.out
+
+        assert result["manager_1_top_3_scorers"] == []
+        assert result["manager_2_top_3_scorers"] == []
+
+    def test_fewer_than_3_players(self):
+        """Test with fewer than 3 starters."""
+        self.mock_get_image_url.side_effect = lambda *args, **kwargs: {
+            "name": "Player",
+            "image_url": "http://example.com/image.jpg"
+        }
+        self.mock_get_players_cache.return_value = {
             "Player A": {"player_id": "1"},
             "Player B": {"player_id": "2"}
         }
-
-        player_ids = {
+        self.mock_get_player_ids.return_value = {
             "1": {"first_name": "Player", "last_name": "A"},
             "2": {"first_name": "Player", "last_name": "B"}
         }
-
-        starters_cache = {
+        self.mock_get_starters_cache.return_value = {
             "2023": {
                 "1": {
                     "Manager 1": {
@@ -328,49 +347,43 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
-             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
-             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import (
-                get_top_3_scorers_from_matchup_data,
-            )
-            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
+        matchup_data = {"year": "2023", "week": "1"}
+        manager_1 = "Manager 1"
+        manager_2 = "Manager 2"
+
+        result = get_top_3_scorers_from_matchup_data(
+            matchup_data=matchup_data,
+            manager_1=manager_1,
+            manager_2=manager_2,
+            image_urls={}
+        )
 
         # Should return only 2 players for manager_1
         assert len(result["manager_1_top_3_scorers"]) == 2
         # Should return only 1 player for manager_2
         assert len(result["manager_2_top_3_scorers"]) == 1
 
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_insertion_sort_ordering(self, mock_get_image_url):
+    def test_insertion_sort_ordering(self):
         """Test that top scorers are properly sorted."""
-        # Return a NEW dict each time to avoid mutation issues
-        mock_get_image_url.side_effect = lambda *args, **kwargs: {
+        self.mock_get_image_url.side_effect = lambda *args, **kwargs: {
             "name": "Player",
             "image_url": "http://example.com/image.jpg"
         }
-
-        matchup_data = {"year": "2023", "week": "1"}
-        manager_1 = "Manager 1"
-        manager_2 = "Manager 2"
-
-        players_cache = {
+        self.mock_get_players_cache.return_value = {
             "Player A": {"player_id": "1"},
             "Player B": {"player_id": "2"},
             "Player C": {"player_id": "3"},
             "Player D": {"player_id": "4"},
             "Player E": {"player_id": "5"}
         }
-
-        player_ids = {
+        self.mock_get_player_ids.return_value = {
             "1": {"first_name": "Player", "last_name": "A"},
             "2": {"first_name": "Player", "last_name": "B"},
             "3": {"first_name": "Player", "last_name": "C"},
             "4": {"first_name": "Player", "last_name": "D"},
             "5": {"first_name": "Player", "last_name": "E"}
         }
-
-        starters_cache = {
+        self.mock_get_starters_cache.return_value = {
             "2023": {
                 "1": {
                     "Manager 1": {
@@ -389,13 +402,16 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.PLAYERS_CACHE', players_cache), \
-             patch('patriot_center_backend.managers.formatters.PLAYER_IDS_CACHE', player_ids), \
-             patch('patriot_center_backend.managers.formatters.STARTERS_CACHE', starters_cache):
-            from patriot_center_backend.managers.formatters import (
-                get_top_3_scorers_from_matchup_data,
-            )
-            result = get_top_3_scorers_from_matchup_data(matchup_data, manager_1, manager_2, {})
+        matchup_data = {"year": "2023", "week": "1"}
+        manager_1 = "Manager 1"
+        manager_2 = "Manager 2"
+
+        result = get_top_3_scorers_from_matchup_data(
+            matchup_data=matchup_data,
+            manager_1=manager_1,
+            manager_2=manager_2,
+            image_urls={}
+        )
 
         # Verify top 3 are in descending order
         assert result["manager_1_top_3_scorers"][0]["score"] == 25.0  # Player B
@@ -409,19 +425,33 @@ class TestGetTop3ScorersFromMatchupData:
 class TestGetMatchupCard:
     """Test get_matchup_card function."""
 
-    @patch('patriot_center_backend.managers.formatters.get_top_3_scorers_from_matchup_data')
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_valid_matchup_card_win(self, mock_get_image_url, mock_get_top_3):
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
+             patch('patriot_center_backend.managers.formatters.get_top_3_scorers_from_matchup_data') as mock_get_top_3, \
+             patch('patriot_center_backend.managers.formatters.get_image_url') as mock_get_image_url:
+            
+            self.mock_get_manager_cache = mock_get_manager_cache
+            self.mock_get_manager_cache.return_value = {}
+
+            self.mock_get_top_3 = mock_get_top_3
+            self.mock_get_top_3.return_value = {}
+
+            self.mock_get_image_url = mock_get_image_url
+            
+            yield
+
+    def test_valid_matchup_card_win(self):
         """Test generating matchup card for a win."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-        mock_get_top_3.return_value = {
+        self.mock_get_image_url.return_value = "http://example.com/image.jpg"
+        self.mock_get_top_3.return_value = {
             "manager_1_top_3_scorers": [],
             "manager_2_top_3_scorers": [],
             "manager_1_lowest_scorer": {},
             "manager_2_lowest_scorer": {}
         }
-
-        manager_cache = {
+        self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -438,9 +468,13 @@ class TestGetMatchupCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
-            from patriot_center_backend.managers.formatters import get_matchup_card
-            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
+        result = get_matchup_card(
+            manager_1="Manager 1",
+            manager_2="Manager 2",
+            year="2023",
+            week="1",
+            image_urls={}
+        )
 
         assert result["year"] == "2023"
         assert result["week"] == "1"
@@ -448,19 +482,16 @@ class TestGetMatchupCard:
         assert result["manager_2_score"] == 100.0
         assert result["winner"] == "Manager 1"
 
-    @patch('patriot_center_backend.managers.formatters.get_top_3_scorers_from_matchup_data')
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_valid_matchup_card_loss(self, mock_get_image_url, mock_get_top_3):
+    def test_valid_matchup_card_loss(self):
         """Test generating matchup card for a loss."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-        mock_get_top_3.return_value = {
+        self.mock_get_image_url.return_value = "http://example.com/image.jpg"
+        self.mock_get_top_3.return_value = {
             "manager_1_top_3_scorers": [],
             "manager_2_top_3_scorers": [],
             "manager_1_lowest_scorer": {},
             "manager_2_lowest_scorer": {}
         }
-
-        manager_cache = {
+        self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -477,25 +508,26 @@ class TestGetMatchupCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
-            from patriot_center_backend.managers.formatters import get_matchup_card
-            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
+        result = get_matchup_card(
+            manager_1="Manager 1",
+            manager_2="Manager 2",
+            year="2023",
+            week="1",
+            image_urls={}
+        )
 
         assert result["winner"] == "Manager 2"
 
-    @patch('patriot_center_backend.managers.formatters.get_top_3_scorers_from_matchup_data')
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_valid_matchup_card_tie(self, mock_get_image_url, mock_get_top_3):
+    def test_valid_matchup_card_tie(self):
         """Test generating matchup card for a tie."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-        mock_get_top_3.return_value = {
+        self.mock_get_image_url.return_value = "http://example.com/image.jpg"
+        self.mock_get_top_3.return_value = {
             "manager_1_top_3_scorers": [],
             "manager_2_top_3_scorers": [],
             "manager_1_lowest_scorer": {},
             "manager_2_lowest_scorer": {}
         }
-
-        manager_cache = {
+        self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -512,15 +544,19 @@ class TestGetMatchupCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
-            from patriot_center_backend.managers.formatters import get_matchup_card
-            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
+        result = get_matchup_card(
+            manager_1="Manager 1",
+            manager_2="Manager 2",
+            year="2023",
+            week="1",
+            image_urls={}
+        )
 
         assert result["winner"] == "Tie"
 
-    def test_missing_matchup_data(self):
+    def test_missing_matchup_data(self, capsys):
         """Test with missing matchup data."""
-        manager_cache = {
+        self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -530,15 +566,25 @@ class TestGetMatchupCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
-            from patriot_center_backend.managers.formatters import get_matchup_card
-            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
+        result = get_matchup_card(
+            manager_1="Manager 1",
+            manager_2="Manager 2",
+            year="2023",
+            week="1",
+            image_urls={}
+        )
+
+        # Verify warning was printed for missing data
+        captured = capsys.readouterr()
+        assert "Incomplete matchup" in captured.out
+        assert "week 1" in captured.out
+        assert "2023" in captured.out
 
         assert result == {}
 
-    def test_zero_points_for(self):
+    def test_zero_points_for(self, capsys):
         """Test with zero points_for (incomplete data)."""
-        manager_cache = {
+        self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -555,15 +601,25 @@ class TestGetMatchupCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
-            from patriot_center_backend.managers.formatters import get_matchup_card
-            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
+        result = get_matchup_card(
+            manager_1="Manager 1",
+            manager_2="Manager 2",
+            year="2023",
+            week="1",
+            image_urls={}
+        )
+
+        # Verify warning was printed for missing data
+        captured = capsys.readouterr()
+        assert "Incomplete matchup" in captured.out
+        assert "week 1" in captured.out
+        assert "2023" in captured.out
 
         assert result == {}
 
-    def test_zero_points_against(self):
+    def test_zero_points_against(self, capsys):
         """Test with zero points_against (incomplete data)."""
-        manager_cache = {
+        self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
                     "2023": {
@@ -580,9 +636,19 @@ class TestGetMatchupCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.MANAGER_CACHE', manager_cache):
-            from patriot_center_backend.managers.formatters import get_matchup_card
-            result = get_matchup_card("Manager 1", "Manager 2", "2023", "1", {})
+        result = get_matchup_card(
+            manager_1="Manager 1",
+            manager_2="Manager 2",
+            year="2023",
+            week="1",
+            image_urls={}
+        )
+
+        # Verify warning was printed for missing data
+        captured = capsys.readouterr()
+        assert "Incomplete matchup" in captured.out
+        assert "week 1" in captured.out
+        assert "2023" in captured.out
 
         assert result == {}
 
@@ -590,17 +656,28 @@ class TestGetMatchupCard:
 class TestGetTradeCard:
     """Test get_trade_card function."""
 
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_simple_two_team_trade(self, mock_get_image_url):
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_transaction_ids_cache') as mock_get_trans_ids, \
+             patch('patriot_center_backend.managers.formatters.get_image_url') as mock_get_image_url:
+            
+            self.mock_get_trans_ids = mock_get_trans_ids
+            self.mock_get_trans_ids.return_value = {}
+
+            self.mock_get_image_url = mock_get_image_url
+            
+            yield
+
+    def test_simple_two_team_trade(self):
         """Test generating trade card for simple two-team trade."""
-        mock_get_image_url.side_effect = [
+        self.mock_get_image_url.side_effect = [
             {"name": "Manager 1", "image_url": "http://example.com/m1.jpg"},
             {"name": "Manager 2", "image_url": "http://example.com/m2.jpg"},
             {"name": "Player A", "image_url": "http://example.com/pa.jpg"},
             {"name": "Player B", "image_url": "http://example.com/pb.jpg"}
         ]
-
-        transaction_ids_cache = {
+        self.mock_get_trans_ids.return_value = {
             "trade123": {
                 "year": "2023",
                 "week": "5",
@@ -618,9 +695,10 @@ class TestGetTradeCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.TRANSACTION_IDS_CACHE', transaction_ids_cache):
-            from patriot_center_backend.managers.formatters import get_trade_card
-            result = get_trade_card("trade123", {})
+        transaction_id = "trade123"
+        image_urls = {}
+        
+        result = get_trade_card(transaction_id, image_urls)
 
         assert result["year"] == "2023"
         assert result["week"] == "5"
@@ -631,12 +709,10 @@ class TestGetTradeCard:
         assert len(result["manager_2_received"]) == 1
         assert result["transaction_id"] == "trade123"
 
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_three_team_trade(self, mock_get_image_url):
+    def test_three_team_trade(self):
         """Test generating trade card for three-team trade."""
-        mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
-
-        transaction_ids_cache = {
+        self.mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
+        self.mock_get_trans_ids.return_value = {
             "trade456": {
                 "year": "2023",
                 "week": "8",
@@ -658,9 +734,10 @@ class TestGetTradeCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.TRANSACTION_IDS_CACHE', transaction_ids_cache):
-            from patriot_center_backend.managers.formatters import get_trade_card
-            result = get_trade_card("trade456", {})
+        transaction_id = "trade456"
+        image_urls = {}
+
+        result = get_trade_card(transaction_id, image_urls)
 
         assert len(result["managers_involved"]) == 3
         # Each manager sent and received one player
@@ -671,12 +748,10 @@ class TestGetTradeCard:
         assert "manager_3_sent" in result
         assert "manager_3_received" in result
 
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_uneven_trade(self, mock_get_image_url):
+    def test_uneven_trade(self):
         """Test trade where one manager sends multiple players."""
-        mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
-
-        transaction_ids_cache = {
+        self.mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
+        self.mock_get_trans_ids.return_value = {
             "trade789": {
                 "year": "2023",
                 "week": "10",
@@ -698,9 +773,10 @@ class TestGetTradeCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.TRANSACTION_IDS_CACHE', transaction_ids_cache):
-            from patriot_center_backend.managers.formatters import get_trade_card
-            result = get_trade_card("trade789", {})
+        transaction_id = "trade789"
+        image_urls = {}
+
+        result = get_trade_card(transaction_id, image_urls)
 
         # Manager 1 sent 2, received 1
         assert len(result["manager_1_sent"]) == 2
@@ -709,12 +785,10 @@ class TestGetTradeCard:
         assert len(result["manager_2_sent"]) == 1
         assert len(result["manager_2_received"]) == 2
 
-    @patch('patriot_center_backend.managers.formatters.get_image_url')
-    def test_manager_name_with_spaces(self, mock_get_image_url):
+    def test_manager_name_with_spaces(self):
         """Test handling manager names with spaces."""
-        mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
-
-        transaction_ids_cache = {
+        self.mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
+        self.mock_get_trans_ids.return_value = {
             "trade999": {
                 "year": "2023",
                 "week": "3",
@@ -728,15 +802,127 @@ class TestGetTradeCard:
             }
         }
 
-        with patch('patriot_center_backend.managers.formatters.TRANSACTION_IDS_CACHE', transaction_ids_cache):
-            from patriot_center_backend.managers.formatters import get_trade_card
-            result = get_trade_card("trade999", {})
+        transaction_id = "trade999"
+        image_urls = {}
+
+        result = get_trade_card(transaction_id, image_urls)
 
         # Should convert spaces to underscores and lowercase
         assert "john_smith_sent" in result
         assert "john_smith_received" in result
         assert "jane_doe_sent" in result
         assert "jane_doe_received" in result
+
+
+class TestExtractDictData:
+    """Test extract_dict_data function."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.formatters.get_image_url') as mock_get_image_url:
+
+            self.mock_get_image_url = mock_get_image_url
+            self.mock_get_image_url.return_value = "http://example.com/image.jpg"
+            
+            yield
+
+    def test_top_3_simple_dict(self):
+        """Test with simple dictionary (no nested totals)."""
+        data = {
+            "Player A": 10,
+            "Player B": 8,
+            "Player C": 6,
+            "Player D": 4
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls)
+
+        assert len(result) == 3
+        assert result[0]["name"] == "Player A"
+        assert result[0]["count"] == 10
+        assert result[1]["name"] == "Player B"
+        assert result[1]["count"] == 8
+        assert result[2]["name"] == "Player C"
+        assert result[2]["count"] == 6
+
+    def test_top_3_with_nested_totals(self):
+        """Test with nested dictionary containing 'total' keys."""
+        data = {
+            "Player A": {"total": 10, "other": "data"},
+            "Player B": {"total": 8, "other": "data"},
+            "Player C": {"total": 6, "other": "data"},
+            "Player D": {"total": 4, "other": "data"}
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls)
+
+        assert len(result) == 3
+        assert result[0]["name"] == "Player A"
+        assert result[0]["count"] == 10
+
+    def test_no_cutoff(self):
+        """Test with cutoff=0 to include all items."""
+        data = {
+            "Player A": 10,
+            "Player B": 8,
+            "Player C": 6,
+            "Player D": 4
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls, cutoff=0)
+
+        assert len(result) == 4
+
+    def test_ties_at_cutoff(self):
+        """Test tie-breaking logic when items are tied at cutoff position."""
+        data = {
+            "Player A": 10,
+            "Player B": 8,
+            "Player C": 6,
+            "Player D": 6,  # Tied with Player C
+            "Player E": 6,  # Tied with Player C and D
+            "Player F": 4
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls, cutoff=3)
+
+        # Should include all tied items at position 3
+        assert len(result) == 5  # A, B, C, D, E all included
+
+    def test_custom_key_value_names(self):
+        """Test with custom key_name and value_name."""
+        data = {
+            "Player A": 10,
+            "Player B": 8
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data,
+                                   image_urls,
+                                   key_name="player_name",
+                                   value_name="score")
+
+        assert result[0]["player_name"] == "Player A"
+        assert result[0]["score"] == 10
+        assert "name" not in result[0]
+        assert "count" not in result[0]
+
+    def test_fewer_than_cutoff_items(self):
+        """Test with fewer items than cutoff."""
+        data = {
+            "Player A": 10,
+            "Player B": 8
+        }
+        image_urls = {}
+
+        result = extract_dict_data(data, image_urls, cutoff=5)
+
+        assert len(result) == 2
 
 
 class TestDraftPickDecipher:
@@ -822,121 +1008,3 @@ class TestDraftPickDecipher:
 
         result = draft_pick_decipher(draft_pick_dict, weekly_roster_ids)
         assert result == "unknown_manager's 2023 Round 2 Draft Pick"
-
-
-class TestExtractDictData:
-    """Test extract_dict_data function."""
-
-    @patch('patriot_center_backend.managers.utilities.get_image_url')
-    def test_top_3_simple_dict(self, mock_get_image_url):
-        """Test with simple dictionary (no nested totals)."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-
-        data = {
-            "Player A": 10,
-            "Player B": 8,
-            "Player C": 6,
-            "Player D": 4
-        }
-        image_urls= {}
-
-        result = extract_dict_data(data, image_urls)
-
-        assert len(result) == 3
-        assert result[0]["name"] == "Player A"
-        assert result[0]["count"] == 10
-        assert result[1]["name"] == "Player B"
-        assert result[1]["count"] == 8
-        assert result[2]["name"] == "Player C"
-        assert result[2]["count"] == 6
-
-    @patch('patriot_center_backend.managers.utilities.get_image_url')
-    def test_top_3_with_nested_totals(self, mock_get_image_url):
-        """Test with nested dictionary containing 'total' keys."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-
-        data = {
-            "Player A": {"total": 10, "other": "data"},
-            "Player B": {"total": 8, "other": "data"},
-            "Player C": {"total": 6, "other": "data"},
-            "Player D": {"total": 4, "other": "data"}
-        }
-        image_urls= {}
-
-        result = extract_dict_data(data, image_urls)
-
-        assert len(result) == 3
-        assert result[0]["name"] == "Player A"
-        assert result[0]["count"] == 10
-
-    @patch('patriot_center_backend.managers.utilities.get_image_url')
-    def test_no_cutoff(self, mock_get_image_url):
-        """Test with cutoff=0 to include all items."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-
-        data = {
-            "Player A": 10,
-            "Player B": 8,
-            "Player C": 6,
-            "Player D": 4
-        }
-        image_urls= {}
-
-        result = extract_dict_data(data, image_urls, cutoff=0)
-
-        assert len(result) == 4
-
-    @patch('patriot_center_backend.managers.utilities.get_image_url')
-    def test_ties_at_cutoff(self, mock_get_image_url):
-        """Test tie-breaking logic when items are tied at cutoff position."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-
-        data = {
-            "Player A": 10,
-            "Player B": 8,
-            "Player C": 6,
-            "Player D": 6,  # Tied with Player C
-            "Player E": 6,  # Tied with Player C and D
-            "Player F": 4
-        }
-        image_urls= {}
-
-        result = extract_dict_data(data, image_urls, cutoff=3)
-
-        # Should include all tied items at position 3
-        assert len(result) == 5  # A, B, C, D, E all included
-
-    @patch('patriot_center_backend.managers.utilities.get_image_url')
-    def test_custom_key_value_names(self, mock_get_image_url):
-        """Test with custom key_name and value_name."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-
-        data = {
-            "Player A": 10,
-            "Player B": 8
-        }
-        image_urls= {}
-
-        result = extract_dict_data(data, image_urls,
-                                   key_name="player_name",
-                                   value_name="score")
-
-        assert result[0]["player_name"] == "Player A"
-        assert result[0]["score"] == 10
-        assert "name" not in result[0]
-        assert "count" not in result[0]
-
-    @patch('patriot_center_backend.managers.utilities.get_image_url')
-    def test_fewer_than_cutoff_items(self, mock_get_image_url):
-        """Test with fewer items than cutoff."""
-        mock_get_image_url.return_value = "http://example.com/image.jpg"
-
-        data = {
-            "Player A": 10,
-            "Player B": 8
-        }
-        image_urls = {}
-
-        result = extract_dict_data(data, image_urls, cutoff=5)
-
-        assert len(result) == 2

@@ -18,6 +18,287 @@ from patriot_center_backend.managers.transaction_processing.base_processor impor
 )
 
 
+@pytest.fixture
+def mock_manager_cache():
+    """Create a blank cache for testing."""
+    return {
+        "Manager 1": {
+            "summary": {
+                "matchup_data": {
+                    "overall": {
+                        "points_for": {
+                            "total": 0.0,
+                            "opponents": {}
+                        },
+                        "points_against": {
+                            "total": 0.0,
+                            "opponents": {}
+                        },
+                        "total_matchups": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "wins": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "losses": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "ties": {
+                            "total": 0,
+                            "opponents": {}
+                        }
+                    },
+                    "regular_season": {
+                        "points_for": {
+                            "total": 0.0,
+                            "opponents": {}
+                        },
+                        "points_against": {
+                            "total": 0.0,
+                            "opponents": {}
+                        },
+                        "total_matchups": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "wins": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "losses": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "ties": {
+                            "total": 0,
+                            "opponents": {}
+                        }
+                    },
+                    "playoffs": {
+                        "points_for": {
+                            "total": 0.0,
+                            "opponents": {}
+                        },
+                        "points_against": {
+                            "total": 0.0,
+                            "opponents": {}
+                        },
+                        "total_matchups": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "wins": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "losses": {
+                            "total": 0,
+                            "opponents": {}
+                        },
+                        "ties": {
+                            "total": 0,
+                            "opponents": {}
+                        }
+                    }
+                },
+                "transactions": {
+                    "trades": {
+                        "total": 0,
+                        "trade_partners": {},
+                        "trade_players_acquired": {},
+                        "trade_players_sent": {}
+                    },
+                    "adds": {
+                        "total": 0,
+                        "players": {}
+                    },
+                    "drops": {
+                        "total": 0,
+                        "players": {}
+                    },
+                    "faab": {
+                        "total_lost_or_gained": 0,
+                        "players": {},
+                        "traded_away": {
+                            "total": 0,
+                            "trade_partners": {}
+                        },
+                        "acquired_from": {
+                            "total": 0,
+                            "trade_partners": {}
+                        }
+                    }
+                },
+                "overall_data": {
+                    "placement": {},
+                    "playoff_appearances": []
+                },
+                "user_id": "user123"
+            },
+            "years": {
+                "2023": {
+                    "summary": {
+                        "matchup_data": {
+                            "overall": {
+                                "points_for": {
+                                    "total": 0.0,
+                                    "opponents": {}
+                                },
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {}
+                                },
+                                "total_matchups": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "wins": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "losses": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "ties": {
+                                    "total": 0,
+                                    "opponents": {}
+                                }
+                            },
+                            "regular_season": {
+                                "points_for": {
+                                    "total": 0.0,
+                                    "opponents": {}
+                                },
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {}
+                                },
+                                "total_matchups": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "wins": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "losses": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "ties": {
+                                    "total": 0,
+                                    "opponents": {}
+                                }
+                            },
+                            "playoffs": {
+                                "points_for": {
+                                    "total": 0.0,
+                                    "opponents": {}
+                                },
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {}
+                                },
+                                "total_matchups": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "wins": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "losses": {
+                                    "total": 0,
+                                    "opponents": {}
+                                },
+                                "ties": {
+                                    "total": 0,
+                                    "opponents": {}
+                                }
+                            }
+                        },
+                        "transactions": {
+                            "trades": {
+                                "total": 0,
+                                "trade_partners": {},
+                                "trade_players_acquired": {},
+                                "trade_players_sent": {}
+                            },
+                            "adds": {
+                                "total": 0,
+                                "players": {}
+                            },
+                            "drops": {
+                                "total": 0,
+                                "players": {}
+                            },
+                            "faab": {
+                                "total_lost_or_gained": 0,
+                                "players": {},
+                                "traded_away": {
+                                    "total": 0,
+                                    "trade_partners": {}
+                                },
+                                "acquired_from": {
+                                    "total": 0,
+                                    "trade_partners": {}
+                                }
+                            }
+                        }
+                    },
+                    "roster_id": 1,
+                    "weeks": {
+                        "1": {
+                            "matchup_data": {
+                                "opponent_manager": None,
+                                "result": None,
+                                "points_for": 0.0,
+                                "points_against": 0.0
+                            },
+                            "transactions": {
+                                "trades": {
+                                    "total": 0,
+                                    "trade_partners": {},
+                                    "trade_players_acquired": {},
+                                    "trade_players_sent": {},
+                                    "transaction_ids": []
+                                },
+                                "adds": {
+                                    "total": 0,
+                                    "players": {},
+                                    "transaction_ids": []
+                                },
+                                "drops": {
+                                    "total": 0,
+                                    "players": {},
+                                    "transaction_ids": []
+                                },
+                                "faab": {
+                                    "total_lost_or_gained": 0,
+                                    "players": {},
+                                    "traded_away": {
+                                        "total": 0,
+                                        "trade_partners": {}
+                                    },
+                                    "acquired_from": {
+                                        "total": 0,
+                                        "trade_partners": {}
+                                    },
+                                    "transaction_ids": []
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+
 @pytest.fixture(autouse=True)
 def patch_caches():
     with patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER', MagicMock()):

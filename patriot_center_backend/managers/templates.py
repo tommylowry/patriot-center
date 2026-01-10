@@ -8,7 +8,6 @@ from copy import deepcopy
 
 from patriot_center_backend.cache import CACHE_MANAGER
 
-
 # faab_template used by both methods
 faab_template = {
     "total_lost_or_gained": 0,
@@ -31,6 +30,7 @@ faab_template = {
         }
     }
 }
+
 
 def initialize_faab_template(manager: str, year: str, week: str) -> None:
     """

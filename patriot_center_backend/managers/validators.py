@@ -3,11 +3,9 @@ Validation functions for manager metadata processing.
 
 Validates preconditions, matchup data, and transaction data.
 """
-from typing import Callable, Dict, Optional
+from typing import Dict, Optional
 
 from patriot_center_backend.cache import CACHE_MANAGER
-
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
 
 
 class ValidationError(Exception):
@@ -67,6 +65,8 @@ def validate_matchup_data(matchup_data: dict) -> str:
     # No matchup data means manager didn't play that week (e.g., not in playoffs)
     if not matchup_data:
         return "Empty"
+    
+    manager_cache = CACHE_MANAGER.get_manager_cache()
 
     opponent_manager = matchup_data.get("opponent_manager", "")
     result           = matchup_data.get("result", "")
@@ -76,7 +76,7 @@ def validate_matchup_data(matchup_data: dict) -> str:
     # Validate opponent manager
     if opponent_manager == "":
         return "Warning, no opponent_data in matchup_data"
-    if opponent_manager not in list(MANAGER_CACHE.keys()):
+    if opponent_manager not in list(manager_cache.keys()):
         return f"Warning, {opponent_manager} is an invalid manager"
 
     # Validate points are positive

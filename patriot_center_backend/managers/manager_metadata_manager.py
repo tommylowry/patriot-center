@@ -25,8 +25,6 @@ from patriot_center_backend.managers.validators import validate_caching_precondi
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
 from patriot_center_backend.utils.player_cache_updater import update_players_cache
 
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
-
 
 class ManagerMetadataManager:
     """
@@ -126,6 +124,8 @@ class ManagerMetadataManager:
         Raises:
             ValueError: If user data fetch fails or no username mapping found
         """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
         if roster_id == None:
             # Co-manager scenario; skip
             return
@@ -145,14 +145,14 @@ class ManagerMetadataManager:
 
         self._weekly_roster_ids[roster_id] = manager
         self._set_defaults_if_missing(roster_id)
-        MANAGER_CACHE[manager]["years"][year]["roster_id"] = roster_id
+        manager_cache[manager]["years"][year]["roster_id"] = roster_id
 
-        if "user_id" not in MANAGER_CACHE[manager]["summary"]:
+        if "user_id" not in manager_cache[manager]["summary"]:
             username = NAME_TO_MANAGER_USERNAME.get(manager, "")
             if username:
                 user_payload = fetch_sleeper_data(f"user/{username}")
                 if "user_id" in user_payload:
-                    MANAGER_CACHE[manager]["summary"]["user_id"] = user_payload["user_id"]
+                    manager_cache[manager]["summary"]["user_id"] = user_payload["user_id"]
                 else:
                     raise ValueError(f"Failed to fetch 'user_id' for manager {manager} with username {username}.")
             else:
@@ -230,12 +230,14 @@ class ManagerMetadataManager:
             placement_dict: Dict mapping manager names to placement (1=champion, 2=runner-up, etc.)
             year: Season year as string
         """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
         for manager in placement_dict:
-            if manager not in MANAGER_CACHE:
+            if manager not in manager_cache:
                 continue
             
-            if year not in MANAGER_CACHE[manager]["summary"]["overall_data"]["placement"]:
-                MANAGER_CACHE[manager]["summary"]["overall_data"]["placement"][year] = placement_dict[manager]
+            if year not in manager_cache[manager]["summary"]["overall_data"]["placement"]:
+                manager_cache[manager]["summary"]["overall_data"]["placement"][year] = placement_dict[manager]
 
     # ===== API Export Functions =====
     
@@ -282,30 +284,32 @@ class ManagerMetadataManager:
         Args:
             roster_id: Roster ID to map to manager name
         """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
         if not self._templates:
             self._templates = initialize_summary_templates(use_faab=self._use_faab)
 
         manager = self._weekly_roster_ids.get(roster_id, None)
 
-        if manager not in MANAGER_CACHE:
-            MANAGER_CACHE[manager] = {"summary": deepcopy(self._templates['top_level_summary_template']), "years": {}}
+        if manager not in manager_cache:
+            manager_cache[manager] = {"summary": deepcopy(self._templates['top_level_summary_template']), "years": {}}
         
-        if self._year not in MANAGER_CACHE[manager]["years"]:
-            MANAGER_CACHE[manager]["years"][self._year] = {
+        if self._year not in manager_cache[manager]["years"]:
+            manager_cache[manager]["years"][self._year] = {
                 "summary": deepcopy(self._templates['yearly_summary_template']),
                 "roster_id": None,
                 "weeks": {}
             }
         
         # Initialize week template if missing
-        if self._week not in MANAGER_CACHE[manager]["years"][self._year]["weeks"]:
+        if self._week not in manager_cache[manager]["years"][self._year]["weeks"]:
 
             # Differentiate between playoff and non-playoff weeks
             season_state = get_season_state(self._week, self._year, self._playoff_week_start)
             if season_state == "playoffs" and roster_id not in self._playoff_roster_ids:
-                MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week] = deepcopy(self._templates['weekly_summary_not_in_playoffs_template'])
+                manager_cache[manager]["years"][self._year]["weeks"][self._week] = deepcopy(self._templates['weekly_summary_not_in_playoffs_template'])
             else:
-                MANAGER_CACHE[manager]["years"][self._year]["weeks"][self._week] = deepcopy(self._templates['weekly_summary_template'])
+                manager_cache[manager]["years"][self._year]["weeks"][self._week] = deepcopy(self._templates['weekly_summary_template'])
         
         if self._use_faab:
             initialize_faab_template(manager, self._year, self._week)

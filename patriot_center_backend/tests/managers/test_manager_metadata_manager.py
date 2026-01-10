@@ -8,21 +8,25 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
+from patriot_center_backend.managers.manager_metadata_manager import (
+    ManagerMetadataManager,
+    get_manager_metadata_manager,
+)
 from patriot_center_backend.managers.matchup_processor import MatchupProcessor
-from patriot_center_backend.managers.transaction_processor import TransactionProcessor
+from patriot_center_backend.managers.transaction_processing.base_processor import (
+    TransactionProcessor,
+)
 
 
 @pytest.fixture(autouse=True)
 def patch_caches():
-    with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}), \
-         patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER', MagicMock()):
+    with patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER', MagicMock()):
         yield
 
 
 @pytest.fixture
-def manager():
+def mock_metadata_manager():
     """Create DataExporter instance with sample caches."""
-    from patriot_center_backend.managers.manager_metadata_manager import ManagerMetadataManager
     return ManagerMetadataManager()
 
 
@@ -31,26 +35,20 @@ class TestManagerMetadataManagerInit:
 
     def test_init_creates_data_exporter(self):
         """Test that __init__ creates DataExporter instance."""
-        from patriot_center_backend.managers.manager_metadata_manager import ManagerMetadataManager
-        mgr = ManagerMetadataManager()
+        mock_metadata_manager = ManagerMetadataManager()
 
-        assert mgr._data_exporter is not None
+        assert mock_metadata_manager._data_exporter is not None
 
     def test_init_does_not_create_processors(self):
         """Test that __init__ does not create processors (lazy initialization)."""
-        from patriot_center_backend.managers.manager_metadata_manager import ManagerMetadataManager
-        mgr = ManagerMetadataManager()
+        mock_metadata_manager = ManagerMetadataManager()
 
-        assert mgr._transaction_processor is None
-        assert mgr._matchup_processor is None
+        assert mock_metadata_manager._transaction_processor is None
+        assert mock_metadata_manager._matchup_processor is None
 
     def test_singleton_pattern(self):
         """Test that get_manager_metadata_manager returns singleton."""
-        import patriot_center_backend.managers.manager_metadata_manager as mmm
-        from patriot_center_backend.managers.manager_metadata_manager import (
-            get_manager_metadata_manager,
-        )
-        mmm._manager_metadata_instance = None
+        ManagerMetadataManager._manager_metadata_instance = None
 
         mgr1 = get_manager_metadata_manager()
         mgr2 = get_manager_metadata_manager()
@@ -62,128 +60,140 @@ class TestManagerMetadataManagerInit:
 class TestEnsureProcessorsInitialized:
     """Test _ensure_processors_initialized method."""
 
-    def test_initializes_processors_on_first_call(self, manager):
+    def test_initializes_processors_on_first_call(self, mock_metadata_manager):
         """Test that processors are created on first call."""
-        manager._use_faab = True
-        manager._playoff_week_start = 15
+        mock_metadata_manager._use_faab = True
+        mock_metadata_manager._playoff_week_start = 15
 
-        manager._ensure_processors_initialized()
+        mock_metadata_manager._ensure_processors_initialized()
 
-        assert manager._transaction_processor is not None
-        assert manager._matchup_processor is not None
+        assert mock_metadata_manager._transaction_processor is not None
+        assert mock_metadata_manager._matchup_processor is not None
 
-    def test_does_not_reinitialize_processors(self, manager):
+    def test_does_not_reinitialize_processors(self, mock_metadata_manager):
         """Test that processors are not recreated on subsequent calls."""
-        manager._use_faab = True
-        manager._playoff_week_start = 15
+        mock_metadata_manager._use_faab = True
+        mock_metadata_manager._playoff_week_start = 15
 
-        manager._ensure_processors_initialized()
-        first_transaction = manager._transaction_processor
-        first_matchup = manager._matchup_processor
+        mock_metadata_manager._ensure_processors_initialized()
+        first_transaction = mock_metadata_manager._transaction_processor
+        first_matchup = mock_metadata_manager._matchup_processor
 
-        manager._ensure_processors_initialized()
+        mock_metadata_manager._ensure_processors_initialized()
 
         # Should be same instances
-        assert manager._transaction_processor is first_transaction
-        assert manager._matchup_processor is first_matchup
+        assert mock_metadata_manager._transaction_processor is first_transaction
+        assert mock_metadata_manager._matchup_processor is first_matchup
 
-    def test_raises_if_use_faab_not_set(self, manager):
+    def test_raises_if_use_faab_not_set(self, mock_metadata_manager):
         """Test that ValueError is raised if use_faab not set."""
-        manager._use_faab = None
+        mock_metadata_manager._use_faab = None
 
         with pytest.raises(ValueError, match="Cannot initialize processors before use_faab is set"):
-            manager._ensure_processors_initialized()
+            mock_metadata_manager._ensure_processors_initialized()
 
 
 class TestSetRosterId:
     """Test set_roster_id method."""
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_roster_id_calls_set_defaults(self, mock_season_state, mock_fetch):
-        mock_fetch.side_effect = [
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.update_players_cache') as mock_update_players, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data') as mock_fetch_sleeper_data, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.ManagerMetadataManager._set_defaults_if_missing') as mock_set_defaults, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"}):
+            
+            self.mock_manager_cache = {}
+            self.mock_get_manager_cache = mock_get_manager_cache
+            self.mock_get_manager_cache.return_value = self.mock_manager_cache
+
+            self.mock_update_players = mock_update_players
+
+            self.mock_fetch_sleeper_data = mock_fetch_sleeper_data
+            self.mock_fetch_sleeper_data.return_value = {}
+
+            self.mock_set_defaults = mock_set_defaults
+            
+            yield
+
+    def test_set_roster_id_calls_set_defaults(self, mock_metadata_manager):
+        self.mock_fetch_sleeper_data.side_effect = [
             {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
             {"user_id": "user123"}
         ]
-        mock_season_state.return_value = "regular_season"
-
-        from patriot_center_backend.managers.templates import initialize_summary_templates
-        templates = initialize_summary_templates(use_faab=True)
-
-        sample_manager_cache = {
+        self.mock_get_manager_cache.return_value = {
             "Manager 1": {
-                "summary": templates['top_level_summary_template'],
+                "summary": {},
                 "years": {
                     "2023": {"summary": {}, "roster_id": None, "weeks": {}}
                 }
             }
         }
 
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', sample_manager_cache):
-            from patriot_center_backend.managers.manager_metadata_manager import (
-                ManagerMetadataManager,
-            )
-            set_roster_id_calls_set_defaults_manager = ManagerMetadataManager()
-
-            with patch.object(set_roster_id_calls_set_defaults_manager, '_set_defaults_if_missing') as mock_defaults:
-                # Need to set up minimal cache structure since _set_defaults_if_missing is mocked
-                set_roster_id_calls_set_defaults_manager.set_roster_id(
-                    manager="Manager 1",
-                    year="2023",
-                    week="1",
-                    roster_id=1
-                )
-
-                mock_defaults.assert_called_once_with(1)
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
-    def test_set_roster_id_updates_roster_mapping(self, mock_initialize_faab_template, mock_fetch, manager):
-        """Test that roster ID is mapped to manager."""
-        mock_fetch.side_effect = [
-            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
-        ]
-
-        manager.set_roster_id(
+        mock_metadata_manager.set_roster_id(
             manager="Manager 1",
             year="2023",
             week="1",
             roster_id=1
         )
 
-        assert manager._weekly_roster_ids[1] == "Manager 1"
+        self.mock_set_defaults.assert_called_once_with(1)
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    def test_set_roster_id_skips_none_roster_id(self, mock_fetch):
-        """Test that None roster_id (co-manager) is skipped."""
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
-            from patriot_center_backend.managers import manager_metadata_manager
-            set_roster_id_skips_none_roster_id_manager = manager_metadata_manager.ManagerMetadataManager()
-            set_roster_id_skips_none_roster_id_manager.set_roster_id(
-                manager="Manager 1",
-                year="2023",
-                week="1",
-                roster_id=None
-            )
-
-            # Should not create any entries
-            assert "Manager 1" not in manager_metadata_manager.MANAGER_CACHE
-            assert not mock_fetch.called
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
-    def test_set_roster_id_fetches_league_settings_week_1(self, mock_initialize_faab_template, mock_fetch, manager):
-        """Test that league settings are fetched on week 1."""
-        mock_fetch.side_effect = [
+    def test_set_roster_id_updates_roster_mapping(self, mock_metadata_manager):
+        """Test that roster ID is mapped to manager."""
+        self.mock_fetch_sleeper_data.side_effect = [
             {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
             {"user_id": "user123"}
         ]
+        self.mock_get_manager_cache.return_value = {
+            "Manager 1": {
+                "summary": {},
+                "years": {
+                    "2023": {"summary": {}, "roster_id": None, "weeks": {}}
+                }
+            }
+        }
 
-        manager.set_roster_id(
+        mock_metadata_manager.set_roster_id(
+            manager="Manager 1",
+            year="2023",
+            week="1",
+            roster_id=1
+        )
+
+        assert mock_metadata_manager._weekly_roster_ids[1] == "Manager 1"
+
+    def test_set_roster_id_skips_none_roster_id(self, mock_metadata_manager):
+        """Test that None roster_id (co-manager) is skipped."""
+        mock_metadata_manager.set_roster_id(
+            manager="Manager 1",
+            year="2023",
+            week="1",
+            roster_id=None
+        )
+
+        # Should not create any entries
+        assert "Manager 1" not in self.mock_manager_cache
+        assert not self.mock_fetch_sleeper_data.called
+
+    def test_set_roster_id_fetches_league_settings_week_1(self, mock_metadata_manager):
+        """Test that league settings are fetched on week 1."""
+        self.mock_fetch_sleeper_data.side_effect = [
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"}
+        ]
+        self.mock_get_manager_cache.return_value = {
+            "Manager 1": {
+                "summary": {},
+                "years": {
+                    "2023": {"summary": {}, "roster_id": None, "weeks": {}}
+                }
+            }
+        }
+
+        mock_metadata_manager.set_roster_id(
             manager="Manager 1",
             year="2023",
             week="1",
@@ -191,106 +201,79 @@ class TestSetRosterId:
         )
 
         # Should fetch league settings
-        assert mock_fetch.called
-        assert manager._use_faab is True
-        assert manager._playoff_week_start == 15
+        assert self.mock_fetch_sleeper_data.called
+        assert mock_metadata_manager._use_faab is True
+        assert mock_metadata_manager._playoff_week_start == 15
 
 
 class TestCacheWeekData:
     """Test cache_week_data method."""
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.validate_caching_preconditions')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
-    def test_cache_week_data_processes_matchups_and_transactions(self, mock_initialize_faab_template, mock_validate, mock_fetch, manager):
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.manager_metadata_manager.validate_caching_preconditions') as mock_validate, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.ManagerMetadataManager._ensure_processors_initialized') as mock_ensure_init, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state') as mock_get_season_state:
+            
+            self.mock_validate = mock_validate
+            self.mock_ensure_init = mock_ensure_init
+            self.mock_get_season_state = mock_get_season_state
+            
+            yield
+
+    def test_cache_week_data_processes_matchups_and_transactions(self, mock_metadata_manager):
         """Test that cache_week_data processes both matchups and transactions."""
-        mock_fetch.side_effect = [
-            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
-        ]
+        mock_metadata_manager._transaction_processor = MagicMock()
+        mock_metadata_manager._matchup_processor = MagicMock()
 
-        manager.set_roster_id("Manager 1", "2023", "1", 1)
+        mock_metadata_manager.cache_week_data("2023", "1")
 
-        with patch.object(manager, '_ensure_processors_initialized'):
-            manager._transaction_processor = MagicMock()
-            manager._matchup_processor = MagicMock()
+        # Should process both
+        assert mock_metadata_manager._transaction_processor.scrub_transaction_data.called
+        assert mock_metadata_manager._matchup_processor.scrub_matchup_data.called
 
-            manager.cache_week_data("2023", "1")
-
-            # Should process both
-            assert manager._transaction_processor.scrub_transaction_data.called
-            assert manager._matchup_processor.scrub_matchup_data.called
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.validate_caching_preconditions')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
-    def test_cache_week_data_checks_for_reversals(self, mock_initialize_faab_template, mock_validate, mock_fetch, manager):
+    def test_cache_week_data_checks_for_reversals(self, mock_metadata_manager):
         """Test that cache_week_data checks for transaction reversals."""
-        mock_fetch.side_effect = [
-            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
-        ]
+        mock_metadata_manager._transaction_processor = MagicMock()
+        mock_metadata_manager._matchup_processor = MagicMock()
 
-        manager.set_roster_id("Manager 1", "2023", "1", 1)
+        mock_metadata_manager.cache_week_data("2023", "1")
 
-        with patch.object(manager, '_ensure_processors_initialized'):
-            manager._transaction_processor = MagicMock()
-            manager._matchup_processor = MagicMock()
+        # Should check for reversals
+        assert mock_metadata_manager._transaction_processor.check_for_reverse_transactions.called
 
-            manager.cache_week_data("2023", "1")
-
-            # Should check for reversals
-            assert manager._transaction_processor.check_for_reverse_transactions.called
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.validate_caching_preconditions')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
-    def test_cache_week_data_processes_playoff_data(self, mock_initialize_faab_template, mock_season, mock_validate, mock_fetch, manager):
+    def test_cache_week_data_processes_playoff_data(self, mock_metadata_manager):
         """Test that playoff data is processed during playoff weeks."""
-        mock_fetch.side_effect = [
-            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
-        ]
-        mock_season.return_value = "playoffs"
+        self.mock_get_season_state.return_value = "playoffs"
+        
+        mock_metadata_manager._transaction_processor = MagicMock()
+        mock_metadata_manager._matchup_processor = MagicMock()
 
-        manager.set_roster_id("Manager 1", "2023", "15", 1)
+        mock_metadata_manager.cache_week_data("2023", "15")
 
-        with patch.object(manager, '_ensure_processors_initialized'):
-            manager._transaction_processor = MagicMock()
-            manager._matchup_processor = MagicMock()
+        # Should process playoff data
+        assert mock_metadata_manager._matchup_processor.scrub_playoff_data.called
 
-            manager.cache_week_data("2023", "15")
-
-            # Should process playoff data
-            assert manager._matchup_processor.scrub_playoff_data.called
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.validate_caching_preconditions')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
-    def test_cache_week_data_clears_state_after(self, mock_initialize_faab_template, mock_validate, mock_fetch, manager):
+    def test_cache_week_data_clears_state_after(self, mock_metadata_manager):
         """Test that session state is cleared after processing."""
-        mock_fetch.side_effect = [
-            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
-        ]
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
+        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1"}
 
-        manager.set_roster_id("Manager 1", "2023", "1", 1)
+        mock_metadata_manager._transaction_processor = MagicMock()
+        mock_metadata_manager._matchup_processor = MagicMock()
 
-        with patch.object(manager, '_ensure_processors_initialized'):
-            manager._transaction_processor = MagicMock()
-            manager._matchup_processor = MagicMock()
+        mock_metadata_manager.cache_week_data("2023", "1")
 
-            manager.cache_week_data("2023", "1")
+        # Should clear processors
+        mock_metadata_manager._transaction_processor.clear_session_state.called
+        mock_metadata_manager._matchup_processor.clear_session_state.called
 
-            # Should clear state
-            assert manager._year is None
-            assert manager._week is None
-            assert manager._weekly_roster_ids == {}
+        # Should clear state
+        assert mock_metadata_manager._year is None
+        assert mock_metadata_manager._week is None
+        assert mock_metadata_manager._weekly_roster_ids == {}
 
 
 class TestSetPlayoffPlacements:

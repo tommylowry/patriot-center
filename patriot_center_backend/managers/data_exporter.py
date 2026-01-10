@@ -7,7 +7,7 @@ All methods delegate to cache_queries for data extraction.
 from copy import deepcopy
 from typing import Any, Dict
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.managers.cache_queries.award_queries import (
     get_manager_awards_from_cache,
@@ -33,12 +33,6 @@ from patriot_center_backend.utils.image_providers import (
     get_current_manager_image_url,
     get_image_url,
 )
-
-CACHE_MANAGER         = get_cache_manager()
-
-MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
-VALID_OPTIONS_CACHE   = CACHE_MANAGER.get_valid_options_cache()
-TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
 
 
 class DataExporter:
@@ -79,26 +73,29 @@ class DataExporter:
         Returns:
             Dictionary with "managers" list, sorted by weight (best managers first)
         """
+        manager_cache       = CACHE_MANAGER.get_manager_cache()
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
+
         current_year = str(max(LEAGUE_IDS.keys()))
         
-        managers = VALID_OPTIONS_CACHE[current_year]["managers"]
+        managers = valid_options_cache[current_year]["managers"]
         if not active_only:
-            managers = list(MANAGER_CACHE.keys())
+            managers = list(manager_cache.keys())
         
         managers_list = []
         
         for manager in managers:
-            wins   = MANAGER_CACHE[manager]["summary"]["matchup_data"]["overall"]["wins"]["total"]
-            losses = MANAGER_CACHE[manager]["summary"]["matchup_data"]["overall"]["losses"]["total"]
-            ties   = MANAGER_CACHE[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
+            wins   = manager_cache[manager]["summary"]["matchup_data"]["overall"]["wins"]["total"]
+            losses = manager_cache[manager]["summary"]["matchup_data"]["overall"]["losses"]["total"]
+            ties   = manager_cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
             
             ranking_details = get_ranking_details_from_cache(manager, manager_summary_usage=True, active_only=active_only)
 
             manager_item = {
                 "name":           manager,
                 "image_url":      get_current_manager_image_url(manager, self._image_urls),
-                "years_active":   list(MANAGER_CACHE[manager].get("years", {}).keys()),
-                "total_trades":   MANAGER_CACHE[manager]["summary"]["transactions"]["trades"]["total"],
+                "years_active":   list(manager_cache[manager].get("years", {}).keys()),
+                "total_trades":   manager_cache[manager]["summary"]["transactions"]["trades"]["total"],
                 "wins":           wins,
                 "losses":         losses,
                 "ties":           ties,
@@ -112,15 +109,15 @@ class DataExporter:
             }
             playoff_appearances = ranking_details['values']['playoffs']
             best_finish         = 4
-            for y in MANAGER_CACHE[manager]['summary']['overall_data']['placement']:
-                if MANAGER_CACHE[manager]['summary']['overall_data']['placement'][y] == 1:
+            for y in manager_cache[manager]['summary']['overall_data']['placement']:
+                if manager_cache[manager]['summary']['overall_data']['placement'][y] == 1:
                     placements['first_place'] += 1
-                if MANAGER_CACHE[manager]['summary']['overall_data']['placement'][y] == 2:
+                if manager_cache[manager]['summary']['overall_data']['placement'][y] == 2:
                     placements['second_place'] += 1
-                if MANAGER_CACHE[manager]['summary']['overall_data']['placement'][y] == 3:
+                if manager_cache[manager]['summary']['overall_data']['placement'][y] == 3:
                     placements['third_place'] += 1
-                if MANAGER_CACHE[manager]['summary']['overall_data']['placement'][y] < best_finish:
-                    best_finish = MANAGER_CACHE[manager]['summary']['overall_data']['placement'][y]
+                if manager_cache[manager]['summary']['overall_data']['placement'][y] < best_finish:
+                    best_finish = manager_cache[manager]['summary']['overall_data']['placement'][y]
 
 
             if best_finish == 4:
@@ -144,8 +141,8 @@ class DataExporter:
 
             manager_item["average_points_for"] = ranking_details['values']['average_points_for']
 
-            manager_item["total_adds"]  = MANAGER_CACHE[manager]['summary']['transactions']['adds']['total']
-            manager_item["total_drops"] = MANAGER_CACHE[manager]['summary']['transactions']['drops']['total']
+            manager_item["total_adds"]  = manager_cache[manager]['summary']['transactions']['adds']['total']
+            manager_item["total_drops"] = manager_cache[manager]['summary']['transactions']['drops']['total']
 
             manager_item["is_active"] = ranking_details['ranks']['is_active_manager']
 
@@ -185,17 +182,19 @@ class DataExporter:
         Raises:
             ValueError: If manager or year not found in cache
         """
-        if manager not in MANAGER_CACHE:
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
+        if manager not in manager_cache:
             raise ValueError(f"Manager {manager} not found in cache.")
         
         if year:
-            if year not in MANAGER_CACHE[manager]["years"]:
+            if year not in manager_cache[manager]["years"]:
                 raise ValueError(f"Year {year} not found for manager {manager} in cache.")
         
         return_dict = {}
         return_dict["manager_name"] = manager
         return_dict["image_url"]    = get_current_manager_image_url(manager, self._image_urls)
-        return_dict["years_active"] = list(MANAGER_CACHE[manager].get("years", {}).keys())
+        return_dict["years_active"] = list(manager_cache[manager].get("years", {}).keys())
 
         return_dict["matchup_data"] = get_matchup_details_from_cache(manager, year=year)
         return_dict["transactions"] = get_transaction_details_from_cache(year, manager, self._image_urls)
@@ -225,14 +224,16 @@ class DataExporter:
         Raises:
             ValueError: If manager or year not found in cache
         """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
         return_dict = {}
         
         for manager in [manager1, manager2]:
         
-            if manager not in MANAGER_CACHE:
+            if manager not in manager_cache:
                 raise ValueError(f"Manager {manager} not found in cache.")
             if year:
-                if year not in MANAGER_CACHE[manager]["years"]:
+                if year not in manager_cache[manager]["years"]:
                     raise ValueError(f"Year {year} not found for manager {manager} in cache.")
 
             manager = {
@@ -281,10 +282,13 @@ class DataExporter:
         Raises:
             ValueError: If manager or year not found in cache
         """
-        if manager_name not in MANAGER_CACHE:
+        manager_cache         = CACHE_MANAGER.get_manager_cache()
+        transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache
+
+        if manager_name not in manager_cache:
             raise ValueError(f"Manager {manager_name} not found in cache.")
         if year:
-            if year not in MANAGER_CACHE[manager_name]["years"]:
+            if year not in manager_cache[manager_name]["years"]:
                 raise ValueError(f"Year {year} not found for manager {manager_name} in cache.")
         
         
@@ -296,10 +300,10 @@ class DataExporter:
 
         # Gather transactions based on filters
         filtered_transactions = []
-        years_to_check = [year] if year else list(MANAGER_CACHE[manager_name]["years"].keys())
+        years_to_check = [year] if year else list(manager_cache[manager_name]["years"].keys())
         
         for yr in years_to_check:
-            yearly_data = MANAGER_CACHE[manager_name]["years"][yr]
+            yearly_data = manager_cache[manager_name]["years"][yr]
             for week in yearly_data.get("weeks", {}):
                 weekly_transactions = deepcopy(yearly_data["weeks"][week]["transactions"])
                 
@@ -317,7 +321,7 @@ class DataExporter:
                 transaction_ids = deepcopy(weekly_transactions.get("adds", {}).get("transaction_ids", []))
                 transaction_ids.reverse()
                 for transaction_id in transaction_ids:
-                    add_details = TRANSACTION_IDS_CACHE.get(transaction_id, {})
+                    add_details = manager_cache.get(transaction_id, {})
                     if add_details:
                         
                         # Only include adds portion of a transaction for "add" filter
@@ -338,7 +342,7 @@ class DataExporter:
                 transaction_ids = deepcopy(weekly_transactions.get("drops", {}).get("transaction_ids", []))
                 transaction_ids.reverse()
                 for transaction_id in transaction_ids:
-                    drop_details = TRANSACTION_IDS_CACHE.get(transaction_id, {})
+                    drop_details = transaction_ids_cache.get(transaction_id, {})
                     if drop_details:
                         
                         # Only include drops portion of a transaction for "drop" filter
@@ -357,7 +361,7 @@ class DataExporter:
                 transaction_ids = deepcopy(weekly_transactions.get("adds", {}).get("transaction_ids", []))
                 transaction_ids.reverse()
                 for transaction_id in transaction_ids:
-                    add_drop_details = TRANSACTION_IDS_CACHE.get(transaction_id, {})
+                    add_drop_details = transaction_ids_cache.get(transaction_id, {})
                     if add_drop_details:
                         
                         # Only include add_and_drop transactions
@@ -403,7 +407,9 @@ class DataExporter:
         Raises:
             ValueError: If manager not found in cache
         """
-        if manager not in MANAGER_CACHE:
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
+        if manager not in manager_cache:
             raise ValueError(f"Manager {manager} not found in cache.")
         
         awards_data = {

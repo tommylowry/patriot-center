@@ -20,7 +20,7 @@ from copy import deepcopy
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.managers import get_manager_metadata_manager
 from patriot_center_backend.services.aggregated_data import (
@@ -30,7 +30,6 @@ from patriot_center_backend.services.aggregated_data import (
 from patriot_center_backend.utils.helpers import slug_to_player_name
 
 MANAGER_METADATA_MANAGER = get_manager_metadata_manager()
-CACHE_MANAGER            = get_cache_manager()
 
 PLAYERS_CACHE = CACHE_MANAGER.get_players_cache()
 

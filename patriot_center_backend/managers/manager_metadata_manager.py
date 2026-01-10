@@ -18,10 +18,12 @@ from patriot_center_backend.managers.templates import (
     initialize_faab_template,
     initialize_summary_templates,
 )
-from patriot_center_backend.managers.transaction_processing.base_processor import TransactionProcessor
-from patriot_center_backend.managers.utilities import update_players_cache
+from patriot_center_backend.managers.transaction_processing.base_processor import (
+    TransactionProcessor,
+)
 from patriot_center_backend.managers.validators import validate_caching_preconditions
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
+from patriot_center_backend.utils.player_cache_updater import update_players_cache
 
 MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
 

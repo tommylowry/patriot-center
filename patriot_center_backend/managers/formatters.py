@@ -8,14 +8,8 @@ from typing import Any, Dict, List, Optional
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.managers.utilities import get_image_url
 from patriot_center_backend.utils.helpers import fetch_sleeper_data
-
-MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
-STARTERS_CACHE        = CACHE_MANAGER.get_starters_cache()
-PLAYERS_CACHE         = CACHE_MANAGER.get_players_cache()
-PLAYER_IDS_CACHE      = CACHE_MANAGER.get_player_ids_cache()
-TRANSACTION_IDS_CACHE = CACHE_MANAGER.get_transaction_ids_cache()
+from patriot_center_backend.utils.image_providers import get_image_url
 
 
 def get_season_state(week: str, year: str, playoff_week_start: Optional[int]) -> str:
@@ -62,6 +56,10 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str,
     Returns:
         Dictionary containing top 3 and lowest scorers for both managers
     """
+    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+    players_cache    = CACHE_MANAGER.get_players_cache()
+    starters_cache   = CACHE_MANAGER.get_starters_cache()
+
     # Validate that year and week are present
     if "year" not in matchup_data or "week" not in matchup_data:
         print("WARNING: matchup_data missing year or week. Cannot get top 3 scorers.")
@@ -78,7 +76,7 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str,
         }
     
     # Validate that starter data exists for both managers
-    if manager_1 not in STARTERS_CACHE.get(matchup_data["year"], {}).get(matchup_data["week"], {}) or manager_2 not in STARTERS_CACHE.get(matchup_data["year"], {}).get(matchup_data["week"], {}):
+    if manager_1 not in starters_cache.get(matchup_data["year"], {}).get(matchup_data["week"], {}) or manager_2 not in starters_cache.get(matchup_data["year"], {}).get(matchup_data["week"], {}):
         print(f"WARNING: Starter data missing for week {matchup_data['week']}, year {matchup_data['year']}. Cannot get top 3 scorers for {manager_1} vs {manager_2}.")
         
         matchup_data["manager_1_top_3_scorers"] = []
@@ -93,8 +91,8 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str,
         }
 
 
-    manager_1_starters = deepcopy(STARTERS_CACHE[matchup_data["year"]][matchup_data["week"]][manager_1])
-    manager_2_starters = deepcopy(STARTERS_CACHE[matchup_data["year"]][matchup_data["week"]][manager_2])
+    manager_1_starters = deepcopy(starters_cache[matchup_data["year"]][matchup_data["week"]][manager_1])
+    manager_2_starters = deepcopy(starters_cache[matchup_data["year"]][matchup_data["week"]][manager_2])
     # Remove total points aggregate, we only want individual players
     manager_1_starters.pop("Total_Points")
     manager_2_starters.pop("Total_Points")
@@ -105,9 +103,9 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str,
     for player in manager_1_starters:
         player_dict = get_image_url(player, image_urls, dictionary=True)
         
-        player_id =  PLAYERS_CACHE[player]["player_id"]
-        first_name = PLAYER_IDS_CACHE[player_id]['first_name']
-        last_name =  PLAYER_IDS_CACHE[player_id]['last_name']
+        player_id =  players_cache[player]["player_id"]
+        first_name = player_ids_cache[player_id]['first_name']
+        last_name =  player_ids_cache[player_id]['last_name']
         
         player_dict.update(
             {
@@ -148,9 +146,9 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str,
     for player in manager_2_starters:
         player_dict = get_image_url(player, image_urls, dictionary=True)
         
-        player_id =  PLAYERS_CACHE[player]["player_id"]
-        first_name = PLAYER_IDS_CACHE[player_id]['first_name']
-        last_name =  PLAYER_IDS_CACHE[player_id]['last_name']
+        player_id =  players_cache[player]["player_id"]
+        first_name = player_ids_cache[player_id]['first_name']
+        last_name =  player_ids_cache[player_id]['last_name']
 
         player_dict.update(
             {
@@ -215,7 +213,9 @@ def get_matchup_card(manager_1: str, manager_2: str, year: str, week: str,
         Dictionary containing matchup details, scores, winner, and top performers
         Empty dict if matchup data incomplete
     """
-    matchup_data = MANAGER_CACHE[manager_1]["years"].get(year, {}).get("weeks", {}).get(week, {}).get("matchup_data", {})
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
+    matchup_data = manager_cache[manager_1]["years"].get(year, {}).get("weeks", {}).get(week, {}).get("matchup_data", {})
     manager_1_score = matchup_data.get("points_for", 0.0)
     manager_2_score = matchup_data.get("points_against", 0.0)
 
@@ -260,7 +260,9 @@ def get_trade_card(transaction_id: str, image_urls: dict) -> Dict[str, Any]:
     Returns:
         Trade card dictionary with year, week, managers, and items exchanged
     """
-    trans =  TRANSACTION_IDS_CACHE[transaction_id]
+    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
+
+    trans =  transaction_ids_cache[transaction_id]
     trade_item = {
         "year": trans["year"],
         "week": trans["week"],
@@ -286,3 +288,84 @@ def get_trade_card(transaction_id: str, image_urls: dict) -> Dict[str, Any]:
     trade_item["transaction_id"] = transaction_id
 
     return deepcopy(trade_item)
+
+def extract_dict_data(data: dict, image_urls: dict, key_name: str = "name",
+                      value_name: str = "count", cutoff: int = 3) -> list:
+    """
+    Extract top N items from a dictionary and format with image URLs.
+
+    Handles tie-breaking logic to include all items tied for the cutoff position.
+    For example, if cutoff=3 and items 3-5 are tied, all will be included.
+
+    Args:
+        data: Raw data dictionary (may contain nested dicts with "total" keys)
+        image_urls: Dict of image URLs
+        key_name: Name of the key field in output (default: "name")
+        value_name: Name of the value field in output (default: "count")
+        cutoff: Number of top items to include (0 means all items)
+
+    Returns:
+        List of dictionaries with key_name, value_name, and image_url fields
+    """
+    # Flatten nested dictionaries by extracting "total" values
+    for key in data:
+        if not isinstance(data[key], dict):
+            break
+        data[key] = data[key]["total"]
+
+    # Sort items by value in descending order
+    sorted_items = sorted(data.items(), key=lambda item: item[1], reverse=True)
+
+    # If no cutoff, include all items
+    if not cutoff:
+        top_three = dict(sorted_items)
+    else:
+        # Handle ties at the cutoff position
+        # Start at cutoff position (e.g., index 2 for top 3)
+        i = min(cutoff-1, len(sorted_items) - 1)
+        # Extend cutoff to include all tied items
+        for j in range(i, len(sorted_items) - 1):
+            if sorted_items[j][1] != sorted_items[j+1][1]:
+                i = j
+                break
+            i = j + 1
+        top_three = dict(sorted_items[:i+1])
+
+    # Build formatted output list with image URLs
+    items = []
+    for item in top_three:
+        long_dict = {}
+        long_dict[key_name] = item
+        long_dict[value_name] = top_three[item]
+        long_dict["image_url"] = get_image_url(item, image_urls)
+        items.append(deepcopy(long_dict))
+
+    return deepcopy(items)
+
+def draft_pick_decipher(draft_pick_dict: Dict[str, Any], weekly_roster_ids: Dict[int, str]) -> str:
+    """
+    Decipher draft pick string to manager name.
+
+    Example draft_pick_dict:
+    {
+        "season": "2019", # the season this draft pick belongs to
+        "round": 5,       # which round this draft pick is
+        "roster_id": 1,   # original owner's roster_id
+        "previous_owner_id": 1,  # previous owner's roster id (in this trade)
+        "owner_id": 2,    # the new owner of this pick after the trade
+    }
+    
+    Args:
+        draft_pick_dict:   Sleeper traded draft pick data
+        weekly_roster_ids: Mapping of roster IDs to manager names
+    
+    Returns:
+        Manager name or "Unknown Manager"
+    """
+    season = draft_pick_dict.get("season", "unknown_year")
+    round_num = draft_pick_dict.get("round", "unknown_round")
+
+    origin_team = draft_pick_dict.get("roster_id", "unknown_team")
+    origin_manager = weekly_roster_ids.get(origin_team, "unknown_manager")
+
+    return f"{origin_manager}'s {season} Round {round_num} Draft Pick"

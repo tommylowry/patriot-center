@@ -9,7 +9,7 @@ from patriot_center_backend.managers.transaction_processing.faab_processor impor
 from patriot_center_backend.managers.transaction_processing.transaction_id_processor import (
     add_to_transaction_ids,
 )
-from patriot_center_backend.managers.utilities import update_players_cache
+from patriot_center_backend.utils.player_cache_updater import update_players_cache
 
 
 def process_add_or_drop_transaction(year: str, week: str, transaction: dict,

@@ -7,14 +7,26 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.formatters import get_season_state
+from patriot_center_backend.managers.formatters import (
+    draft_pick_decipher,
+    extract_dict_data,
+    get_season_state,
+)
 
 
 class TestGetSeasonState:
     """Test get_season_state function."""
 
-    @patch('patriot_center_backend.managers.formatters.fetch_sleeper_data')
-    def test_regular_season(self, mock_fetch):
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.formatters.fetch_sleeper_data') as mock_fetch_sleeper:
+            
+            self.mock_fetch_sleeper = mock_fetch_sleeper
+            
+            yield
+
+    def test_regular_season(self):
         """Test regular season detection."""
         week = "5"
         year = "2023"
@@ -23,7 +35,7 @@ class TestGetSeasonState:
         result = get_season_state(week, year, playoff_week_start)
 
         assert result == "regular_season"
-        mock_fetch.assert_not_called()
+        self.mock_fetch_sleeper.assert_not_called()
 
     @patch('patriot_center_backend.managers.formatters.fetch_sleeper_data')
     def test_playoffs(self, mock_fetch):
@@ -725,3 +737,206 @@ class TestGetTradeCard:
         assert "john_smith_received" in result
         assert "jane_doe_sent" in result
         assert "jane_doe_received" in result
+
+
+class TestDraftPickDecipher:
+    """Test draft_pick_decipher function."""
+
+    def test_valid_draft_pick(self):
+        """Test with valid draft pick dictionary."""
+        draft_pick_dict = {
+            "season": "2023",
+            "round": 3,
+            "roster_id": 1,
+            "previous_owner_id": 1,
+            "owner_id": 2
+        }
+        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+
+        result = draft_pick_decipher(draft_pick_dict, weekly_roster_ids)
+        assert result == "Manager 1's 2023 Round 3 Draft Pick"
+
+    def test_first_round_pick(self):
+        """Test with first round pick."""
+        draft_pick_dict = {
+            "season": "2024",
+            "round": 1,
+            "roster_id": 5,
+            "previous_owner_id": 5,
+            "owner_id": 3
+        }
+        weekly_roster_ids = {3: "Manager 3", 5: "Manager 5"}
+
+        result = draft_pick_decipher(draft_pick_dict, weekly_roster_ids)
+        assert result == "Manager 5's 2024 Round 1 Draft Pick"
+
+    def test_unknown_roster_id(self):
+        """Test with roster_id not in weekly_roster_ids."""
+        draft_pick_dict = {
+            "season": "2023",
+            "round": 2,
+            "roster_id": 999,
+            "previous_owner_id": 1,
+            "owner_id": 2
+        }
+        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+
+        result = draft_pick_decipher(draft_pick_dict, weekly_roster_ids)
+        assert result == "unknown_manager's 2023 Round 2 Draft Pick"
+
+    def test_missing_season(self):
+        """Test with missing season - should use 'unknown_year'."""
+        draft_pick_dict = {
+            "round": 2,
+            "roster_id": 1,
+            "previous_owner_id": 1,
+            "owner_id": 2
+        }
+        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+
+        result = draft_pick_decipher(draft_pick_dict, weekly_roster_ids)
+        assert result == "Manager 1's unknown_year Round 2 Draft Pick"
+
+    def test_missing_round(self):
+        """Test with missing round - should use 'unknown_round'."""
+        draft_pick_dict = {
+            "season": "2023",
+            "roster_id": 1,
+            "previous_owner_id": 1,
+            "owner_id": 2
+        }
+        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+
+        result = draft_pick_decipher(draft_pick_dict, weekly_roster_ids)
+        assert result == "Manager 1's 2023 Round unknown_round Draft Pick"
+
+    def test_missing_roster_id(self):
+        """Test with missing roster_id - should use 'unknown_team'."""
+        draft_pick_dict = {
+            "season": "2023",
+            "round": 2,
+            "previous_owner_id": 1,
+            "owner_id": 2
+        }
+        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+
+        result = draft_pick_decipher(draft_pick_dict, weekly_roster_ids)
+        assert result == "unknown_manager's 2023 Round 2 Draft Pick"
+
+
+class TestExtractDictData:
+    """Test extract_dict_data function."""
+
+    @patch('patriot_center_backend.managers.utilities.get_image_url')
+    def test_top_3_simple_dict(self, mock_get_image_url):
+        """Test with simple dictionary (no nested totals)."""
+        mock_get_image_url.return_value = "http://example.com/image.jpg"
+
+        data = {
+            "Player A": 10,
+            "Player B": 8,
+            "Player C": 6,
+            "Player D": 4
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls)
+
+        assert len(result) == 3
+        assert result[0]["name"] == "Player A"
+        assert result[0]["count"] == 10
+        assert result[1]["name"] == "Player B"
+        assert result[1]["count"] == 8
+        assert result[2]["name"] == "Player C"
+        assert result[2]["count"] == 6
+
+    @patch('patriot_center_backend.managers.utilities.get_image_url')
+    def test_top_3_with_nested_totals(self, mock_get_image_url):
+        """Test with nested dictionary containing 'total' keys."""
+        mock_get_image_url.return_value = "http://example.com/image.jpg"
+
+        data = {
+            "Player A": {"total": 10, "other": "data"},
+            "Player B": {"total": 8, "other": "data"},
+            "Player C": {"total": 6, "other": "data"},
+            "Player D": {"total": 4, "other": "data"}
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls)
+
+        assert len(result) == 3
+        assert result[0]["name"] == "Player A"
+        assert result[0]["count"] == 10
+
+    @patch('patriot_center_backend.managers.utilities.get_image_url')
+    def test_no_cutoff(self, mock_get_image_url):
+        """Test with cutoff=0 to include all items."""
+        mock_get_image_url.return_value = "http://example.com/image.jpg"
+
+        data = {
+            "Player A": 10,
+            "Player B": 8,
+            "Player C": 6,
+            "Player D": 4
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls, cutoff=0)
+
+        assert len(result) == 4
+
+    @patch('patriot_center_backend.managers.utilities.get_image_url')
+    def test_ties_at_cutoff(self, mock_get_image_url):
+        """Test tie-breaking logic when items are tied at cutoff position."""
+        mock_get_image_url.return_value = "http://example.com/image.jpg"
+
+        data = {
+            "Player A": 10,
+            "Player B": 8,
+            "Player C": 6,
+            "Player D": 6,  # Tied with Player C
+            "Player E": 6,  # Tied with Player C and D
+            "Player F": 4
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls, cutoff=3)
+
+        # Should include all tied items at position 3
+        assert len(result) == 5  # A, B, C, D, E all included
+
+    @patch('patriot_center_backend.managers.utilities.get_image_url')
+    def test_custom_key_value_names(self, mock_get_image_url):
+        """Test with custom key_name and value_name."""
+        mock_get_image_url.return_value = "http://example.com/image.jpg"
+
+        data = {
+            "Player A": 10,
+            "Player B": 8
+        }
+        image_urls= {}
+
+        result = extract_dict_data(data, image_urls,
+                                   key_name="player_name",
+                                   value_name="score")
+
+        assert result[0]["player_name"] == "Player A"
+        assert result[0]["score"] == 10
+        assert "name" not in result[0]
+        assert "count" not in result[0]
+
+    @patch('patriot_center_backend.managers.utilities.get_image_url')
+    def test_fewer_than_cutoff_items(self, mock_get_image_url):
+        """Test with fewer items than cutoff."""
+        mock_get_image_url.return_value = "http://example.com/image.jpg"
+
+        data = {
+            "Player A": 10,
+            "Player B": 8
+        }
+        image_urls = {}
+
+        result = extract_dict_data(data, image_urls, cutoff=5)
+
+        assert len(result) == 2

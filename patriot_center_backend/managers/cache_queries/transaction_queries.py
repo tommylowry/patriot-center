@@ -8,8 +8,7 @@ from copy import deepcopy
 from typing import Dict, List
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.managers.formatters import get_trade_card
-from patriot_center_backend.managers.utilities import extract_dict_data
+from patriot_center_backend.managers.formatters import extract_dict_data, get_trade_card
 
 
 def get_transaction_details_from_cache(year: str, manager: str,

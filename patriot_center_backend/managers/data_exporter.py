@@ -28,8 +28,11 @@ from patriot_center_backend.managers.cache_queries.transaction_queries import (
     get_trade_history_between_two_managers,
     get_transaction_details_from_cache,
 )
-from patriot_center_backend.managers.formatters import get_image_url, get_trade_card
-from patriot_center_backend.managers.utilities import get_current_manager_image_url
+from patriot_center_backend.managers.formatters import get_trade_card
+from patriot_center_backend.utils.image_providers import (
+    get_current_manager_image_url,
+    get_image_url,
+)
 
 CACHE_MANAGER         = get_cache_manager()
 

@@ -2,13 +2,14 @@ from copy import deepcopy
 from typing import Dict, List
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.managers.formatters import draft_pick_decipher
 from patriot_center_backend.managers.transaction_processing.faab_processor import (
     add_faab_details_to_cache,
 )
 from patriot_center_backend.managers.transaction_processing.transaction_id_processor import (
     add_to_transaction_ids,
 )
-from patriot_center_backend.managers.utilities import draft_pick_decipher, update_players_cache
+from patriot_center_backend.utils.player_cache_updater import update_players_cache
 
 
 def process_trade_transaction(year: str, week: str, transaction: dict,

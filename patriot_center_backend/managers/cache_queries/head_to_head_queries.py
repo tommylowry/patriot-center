@@ -10,8 +10,8 @@ from typing import Dict
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.managers.formatters import get_matchup_card
-from patriot_center_backend.managers.utilities import get_image_url
 from patriot_center_backend.managers.validators import validate_matchup_data
+from patriot_center_backend.utils.image_providers import get_image_url
 
 
 def get_head_to_head_details_from_cache(manager: str, image_urls: dict,

@@ -96,7 +96,7 @@ class TestSetRosterId:
     def setup(self):
         """Setup common mocks for all tests."""
         with patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
-             patch('patriot_center_backend.managers.manager_metadata_manager.update_players_cache') as mock_update_players, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.update_players_cache_with_list') as mock_update_players, \
              patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data') as mock_fetch_sleeper_data, \
              patch('patriot_center_backend.managers.manager_metadata_manager.ManagerMetadataManager._set_defaults_if_missing') as mock_set_defaults, \
              patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"}):

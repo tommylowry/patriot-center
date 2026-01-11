@@ -42,7 +42,7 @@ def update_players_cache(player_id: str) -> None:
             "player_id": player_id
         }
 
-def update_players_cache_list(item: List[Dict[str, Any]]):
+def update_players_cache_with_list(item: List[Dict[str, Any]]):
     """
     Update players cache with a list of player metadata.
 
@@ -52,11 +52,17 @@ def update_players_cache_list(item: List[Dict[str, Any]]):
     Returns:
         None (modifies players_cache in-place)
     """
-
     if not isinstance(item, list):
-        print("WARNING: Item inputted into update_players_cache_list is not a list.")
+        print("WARNING: Item inputted into update_players_cache_with_list is not a list.")
         return
     
+    called = False
     for matchup in item:
-        for player_id in matchup['players']:
+        if not isinstance(matchup, dict):
+            continue
+        for player_id in matchup.get("players", ""):
+            called = True
             update_players_cache(player_id)
+
+    if not called:
+        print("WARNING: Item inputted into update_players_cache_with_list did not have a matchup dict with players.")

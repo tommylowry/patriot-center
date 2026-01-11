@@ -22,7 +22,7 @@ from patriot_center_backend.managers.transaction_processing.base_processor impor
     TransactionProcessor,
 )
 from patriot_center_backend.managers.validators import validate_caching_preconditions
-from patriot_center_backend.utils.player_cache_updater import update_players_cache_list
+from patriot_center_backend.utils.player_cache_updater import update_players_cache_with_list
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
@@ -131,7 +131,7 @@ class ManagerMetadataManager:
             return
         
         if matchups:
-            update_players_cache_list(matchups)
+            update_players_cache_with_list(matchups)
 
         self._year = year
         self._week = week

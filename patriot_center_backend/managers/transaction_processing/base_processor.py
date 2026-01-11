@@ -156,12 +156,12 @@ class TransactionProcessor:
         
         if transaction_type == "add_or_drop":
             process_add_or_drop_transaction(self._year, self._week, transaction,
-                                            self._weekly_roster_ids, self._weekly_roster_ids,
+                                            self._weekly_roster_ids, self._weekly_transaction_ids,
                                             commish_action, self._use_faab)
 
         elif transaction_type == "trade":
             process_trade_transaction(self._year, self._week, transaction,
-                                      self._weekly_roster_ids, self._weekly_roster_ids,
+                                      self._weekly_roster_ids, self._weekly_transaction_ids,
                                       commish_action, self._use_faab)
         
         else:

@@ -194,6 +194,23 @@ class TestProcessTransaction:
 
         assert self.mock_proc_add_drop.called
     
+    def test_add_or_drop_called_with_right_args(self):
+        """Test process_add_or_drop_transaction is called with the correct arguments"""
+        year = "2023"
+        week = "1"
+        weekly_roster_ids = {1: "Manager 1"}
+        weekly_transaction_ids = []
+        commish_action = False
+        use_faab = True
+
+        transaction = {"type": "free_agent", "adds": {"player1": 1}, "drops": None}
+
+        self.processor._process_transaction(transaction)
+
+        self.mock_proc_add_drop.assert_called_with(year, week, transaction,
+                                                weekly_roster_ids, weekly_transaction_ids,
+                                                commish_action, use_faab)
+    
     def test_process_transaction_routes_to_trade(self):
         """Test that trade transactions are routed to trade processor."""
         self.processor.set_session_state("2023", "1", {1: "Manager 1", 2: "Manager 2"}, True)
@@ -207,6 +224,29 @@ class TestProcessTransaction:
         self.processor._process_transaction(transaction)
 
         assert self.mock_proc_trade.called
+    
+    def test_trade_called_with_right_args(self):
+        """Test process_trade_transaction is called with the correct arguments"""
+        year = "2023"
+        week = "1"
+        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+        weekly_transaction_ids = []
+        commish_action = False
+        use_faab = True
+
+        self.processor.set_session_state(year, week, weekly_roster_ids, use_faab)
+        transaction = {
+            "type": "trade",
+            "roster_ids": [1, 2],
+            "adds": {"player1": 1, "player2": 2},
+            "drops": {"player2": 1, "player1": 2}
+        }
+
+        self.processor._process_transaction(transaction)
+
+        self.mock_proc_trade.assert_called_with(year, week, transaction,
+                                                weekly_roster_ids, weekly_transaction_ids,
+                                                commish_action, use_faab)
 
     def test_process_transaction_detects_commissioner_action(self):
         """Test that commissioner actions are detected."""

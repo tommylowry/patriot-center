@@ -18,8 +18,6 @@ from copy import deepcopy
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
 
-VALID_OPTIONS_CACHE = CACHE_MANAGER.get_valid_options_cache()
-PLAYERS_CACHE       = CACHE_MANAGER.get_players_cache()
 
 class ValidOptionsService:
     """
@@ -179,6 +177,7 @@ class ValidOptionsService:
         Raises:
             ValueError: If argument is invalid, duplicated, or unrecognized
         """
+        players_cache = CACHE_MANAGER.get_players_cache()
         
         if arg == None:
             return
@@ -208,7 +207,7 @@ class ValidOptionsService:
                 self._manager = arg
             
             # Check if arg is a player
-            elif arg in PLAYERS_CACHE:
+            elif arg in players_cache:
                 
                 if self._player_selected():
                     raise ValueError("Multiple player arguments provided.")
@@ -431,11 +430,12 @@ class ValidOptionsService:
     
     # 1
     def _pos_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Year, Week, and Manager options that have the selected Position
         for year in self._years_list:
             
-            data = VALID_OPTIONS_CACHE.get(year, {})
+            data = valid_options_cache.get(year, {})
             
             if self._position not in data.get("positions", []):
                 continue
@@ -468,11 +468,12 @@ class ValidOptionsService:
     
     # 2
     def _mgr_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Year, Week, and Position options that have the selected Manager
         for year in self._years_list:
             
-            data = VALID_OPTIONS_CACHE.get(year, {})
+            data = valid_options_cache.get(year, {})
             
             if self._manager not in data.get("managers", []):
                 continue
@@ -505,11 +506,12 @@ class ValidOptionsService:
     
     # 3
     def _mgr_pos_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Year and Week options that have the selected Manager and Position
         for year in self._years_list:
             
-            data = VALID_OPTIONS_CACHE.get(year, {})
+            data = valid_options_cache.get(year, {})
             
             if self._manager not in data.get("managers", []):
                 continue
@@ -555,8 +557,9 @@ class ValidOptionsService:
     
     # 8
     def _yr_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
-        data = VALID_OPTIONS_CACHE.get(self._year, {})
+        data = valid_options_cache.get(self._year, {})
 
         # Weeks, Managers, and Positions for the selected Year
         for week in self._weeks_list:
@@ -575,9 +578,10 @@ class ValidOptionsService:
                 
     # 9
     def _yr_pos_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Weeks and Managers options that have the selected Position for the selected Year
-        data = VALID_OPTIONS_CACHE.get(self._year, {})
+        data = valid_options_cache.get(self._year, {})
 
         for week in self._weeks_list:
             
@@ -619,9 +623,10 @@ class ValidOptionsService:
     
     # 10
     def _yr_mgr_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Weeks and Positions options that have the selected Manager for the selected Year
-        data = VALID_OPTIONS_CACHE.get(self._year, {})
+        data = valid_options_cache.get(self._year, {})
 
         for week in self._weeks_list:
             
@@ -663,9 +668,10 @@ class ValidOptionsService:
     
     # 11
     def _yr_mgr_pos_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Weeks options that have the selected Manager and Position for the selected Year
-        data = VALID_OPTIONS_CACHE.get(self._year, {})
+        data = valid_options_cache.get(self._year, {})
 
         for week in self._weeks_list:
             
@@ -690,9 +696,10 @@ class ValidOptionsService:
 
     # 12
     def _yr_wk_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Managers and Positions for the selected Year and Week
-        data = VALID_OPTIONS_CACHE.get(self._year, {}).get(self._week, {})
+        data = valid_options_cache.get(self._year, {}).get(self._week, {})
 
         # Get the vaid Positions and Managers for the selected Year and Week
         for position in self._positions_list:
@@ -725,9 +732,10 @@ class ValidOptionsService:
     
     # 13
     def _yr_wk_pos_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Managers options that have the selected Position, Year, and Week
-        data = VALID_OPTIONS_CACHE.get(self._year, {}).get(self._week, {})
+        data = valid_options_cache.get(self._year, {}).get(self._week, {})
 
         for manager in self._managers_list:
             if self._position in data.get(manager, {}).get("positions", []):
@@ -756,9 +764,10 @@ class ValidOptionsService:
     
     # 14
     def _yr_wk_mgr_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Set positions list for the selected year, week, and manager
-        data = VALID_OPTIONS_CACHE.get(self._year, {}).get(self._week, {}).get(self._manager, {})
+        data = valid_options_cache.get(self._year, {}).get(self._week, {}).get(self._manager, {})
 
         for position in self._positions_list:
             if position in data.get("positions", []):
@@ -801,15 +810,17 @@ class ValidOptionsService:
     
     # 16
     def _plyr_selected(self):
+        players_cache       = CACHE_MANAGER.get_players_cache()
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Position can only be the position of the player (set once)
-        self._positions_list = list([PLAYERS_CACHE[self._player]["position"]])
+        self._positions_list = list([players_cache[self._player]["position"]])
 
         # Always reset the lists to find valid options for the player
         # Use original lists for iteration to avoid bugs from modified lists
         for year in self._original_years_list:
 
-            data = VALID_OPTIONS_CACHE.get(year, {})
+            data = valid_options_cache.get(year, {})
 
             if self._player not in data.get("players", []):
                 continue
@@ -849,6 +860,7 @@ class ValidOptionsService:
     
     # 18
     def _plyr_mgr_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Filter out everything that does not have the player
         self._call_new_function(self._player_bit)
@@ -856,7 +868,7 @@ class ValidOptionsService:
         # Get the years and weeks for the selected player (position is already set)
         for year in self._years_list:
             
-            data = VALID_OPTIONS_CACHE.get(year, {})
+            data = valid_options_cache.get(year, {})
 
             for week in self._weeks_list:
 
@@ -880,12 +892,13 @@ class ValidOptionsService:
 
     # 24
     def _plyr_yr_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # filter out everything that does not have the player and shorten the lists to loop through
         self._call_new_function(self._player_bit)
 
         # Get the weeks and managers for the selected year and player (position is already set)
-        data = VALID_OPTIONS_CACHE.get(self._year, {})
+        data = valid_options_cache.get(self._year, {})
 
         for week in self._weeks_list:
 
@@ -914,6 +927,7 @@ class ValidOptionsService:
     
     # 26
     def _plyr_yr_mgr_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Get all the options for the selected year and player (position is already set)
         self._call_new_function(self._player_bit)
@@ -931,7 +945,7 @@ class ValidOptionsService:
         self._years_list = saved_years_list
 
         # Get the Weeks options that have the selected Year, Manager and Player
-        data = VALID_OPTIONS_CACHE.get(self._year, {})
+        data = valid_options_cache.get(self._year, {})
 
         for week in self._weeks_list:
             if self._player in data.get(week, {}).get(self._manager, {}).get("players", []):
@@ -949,12 +963,13 @@ class ValidOptionsService:
         
     # 28
     def _plyr_yr_wk_selected(self):
+        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # filter out everything that does not have the player and shorten the lists to loop through
         self._call_new_function(self._player_bit)
 
         # get the managers for the selected year, week, and player (position is already set)
-        data = VALID_OPTIONS_CACHE.get(self._year, {}).get(self._week, {})
+        data = valid_options_cache.get(self._year, {}).get(self._week, {})
 
         for manager in self._managers_list:
             if self._player in data.get(manager, {}).get("players", []):
@@ -976,7 +991,7 @@ class ValidOptionsService:
         # Get Year options: years where the player played in the selected week
         # Week requires year, so we need to find all years where player played in this specific week
         for year in self._years_list:
-            data = VALID_OPTIONS_CACHE.get(year, {})
+            data = valid_options_cache.get(year, {})
             if self._player in data.get(self._week, {}).get("players", []):
                 self._add_to_vaild_options(year, "year")
                 if self._done:

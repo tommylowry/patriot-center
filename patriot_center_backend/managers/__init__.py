@@ -14,4 +14,5 @@ from patriot_center_backend.managers.manager_metadata_manager import (
     get_manager_metadata_manager,
 )
 
-__all__ = ['ManagerMetadataManager', 'get_manager_metadata_manager']
+MANAGER_METADATA_MANAGER = get_manager_metadata_manager()
+__all__ = ['ManagerMetadataManager', 'get_manager_metadata_manager', 'MANAGER_METADATA_MANAGER']

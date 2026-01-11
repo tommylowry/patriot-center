@@ -19,11 +19,6 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
 
-PLAYER_DATA_CACHE  = CACHE_MANAGER.get_player_data_cache(for_update=True)
-REPLACEMENT_SCORES = CACHE_MANAGER.get_replacement_score_cache()
-STARTERS_CACHE     = CACHE_MANAGER.get_starters_cache()
-PLAYER_IDS         = CACHE_MANAGER.get_player_ids_cache()
-
 
 def update_player_data_cache():
     """
@@ -34,6 +29,8 @@ def update_player_data_cache():
         - Cap weeks at 17.
         - Store progress via Last_Updated_* markers.
     """
+    player_data_cache = CACHE_MANAGER.get_player_data_cache()
+
     # Dynamically determine the current season and week according to Sleeper API/util logic.
     current_season, current_week = get_current_season_and_week()
     if current_week > 17:
@@ -46,15 +43,15 @@ def update_player_data_cache():
     for year in years:
         # Read progress markers from the cache to support incremental updates and resumability.
         # Cast Last_Updated_Season to int to allow numeric comparison with `year`.
-        last_updated_season = int(PLAYER_DATA_CACHE.get("Last_Updated_Season", 0))
-        last_updated_week = PLAYER_DATA_CACHE.get("Last_Updated_Week", 0)
+        last_updated_season = int(player_data_cache.get("Last_Updated_Season", 0))
+        last_updated_week = player_data_cache.get("Last_Updated_Week", 0)
 
         # Skip years that are already fully processed based on the last recorded season.
         if last_updated_season != 0:
             if year < last_updated_season:
                 continue
             if last_updated_season < year:
-                PLAYER_DATA_CACHE["Last_Updated_Week"] = 0  # Reset the week if moving to a new year
+                player_data_cache["Last_Updated_Week"] = 0  # Reset the week if moving to a new year
 
         # If the cache is already up-to-date for the current season and week, stop processing.
         if last_updated_season == int(current_season) and last_updated_week == current_week:
@@ -65,7 +62,7 @@ def update_player_data_cache():
 
         # Determine the range of weeks to update.
         if year == current_season or year == last_updated_season:
-            last_updated_week = PLAYER_DATA_CACHE.get("Last_Updated_Week", 0)
+            last_updated_week = player_data_cache.get("Last_Updated_Week", 0)
             weeks_to_update = range(last_updated_week + 1, max_weeks + 1)
         else:
             weeks_to_update = range(1, max_weeks + 1)
@@ -79,15 +76,15 @@ def update_player_data_cache():
 
         # Fetch and update only the missing weeks for the year.
         for week in weeks_to_update:
-            if str(year) not in PLAYER_DATA_CACHE:
-                PLAYER_DATA_CACHE[str(year)] = {}
+            if str(year) not in player_data_cache:
+                player_data_cache[str(year)] = {}
 
             # Fetch ffWAR for the week.
-            PLAYER_DATA_CACHE[str(year)][str(week)] = _fetch_ffWAR(year, week, roster_ids)
+            player_data_cache[str(year)][str(week)] = _fetch_ffWAR(year, week, roster_ids)
 
             # Update the metadata for the last updated season and week.
-            PLAYER_DATA_CACHE["Last_Updated_Season"] = str(year)
-            PLAYER_DATA_CACHE["Last_Updated_Week"] = week
+            player_data_cache["Last_Updated_Season"] = str(year)
+            player_data_cache["Last_Updated_Week"] = week
 
             print("  Player Data cache updated internally for season {}, week {}".format(year, week))
 
@@ -118,7 +115,9 @@ def _fetch_ffWAR(season, week, roster_ids):
     Returns:
         dict: player -> {ffWAR, manager, position}
     """
-    weekly_data = STARTERS_CACHE[str(season)][str(week)]
+    starters_cache = CACHE_MANAGER.get_starters_cache()
+
+    weekly_data = starters_cache[str(season)][str(week)]
 
     players = {
         "QB":  {},
@@ -170,9 +169,11 @@ def _calculate_ffWAR_position(scores, season, week, position, all_player_scores,
     Returns:
         dict: player -> {ffWAR, manager, position}
     """
+    replacement_scores_cache = CACHE_MANAGER.get_replacement_score_cache
+
     # Get the 3-year rolling average replacement score for this position
     key = f"{position}_3yr_avg"
-    replacement_average = REPLACEMENT_SCORES[str(season)][str(week)][key]
+    replacement_average = replacement_scores_cache[str(season)][str(week)][key]
 
 
     # Calculate the average score across all players at this position this week
@@ -339,6 +340,8 @@ def _get_all_player_scores(year, week):
         - Defense players with numeric IDs are excluded.
         - Handles edge case of traded players with modified IDs.
     """
+    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+
     # Fetch data from the Sleeper API for the given season and week
     week_data        = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
     scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(year)}")['scoring_settings']
@@ -358,10 +361,10 @@ def _get_all_player_scores(year, week):
             continue
         
         # Zach Ertz traded from PHI to ARI causes his player ID to be weird sometimes
-        if player_id not in PLAYER_IDS:
+        if player_id not in player_ids_cache:
             only_numeric = ''.join(filter(str.isdigit, player_id))
-            if only_numeric in PLAYER_IDS:
-                player_name = PLAYER_IDS[only_numeric]["full_name"]
+            if only_numeric in player_ids_cache:
+                player_name = player_ids_cache[only_numeric]["full_name"]
                 print(f"Weird possibly traded player id encountered in replacement score calculation for season {year} week {week}, probably {player_name}, using {only_numeric} instead of {player_id}")
                 player_id = only_numeric
             else:
@@ -369,7 +372,7 @@ def _get_all_player_scores(year, week):
                 continue
 
         # Get player information from PLAYER_IDS
-        player_info = PLAYER_IDS[player_id]
+        player_info = player_ids_cache[player_id]
 
         # If the player ID is numeric and the position is DEF, skip processing
         if player_id.isnumeric() and player_info["position"] == "DEF":

@@ -22,9 +22,6 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.services.managers import fetch_starters
 from patriot_center_backend.utils import helpers
 
-PLAYERS_CACHE     = CACHE_MANAGER.get_players_cache()
-PLAYER_DATA_CACHE = CACHE_MANAGER.get_player_data_cache()
-
 
 def fetch_player_manager_aggregation(player, manager, season=None, week=None):
     """
@@ -140,12 +137,14 @@ def fetch_ffWAR_for_player(player, season=None, week=None):
     """
     if season is None or week is None:
         return 0.0
+    
+    player_data_cache = CACHE_MANAGER.get_player_data_cache()
 
     season_str = str(season)
     week_str = str(week)
 
-    if season_str in PLAYER_DATA_CACHE and week_str in PLAYER_DATA_CACHE[season_str]:
-        week_data = PLAYER_DATA_CACHE[season_str][week_str]
+    if season_str in player_data_cache and week_str in player_data_cache[season_str]:
+        week_data = player_data_cache[season_str][week_str]
         player_id = helpers.get_player_id(player)
         
         if player_id in week_data:
@@ -203,10 +202,12 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         - Team affiliation from player cache
         - Playoff placements if applicable
     """
+    players_cache = CACHE_MANAGER.get_players_cache()
+
     # Determine image URL based on player type
     # Numeric IDs = individual players (use player headshot)
     # String IDs = team defenses (use team logo)
-    player_id = PLAYERS_CACHE.get(player, {}).get("player_id", None)
+    player_id = players_cache.get(player, {}).get("player_id", None)
     if player_id.isnumeric():
         player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
     else:
@@ -219,8 +220,8 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         'ffWAR_per_game': player_data['ffWAR'],
         "position": player_data['position'],
         "player_image_endpoint": player_image_endpoint,
-        "slug": PLAYERS_CACHE[player],
-        "team": PLAYERS_CACHE.get(player, {}).get("team", None)
+        "slug": players_cache[player],
+        "team": players_cache.get(player, {}).get("team", None)
     }
 
     # Track playoff finishes (1st, 2nd, 3rd place) if this is the last playoff week
@@ -266,7 +267,9 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
     """
     Create initial aggregation record for a manager with a single player appearance.
     """
-    player_id = PLAYERS_CACHE.get(player, {}).get("player_id", None)
+    players_cache = CACHE_MANAGER.get_players_cache()
+
+    player_id = players_cache.get(player, {}).get("player_id", None)
     if player_id.isnumeric():
         player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
     else:
@@ -280,8 +283,8 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
         'ffWAR_per_game': raw_item['ffWAR'],
         "position": raw_item['position'],
         "player_image_endpoint": player_image_endpoint,
-        "slug": PLAYERS_CACHE[player],
-        "team": PLAYERS_CACHE.get(player, {}).get("team", None)
+        "slug": players_cache[player],
+        "team": players_cache.get(player, {}).get("team", None)
     }
 
     # Handle playoff placement if present

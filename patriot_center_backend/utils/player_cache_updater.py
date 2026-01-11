@@ -26,7 +26,7 @@ def update_players_cache(item: list|str) -> None:
         raise ValueError("Item to update players cache cannot be None or empty.")
     
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-    players_cache = CACHE_MANAGER.get_players_cache()
+    players_cache    = CACHE_MANAGER.get_players_cache()
 
     # Handle single player ID
     if isinstance(item, str):

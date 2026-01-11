@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import lru_cache
 from typing import Any, Dict, Tuple
 
 import requests
@@ -6,16 +7,16 @@ import requests
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
 
-PLAYER_IDS_CACHE = CACHE_MANAGER.get_player_ids_cache()
-PLAYERS_CACHE    = CACHE_MANAGER.get_players_cache()
-
 SLEEPER_API_URL = "https://api.sleeper.app/v1"
 
-PLAYER_NAME_TO_ID = {
-    player_info.get("full_name"): pid 
-    for pid, player_info in PLAYER_IDS_CACHE.items()
-}
 
+@lru_cache(maxsize=1)
+def _get_player_name_to_id():
+    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+    return {
+        player_info.get("full_name"): pid 
+        for pid, player_info in player_ids_cache.items()
+    }
 
 def get_player_id(player_name: str) -> str:
     """
@@ -28,7 +29,7 @@ def get_player_id(player_name: str) -> str:
     Returns:
         str or None: The player ID if found, otherwise None.
     """
-    return PLAYER_NAME_TO_ID.get(player_name)
+    return _get_player_name_to_id().get(player_name)
 
 def get_player_name(player_id: str) -> str|None:
     """
@@ -41,7 +42,9 @@ def get_player_name(player_id: str) -> str|None:
     Returns:
         str or None: The player name if found, otherwise None.
     """
-    player_info = PLAYER_IDS_CACHE.get(player_id)
+    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+
+    player_info = player_ids_cache.get(player_id)
     if player_info:
         return player_info.get("full_name", None)
     return None
@@ -58,12 +61,14 @@ def slug_to_player_name(slug: str) -> str:
     if not slug:
         return slug
     
+    players_cache = CACHE_MANAGER.get_players_cache()
+    
     if "%20" in slug or " " in slug:
 
         # ensure consistent encoding for lookup
         slug = slug.replace(" ", "%20").replace("'", "%27").lower()
-        for p in PLAYERS_CACHE:
-            if PLAYERS_CACHE[p]["slug"] == slug:
+        for p in players_cache:
+            if players_cache[p]["slug"] == slug:
                 return p
     
     return slug  # Fallback to returning the original string if no match found

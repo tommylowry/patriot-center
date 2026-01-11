@@ -6,13 +6,9 @@ Provides filtered views over the starters cache by:
 - manager (optionally constrained by season/week)
 
 Notes:
-- STARTERS_CACHE is loaded at import time to serve requests quickly.
 - Returns empty dicts on missing seasons/weeks/managers instead of raising.
 """
 from patriot_center_backend.cache import CACHE_MANAGER
-
-PLAYER_IDS     = CACHE_MANAGER.get_player_ids_cache()
-STARTERS_CACHE = CACHE_MANAGER.get_starters_cache()
 
 
 def fetch_starters(manager=None, season=None, week=None):
@@ -27,11 +23,13 @@ def fetch_starters(manager=None, season=None, week=None):
         week (int | None): Week number (1-17).
 
     Returns:
-        dict: Nested dict shaped like STARTERS_CACHE subset.
+        dict: Nested dict shaped like starters_cache subset.
     """
+    starters_cache = CACHE_MANAGER.get_starters_cache()
+
     if season is None and week is None and manager is None:
         # Full cache passthrough for unfiltered requests
-        return STARTERS_CACHE
+        return starters_cache
 
     if manager is None:
         return _filter_by_season_and_week(season, week)
@@ -49,21 +47,23 @@ def _filter_by_season_and_week(season, week):
     Returns:
         dict: {season: {...}} or {season: {week: {...}}} or {} if not found.
     """
+    starters_cache = CACHE_MANAGER.get_starters_cache()
+
     season_str = str(season)
-    if season_str not in STARTERS_CACHE:
+    if season_str not in starters_cache:
         return {}
 
     if week is not None:
         week_str = str(week)
-        if week_str not in STARTERS_CACHE[season_str]:
+        if week_str not in starters_cache[season_str]:
             return {}
         return {
             season_str: {
-                week_str: STARTERS_CACHE[season_str][week_str]
+                week_str: starters_cache[season_str][week_str]
             }
         }
 
-    return {season_str: STARTERS_CACHE[season_str]}
+    return {season_str: starters_cache[season_str]}
 
 def _filter_by_manager(manager, season, week):
     """
@@ -79,9 +79,11 @@ def _filter_by_manager(manager, season, week):
     Returns:
         dict: Nested dict {season: {week: {manager: players}}}
     """
+    starters_cache = CACHE_MANAGER.get_starters_cache()
+
     filtered_data = {}
 
-    for season_key, weeks in STARTERS_CACHE.items():
+    for season_key, weeks in starters_cache.items():
         # Skip metadata sentinel fields
         if season_key in ["Last_Updated_Season", "Last_Updated_Week"]:
             continue

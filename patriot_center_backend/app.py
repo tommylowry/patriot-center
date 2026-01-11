@@ -22,16 +22,12 @@ from flask_cors import CORS
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
-from patriot_center_backend.managers import get_manager_metadata_manager
+from patriot_center_backend.managers import MANAGER_METADATA_MANAGER
 from patriot_center_backend.services.aggregated_data import (
     fetch_aggregated_managers,
     fetch_player_manager_aggregation,
 )
 from patriot_center_backend.utils.helpers import slug_to_player_name
-
-MANAGER_METADATA_MANAGER = get_manager_metadata_manager()
-
-PLAYERS_CACHE = CACHE_MANAGER.get_players_cache()
 
 app = Flask(__name__)
 
@@ -211,7 +207,9 @@ def list_players():
     """
     Endpoint to list all players in the system.
     """
-    data = deepcopy(PLAYERS_CACHE)
+    players_cache = CACHE_MANAGER.get_players_cache()
+
+    data = deepcopy(players_cache)
 
     for manager in  NAME_TO_MANAGER_USERNAME.keys():
         data [manager] = {

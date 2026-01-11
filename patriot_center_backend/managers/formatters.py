@@ -4,12 +4,12 @@ Data formatting and presentation helpers.
 Formats matchup cards, trade cards, and determines season state.
 """
 from copy import deepcopy
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.helpers import fetch_sleeper_data
 from patriot_center_backend.utils.image_providers import get_image_url
+from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
 def get_season_state(week: str, year: str, playoff_week_start: Optional[int]) -> str:

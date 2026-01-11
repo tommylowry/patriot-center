@@ -16,9 +16,13 @@ Notes:
 - Weeks are capped at 17 (include playoff data).
 """
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.scoring import calculate_player_score
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
-from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_sleeper_data,
+    get_current_season_and_week,
+    get_roster_ids,
+)
 
 
 def update_player_data_cache():
@@ -73,7 +77,7 @@ def update_player_data_cache():
         
         print(f"Updating Player Data cache for season {year}, weeks: {list(weeks_to_update)}")
 
-        roster_ids = _get_roster_ids(year)
+        roster_ids = get_roster_ids(year)
 
         # Fetch and update only the missing weeks for the year.
         for week in weeks_to_update:
@@ -394,46 +398,6 @@ def _get_all_player_scores(year, week):
     
 
     return final_week_scores
-
-def _get_roster_ids(season):
-    """
-    Build a mapping of roster IDs to real manager names for a given season.
-
-    This function performs a two-step API query:
-    1. Fetches all users in the league to map user_id -> real name
-    2. Fetches all rosters to map roster_id -> user_id
-
-    Then combines them to create roster_id -> real_name mapping.
-
-    Args:
-        season (int): The NFL season year (e.g., 2024).
-
-    Returns:
-        dict: Mapping of roster IDs to manager real names.
-            Example: {1: "Tommy", 2: "Mike", 3: "James"}
-
-    Notes:
-        - Uses USERNAME_TO_REAL_NAME constant to convert display names to real names.
-        - Special case: If owner_id is None, defaults to "Davey" (known data issue).
-        - Roster IDs are integers from the Sleeper API.
-    """
-    user_ids = {}
-    users_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/users")
-    for user in users_data_response:
-        user_ids[user['user_id']] = USERNAME_TO_REAL_NAME[user['display_name']]
-    
-    roster_ids = {}
-    user_rosters_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/rosters")
-    for user in user_rosters_data_response:
-        
-        # Handle a known case where owner_id is None
-        if not user['owner_id']:
-            roster_ids[user['roster_id']] = "Davey"
-            continue
-        
-        roster_ids[user['roster_id']] = user_ids[user['owner_id']]
-
-    return roster_ids
 
 def _get_all_rostered_players(roster_ids, season, week):
     """

@@ -27,7 +27,7 @@ from patriot_center_backend.services.aggregated_data import (
     fetch_aggregated_managers,
     fetch_player_manager_aggregation,
 )
-from patriot_center_backend.utils.helpers import slug_to_player_name
+from patriot_center_backend.utils.slug_utils import slug_to_name
 
 app = Flask(__name__)
 
@@ -159,7 +159,7 @@ def get_aggregated_managers(player, arg2, arg3):
     Returns:
         Flask Response: JSON payload (aggregated manager stats or error).
     """
-    player = slug_to_player_name(player)  # Convert slug to player name
+    player = slug_to_name(player)  # Convert slug to player name
 
     try:
         year, week, _ = parse_arguments(arg2, arg3, None)
@@ -190,7 +190,7 @@ def get_player_manager_aggregation(player, manager, year, week):
     Returns:
         Flask Response: JSON payload (aggregated stats or error).
     """
-    player = slug_to_player_name(player)  # Convert slug to player name
+    player = slug_to_name(player)  # Convert slug to player name
 
     data = fetch_player_manager_aggregation(player=player, manager=manager, season=year, week=week)
     if request.args.get("format") == "json":
@@ -238,10 +238,10 @@ def valid_options(arg1, arg2, arg3, arg4):
     """
     from patriot_center_backend.services.valid_options import ValidOptionsService
 
-    arg1 = slug_to_player_name(arg1)
-    arg2 = slug_to_player_name(arg2)
-    arg3 = slug_to_player_name(arg3)
-    arg4 = slug_to_player_name(arg4)
+    arg1 = slug_to_name(arg1)
+    arg2 = slug_to_name(arg2)
+    arg3 = slug_to_name(arg3)
+    arg4 = slug_to_name(arg4)
 
     try:
         options = ValidOptionsService(arg1, arg2, arg3, arg4)

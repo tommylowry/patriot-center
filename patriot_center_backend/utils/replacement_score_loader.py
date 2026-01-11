@@ -13,8 +13,11 @@ Notes:
 """
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
 from patriot_center_backend.utils.scoring import calculate_player_score
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_sleeper_data,
+    get_current_season_and_week,
+)
 
 
 def update_replacement_score_cache():

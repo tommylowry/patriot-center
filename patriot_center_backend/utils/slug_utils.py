@@ -1,3 +1,7 @@
+"""
+This module provides utility functions for creating and converting slugs.
+"""
+
 from patriot_center_backend.cache import CACHE_MANAGER
 
 
@@ -6,13 +10,11 @@ def slugify(item: str) -> str:
     Creates a URL-friendly slug by converting the input string to lowercase and
     replacing spaces and apostrophes with their URL-encoded equivalents.
 
-    Example: "De'Von Achane" -> "de%27von%20achane"
-
     Args:
-        item (str): The string to create a slug from.
-    
+        item (str): The input string.
+
     Returns:
-        str: URL-friendly slug
+        str: The URL-friendly slug.
     """
     slug = item.lower()
     slug = slug.replace(" ", "%20")
@@ -20,13 +22,14 @@ def slugify(item: str) -> str:
     return slug
 
 def slug_to_name(slug: str) -> str:
-    """Convert a slug string to a player name.
+    """
+    Convert a slug string to a player name.
 
     Args:
-        slug (str): The slug string (e.g., "de%27von%20achane").
+        slug (str): The slug string.
 
     Returns:
-        str: The player name (e.g., "De'Von Achane").
+        str: The player name.
     """
     if not slug:
         return slug

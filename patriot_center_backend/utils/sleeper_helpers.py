@@ -1,16 +1,7 @@
 """
-This module provides helper functions for interacting with the Sleeper API to retrieve and process
-roster and user data for fantasy football leagues. It includes functionality to map user IDs to
-roster IDs and real manager names for a given NFL season.
-
-Functions:
-    - get_roster_id: Retrieves the roster ID for a specific user from the Sleeper API response.
-    - get_roster_ids: Builds a mapping of roster IDs to real manager names for a given season.
-
-Constants:
-    - LEAGUE_IDS: A dictionary mapping NFL seasons to Sleeper league IDs.
-    - USERNAME_TO_REAL_NAME: A dictionary mapping Sleeper display names to real manager names.
+This module provides utility functions for interacting with the Sleeper API.
 """
+
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -23,19 +14,16 @@ SLEEPER_API_URL = "https://api.sleeper.app/v1"
 
 def fetch_sleeper_data(endpoint: str) -> Dict[str, Any]:
     """
-    Perform GET request to Sleeper API and return parsed JSON.
+    Fetch data from the Sleeper API.
 
     Args:
-        endpoint (str): Relative endpoint appended to base URL.
+        endpoint (str): The API endpoint to fetch data from.
 
     Returns:
-        (payload, status_code):
-            payload -> dict/list on success, {"error": str} on failure.
-            status_code -> 200 on success else 500.
+        dict: Parsed JSON response from the API.
 
-    Notes:
-        - Caller handles non-200 cases (no exceptions raised here).
-        - Timeout/backoff not implemented (simple thin client).
+    Raises:
+        ConnectionAbortedError: If the API call fails.
     """
     # Construct full URL from configured base and endpoint
     url = f"{SLEEPER_API_URL}/{endpoint}"
@@ -50,19 +38,14 @@ def fetch_sleeper_data(endpoint: str) -> Dict[str, Any]:
 
 def get_roster_id(user_id: str, year: int, sleeper_rosters_response: Optional[List[Dict[str, Any]]]) -> (str | None):
     """
-    Retrieve the roster ID for a specific user from the Sleeper API response.
+    Get the roster ID for a given user ID.
 
     Args:
-        user_id (str): The user ID to find the roster ID for.
-        sleeper_rosters_response (list): List of roster data from the Sleeper API.
-        year
+        user_id (str): The Sleeper user ID.
+        year (int): The NFL season year.
 
     Returns:
-        int: The roster ID associated with the given user ID, or None if not found.
-
-    Notes:
-        - Special case: If owner_id is None, defaults to "Davey" for 2024 (known historical fact).
-        - Roster IDs are integers from the Sleeper API.
+        str | None: The roster ID for the user, or None if not found.
     """
     for user in sleeper_rosters_response:
         if user['owner_id'] == user_id:
@@ -75,24 +58,13 @@ def get_roster_id(user_id: str, year: int, sleeper_rosters_response: Optional[Li
 
 def get_roster_ids(year: int) -> Dict[int, str]:
     """
-    Build a mapping of roster IDs to real manager names for a given season.
-
-    This function performs a two-step API query:
-    1. Fetches all users in the league to map user_id -> real name
-    2. Fetches all rosters to map roster_id -> user_id
-
-    Then combines them to create roster_id -> real_name mapping.
+    Get a dictionary mapping roster IDs to user names.
 
     Args:
         year (int): The NFL season year.
 
     Returns:
-        dict: Mapping of roster IDs to manager real names.
-            Example: {1: "Tommy", 2: "Mike", 3: "James"}
-
-    Notes:
-        - Uses USERNAME_TO_REAL_NAME constant to convert display names to real names.
-        - Roster IDs are integers from the Sleeper API.
+        dict: A dictionary mapping roster IDs to user names.
     """
     user_ids = {}
     sleeper_users_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/users")
@@ -110,18 +82,10 @@ def get_roster_ids(year: int) -> Dict[int, str]:
 
 def get_current_season_and_week() -> Tuple[int, int]:
     """
-    Resolve current season + last scored week from Sleeper.
-
-    Raises:
-        Exception: if active league ID not configured or API fetch fails.
-
-    Logic:
-    - Current calendar year -> league ID lookup.
-    - Fetch league settings -> season + last_scored_leg.
-    - last_scored_leg represents final completed scoring period.
+    Get the current NFL season and week.
 
     Returns:
-        (int, int): (season, week)
+        Tuple[int, int]: A tuple containing the current season and week.
     """
     current_year = datetime.now().year
 

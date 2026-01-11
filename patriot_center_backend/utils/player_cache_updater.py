@@ -1,6 +1,7 @@
 """
-This module provides utility functions for updating the players cache.
+This module provides utility functions for updating the players cache with player metadata from individual player IDs.
 """
+
 from typing import Any, Dict, List
 
 from patriot_center_backend.cache import CACHE_MANAGER
@@ -11,13 +12,11 @@ def update_players_cache(player_id: str) -> None:
     """
     Update players cache with player metadata from individual player ID.
 
-    Adds player metadata including full name, position, team, and URL slug.
-
     Args:
-        item: Single player_id string
+        player_id (str): The ID of the player.
 
     Returns:
-        None (modifies players_cache in-place)
+        None
     """    
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
     players_cache    = CACHE_MANAGER.get_players_cache()
@@ -44,13 +43,13 @@ def update_players_cache(player_id: str) -> None:
 
 def update_players_cache_with_list(item: List[Dict[str, Any]]):
     """
-    Update players cache with a list of player metadata.
+    Update players cache with player metadata from a list of matchup dictionaries.
 
     Args:
-        item: List of dictionaries containing player metadata.
+        item (List[Dict[str, Any]]): A list of matchup dictionaries.
 
     Returns:
-        None (modifies players_cache in-place)
+        None
     """
     if not isinstance(item, list):
         print("WARNING: Item inputted into update_players_cache_with_list is not a list.")

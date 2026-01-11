@@ -3,14 +3,9 @@ Validation functions for manager metadata processing.
 
 Validates preconditions, matchup data, and transaction data.
 """
-from typing import Dict, Optional, Callable
+from typing import Dict, Optional
 
-from patriot_center_backend.cache import get_cache_manager
-
-
-CACHE_MANAGER = get_cache_manager()
-
-MANAGER_CACHE = CACHE_MANAGER.get_manager_cache()
+from patriot_center_backend.cache import CACHE_MANAGER
 
 
 class ValidationError(Exception):
@@ -50,7 +45,7 @@ def validate_caching_preconditions(weekly_roster_ids: Dict[int, str],
     if not week:
         raise ValidationError("Week not set. Cannot cache week data.")
 
-def validate_matchup_data(matchup_data: dict) -> None:
+def validate_matchup_data(matchup_data: dict) -> str:
     """
     Validate matchup data structure and logical consistency.
 
@@ -70,6 +65,8 @@ def validate_matchup_data(matchup_data: dict) -> None:
     # No matchup data means manager didn't play that week (e.g., not in playoffs)
     if not matchup_data:
         return "Empty"
+    
+    manager_cache = CACHE_MANAGER.get_manager_cache()
 
     opponent_manager = matchup_data.get("opponent_manager", "")
     result           = matchup_data.get("result", "")
@@ -79,7 +76,7 @@ def validate_matchup_data(matchup_data: dict) -> None:
     # Validate opponent manager
     if opponent_manager == "":
         return "Warning, no opponent_data in matchup_data"
-    if opponent_manager not in list(MANAGER_CACHE.keys()):
+    if opponent_manager not in list(manager_cache.keys()):
         return f"Warning, {opponent_manager} is an invalid manager"
 
     # Validate points are positive
@@ -105,8 +102,7 @@ def validate_matchup_data(matchup_data: dict) -> None:
     return ""
 
 def validate_transaction(transaction: dict, transaction_type: str,
-                         process_transaction_type: Optional[Callable[[dict], bool]],
-                         weekly_roster_ids: Dict[int, str]) -> bool:
+                         roster_ids: Dict[int, str]) -> bool:
     """
     Validate if transaction should be processed.
 
@@ -116,7 +112,6 @@ def validate_transaction(transaction: dict, transaction_type: str,
     Args:
         transaction: Transaction data from Sleeper API
         transaction_type: Type of transaction ("trade" or "add_or_drop")
-        process_transaction_type: Whether this transaction type should be processed
         weekly_roster_ids: Roster ID to manager mapping for the week
 
     Returns:
@@ -134,11 +129,6 @@ def validate_transaction(transaction: dict, transaction_type: str,
     # Validate transaction type
     if transaction_type not in {"trade", "add_or_drop"}:
         print("Unexpected transaction type:", transaction)
-        return False
-
-    # Check if processor exists for this type
-    if not process_transaction_type:
-        print("No processor for transaction type:", transaction)
         return False
 
     # Additional validation for trade transactions
@@ -159,7 +149,7 @@ def validate_transaction(transaction: dict, transaction_type: str,
             return False
 
         # At least one involved roster must be relevant to current caching session
-        if not any(roster_id in weekly_roster_ids for roster_id in transaction["roster_ids"]):
+        if not any(roster_id in roster_ids for roster_id in transaction["roster_ids"]):
             return False
 
     return True

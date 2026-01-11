@@ -7,17 +7,15 @@ Handles all transaction-related operations including:
 - FAAB tracking
 - Transaction validation and deduplication
 """
-from typing import Dict, Any, List, Optional
 from copy import deepcopy
+from typing import Any, Dict, List, Optional
 
-from patriot_center_backend.cache import get_cache_manager
-from patriot_center_backend.utils.helpers import fetch_sleeper_data
-from patriot_center_backend.managers.validators import validate_transaction
-from patriot_center_backend.managers.utilities import update_players_cache, draft_pick_decipher
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
-
-
-CACHE_MANAGER = get_cache_manager()
+from patriot_center_backend.managers.formatters import draft_pick_decipher
+from patriot_center_backend.managers.validators import validate_transaction
+from patriot_center_backend.utils.helpers import fetch_sleeper_data
+from patriot_center_backend.utils.player_cache_updater import update_players_cache
 
 MANAGER_CACHE         = CACHE_MANAGER.get_manager_cache()
 PLAYER_IDS_CACHE      = CACHE_MANAGER.get_player_ids_cache()
@@ -58,7 +56,7 @@ class TransactionProcessor:
         self._year: Optional[str] = None
         self._week: Optional[str] = None
         self._weekly_roster_ids: Dict[int, str] = {}
-        self._weekly_transaction_ids: List[Dict[str, Any]] = []
+        self._weekly_transaction_ids: List[str] = []
     
     def set_session_state(self, year: str, week: str, weekly_roster_ids: Dict[int, str], use_faab: bool) -> None:
         """

@@ -1,21 +1,16 @@
 from datetime import datetime
-from typing import Dict, Tuple, Any
+from typing import Any, Dict, Tuple
+
 import requests
 
-from patriot_center_backend.cache import get_cache_manager
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
-
-
-CACHE_MANAGER = get_cache_manager()
 
 PLAYER_IDS_CACHE = CACHE_MANAGER.get_player_ids_cache()
 PLAYERS_CACHE    = CACHE_MANAGER.get_players_cache()
 
-
 SLEEPER_API_URL = "https://api.sleeper.app/v1"
 
-
-# In utils/helpers.py
 PLAYER_NAME_TO_ID = {
     player_info.get("full_name"): pid 
     for pid, player_info in PLAYER_IDS_CACHE.items()

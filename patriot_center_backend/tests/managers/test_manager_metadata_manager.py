@@ -4,7 +4,7 @@ Unit tests for manager_metadata_manager module.
 Tests the ManagerMetadataManager class (singleton orchestrator).
 All tests mock file I/O and API calls to avoid touching real cache files.
 """
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, patch
 
 import pytest
 
@@ -12,291 +12,6 @@ from patriot_center_backend.managers.manager_metadata_manager import (
     ManagerMetadataManager,
     get_manager_metadata_manager,
 )
-from patriot_center_backend.managers.matchup_processor import MatchupProcessor
-from patriot_center_backend.managers.transaction_processing.base_processor import (
-    TransactionProcessor,
-)
-
-
-@pytest.fixture
-def mock_manager_cache():
-    """Create a blank cache for testing."""
-    return {
-        "Manager 1": {
-            "summary": {
-                "matchup_data": {
-                    "overall": {
-                        "points_for": {
-                            "total": 0.0,
-                            "opponents": {}
-                        },
-                        "points_against": {
-                            "total": 0.0,
-                            "opponents": {}
-                        },
-                        "total_matchups": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "wins": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "losses": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "ties": {
-                            "total": 0,
-                            "opponents": {}
-                        }
-                    },
-                    "regular_season": {
-                        "points_for": {
-                            "total": 0.0,
-                            "opponents": {}
-                        },
-                        "points_against": {
-                            "total": 0.0,
-                            "opponents": {}
-                        },
-                        "total_matchups": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "wins": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "losses": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "ties": {
-                            "total": 0,
-                            "opponents": {}
-                        }
-                    },
-                    "playoffs": {
-                        "points_for": {
-                            "total": 0.0,
-                            "opponents": {}
-                        },
-                        "points_against": {
-                            "total": 0.0,
-                            "opponents": {}
-                        },
-                        "total_matchups": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "wins": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "losses": {
-                            "total": 0,
-                            "opponents": {}
-                        },
-                        "ties": {
-                            "total": 0,
-                            "opponents": {}
-                        }
-                    }
-                },
-                "transactions": {
-                    "trades": {
-                        "total": 0,
-                        "trade_partners": {},
-                        "trade_players_acquired": {},
-                        "trade_players_sent": {}
-                    },
-                    "adds": {
-                        "total": 0,
-                        "players": {}
-                    },
-                    "drops": {
-                        "total": 0,
-                        "players": {}
-                    },
-                    "faab": {
-                        "total_lost_or_gained": 0,
-                        "players": {},
-                        "traded_away": {
-                            "total": 0,
-                            "trade_partners": {}
-                        },
-                        "acquired_from": {
-                            "total": 0,
-                            "trade_partners": {}
-                        }
-                    }
-                },
-                "overall_data": {
-                    "placement": {},
-                    "playoff_appearances": []
-                },
-                "user_id": "user123"
-            },
-            "years": {
-                "2023": {
-                    "summary": {
-                        "matchup_data": {
-                            "overall": {
-                                "points_for": {
-                                    "total": 0.0,
-                                    "opponents": {}
-                                },
-                                "points_against": {
-                                    "total": 0.0,
-                                    "opponents": {}
-                                },
-                                "total_matchups": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "wins": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "losses": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "ties": {
-                                    "total": 0,
-                                    "opponents": {}
-                                }
-                            },
-                            "regular_season": {
-                                "points_for": {
-                                    "total": 0.0,
-                                    "opponents": {}
-                                },
-                                "points_against": {
-                                    "total": 0.0,
-                                    "opponents": {}
-                                },
-                                "total_matchups": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "wins": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "losses": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "ties": {
-                                    "total": 0,
-                                    "opponents": {}
-                                }
-                            },
-                            "playoffs": {
-                                "points_for": {
-                                    "total": 0.0,
-                                    "opponents": {}
-                                },
-                                "points_against": {
-                                    "total": 0.0,
-                                    "opponents": {}
-                                },
-                                "total_matchups": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "wins": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "losses": {
-                                    "total": 0,
-                                    "opponents": {}
-                                },
-                                "ties": {
-                                    "total": 0,
-                                    "opponents": {}
-                                }
-                            }
-                        },
-                        "transactions": {
-                            "trades": {
-                                "total": 0,
-                                "trade_partners": {},
-                                "trade_players_acquired": {},
-                                "trade_players_sent": {}
-                            },
-                            "adds": {
-                                "total": 0,
-                                "players": {}
-                            },
-                            "drops": {
-                                "total": 0,
-                                "players": {}
-                            },
-                            "faab": {
-                                "total_lost_or_gained": 0,
-                                "players": {},
-                                "traded_away": {
-                                    "total": 0,
-                                    "trade_partners": {}
-                                },
-                                "acquired_from": {
-                                    "total": 0,
-                                    "trade_partners": {}
-                                }
-                            }
-                        }
-                    },
-                    "roster_id": 1,
-                    "weeks": {
-                        "1": {
-                            "matchup_data": {
-                                "opponent_manager": None,
-                                "result": None,
-                                "points_for": 0.0,
-                                "points_against": 0.0
-                            },
-                            "transactions": {
-                                "trades": {
-                                    "total": 0,
-                                    "trade_partners": {},
-                                    "trade_players_acquired": {},
-                                    "trade_players_sent": {},
-                                    "transaction_ids": []
-                                },
-                                "adds": {
-                                    "total": 0,
-                                    "players": {},
-                                    "transaction_ids": []
-                                },
-                                "drops": {
-                                    "total": 0,
-                                    "players": {},
-                                    "transaction_ids": []
-                                },
-                                "faab": {
-                                    "total_lost_or_gained": 0,
-                                    "players": {},
-                                    "traded_away": {
-                                        "total": 0,
-                                        "trade_partners": {}
-                                    },
-                                    "acquired_from": {
-                                        "total": 0,
-                                        "trade_partners": {}
-                                    },
-                                    "transaction_ids": []
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
 
 
 @pytest.fixture(autouse=True)
@@ -486,6 +201,29 @@ class TestSetRosterId:
         assert mock_metadata_manager._use_faab is True
         assert mock_metadata_manager._playoff_week_start == 15
 
+    def test_cache_references_are_consistent(self, mock_metadata_manager):
+        """Test that cache references remain consistent."""
+        self.mock_fetch_sleeper_data.side_effect = [
+            {"settings": {"waiver_type": 1, "playoff_week_start": 15}},
+            {"user_id": "user123"}
+        ]
+        self.mock_get_manager_cache.return_value = {
+            "Manager 1": {
+                "summary": {},
+                "years": {
+                    "2023": {"summary": {}, "roster_id": None, "weeks": {}}
+                }
+            }
+        }
+        
+
+        original_cache = self.mock_manager_cache
+
+        mock_metadata_manager.set_roster_id("Manager 1", "2023", "1", 1)
+
+        # Cache reference should not change
+        assert self.mock_manager_cache is original_cache
+
 
 class TestCacheWeekData:
     """Test cache_week_data method."""
@@ -560,363 +298,376 @@ class TestCacheWeekData:
 class TestSetPlayoffPlacements:
     """Test set_playoff_placements method."""
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
-    def test_set_playoff_placements_updates_cache(self, mock_initialize_faab_template, mock_fetch):
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER.get_manager_cache') as mock_get_manager:
+            
+            self.mock_manager_cache = {}
+            self.mock_get_manager = mock_get_manager
+            self.mock_get_manager.return_value = self.mock_manager_cache
+            
+            yield
+
+    def test_set_playoff_placements_updates_cache(self, mock_metadata_manager):
         """Test that playoff placements are added to cache."""
-        mock_fetch.side_effect = [
-            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
-        ]
         placements = {
             "Manager 1": 1,
             "Manager 2": 2
         }
+        self.mock_manager_cache.update({
+            "Manager 1": {
+                "summary": {
+                    "overall_data": {
+                        "placement": {}
+                    }
+                }
+            }
+        })
 
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
-            from patriot_center_backend.managers import manager_metadata_manager
-            set_playoff_placements_updates_cache_manager = manager_metadata_manager.ManagerMetadataManager()
-            set_playoff_placements_updates_cache_manager.set_roster_id("Manager 1", "2023", "1", 1)
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
+        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1"}
 
-            set_playoff_placements_updates_cache_manager.set_playoff_placements(placements, "2023")
+        mock_metadata_manager.set_playoff_placements(placements, "2023")
 
-            assert manager_metadata_manager.MANAGER_CACHE["Manager 1"]["summary"]["overall_data"]["placement"]["2023"] == 1
+        assert self.mock_manager_cache["Manager 1"]["summary"]["overall_data"]["placement"]["2023"] == 1
 
-    def test_set_playoff_placements_skips_unknown_managers(self, manager):
+    def test_set_playoff_placements_skips_unknown_managers(self, mock_metadata_manager):
         """Test that unknown managers are skipped."""
         placements = {
             "Unknown Manager": 1
         }
 
         # Should not raise error
-        manager.set_playoff_placements(placements, "2023")
+        mock_metadata_manager.set_playoff_placements(placements, "2023")
 
 
 class TestGetManagersList:
     """Test get_managers_list method."""
 
-    def test_get_managers_list_delegates_to_exporter(self, manager):
+    def test_get_managers_list_delegates_to_exporter(self, mock_metadata_manager):
         """Test that get_managers_list delegates to data exporter."""
-        manager._data_exporter = MagicMock()
-        manager._data_exporter.get_managers_list.return_value = {"managers": []}
+        mock_metadata_manager._data_exporter = MagicMock()
+        mock_metadata_manager._data_exporter.get_managers_list.return_value = {"managers": []}
 
-        result = manager.get_managers_list(active_only=True)
+        result = mock_metadata_manager.get_managers_list(active_only=True)
 
-        manager._data_exporter.get_managers_list.assert_called_once_with(active_only=True)
+        mock_metadata_manager._data_exporter.get_managers_list.assert_called_once_with(active_only=True)
         assert result == {"managers": []}
 
 
 class TestGetManagerSummary:
     """Test get_manager_summary method."""
 
-    def test_get_manager_summary_delegates_to_exporter(self, manager):
+    def test_get_manager_summary_delegates_to_exporter(self, mock_metadata_manager):
         """Test that get_manager_summary delegates to data exporter."""
-        manager._data_exporter = MagicMock()
-        manager._data_exporter.get_manager_summary.return_value = {"manager_name": "Manager 1"}
+        mock_metadata_manager._data_exporter = MagicMock()
+        mock_metadata_manager._data_exporter.get_manager_summary.return_value = {"manager_name": "Manager 1"}
 
-        result = manager.get_manager_summary("Manager 1", year="2023")
+        mock_metadata_manager.get_manager_summary("Manager 1", year="2023")
 
-        manager._data_exporter.get_manager_summary.assert_called_once_with("Manager 1", year="2023")
+        mock_metadata_manager._data_exporter.get_manager_summary.assert_called_once_with("Manager 1", year="2023")
 
 
 class TestGetHeadToHead:
     """Test get_head_to_head method."""
 
-    def test_get_head_to_head_delegates_to_exporter(self, manager):
+    def test_get_head_to_head_delegates_to_exporter(self, mock_metadata_manager):
         """Test that get_head_to_head delegates to data exporter."""
-        manager._data_exporter = MagicMock()
-        manager._data_exporter.get_head_to_head.return_value = {}
+        mock_metadata_manager._data_exporter = MagicMock()
+        mock_metadata_manager._data_exporter.get_head_to_head.return_value = {}
 
-        result = manager.get_head_to_head("Manager 1", "Manager 2", year="2023")
+        mock_metadata_manager.get_head_to_head("Manager 1", "Manager 2", year="2023")
 
-        manager._data_exporter.get_head_to_head.assert_called_once_with("Manager 1", "Manager 2", year="2023")
+        mock_metadata_manager._data_exporter.get_head_to_head.assert_called_once_with("Manager 1", "Manager 2", year="2023")
 
 
 class TestGetManagerTransactions:
     """Test get_manager_transactions method."""
 
-    def test_get_manager_transactions_delegates_to_exporter(self, manager):
+    def test_get_manager_transactions_delegates_to_exporter(self, mock_metadata_manager):
         """Test that get_manager_transactions delegates to data exporter."""
-        manager._data_exporter = MagicMock()
-        manager._data_exporter.get_manager_transactions.return_value = {}
+        mock_metadata_manager._data_exporter = MagicMock()
+        mock_metadata_manager._data_exporter.get_manager_transactions.return_value = {}
 
-        result = manager.get_manager_transactions("Manager 1", year="2023")
+        mock_metadata_manager.get_manager_transactions("Manager 1", year="2023")
 
-        manager._data_exporter.get_manager_transactions.assert_called_once_with("Manager 1", year="2023")
+        mock_metadata_manager._data_exporter.get_manager_transactions.assert_called_once_with("Manager 1", year="2023")
 
 
 class TestGetManagerAwards:
     """Test get_manager_awards method."""
 
-    def test_get_manager_awards_delegates_to_exporter(self, manager):
+    def test_get_manager_awards_delegates_to_exporter(self, mock_metadata_manager):
         """Test that get_manager_awards delegates to data exporter."""
-        manager._data_exporter = MagicMock()
-        manager._data_exporter.get_manager_awards.return_value = {}
+        mock_metadata_manager._data_exporter = MagicMock()
+        mock_metadata_manager._data_exporter.get_manager_awards.return_value = {}
 
-        result = manager.get_manager_awards("Manager 1")
+        mock_metadata_manager.get_manager_awards("Manager 1")
 
-        manager._data_exporter.get_manager_awards.assert_called_once_with("Manager 1")
+        mock_metadata_manager._data_exporter.get_manager_awards.assert_called_once_with("Manager 1")
 
 
 class TestSave:
     """Test save method."""
 
-    def test_save_writes_all_caches(self):
-        """Test that save writes all caches to disk."""
-
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {"Manager 1": {}}), \
-             patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER', MagicMock()):
-            from patriot_center_backend.managers import manager_metadata_manager
-            mgr = manager_metadata_manager.ManagerMetadataManager()
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER.save_all_caches') as mock_save_caches:
             
-            mgr.save()
+            self.mock_save_caches = mock_save_caches
+            
+            yield
 
-            assert manager_metadata_manager.CACHE_MANAGER.save_all_caches.called
+    def test_save_writes_all_caches(self, mock_metadata_manager):
+        """Test that save writes all caches to disk."""
+            
+        mock_metadata_manager.save()
+
+        assert self.mock_save_caches.called
 
 
 class TestSetDefaultsIfMissing:
     """Test _set_defaults_if_missing method - unit tests calling function directly."""
+    
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.initialize_summary_templates') as mock_init_templates, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state') as mock_get_season_state, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template') as mock_init_faab:
+            
+            self.mock_manager_cache = {}
+            self.mock_get_manager_cache = mock_get_manager_cache
+            self.mock_get_manager_cache.return_value = self.mock_manager_cache
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_creates_manager_entry(self, mock_season_state):
+            self.mock_init_templates = mock_init_templates
+
+            self.mock_get_season_state = mock_get_season_state
+            self.mock_get_season_state.return_value = "regular_season"
+
+            self.mock_init_faab = mock_init_faab
+
+
+            
+            yield
+
+    def test_set_defaults_creates_manager_entry(self, mock_metadata_manager):
         """Test _set_defaults_if_missing creates manager entry if not exists."""
-        mock_season_state.return_value = "regular_season"
+        self.mock_get_season_state.return_value = "return_value"
+        
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
+        mock_metadata_manager._use_faab = False
+        mock_metadata_manager._playoff_week_start = 15
+        mock_metadata_manager._playoff_roster_ids = []
+        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1"}
 
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
-            from patriot_center_backend.managers import manager_metadata_manager
-            mgr = manager_metadata_manager.ManagerMetadataManager()
+        mock_metadata_manager._templates = MagicMock()
+        
+        # Call directly
+        mock_metadata_manager._set_defaults_if_missing(1)
 
-            mgr._year = "2023"
-            mgr._week = "1"
-            mgr._use_faab = False
-            mgr._playoff_week_start = 15
-            mgr._playoff_roster_ids = []
-            mgr._weekly_roster_ids[1] = "Manager 1"
-            
-            # Call directly
-            mgr._set_defaults_if_missing(1)
+        # Should create manager entry
+        assert "Manager 1" in self.mock_manager_cache
+        assert "summary" in self.mock_manager_cache["Manager 1"]
+        assert "years" in self.mock_manager_cache["Manager 1"]
 
-            # Should create manager entry
-            assert "Manager 1" in manager_metadata_manager.MANAGER_CACHE
-            assert "summary" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]
-            assert "years" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]
+        # 4 calls, 1 if its populated, 2 manager, 3 yearly, 4 weekly
+        assert len(mock_metadata_manager._templates.mock_calls) == 4
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_creates_year_entry(self, mock_season_state):
+    def test_set_defaults_creates_year_entry(self, mock_metadata_manager):
         """Test _set_defaults_if_missing creates year entry if not exists."""
-        mock_season_state.return_value = "regular_season"
-        
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
-            from patriot_center_backend.managers import manager_metadata_manager
-            mgr = manager_metadata_manager.ManagerMetadataManager()
+        self.mock_get_season_state.return_value = "return_value"
 
-            mgr._year = "2023"
-            mgr._week = "1"
-            mgr._use_faab = False
-            mgr._playoff_week_start = 15
-            mgr._playoff_roster_ids = []
-            mgr._weekly_roster_ids[1] = "Manager 1"
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
+        mock_metadata_manager._use_faab = False
+        mock_metadata_manager._playoff_week_start = 15
+        mock_metadata_manager._playoff_roster_ids = []
+        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1"}
+
+        mock_metadata_manager._templates = MagicMock()
             
-            # Call directly
-            mgr._set_defaults_if_missing(1)
+        # Call directly
+        mock_metadata_manager._set_defaults_if_missing(1)
 
-            # Should create year entry
-            assert "2023" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]
-            assert "summary" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]
-            assert "weeks" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]
+        # Should create year entry
+        assert "2023" in self.mock_manager_cache["Manager 1"]["years"]
+        assert "summary" in self.mock_manager_cache["Manager 1"]["years"]["2023"]
+        assert "weeks" in self.mock_manager_cache["Manager 1"]["years"]["2023"]
 
-    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_creates_week_entry(self, mock_season_state):
+        # Yearly template should be called to be used 
+        calls = mock_metadata_manager._templates.__getitem__.call_args_list
+        assert call('yearly_summary_template') in calls
+
+    def test_set_defaults_creates_week_entry(self, mock_metadata_manager):
         """Test _set_defaults_if_missing creates week entry with correct template."""
-        mock_season_state.return_value = "regular_season"
-
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
-            from patriot_center_backend.managers import manager_metadata_manager
-            mgr = manager_metadata_manager.ManagerMetadataManager()
+        self.mock_get_season_state.return_value = "regular_season"
             
-            mgr._year = "2023"
-            mgr._week = "1"
-            mgr._use_faab = False
-            mgr._playoff_week_start = 15
-            mgr._playoff_roster_ids = []
-            mgr._weekly_roster_ids[1] = "Manager 1"
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
+        mock_metadata_manager._use_faab = False
+        mock_metadata_manager._playoff_week_start = 15
+        mock_metadata_manager._playoff_roster_ids = []
+        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1"}
 
-            # Call directly
-            mgr._set_defaults_if_missing(1)
-
-            # Should create week entry with matchup_data
-            assert "1" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]
-            assert "matchup_data" in manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["1"]
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_uses_playoff_template_when_not_in_playoffs(self, mock_season_state):
-        """Test _set_defaults_if_missing uses playoff template for non-playoff teams."""
-        mock_season_state.return_value = "playoffs"
-
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
-            from patriot_center_backend.managers import manager_metadata_manager
-            mgr = manager_metadata_manager.ManagerMetadataManager()
-            
-            mgr._year = "2023"
-            mgr._week = "15"
-            mgr._use_faab = False
-            mgr._playoff_week_start = 15
-            mgr._playoff_roster_ids = [2, 3]
-            mgr._weekly_roster_ids[1] = "Manager 1"
-
-            # Call directly
-            mgr._set_defaults_if_missing(1)
-
-            # Should use weekly_summary_not_in_playoffs_template (empty matchup_data)
-            week_data = manager_metadata_manager.MANAGER_CACHE["Manager 1"]["years"]["2023"]["weeks"]["15"]
-            assert week_data["matchup_data"] == {}
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    def test_set_defaults_skips_existing_entries(self, mock_season_state):
-        """Test _set_defaults_if_missing does not overwrite existing data."""
-        from patriot_center_backend.managers.templates import initialize_summary_templates
-
-        # Initialize with proper template structure plus custom data
-        templates = initialize_summary_templates(use_faab=True)
-        manager_cache = {
-            "Manager 1": {
-                "existing": "data",
-                "summary": templates['top_level_summary_template'],
-                "years": {}
-            }
-        }
-
-        mock_season_state.return_value = "regular_season"
-        
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', manager_cache):
-            from patriot_center_backend.managers import manager_metadata_manager
-            mgr = manager_metadata_manager.ManagerMetadataManager()
-            
-            mgr._year = "2023"
-            mgr._week = "1"
-            mgr._use_faab = False
-            mgr._playoff_week_start = 15
-            mgr._playoff_roster_ids = [2, 3]
-            mgr._weekly_roster_ids[1] = "Manager 1"
-
-            # Call directly
-            mgr._set_defaults_if_missing(1)
-
-            # Should not overwrite existing key
-            assert manager_metadata_manager.MANAGER_CACHE["Manager 1"]["existing"] == "data"
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.get_season_state')
-    @patch('patriot_center_backend.managers.manager_metadata_manager.initialize_faab_template')
-    def test_set_defaults_initializes_faab_when_enabled(self, mock_init_faab, mock_season_state, manager):
-        """Test _set_defaults_if_missing initializes FAAB template when FAAB is enabled."""
-        mock_season_state.return_value = "regular_season"
-        mock_init_faab.return_value = None
-
-        manager._year = "2023"
-        manager._week = "1"
-        manager._use_faab = True
-        manager._playoff_week_start = 15
-        manager._playoff_roster_ids = []
-        manager._weekly_roster_ids[1] = "Manager 1"
+        mock_metadata_manager._templates = MagicMock()
 
         # Call directly
-        manager._set_defaults_if_missing(1)
+        mock_metadata_manager._set_defaults_if_missing(1)
+
+        # Should create week entry
+        assert "1" in self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]
+        
+        # Non-playoff weekly template should be called to be used
+        calls = mock_metadata_manager._templates.__getitem__.call_args_list
+        assert call('weekly_summary_template') in calls
+
+    def test_set_defaults_uses_playoff_template_when_not_in_playoffs(self, mock_metadata_manager):
+        """Test _set_defaults_if_missing uses playoff template for non-playoff teams."""
+        self.mock_get_season_state.return_value = "playoffs"
+            
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "15"
+        mock_metadata_manager._use_faab = False
+        mock_metadata_manager._playoff_week_start = 15
+        mock_metadata_manager._playoff_roster_ids = [2, 3]
+        mock_metadata_manager._weekly_roster_ids[1] = "Manager 1"
+        
+        mock_metadata_manager._templates = MagicMock()
+        
+        # Call directly
+        mock_metadata_manager._set_defaults_if_missing(1)
+
+        # Check if the not in playoffs template was used and NOT the normal one
+        calls = mock_metadata_manager._templates.__getitem__.call_args_list
+        assert call('weekly_summary_not_in_playoffs_template') in calls
+        assert call('weekly_summary_template') not in calls
+
+    def test_set_defaults_skips_existing_entries(self, mock_metadata_manager):
+        """Test _set_defaults_if_missing does not overwrite existing data."""
+        
+        # Initialize with proper template structure plus custom data
+        self.mock_manager_cache.update({
+            "Manager 1": {
+                "existing": "data",
+                "summary": {},
+                "years": {}
+            }
+        })
+        self.mock_get_season_state.return_value = "regular_season"
+            
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
+        mock_metadata_manager._use_faab = False
+        mock_metadata_manager._playoff_week_start = 15
+        mock_metadata_manager._playoff_roster_ids = [2, 3]
+        mock_metadata_manager._weekly_roster_ids[1] = "Manager 1"
+
+        mock_metadata_manager._templates = MagicMock()
+
+        # Call directly
+        mock_metadata_manager._set_defaults_if_missing(1)
+
+        # Should not overwrite existing key
+        assert self.mock_manager_cache["Manager 1"]["existing"] == "data"
+
+        calls = mock_metadata_manager._templates.__getitem__.call_args_list
+
+        # top level summary template NOT called for
+        assert call('top_level_summary_template') not in calls
+
+        # yearly and weekly summary templates called for
+        assert call('yearly_summary_template') in calls
+        assert call('weekly_summary_template') in calls
+
+    def test_set_defaults_initializes_faab_when_enabled(self, mock_metadata_manager):
+        """Test _set_defaults_if_missing initializes FAAB template when FAAB is enabled."""
+        self.mock_get_season_state.return_value = "regular_season"
+
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
+        mock_metadata_manager._use_faab = True
+        mock_metadata_manager._playoff_week_start = 15
+        mock_metadata_manager._playoff_roster_ids = []
+        mock_metadata_manager._weekly_roster_ids[1] = "Manager 1"
+
+        mock_metadata_manager._templates = MagicMock()
+
+        # Call directly
+        mock_metadata_manager._set_defaults_if_missing(1)
 
         # Should call initialize_faab_template
-        assert mock_init_faab.called
-        mock_init_faab.assert_called_once_with("Manager 1", "2023", "1")
-
-
-class TestCacheIntegrity:
-    """Test cache integrity and consistency."""
-
-    @patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"})
-    @patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data')
-    def test_cache_references_are_consistent(self, mock_fetch, manager):
-        """Test that cache references remain consistent."""
-        mock_fetch.side_effect = [
-            {"settings": {"waiver_type": 1, "playoff_week_start": 15}},
-            {"user_id": "user123"}
-        ]
-
-        with patch('patriot_center_backend.managers.manager_metadata_manager.MANAGER_CACHE', {}):
-            from patriot_center_backend.managers import manager_metadata_manager
-            mgr = manager_metadata_manager.ManagerMetadataManager()
-
-            original_cache = manager_metadata_manager.MANAGER_CACHE
-
-            mgr.set_roster_id("Manager 1", "2023", "1", 1)
-
-            # Cache reference should not change
-            assert manager_metadata_manager.MANAGER_CACHE is original_cache
+        self.mock_init_faab.assert_called_once_with("Manager 1", "2023", "1")
 
 
 class TestClearWeeklyMetadata:
     """Test _clear_weekly_metadata method."""
 
-    def test_clear_weekly_metadata_resets_year_and_week(self, manager):
+    def test_clear_weekly_metadata_resets_year_and_week(self, mock_metadata_manager):
         """Test _clear_weekly_metadata resets year and week to None."""
-        manager._year = "2023"
-        manager._week = "5"
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "5"
 
-        manager._clear_weekly_metadata()
+        mock_metadata_manager._clear_weekly_metadata()
 
-        assert manager._year is None
-        assert manager._week is None
+        assert mock_metadata_manager._year is None
+        assert mock_metadata_manager._week is None
 
-    def test_clear_weekly_metadata_special_case_2024_week_17(self, manager):
+    def test_clear_weekly_metadata_special_case_2024_week_17(self, mock_metadata_manager):
         """Test _clear_weekly_metadata clears roster IDs for 2024 week 17."""
-        manager._year = "2024"
-        manager._week = "17"
-        manager._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+        mock_metadata_manager._year = "2024"
+        mock_metadata_manager._week = "17"
+        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        manager._clear_weekly_metadata()
+        mock_metadata_manager._clear_weekly_metadata()
 
         # Should clear roster IDs for this special case
-        assert manager._weekly_roster_ids == {}
-        assert manager._year is None
-        assert manager._week is None
+        assert mock_metadata_manager._weekly_roster_ids == {}
+        assert mock_metadata_manager._year is None
+        assert mock_metadata_manager._week is None
 
-    def test_clear_weekly_metadata_does_not_clear_roster_ids_for_other_weeks(self, manager):
+    def test_clear_weekly_metadata_does_not_clear_roster_ids_for_other_weeks(self, mock_metadata_manager):
         """Test _clear_weekly_metadata does not clear roster IDs for other weeks."""
-        manager._year = "2024"
-        manager._week = "5"
-        manager._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+        mock_metadata_manager._year = "2024"
+        mock_metadata_manager._week = "5"
+        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        manager._clear_weekly_metadata()
+        mock_metadata_manager._clear_weekly_metadata()
 
         # Should NOT clear roster IDs (not week 17)
-        assert manager._weekly_roster_ids == {1: "Manager 1", 2: "Manager 2"}
-        assert manager._year is None
-        assert manager._week is None
+        assert mock_metadata_manager._weekly_roster_ids == {1: "Manager 1", 2: "Manager 2"}
+        assert mock_metadata_manager._year is None
+        assert mock_metadata_manager._week is None
 
-    @patch.object(MatchupProcessor, 'clear_session_state')
-    @patch.object(TransactionProcessor, 'clear_session_state')
-    def test_clear_weekly_metadata_clears_processor_state(self, mock_trans_clear, mock_matchup_clear, manager):
+    def test_clear_weekly_metadata_clears_processor_state(self, mock_metadata_manager):
         """Test _clear_weekly_metadata calls clear_session_state on processors."""
-        manager._year = "2023"
-        manager._week = "1"
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
 
         # Create processor instances
-        manager._transaction_processor = TransactionProcessor(False)
-        manager._matchup_processor = MatchupProcessor(15)
+        mock_metadata_manager._transaction_processor = MagicMock()
+        mock_metadata_manager._matchup_processor = MagicMock()
 
-        manager._clear_weekly_metadata()
+        mock_metadata_manager._clear_weekly_metadata()
 
         # Should call clear_session_state on both processors
-        mock_trans_clear.assert_called_once()
-        mock_matchup_clear.assert_called_once()
+        mock_metadata_manager._transaction_processor.clear_session_state.assert_called_once()
+        mock_metadata_manager._matchup_processor.clear_session_state.assert_called_once()
 
-    def test_clear_weekly_metadata_handles_no_processors(self, manager):
+    def test_clear_weekly_metadata_handles_no_processors(self, mock_metadata_manager):
         """Test _clear_weekly_metadata handles None processors gracefully."""
-        manager._year = "2023"
-        manager._week = "1"
-        manager._transaction_processor = None
-        manager._matchup_processor = None
+        mock_metadata_manager._year = "2023"
+        mock_metadata_manager._week = "1"
+        mock_metadata_manager._transaction_processor = None
+        mock_metadata_manager._matchup_processor = None
 
         # Should not raise exception
-        manager._clear_weekly_metadata()
+        mock_metadata_manager._clear_weekly_metadata()
 
-        assert manager._year is None
-        assert manager._week is None
+        assert mock_metadata_manager._year is None
+        assert mock_metadata_manager._week is None

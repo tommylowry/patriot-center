@@ -3,12 +3,15 @@ Unit tests for validators module.
 
 Tests all validation functions with both good and bad scenarios.
 """
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from patriot_center_backend.managers.validators import (
     ValidationError,
     validate_caching_preconditions,
-    validate_transaction
+    validate_matchup_data,
+    validate_transaction,
 )
 
 
@@ -97,7 +100,18 @@ class TestValidateCachingPreconditions:
 class TestValidateMatchupData:
     """Test validate_matchup_data function."""
 
-    def test_valid_matchup_data_win(self, mock_manager_cache):
+    @pytest.fixture(autouse=True)
+    def setup(self, mock_manager_cache):
+        """Setup common mocks for all tests."""
+        with patch('patriot_center_backend.managers.validators.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache:
+            
+            self.mock_manager_cache = mock_manager_cache
+            self.mock_get_manager_cache = mock_get_manager_cache
+            self.mock_get_manager_cache.return_value = self.mock_manager_cache
+            
+            yield
+
+    def test_valid_matchup_data_win(self):
         """Test with valid win matchup data - should return empty string."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -105,15 +119,12 @@ class TestValidateMatchupData:
             "points_for": 120.5,
             "points_against": 100.0
         }
-        
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
 
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert result == ""
 
-    def test_valid_matchup_data_loss(self, mock_manager_cache):
+    def test_valid_matchup_data_loss(self):
         """Test with valid loss matchup data - should return empty string."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -121,15 +132,12 @@ class TestValidateMatchupData:
             "points_for": 100.0,
             "points_against": 120.5
         }
-        
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
 
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert result == ""
 
-    def test_valid_matchup_data_tie(self, mock_manager_cache):
+    def test_valid_matchup_data_tie(self):
         """Test with valid tie matchup data - should return empty string."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -138,36 +146,27 @@ class TestValidateMatchupData:
             "points_against": 115.5
         }
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert result == ""
 
-    def test_empty_matchup_data(self, mock_manager_cache):
+    def test_empty_matchup_data(self):
         """Test with empty matchup data - should return 'Empty'."""
         matchup_data = {}
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert result == "Empty"
 
-    def test_none_matchup_data(self, mock_manager_cache):
+    def test_none_matchup_data(self):
         """Test with None matchup data - should return 'Empty'."""
         matchup_data = None
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert result == "Empty"
 
-    def test_missing_opponent_manager(self, mock_manager_cache):
+    def test_missing_opponent_manager(self):
         """Test with missing opponent_manager - should return warning."""
         matchup_data = {
             "result": "win",
@@ -175,14 +174,11 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "no opponent_data" in result
 
-    def test_empty_opponent_manager(self, mock_manager_cache):
+    def test_empty_opponent_manager(self):
         """Test with empty opponent_manager - should return warning."""
         matchup_data = {
             "opponent_manager": "",
@@ -191,14 +187,11 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
 
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "no opponent_data" in result
 
-    def test_invalid_opponent_manager(self, mock_manager_cache):
+    def test_invalid_opponent_manager(self):
         """Test with opponent not in cache - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 999",
@@ -207,15 +200,12 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "invalid manager" in result
         assert "Manager 999" in result
 
-    def test_zero_points_for(self, mock_manager_cache):
+    def test_zero_points_for(self):
         """Test with zero points_for - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -224,14 +214,11 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
 
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "invalid points_for" in result
 
-    def test_negative_points_for(self, mock_manager_cache):
+    def test_negative_points_for(self):
         """Test with negative points_for - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -240,14 +227,11 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
 
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "invalid points_for" in result
 
-    def test_zero_points_against(self, mock_manager_cache):
+    def test_zero_points_against(self):
         """Test with zero points_against - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -256,14 +240,11 @@ class TestValidateMatchupData:
             "points_against": 0.0
         }
 
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "invalid points_against" in result
 
-    def test_negative_points_against(self, mock_manager_cache):
+    def test_negative_points_against(self):
         """Test with negative points_against - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -272,14 +253,11 @@ class TestValidateMatchupData:
             "points_against": -10.0
         }
 
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "invalid points_against" in result
 
-    def test_missing_result(self, mock_manager_cache):
+    def test_missing_result(self):
         """Test with missing result - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -287,14 +265,11 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "no result" in result
 
-    def test_empty_result(self, mock_manager_cache):
+    def test_empty_result(self):
         """Test with empty result - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -303,14 +278,11 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
 
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "no result" in result
 
-    def test_invalid_result(self, mock_manager_cache):
+    def test_invalid_result(self):
         """Test with invalid result value - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -319,15 +291,12 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "invalid result" in result
         assert "victory" in result
 
-    def test_win_with_lower_points(self, mock_manager_cache):
+    def test_win_with_lower_points(self):
         """Test win result with lower points_for - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -336,14 +305,11 @@ class TestValidateMatchupData:
             "points_against": 120.5
         }
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "result is win but points_against" in result
 
-    def test_loss_with_higher_points(self, mock_manager_cache):
+    def test_loss_with_higher_points(self):
         """Test loss result with higher points_for - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -352,14 +318,11 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "result is loss but points_for" in result
 
-    def test_tie_with_unequal_points(self, mock_manager_cache):
+    def test_tie_with_unequal_points(self):
         """Test tie result with unequal points - should return warning."""
         matchup_data = {
             "opponent_manager": "Manager 2",
@@ -368,10 +331,7 @@ class TestValidateMatchupData:
             "points_against": 100.0
         }
         
-        with patch('patriot_center_backend.managers.validators.MANAGER_CACHE', mock_manager_cache):
-            from patriot_center_backend.managers.validators import validate_matchup_data
-
-            result = validate_matchup_data(matchup_data)
+        result = validate_matchup_data(matchup_data)
         
         assert "result is tie but points_for" in result
 
@@ -391,7 +351,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is True
 
     def test_valid_add_or_drop_transaction(self):
@@ -402,7 +362,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "add_or_drop", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "add_or_drop", weekly_roster_ids)
         assert result is True
 
     def test_failed_transaction(self):
@@ -417,10 +377,10 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
-    def test_incomplete_transaction(self):
+    def test_incomplete_transaction(self, capsys):
         """Test with incomplete transaction - should return False."""
         transaction = {
             "status": "pending",
@@ -432,10 +392,16 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
+
+        # Verify warning was printed for incorrect data
+        captured = capsys.readouterr()
+        assert "Unexpected transaction status" in captured.out
+        assert "pending" in captured.out
+
         assert result is False
 
-    def test_invalid_transaction_type(self):
+    def test_invalid_transaction_type(self, capsys):
         """Test with invalid transaction type - should return False."""
         transaction = {
             "status": "complete",
@@ -443,25 +409,16 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "unknown", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "unknown", weekly_roster_ids)
+
+        # Verify warning was printed for incorrect data
+        captured = capsys.readouterr()
+        assert "Unexpected transaction type" in captured.out
+        assert "unknown" in captured.out
+
         assert result is False
 
-    def test_no_processor(self):
-        """Test with no processor available - should return False."""
-        transaction = {
-            "status": "complete",
-            "type": "trade",
-            "transaction_id": "12345",
-            "roster_ids": [1, 2],
-            "adds": {"player1": 1},
-            "drops": {"player2": 2}
-        }
-        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
-
-        result = validate_transaction(transaction, "trade", False, weekly_roster_ids)
-        assert result is False
-
-    def test_trade_missing_transaction_id(self):
+    def test_trade_missing_transaction_id(self, capsys):
         """Test trade without transaction_id - should return False."""
         transaction = {
             "status": "complete",
@@ -472,10 +429,17 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
+
+        # Verify warning was printed for incorrect data
+        captured = capsys.readouterr()
+        assert "missing transaction_id" in captured.out
+
         assert result is False
 
-    def test_trade_missing_roster_ids(self):
+        assert result is False
+
+    def test_trade_missing_roster_ids(self, capsys):
         """Test trade without roster_ids - should return False."""
         transaction = {
             "status": "complete",
@@ -486,10 +450,15 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
+
+        # Verify warning was printed for incorrect data
+        captured = capsys.readouterr()
+        assert "missing roster_ids" in captured.out
+
         assert result is False
 
-    def test_trade_single_roster(self):
+    def test_trade_single_roster(self, capsys):
         """Test trade with only one roster - should return False."""
         transaction = {
             "status": "complete",
@@ -501,10 +470,15 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
+
+        # Verify warning was printed for incorrect data
+        captured = capsys.readouterr()
+        assert "missing roster_ids" in captured.out
+
         assert result is False
 
-    def test_trade_missing_adds(self):
+    def test_trade_missing_adds(self, capsys):
         """Test trade without adds - should return False."""
         transaction = {
             "status": "complete",
@@ -515,10 +489,15 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
+
+        # Verify warning was printed for incorrect data
+        captured = capsys.readouterr()
+        assert "missing adds/drops" in captured.out
+
         assert result is False
 
-    def test_trade_missing_drops(self):
+    def test_trade_missing_drops(self, capsys):
         """Test trade without drops - should return False."""
         transaction = {
             "status": "complete",
@@ -529,7 +508,12 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
+
+        # Verify warning was printed for incorrect data
+        captured = capsys.readouterr()
+        assert "missing adds/drops" in captured.out
+
         assert result is False
 
     def test_trade_no_relevant_rosters(self):
@@ -544,7 +528,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
     def test_trade_partially_relevant_rosters(self):
@@ -559,7 +543,7 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is True
 
     def test_multi_team_trade(self):
@@ -574,5 +558,5 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2", 3: "Manager 3"}
 
-        result = validate_transaction(transaction, "trade", True, weekly_roster_ids)
+        result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is True

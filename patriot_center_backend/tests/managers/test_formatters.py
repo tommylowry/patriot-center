@@ -195,19 +195,20 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
+        get_top_3_scorers_from_matchup_data(
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
             image_urls={}
         )
 
-        assert len(result["manager_1_top_3_scorers"]) == 3
-        assert len(result["manager_2_top_3_scorers"]) == 3
-        assert result["manager_1_top_3_scorers"][0]["score"] == 25.5
-        assert result["manager_1_lowest_scorer"]["score"] == 12.5
-        assert result["manager_2_top_3_scorers"][0]["score"] == 30.0
-        assert result["manager_2_lowest_scorer"]["score"] == 10.0
+        assert len(matchup_data) == 6 # original data and the 4 new lists
+        assert len(matchup_data["manager_1_top_3_scorers"]) == 3
+        assert len(matchup_data["manager_2_top_3_scorers"]) == 3
+        assert matchup_data["manager_1_top_3_scorers"][0]["score"] == 25.5
+        assert matchup_data["manager_1_lowest_scorer"]["score"] == 12.5
+        assert matchup_data["manager_2_top_3_scorers"][0]["score"] == 30.0
+        assert matchup_data["manager_2_lowest_scorer"]["score"] == 10.0
 
     def test_missing_year_in_matchup_data(self, capsys):
         """Test with missing year in matchup_data."""
@@ -215,7 +216,7 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
+        get_top_3_scorers_from_matchup_data(
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
@@ -226,10 +227,10 @@ class TestGetTop3ScorersFromMatchupData:
         captured = capsys.readouterr()
         assert "matchup_data missing" in captured.out
 
-        assert result["manager_1_top_3_scorers"] == []
-        assert result["manager_2_top_3_scorers"] == []
-        assert result["manager_1_lowest_scorer"] == []
-        assert result["manager_2_lowest_scorer"] == []
+        assert matchup_data["manager_1_top_3_scorers"] == []
+        assert matchup_data["manager_2_top_3_scorers"] == []
+        assert matchup_data["manager_1_lowest_scorer"] == []
+        assert matchup_data["manager_2_lowest_scorer"] == []
 
     def test_missing_week_in_matchup_data(self, capsys):
         """Test with missing week in matchup_data."""
@@ -237,7 +238,7 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
+        get_top_3_scorers_from_matchup_data(
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
@@ -248,8 +249,8 @@ class TestGetTop3ScorersFromMatchupData:
         captured = capsys.readouterr()
         assert "matchup_data missing" in captured.out
 
-        assert result["manager_1_top_3_scorers"] == []
-        assert result["manager_2_top_3_scorers"] == []
+        assert matchup_data["manager_1_top_3_scorers"] == []
+        assert matchup_data["manager_2_top_3_scorers"] == []
 
     def test_missing_manager_1_starters(self, capsys):
         """Test with manager_1 missing from starters_cache."""
@@ -268,7 +269,7 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
+        get_top_3_scorers_from_matchup_data(
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
@@ -281,8 +282,8 @@ class TestGetTop3ScorersFromMatchupData:
         assert "week 1" in captured.out
         assert "2023" in captured.out
 
-        assert result["manager_1_top_3_scorers"] == []
-        assert result["manager_2_top_3_scorers"] == []
+        assert matchup_data["manager_1_top_3_scorers"] == []
+        assert matchup_data["manager_2_top_3_scorers"] == []
 
     def test_missing_manager_2_starters(self, capsys):
         """Test with manager_2 missing from starters_cache."""
@@ -301,7 +302,7 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
+        get_top_3_scorers_from_matchup_data(
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
@@ -314,8 +315,8 @@ class TestGetTop3ScorersFromMatchupData:
         assert "week 1" in captured.out
         assert "2023" in captured.out
 
-        assert result["manager_1_top_3_scorers"] == []
-        assert result["manager_2_top_3_scorers"] == []
+        assert matchup_data["manager_1_top_3_scorers"] == []
+        assert matchup_data["manager_2_top_3_scorers"] == []
 
     def test_fewer_than_3_players(self):
         """Test with fewer than 3 starters."""
@@ -351,7 +352,7 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
+        get_top_3_scorers_from_matchup_data(
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
@@ -359,9 +360,9 @@ class TestGetTop3ScorersFromMatchupData:
         )
 
         # Should return only 2 players for manager_1
-        assert len(result["manager_1_top_3_scorers"]) == 2
+        assert len(matchup_data["manager_1_top_3_scorers"]) == 2
         # Should return only 1 player for manager_2
-        assert len(result["manager_2_top_3_scorers"]) == 1
+        assert len(matchup_data["manager_2_top_3_scorers"]) == 1
 
     def test_insertion_sort_ordering(self):
         """Test that top scorers are properly sorted."""
@@ -406,7 +407,7 @@ class TestGetTop3ScorersFromMatchupData:
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
-        result = get_top_3_scorers_from_matchup_data(
+        get_top_3_scorers_from_matchup_data(
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
@@ -414,12 +415,12 @@ class TestGetTop3ScorersFromMatchupData:
         )
 
         # Verify top 3 are in descending order
-        assert result["manager_1_top_3_scorers"][0]["score"] == 25.0  # Player B
-        assert result["manager_1_top_3_scorers"][1]["score"] == 20.0  # Player D
-        assert result["manager_1_top_3_scorers"][2]["score"] == 15.0  # Player C
+        assert matchup_data["manager_1_top_3_scorers"][0]["score"] == 25.0  # Player B
+        assert matchup_data["manager_1_top_3_scorers"][1]["score"] == 20.0  # Player D
+        assert matchup_data["manager_1_top_3_scorers"][2]["score"] == 15.0  # Player C
 
         # Verify lowest scorer
-        assert result["manager_1_lowest_scorer"]["score"] == 5.0  # Player E
+        assert matchup_data["manager_1_lowest_scorer"]["score"] == 5.0  # Player E
 
 
 class TestGetMatchupCard:

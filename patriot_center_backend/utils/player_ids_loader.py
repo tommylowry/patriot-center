@@ -17,8 +17,7 @@ from copy import deepcopy
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import TEAM_DEFENSE_NAMES
-from patriot_center_backend.utils.helpers import fetch_sleeper_data
-
+from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 # Fields to keep from Sleeper's player payload; reduces storage and surface area
 FIELDS_TO_KEEP = [

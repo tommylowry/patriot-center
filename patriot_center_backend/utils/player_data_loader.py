@@ -16,8 +16,13 @@ Notes:
 - Weeks are capped at 17 (include playoff data).
 """
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
-from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
+from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.utils.scoring import calculate_player_score
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_sleeper_data,
+    get_current_season_and_week,
+    get_roster_ids,
+)
 
 
 def update_player_data_cache():
@@ -72,7 +77,7 @@ def update_player_data_cache():
         
         print(f"Updating Player Data cache for season {year}, weeks: {list(weeks_to_update)}")
 
-        roster_ids = _get_roster_ids(year)
+        roster_ids = get_roster_ids(year)
 
         # Fetch and update only the missing weeks for the year.
         for week in weeks_to_update:
@@ -169,7 +174,7 @@ def _calculate_ffWAR_position(scores, season, week, position, all_player_scores,
     Returns:
         dict: player -> {ffWAR, manager, position}
     """
-    replacement_scores_cache = CACHE_MANAGER.get_replacement_score_cache
+    replacement_scores_cache = CACHE_MANAGER.get_replacement_score_cache()
 
     # Get the 3-year rolling average replacement score for this position
     key = f"{position}_3yr_avg"
@@ -384,7 +389,7 @@ def _get_all_player_scores(year, week):
             if "gp" not in player_data or player_data["gp"] == 0.0:
                 continue
 
-            player_score = _calculate_player_score(player_data, scoring_settings)
+            player_score = calculate_player_score(player_data, scoring_settings)
             # Add the player's points to the appropriate position list
             final_week_scores[player_info["position"]][player_id] = {
                 "score": player_score,
@@ -393,83 +398,6 @@ def _get_all_player_scores(year, week):
     
 
     return final_week_scores
-
-def _calculate_player_score(player_data, scoring_settings):
-    """
-    Calculate a player's total fantasy score based on their stats and league scoring settings.
-
-    Iterates through all stats in player_data and multiplies each stat value by its
-    corresponding points-per-unit value from scoring_settings. Only stats that exist
-    in the scoring_settings are counted.
-
-    Args:
-        player_data (dict): Player's raw stats for the week.
-            Example: {"pass_yd": 300, "pass_td": 3, "rush_yd": 20, "gp": 1}
-
-        scoring_settings (dict): League's scoring rules mapping stat keys to point values.
-            Example: {"pass_yd": 0.04, "pass_td": 4, "rush_yd": 0.1}
-
-    Returns:
-        float: The player's total fantasy points, rounded to 2 decimal places.
-
-    Example:
-        >>> player_data = {"pass_yd": 300, "pass_td": 2, "gp": 1}
-        >>> scoring_settings = {"pass_yd": 0.04, "pass_td": 4}
-        >>> _calculate_player_score(player_data, scoring_settings)
-        20.0  # (300 * 0.04) + (2 * 4) = 12 + 8 = 20.0
-
-    Notes:
-        - Stats not in scoring_settings are ignored (e.g., "gp", "player_id").
-        - Supports negative point values (e.g., interceptions: -2 per int).
-        - Always rounds to exactly 2 decimal places.
-    """
-    total_score = 0.0
-    for stat_key, stat_value in player_data.items():
-        # Only count stats that have scoring values defined in league settings
-        if stat_key in scoring_settings:
-            points_per_unit = scoring_settings[stat_key]
-            total_score += stat_value * points_per_unit
-    return round(total_score, 2)
-
-def _get_roster_ids(season):
-    """
-    Build a mapping of roster IDs to real manager names for a given season.
-
-    This function performs a two-step API query:
-    1. Fetches all users in the league to map user_id -> real name
-    2. Fetches all rosters to map roster_id -> user_id
-
-    Then combines them to create roster_id -> real_name mapping.
-
-    Args:
-        season (int): The NFL season year (e.g., 2024).
-
-    Returns:
-        dict: Mapping of roster IDs to manager real names.
-            Example: {1: "Tommy", 2: "Mike", 3: "James"}
-
-    Notes:
-        - Uses USERNAME_TO_REAL_NAME constant to convert display names to real names.
-        - Special case: If owner_id is None, defaults to "Davey" (known data issue).
-        - Roster IDs are integers from the Sleeper API.
-    """
-    user_ids = {}
-    users_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/users")
-    for user in users_data_response:
-        user_ids[user['user_id']] = USERNAME_TO_REAL_NAME[user['display_name']]
-    
-    roster_ids = {}
-    user_rosters_data_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[season]}/rosters")
-    for user in user_rosters_data_response:
-        
-        # Handle a known case where owner_id is None
-        if not user['owner_id']:
-            roster_ids[user['roster_id']] = "Davey"
-            continue
-        
-        roster_ids[user['roster_id']] = user_ids[user['owner_id']]
-
-    return roster_ids
 
 def _get_all_rostered_players(roster_ids, season, week):
     """
@@ -520,3 +448,5 @@ def _get_all_rostered_players(roster_ids, season, week):
         rostered_players[imported_roster_ids[matchup['roster_id']]] = matchup['players']
     
     return rostered_players
+
+update_player_data_cache()

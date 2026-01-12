@@ -13,7 +13,11 @@ Notes:
 """
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
+from patriot_center_backend.utils.scoring import calculate_player_score
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_sleeper_data,
+    get_current_season_and_week,
+)
 
 
 def update_replacement_score_cache():
@@ -191,7 +195,7 @@ def _fetch_replacement_score_for_week(season, week):
                 if "gp" not in player_data or player_data["gp"] == 0.0:
                     continue
 
-                player_score = _calculate_player_score(player_data, yearly_scoring_settings[yr])
+                player_score = calculate_player_score(player_data, yearly_scoring_settings[yr])
                 # Add the player's points to the appropriate position list
                 week_scores[player_info["position"]].append(player_score)
 
@@ -212,17 +216,6 @@ def _fetch_replacement_score_for_week(season, week):
         final_week_scores["byes"] = byes
 
     return final_week_scores
-
-
-def _calculate_player_score(player_data, scoring_settings):
-    total_score = 0.0
-    for stat_key, stat_value in player_data.items():
-
-        if stat_key in scoring_settings:
-            points_per_unit = scoring_settings[stat_key]
-            total_score += stat_value * points_per_unit
-    return round(total_score, 2)
-
 
 def _get_three_yr_avg(season, week):
     """

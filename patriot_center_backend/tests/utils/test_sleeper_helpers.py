@@ -62,8 +62,6 @@ class TestFetchSleeperData:
     
     def test_fetch_sleeper_data(self):
         """
-        Unit test for fetch_sleeper_data function.
-
         Tests that the fetch_sleeper_data function calls the correct URL and returns the expected JSON response.
         """
         self.mock_get.return_value.json.return_value = {}
@@ -75,8 +73,6 @@ class TestFetchSleeperData:
     
     def test_fetch_sleeper_data_connection_error(self):
         """
-        Unit test for fetch_sleeper_data function.
-
         Tests that the fetch_sleeper_data function raises a ConnectionAbortedError when the request to the Sleeper API fails.
         """
         self.mock_get.return_value.json.return_value = {}
@@ -107,12 +103,7 @@ class TestGetRosterId:
 
     def test_get_roster_id(self):
         """
-        Unit test for get_roster_id function.
-
         Tests that the get_roster_id function returns the correct roster ID for a given user ID and year.
-
-        The test case creates a mock sleeper_rosters_response with two users, and calls the get_roster_id function with
-        the user ID 'user1' and year 2023. The test case then checks that the returned roster ID is 1.
         """
         sleeper_rosters_response = [
             {'owner_id': 'user1', 'roster_id': 1},
@@ -127,13 +118,7 @@ class TestGetRosterId:
 
     def test_sleeper_api_not_called(self):
         """
-        Unit test for get_roster_id function.
-
         Tests that the get_roster_id function does not call the Sleeper API if the sleeper_rosters_response is provided.
-
-        The test case creates a mock sleeper_rosters_response with two users, and calls the get_roster_id function with
-        the user ID 'user1', year 2023, and the mock sleeper_rosters_response. The test case then checks that the
-        fetch_sleeper_data function is not called.
         """
         sleeper_rosters_response = [
             {'owner_id': 'user1', 'roster_id': 1},
@@ -148,11 +133,7 @@ class TestGetRosterId:
     
     def test_get_roster_id_not_found(self):
         """
-        Unit test for get_roster_id function.
-
-        Tests that the get_roster_id function returns None when the user ID is not found in the sleeper_rosters_response.
-
-        The test case creates a mock sleeper_rosters_response with two users, and calls the get_roster_id function
+        Create a mock sleeper_rosters_response with two users, and calls the get_roster_id function
         with the user ID 'user3', year 2023, and the mock sleeper_rosters_response. The test case then checks that the
         returned roster ID is None.
         """
@@ -169,9 +150,7 @@ class TestGetRosterId:
 
     def test_no_sleeper_rosters_input(self):
         """
-        Test get_roster_id function with no sleeper_rosters_input.
-
-        This test case checks that the get_roster_id function calls fetch_sleeper_data with the correct
+        Check that the get_roster_id function calls fetch_sleeper_data with the correct
         arguments when no sleeper_rosters_input is provided, and that the function returns the
         correct roster ID for the given user ID and year.
         """
@@ -212,10 +191,7 @@ class TestGetRosterIds:
     
     def test_get_roster_ids(self):
         """
-        Test get_roster_ids function.
-
-        This test case checks that the get_roster_ids function returns the correct roster IDs
-        for the given users.
+        Test get_roster_ids function with valid data.
         """
         self.mock_fetch_sleeper_data.side_effect = [
             [
@@ -237,10 +213,6 @@ class TestGetRosterIds:
     def test_get_roster_ids_not_found(self):
         """
         Test get_roster_ids function with one user not found in rosters data.
-
-        This test case checks that if one user is not found in the rosters data, an
-        Exception is not raised and the function returns the correct roster IDs for
-        the other users.
         """
         self.mock_fetch_sleeper_data.side_effect = [
             [
@@ -262,12 +234,6 @@ class TestGetRosterIds:
     def test_calls_to_sleeper_correct(self):
         """
         Test get_roster_ids function with calls to Sleeper API correct.
-
-        This test case checks that the get_roster_ids function makes the correct calls to the
-        Sleeper API to fetch the users data and the rosters data.
-
-        The test case also checks that the get_roster_ids function returns the correct roster IDs
-        for the given users.
         """
         self.mock_fetch_sleeper_data.side_effect = [
             [
@@ -290,8 +256,6 @@ class TestGetRosterIds:
     def test_calls_to_get_roster_id_correct(self):
         """
         Test get_roster_ids function with calls to get_roster_id correct.
-
-        Asserts that get_roster_id is called with the correct arguments.
         """
         sleeper_output_2 = [
             {'owner_id': 'user1', 'roster_id': 1},
@@ -314,14 +278,8 @@ class TestGetRosterIds:
 
     def test_error_gets_raised_with_missing_rosters(self):
         """
-        Test get_roster_ids function with missing rosters.
-
-        This test case checks that if one or more users are not found in the rosters data, an
+        Checks that if one or more users are not found in the rosters data, an
         Exception is raised with the correct error message.
-
-        The test case creates a mock that returns users data with three users, and rosters data with
-        two users. The get_roster_ids function is then called with the year 2023, and the test case
-        checks that an Exception is raised with the correct error message.
         """
         self.mock_fetch_sleeper_data.side_effect = [
             [

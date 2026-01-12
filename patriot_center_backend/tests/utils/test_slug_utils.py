@@ -1,10 +1,10 @@
+"""Unit tests for slug_utils module."""
 
-
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.utils.slug_utils import slugify, slug_to_name
+from patriot_center_backend.utils.slug_utils import slug_to_name, slugify
 
 
 class TestSlugify:

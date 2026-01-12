@@ -321,8 +321,7 @@ class ManagerMetadataManager:
         Resets year, week, and roster ID mappings to prevent state leakage.
         Also clears processor session state if processors exist.
         """
-        if self._year == "2024" and self._week == "17":
-            self._weekly_roster_ids = {}
+        self._weekly_roster_ids = {}
         self._week = None
         self._year = None
 

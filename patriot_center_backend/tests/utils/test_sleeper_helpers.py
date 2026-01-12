@@ -115,6 +115,23 @@ class TestGetRosterId:
         result = get_roster_id(user_id, year, sleeper_rosters_response)
 
         assert result == 1
+    
+    def test_2024_roster_id(self):
+        """
+        Check that the function correctly assigns the roster ID to the user in case the user ID is not found in the sleeper_rosters_response.
+        """
+        sleeper_rosters_response = [
+            {'owner_id': 'user1', 'roster_id': 1},
+            {'owner_id': 'user2', 'roster_id': 2},
+            {'owner_id': None, 'roster_id': 3},
+        ]
+        user_id = 'user3'
+        year = 2024
+
+        result = get_roster_id(user_id, year, sleeper_rosters_response)
+
+        assert result == 3
+
 
     def test_sleeper_api_not_called(self):
         """
@@ -209,27 +226,6 @@ class TestGetRosterIds:
         result = get_roster_ids(year)
 
         assert result == {1: "Manager 1", 2: "Manager 2"}
-    
-    def test_get_roster_ids_not_found(self):
-        """
-        Test get_roster_ids function with one user not found in rosters data.
-        """
-        self.mock_fetch_sleeper_data.side_effect = [
-            [
-                {'user_id': 'user1', 'display_name': 'username1'},
-                {'user_id': 'user2', 'display_name': 'username2'},
-            ],
-            [
-                {'owner_id': 'user1', 'roster_id': 1},
-                {'owner_id': 'user2', 'roster_id': None},
-            ]
-        ]
-        self.mock_get_roster_id.side_effect = [1, None]
-
-        year = 2024
-        result = get_roster_ids(year)
-
-        assert result == {1: "Manager 1", 2: "Manager 2"}
 
     def test_calls_to_sleeper_correct(self):
         """
@@ -290,14 +286,14 @@ class TestGetRosterIds:
             [
                 {'owner_id': 'user1', 'roster_id': 1},
                 {'owner_id': 'user2', 'roster_id': 2},
-                {'owner_id': 'user3', 'roster_id': None},
+                {'owner_id': None, 'roster_id': 3},
             ]
         ]
         self.mock_get_roster_id.side_effect = [1, 2, None]
 
         year = 2023
 
-        with pytest.raises(Exception, match=f"Missing rosters for the following users"):
+        with pytest.raises(Exception, match="Not all roster IDs are assigned "):
             get_roster_ids(year)
 
 

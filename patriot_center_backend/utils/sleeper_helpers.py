@@ -45,20 +45,31 @@ def get_roster_id(user_id: str, year: int, sleeper_rosters_response: List[Dict[s
     Args:
         user_id (str): The user ID to retrieve the roster ID for.
         year (int): The year to retrieve the roster ID for.
-        sleeper_rosters_response (List[Dict[str, Any]], optional): The response from the Sleeper API
-            containing the rosters data. If not provided, the function will fetch the data itself.
+        sleeper_rosters_response (List[Dict[str, Any]], optional): The response from the Sleeper API call to retrieve rosters for a given year. Defaults to None.
 
     Returns:
-        int | None: The roster ID for the given user ID, or None if the user ID is not found.
+        int | None: The roster ID for the given user ID and year, or None if the user ID is not found.
+
+    Raises:
+        ConnectionAbortedError: If the request to the Sleeper API fails.
     """
     if sleeper_rosters_response is None:
         sleeper_rosters_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/rosters")
 
     # Iterate over the rosters data and find the roster ID for the given user ID
+    skipped_roster_id = None
     for user in sleeper_rosters_response:
+
         if user['owner_id'] == user_id:
             return user['roster_id']
+        
+        # In 2024 special case, if there is only one user missing, assign them the roster_id missing from the roster_ids
+        elif user['owner_id'] is None:
+            skipped_roster_id = user['roster_id']
     
+    if year == 2024 and skipped_roster_id is not None:
+        return skipped_roster_id
+
     return None
 
 def get_roster_ids(year: int) -> Dict[int, str]:
@@ -89,29 +100,23 @@ def get_roster_ids(year: int) -> Dict[int, str]:
     sleeper_rosters_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/rosters")
 
     # Iterate over the rosters data and store the roster IDs
-    users_missing = []
     for user in sleeper_rosters_response:
         user_id   = user['owner_id']
         roster_id = get_roster_id(user_id, year, sleeper_rosters_response=sleeper_rosters_response)
-        
-        if not roster_id:
-            users_missing.append(user_ids[user_id])
+
+        if not isinstance(roster_id, int):
             continue
 
+        # In 2024 special case, if user_id is None, assign the roster_id to "Davey"
+        if year == 2024 and user_id is None:
+            roster_ids[roster_id] = "Davey"
+            continue
+        
         # Store the roster ID and the real name of the user
         roster_ids[roster_id] = user_ids[user_id]
-
-
-    # In 2024 special case, if there is only one user missing, assign them the roster_id missing from the roster_ids
-    if year == 2024 and len(users_missing) == 1:
-        for i in range(1, len(user_ids) + 1):
-            if i not in roster_ids:
-                roster_ids[i] = users_missing[0]
     
-
-    # If not all roster_ids are assigned to a user, raise an error
-    if len(roster_ids) != len(user_ids):
-        raise Exception(f"Missing rosters for the following users: {users_missing}")
+    if len(roster_ids) > len(user_ids):
+        raise Exception("Not all roster IDs are assigned to a user")
     
     return roster_ids
 

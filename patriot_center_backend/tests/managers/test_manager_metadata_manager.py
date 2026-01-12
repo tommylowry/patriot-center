@@ -631,19 +631,6 @@ class TestClearWeeklyMetadata:
         assert mock_metadata_manager._year is None
         assert mock_metadata_manager._week is None
 
-    def test_clear_weekly_metadata_does_not_clear_roster_ids_for_other_weeks(self, mock_metadata_manager):
-        """Test _clear_weekly_metadata does not clear roster IDs for other weeks."""
-        mock_metadata_manager._year = "2024"
-        mock_metadata_manager._week = "5"
-        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
-
-        mock_metadata_manager._clear_weekly_metadata()
-
-        # Should NOT clear roster IDs (not week 17)
-        assert mock_metadata_manager._weekly_roster_ids == {1: "Manager 1", 2: "Manager 2"}
-        assert mock_metadata_manager._year is None
-        assert mock_metadata_manager._week is None
-
     def test_clear_weekly_metadata_clears_processor_state(self, mock_metadata_manager):
         """Test _clear_weekly_metadata calls clear_session_state on processors."""
         mock_metadata_manager._year = "2023"

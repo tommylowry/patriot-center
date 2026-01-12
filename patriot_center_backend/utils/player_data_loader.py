@@ -174,7 +174,7 @@ def _calculate_ffWAR_position(scores, season, week, position, all_player_scores,
     Returns:
         dict: player -> {ffWAR, manager, position}
     """
-    replacement_scores_cache = CACHE_MANAGER.get_replacement_score_cache
+    replacement_scores_cache = CACHE_MANAGER.get_replacement_score_cache()
 
     # Get the 3-year rolling average replacement score for this position
     key = f"{position}_3yr_avg"
@@ -448,3 +448,5 @@ def _get_all_rostered_players(roster_ids, season, week):
         rostered_players[imported_roster_ids[matchup['roster_id']]] = matchup['players']
     
     return rostered_players
+
+update_player_data_cache()

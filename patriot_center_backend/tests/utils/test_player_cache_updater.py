@@ -12,30 +12,15 @@ from patriot_center_backend.utils.player_cache_updater import (
 
 
 class TestUpdatePlayersCache:
-    """Test update_players_cache function.
-
-    This class contains unit tests for the update_players_cache function.
-
-    The tests cover the following scenarios:
-
-    - Test updating cache with single player ID.
-    - Test updating cache with apostrophe in player name.
-    - Test handling player already in cache.
-    - Test handling player not in player_ids cache.
-    - Test handling player not in player_ids cache with None input.
-    """
+    """Test update_players_cache function."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
         """
         Setup common mocks for all tests.
 
-        This fixture sets up the following mocks:
-
-        - mock_get_player_ids_cache: a mock of CACHE_MANAGER.get_player_ids_cache
-        - mock_get_players_cache: a mock of CACHE_MANAGER.get_players_cache
-
-        :return: None
+        Patches CACHE_MANAGER.get_player_ids_cache and CACHE_MANAGER.get_players_cache
+        to return mock objects.
         """
         with patch('patriot_center_backend.utils.player_cache_updater.CACHE_MANAGER.get_player_ids_cache') as mock_get_player_ids_cache, \
              patch('patriot_center_backend.utils.player_cache_updater.CACHE_MANAGER.get_players_cache') as mock_get_players_cache:
@@ -49,16 +34,10 @@ class TestUpdatePlayersCache:
             yield
 
     def test_update_with_single_player_id(self):
-        """Test updating cache with single player ID.
+        """
+        Test update_players_cache with a single player_id.
 
-        This test ensures that update_players_cache function correctly updates the cache
-        with a single player ID.
-
-        The function should add the player to the cache and set the "slug"
-        attribute to the URL slug of the player name.
-
-        :param self: The test class instance.
-        :return: None
+        Updates the players cache by adding a new player if the player_id is present in the player_ids cache.
         """
         self.mock_player_ids_cache.update({
             "4046": {
@@ -87,13 +66,12 @@ class TestUpdatePlayersCache:
         
 
     def test_update_with_apostrophe_in_name(self):
-        """Test updating cache with apostrophe in player name.
+        """
+        Test update_players_cache with a player_id that has an apostrophe in their name.
 
-        This test ensures that update_players_cache function correctly handles
-        players with apostrophes in their name.
+        Updates the players cache by adding a new player if the player_id is present in the player_ids cache.
 
-        :param self: The test class instance.
-        :return: None
+        Checks that the player is in the cache, and that the slug attribute is set correctly.
         """
         self.mock_player_ids_cache.update({
             "5678": {
@@ -115,17 +93,13 @@ class TestUpdatePlayersCache:
         assert self.mock_players_cache["D'Andre Swift"]["slug"] == "d%27andre%20swift"
 
     def test_player_already_in_cache(self):
-        """Test handling player already in cache.
-
-        This test ensures that update_players_cache function does not modify the cache
-        if the player is already present in the cache.
-
-        The function should not modify the cache if the player is already present.
-
-        :param self: The test class instance.
-        :return: None
         """
-        # Initialize the cache with a sample player
+        Test that update_players_cache doesn't modify the cache if a player_id is already in the cache.
+
+        Initializes the cache with a sample player, creates a deep copy of the original cache, and then calls update_players_cache with the player_id.
+
+        Asserts that the cache remains unchanged after the call to update_players_cache.
+        """
         self.mock_players_cache.update({
             "Patrick Mahomes": {
                 "player_id": "4046",
@@ -153,16 +127,10 @@ class TestUpdatePlayersCache:
         assert self.mock_players_cache == original_cache
     
     def test_player_not_in_player_ids(self, capsys):
-        """Test handling player not in player_ids cache.
+        """
+        Test that update_players_cache prints a warning when the player_id is not in the player_ids cache.
 
-        This test ensures that update_players_cache function does not add the player to the cache
-        if the player is not present in the player_ids cache.
-
-        The function should handle this gracefully and not modify the cache if the player is not present.
-
-        :param self: The test class instance.
-        :param capsys: The pytest capsys fixture.
-        :return: None
+        Asserts that the cache remains unchanged after the call to update_players_cache.
         """
         item = "9999"
         update_players_cache(item)
@@ -175,16 +143,10 @@ class TestUpdatePlayersCache:
         assert len(self.mock_players_cache) == 0
 
     def test_update_with_none_raises_error(self, capsys):
-        """Test handling player not in player_ids cache with None input.
+        """
+        Test that update_players_cache prints a warning when given None as the player_id.
 
-        This test ensures that update_players_cache function does not add the player to the cache
-        if the player is not present in the player_ids cache and input is None.
-
-        The function should handle this gracefully and not modify the cache if the player is not present.
-
-        :param self: The test class instance.
-        :param capsys: The pytest capsys fixture.
-        :return: None
+        Asserts that the warning "player_id None not found" is printed.
         """
         item = None
         update_players_cache(item)
@@ -202,11 +164,7 @@ class TestUpdatePlayersCacheWithList:
         """
         Setup common mocks for all tests.
 
-        This fixture sets up the following mocks:
-
-        - mock_update_players: a mock of update_players_cache function
-
-        :return: None
+        Patches update_players_cache to return a mock object.
         """
         with patch('patriot_center_backend.utils.player_cache_updater.update_players_cache') as mock_update_players:
             
@@ -216,15 +174,9 @@ class TestUpdatePlayersCacheWithList:
 
     def test_update_with_valid_matchup(self):
         """
-        Test updating cache with valid list of matchup data.
+        Test that update_players_cache_with_list updates the players cache correctly with valid matchups.
 
-        This test ensures that update_players_cache_with_list function updates the cache
-        with valid list of matchup data.
-
-        The test checks that the function calls update_players_cache with the correct
-        player IDs.
-
-        :return: None
+        Asserts that the correct player IDs were passed to update_players_cache.
         """
         item = [
             {"players": ["4046", "5678"]},
@@ -240,16 +192,9 @@ class TestUpdatePlayersCacheWithList:
 
     def test_update_with_list_passes_any_type(self):
         """
-        Test that update_players_cache_with_list function updates the cache with valid list of matchup data.
+        Test that update_players_cache_with_list updates the players cache correctly when given a list with any type.
 
-        This test ensures that update_players_cache_with_list function updates the cache
-        with valid list of matchup data. The function takes a list of dictionaries
-        where each dictionary has a "players" key with a value of a list of strings.
-
-        The test checks that the function calls update_players_cache with the correct
-        player IDs.
-
-        :return: None
+        Asserts that the correct player IDs were passed to update_players_cache.
         """
         item = [{"players": [123]}]
         update_players_cache_with_list(item)
@@ -259,15 +204,9 @@ class TestUpdatePlayersCacheWithList:
 
     def test_update_ignores_non_dict_types(self):
         """
-        Test that update_players_cache_with_list ignores non-dictionary types in list.
+        Test that update_players_cache_with_list ignores non-dict types in the input list.
 
-        This test ensures that update_players_cache_with_list ignores any non-dictionary
-        types in the list of matchup data that is passed to it.
-
-        The test checks that the function calls update_players_cache with the correct
-        player IDs.
-
-        :return: None
+        Asserts that the correct player IDs were passed to update_players_cache.
         """
         item = [{"players": ["4046"]}, "invalid type in list"]
         update_players_cache_with_list(item)
@@ -277,13 +216,9 @@ class TestUpdatePlayersCacheWithList:
 
     def test_warns_with_invalid_item(self, capsys):
         """
-        Test that update_players_cache_with_list raises a warning when passed an invalid item.
+        Test that update_players_cache_with_list warns and does not call update_players_cache when given an invalid item type.
 
-        This test ensures that update_players_cache_with_list raises a warning when passed
-        an invalid item. The function is expected to raise a warning when the item is
-        not a list.
-
-        :return: None
+        Asserts that the correct warning is printed when item is not a list and that update_players_cache is not called.
         """
         item = "invalid input type"
         update_players_cache_with_list(item)
@@ -297,15 +232,9 @@ class TestUpdatePlayersCacheWithList:
     
     def test_warns_when_update_not_called(self, capsys):
         """
-        Test updating cache list with invalid type in item.
+        Test that update_players_cache_with_list warns and does not call update_players_cache when given a list that does not contain a matchup dict with players.
 
-        This test ensures that update_players_cache_with_list raises a warning when passed
-        an item with an invalid type (i.e. not a dictionary).
-
-        The test checks that the function calls update_players_cache with the correct player IDs
-        and that the function raises a warning when the item is not a dictionary.
-
-        :return: None
+        Asserts that the correct warning is printed when item does not contain a matchup dict with players and that update_players_cache is not called.
         """
         item = ["invalid type in list"]
         update_players_cache_with_list(item)

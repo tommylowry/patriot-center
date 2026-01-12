@@ -1,6 +1,4 @@
-"""
-This module provides utility functions for updating the players cache with player metadata from individual player IDs.
-"""
+"""This module provides utility functions for updating the players cache."""
 
 from typing import Any, Dict, List
 
@@ -10,14 +8,14 @@ from patriot_center_backend.utils.slug_utils import slugify
 
 def update_players_cache(player_id: str) -> None:
     """
-    Update players cache with player metadata from individual player ID.
+    Updates the players cache by adding a new player if the player_id is present in the player_ids cache.
 
     Args:
-        player_id (str): The ID of the player.
+        player_id (str): The ID of the player to add to the cache.
 
     Returns:
         None
-    """    
+    """
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
     players_cache    = CACHE_MANAGER.get_players_cache()
 
@@ -43,12 +41,15 @@ def update_players_cache(player_id: str) -> None:
 
 def update_players_cache_with_list(item: List[Dict[str, Any]]):
     """
-    Update players cache with player metadata from a list of matchup dictionaries.
+    Updates the players cache by adding a new player for each player_id in the item parameter.
 
     Args:
-        item (List[Dict[str, Any]]): A list of matchup dictionaries.
+        item (List[Dict[str, Any]]): A list of matchup dictionaries, each containing a 'players' key with a list of player_ids.
 
     Returns:
+        None
+
+    Raises:
         None
     """
     if not isinstance(item, list):

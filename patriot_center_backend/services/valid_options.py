@@ -145,28 +145,10 @@ class ValidOptionsService:
         # Execute the appropriate handler function to populate valid options
         self._function_mapping[self._func_id]()
 
+
     # ----------------------------------------
     # ---------- Internal Functions ----------
     # ----------------------------------------
-    def _year_selected(self) -> bool:
-        """Check if year filter is active."""
-        return False if self._year == None else True
-
-    def _week_selected(self) -> bool:
-        """Check if week filter is active."""
-        return False if self._week == None else True
-
-    def _manager_selected(self) -> bool:
-        """Check if manager filter is active."""
-        return False if self._manager == None else True
-
-    def _player_selected(self) -> bool:
-        """Check if player filter is active."""
-        return False if self._player == None else True
-
-    def _position_selected(self) -> bool:
-        """Check if position filter is active."""
-        return False if self._position == None else True
 
     def _parse_arg(self, arg : str | None):
         """
@@ -187,13 +169,13 @@ class ValidOptionsService:
             arg = int(arg)
             # Check if arg is a valid year
             if arg in LEAGUE_IDS:
-                if self._year_selected():
+                if self._year is not None :
                     raise ValueError("Multiple year arguments provided.")
                 self._year = str(arg)
             
             # Check if arg is a valid week
             elif 1 <= arg <= 17:
-                if self._week_selected():
+                if self._week is not None:
                     raise ValueError("Multiple week arguments provided.")
                 self._week = str(arg)
             
@@ -203,19 +185,19 @@ class ValidOptionsService:
         else:
             # Check if arg is a manager
             if arg in NAME_TO_MANAGER_USERNAME:
-                if self._manager_selected():
+                if self._manager is not None:
                     raise ValueError("Multiple manager arguments provided.")
                 self._manager = arg
             
             # Check if arg is a player
             elif arg in players_cache:
                 
-                if self._player_selected():
+                if self._player is not None:
                     raise ValueError("Multiple player arguments provided.")
                 self._player = arg
             
             elif arg in ["QB", "RB", "WR", "TE", "K", "DEF"]:
-                if self._position_selected():
+                if self._position is not None:
                     raise ValueError("Multiple position arguments provided.")
                 self._position = arg
 
@@ -240,15 +222,15 @@ class ValidOptionsService:
         knows how to compute valid options for that specific filter combination.
         """
         self._func_id = 0
-        if self._position_selected():
+        if self._position is not None:
             self._func_id += self._position_bit
-        if self._manager_selected():
+        if self._manager is not None:
             self._func_id += self._manager_bit
-        if self._week_selected():
+        if self._week is not None:
             self._func_id += self._week_bit
-        if self._year_selected():
+        if self._year is not None ():
             self._func_id += self._year_bit
-        if self._player_selected():
+        if self._player is not None:
             self._func_id += self._player_bit
 
     def _add_to_valid_options(

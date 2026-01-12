@@ -22,8 +22,8 @@ from patriot_center_backend.managers.transaction_processing.base_processor impor
     TransactionProcessor,
 )
 from patriot_center_backend.managers.validators import validate_caching_preconditions
-from patriot_center_backend.utils.helpers import fetch_sleeper_data
-from patriot_center_backend.utils.player_cache_updater import update_players_cache
+from patriot_center_backend.utils.player_cache_updater import update_players_cache_with_list
+from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
 class ManagerMetadataManager:
@@ -131,7 +131,7 @@ class ManagerMetadataManager:
             return
         
         if matchups:
-            update_players_cache(matchups)
+            update_players_cache_with_list(matchups)
 
         self._year = year
         self._week = week
@@ -321,8 +321,7 @@ class ManagerMetadataManager:
         Resets year, week, and roster ID mappings to prevent state leakage.
         Also clears processor session state if processors exist.
         """
-        if self._year == "2024" and self._week == "17":
-            self._weekly_roster_ids = {}
+        self._weekly_roster_ids = {}
         self._week = None
         self._year = None
 

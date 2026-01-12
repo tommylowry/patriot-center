@@ -4,12 +4,12 @@ Data formatting and presentation helpers.
 Formats matchup cards, trade cards, and determines season state.
 """
 from copy import deepcopy
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.helpers import fetch_sleeper_data
 from patriot_center_backend.utils.image_providers import get_image_url
+from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
 def get_season_state(week: str, year: str, playoff_week_start: Optional[int]) -> str:
@@ -40,7 +40,7 @@ def get_season_state(week: str, year: str, playoff_week_start: Optional[int]) ->
     return "regular_season"
 
 def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str,
-                                        manager_2: str, image_urls: dict) -> List[Dict]:
+                                        manager_2: str, image_urls: dict) -> None:
     """
     Extract top 3 and lowest scorers from matchup data for both managers.
 
@@ -60,139 +60,74 @@ def get_top_3_scorers_from_matchup_data(matchup_data: dict, manager_1: str,
     players_cache    = CACHE_MANAGER.get_players_cache()
     starters_cache   = CACHE_MANAGER.get_starters_cache()
 
+    matchup_data["manager_1_top_3_scorers"] = []
+    matchup_data["manager_2_top_3_scorers"] = []
+    matchup_data["manager_1_lowest_scorer"] = []
+    matchup_data["manager_2_lowest_scorer"] = []
+
     # Validate that year and week are present
     if "year" not in matchup_data or "week" not in matchup_data:
         print("WARNING: matchup_data missing year or week. Cannot get top 3 scorers.")
-        
-        matchup_data["manager_1_top_3_scorers"] = []
-        matchup_data["manager_2_top_3_scorers"] = []
-        matchup_data["manager_1_lowest_scorer"] = []
-        matchup_data["manager_2_lowest_scorer"] = []
-        return {
-            "manager_1_top_3_scorers": [],
-            "manager_2_top_3_scorers": [],
-            "manager_1_lowest_scorer": [],
-            "manager_2_lowest_scorer": []
-        }
+        return
     
     # Validate that starter data exists for both managers
     if manager_1 not in starters_cache.get(matchup_data["year"], {}).get(matchup_data["week"], {}) or manager_2 not in starters_cache.get(matchup_data["year"], {}).get(matchup_data["week"], {}):
         print(f"WARNING: Starter data missing for week {matchup_data['week']}, year {matchup_data['year']}. Cannot get top 3 scorers for {manager_1} vs {manager_2}.")
-        
-        matchup_data["manager_1_top_3_scorers"] = []
-        matchup_data["manager_2_top_3_scorers"] = []
-        matchup_data["manager_1_lowest_scorer"] = []
-        matchup_data["manager_2_lowest_scorer"] = []
-        return {
-            "manager_1_top_3_scorers": [],
-            "manager_2_top_3_scorers": [],
-            "manager_1_lowest_scorer": [],
-            "manager_2_lowest_scorer": []
-        }
+        return
+    
+    var_map = {
+        manager_1: "manager_1",
+        manager_2: "manager_2"
+    }
+    for manager in [manager_1, manager_2]:
 
+        manager_starters = deepcopy(starters_cache[matchup_data["year"]][matchup_data["week"]][manager])    # Remove total points aggregate, we only want individual players
+        manager_starters.pop("Total_Points")
 
-    manager_1_starters = deepcopy(starters_cache[matchup_data["year"]][matchup_data["week"]][manager_1])
-    manager_2_starters = deepcopy(starters_cache[matchup_data["year"]][matchup_data["week"]][manager_2])
-    # Remove total points aggregate, we only want individual players
-    manager_1_starters.pop("Total_Points")
-    manager_2_starters.pop("Total_Points")
+        # Process starters
+        top_scorers  = []
+        lowest_scorer = {"score": 10000.0}  # Initialize with high value to find minimum
+        for player in manager_starters:
+            player_dict = get_image_url(player, image_urls, dictionary=True)
+            
+            player_id =  players_cache[player]["player_id"]
+            first_name = player_ids_cache[player_id]['first_name']
+            last_name =  player_ids_cache[player_id]['last_name']
+            
+            player_dict.update(
+                {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "score": manager_starters[player]["points"],
+                    "position": manager_starters[player]["position"]
+                }
+            )
 
-    # Process manager 1's starters
-    manager_1_top_scorers = []
-    manager_1_lowest_scorer = {"score": 10000.0}  # Initialize with high value to find minimum
-    for player in manager_1_starters:
-        player_dict = get_image_url(player, image_urls, dictionary=True)
-        
-        player_id =  players_cache[player]["player_id"]
-        first_name = player_ids_cache[player_id]['first_name']
-        last_name =  player_ids_cache[player_id]['last_name']
-        
-        player_dict.update(
-            {
-                "first_name": first_name,
-                "last_name": last_name,
-                "score": manager_1_starters[player]["points"],
-                "position": manager_1_starters[player]["position"]
-            }
-        )
+            # Track lowest scorer
+            if player_dict["score"] < lowest_scorer["score"]:
+                lowest_scorer = deepcopy(player_dict)
 
-        # Track lowest scorer
-        if player_dict["score"] < manager_1_lowest_scorer["score"]:
-            manager_1_lowest_scorer = deepcopy(player_dict)
+            # Maintain sorted top 3 list using insertion sort
+            if len(top_scorers) == 0:
+                top_scorers.append(player_dict)
+            else:
+                inserted = False
+                # Find correct position in sorted list (highest to lowest)
+                for i in range(0, len(top_scorers)):
+                    if manager_starters[player]["points"] > top_scorers[i]["score"]:
+                        top_scorers.insert(i, player_dict)
+                        # Keep only top 3
+                        if len(top_scorers) > 3:
+                            top_scorers.pop()
+                        inserted = True
+                        break
 
-        # Maintain sorted top 3 list using insertion sort
-        if len(manager_1_top_scorers) == 0:
-            manager_1_top_scorers.append(player_dict)
-        else:
-            inserted = False
-            # Find correct position in sorted list (highest to lowest)
-            for i in range(0, len(manager_1_top_scorers)):
-                if manager_1_starters[player]["points"] > manager_1_top_scorers[i]["score"]:
-                    manager_1_top_scorers.insert(i, player_dict)
-                    # Keep only top 3
-                    if len(manager_1_top_scorers) > 3:
-                        manager_1_top_scorers.pop()
-                    inserted = True
-                    break
+                # If not inserted and we have fewer than 3, append to end
+                if not inserted and len(top_scorers) < 3:
+                    top_scorers.append(player_dict)
 
-            # If not inserted and we have fewer than 3, append to end
-            if not inserted and len(manager_1_top_scorers) < 3:
-                manager_1_top_scorers.append(player_dict)
-
-
-    # Process manager 2's starters (same logic as manager 1)
-    manager_2_top_scorers = []
-    manager_2_lowest_scorer = {"score": 10000.0}  # Initialize with high value to find minimum
-    for player in manager_2_starters:
-        player_dict = get_image_url(player, image_urls, dictionary=True)
-        
-        player_id =  players_cache[player]["player_id"]
-        first_name = player_ids_cache[player_id]['first_name']
-        last_name =  player_ids_cache[player_id]['last_name']
-
-        player_dict.update(
-            {
-                "first_name": first_name,
-                "last_name": last_name,
-                "score": manager_2_starters[player]["points"],
-                "position": manager_2_starters[player]["position"]
-            }
-        )
-
-        # Track lowest scorer
-        if player_dict["score"] < manager_2_lowest_scorer["score"]:
-            manager_2_lowest_scorer = deepcopy(player_dict)
-
-        # Maintain sorted top 3 list using insertion sort
-        if len(manager_2_top_scorers) == 0:
-            manager_2_top_scorers.append(player_dict)
-        else:
-            inserted = False
-            # Find correct position in sorted list (highest to lowest)
-            for i in range(0, len(manager_2_top_scorers)):
-                if manager_2_starters[player]["points"] > manager_2_top_scorers[i]["score"]:
-                    manager_2_top_scorers.insert(i, player_dict)
-                    # Keep only top 3
-                    if len(manager_2_top_scorers) > 3:
-                        manager_2_top_scorers.pop()
-                    inserted = True
-                    break
-
-            # If not inserted and we have fewer than 3, append to end
-            if not inserted and len(manager_2_top_scorers) < 3:
-                manager_2_top_scorers.append(player_dict)
-        
-
-    matchup_data["manager_1_top_3_scorers"] = manager_1_top_scorers
-    matchup_data["manager_2_top_3_scorers"] = manager_2_top_scorers
-    matchup_data['manager_1_lowest_scorer'] = manager_1_lowest_scorer
-    matchup_data['manager_2_lowest_scorer'] = manager_2_lowest_scorer
-    return {
-            "manager_1_top_3_scorers": manager_1_top_scorers,
-            "manager_2_top_3_scorers": manager_2_top_scorers,
-            "manager_1_lowest_scorer": manager_1_lowest_scorer,
-            "manager_2_lowest_scorer": manager_2_lowest_scorer
-        }
+            matchup_data[f"{var_map[manager]}_top_3_scorers"] = top_scorers
+            matchup_data[f"{var_map[manager]}_lowest_scorer"] = lowest_scorer
 
 def get_matchup_card(manager_1: str, manager_2: str, year: str, week: str,
                      image_urls: dict) -> Dict[str, Any]:

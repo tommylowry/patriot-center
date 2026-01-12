@@ -3,7 +3,7 @@ from copy import deepcopy
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
-from patriot_center_backend.utils.helpers import fetch_sleeper_data
+from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
 def get_image_url(item: str, image_urls: dict, dictionary: bool = False) -> str:

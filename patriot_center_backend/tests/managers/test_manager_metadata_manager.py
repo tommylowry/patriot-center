@@ -96,7 +96,7 @@ class TestSetRosterId:
     def setup(self):
         """Setup common mocks for all tests."""
         with patch('patriot_center_backend.managers.manager_metadata_manager.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
-             patch('patriot_center_backend.managers.manager_metadata_manager.update_players_cache') as mock_update_players, \
+             patch('patriot_center_backend.managers.manager_metadata_manager.update_players_cache_with_list') as mock_update_players, \
              patch('patriot_center_backend.managers.manager_metadata_manager.fetch_sleeper_data') as mock_fetch_sleeper_data, \
              patch('patriot_center_backend.managers.manager_metadata_manager.ManagerMetadataManager._set_defaults_if_missing') as mock_set_defaults, \
              patch('patriot_center_backend.managers.manager_metadata_manager.NAME_TO_MANAGER_USERNAME', {"Manager 1": "manager1_user"}):
@@ -628,19 +628,6 @@ class TestClearWeeklyMetadata:
 
         # Should clear roster IDs for this special case
         assert mock_metadata_manager._weekly_roster_ids == {}
-        assert mock_metadata_manager._year is None
-        assert mock_metadata_manager._week is None
-
-    def test_clear_weekly_metadata_does_not_clear_roster_ids_for_other_weeks(self, mock_metadata_manager):
-        """Test _clear_weekly_metadata does not clear roster IDs for other weeks."""
-        mock_metadata_manager._year = "2024"
-        mock_metadata_manager._week = "5"
-        mock_metadata_manager._weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
-
-        mock_metadata_manager._clear_weekly_metadata()
-
-        # Should NOT clear roster IDs (not week 17)
-        assert mock_metadata_manager._weekly_roster_ids == {1: "Manager 1", 2: "Manager 2"}
         assert mock_metadata_manager._year is None
         assert mock_metadata_manager._week is None
 

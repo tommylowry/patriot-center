@@ -19,8 +19,12 @@ from decimal import Decimal
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.managers import MANAGER_METADATA_MANAGER
-from patriot_center_backend.utils.helpers import fetch_sleeper_data, get_current_season_and_week
 from patriot_center_backend.utils.player_cache_updater import update_players_cache
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_sleeper_data,
+    get_current_season_and_week,
+    get_roster_id,
+)
 
 
 def update_starters_cache():
@@ -308,12 +312,8 @@ def fetch_starters_for_week(season, week):
         if int(season) == 2019 and week < 4 and real_name == "Cody":
             real_name = "Tommy"
 
-        roster_id = get_roster_id(sleeper_response_rosters, manager['user_id'])
-        if roster_id is None:
-            # Fallback: In 2024, Davey's user_id doesn't match their roster owner_id.
-            # Hardcode roster_id=4 as a known correction for this mismatch.
-            if int(season) == 2024 and real_name == "Davey":
-                roster_id = 4
+        roster_id = get_roster_id(manager['user_id'], int(season),
+                                  sleeper_rosters_response=sleeper_response_rosters)
         
         # Initialize manager metadata for this season/week before skipping playoff filtering.
         MANAGER_METADATA_MANAGER.set_roster_id(real_name, str(season), str(week), roster_id, playoff_roster_ids, sleeper_response_matchups)
@@ -347,22 +347,6 @@ def fetch_starters_for_week(season, week):
     week_valid_data["positions"] = positions_summary_array
 
     return week_data, managers_summary_array, players_summary_array, positions_summary_array, week_valid_data
-
-def get_roster_id(rosters, user_id):
-    """
-    Resolve a roster_id for the given user_id.
-
-    Args:
-        sleeper_response_rosters (tuple): (payload, status_code)
-        user_id (str): Sleeper user identifier.
-
-    Returns:
-        int | None: roster_id if found, else None.
-    """
-    for roster in rosters:
-        if roster['owner_id'] == user_id:
-            return roster['roster_id']
-    return None
 
 def get_starters_data(matchups,
                       roster_id,

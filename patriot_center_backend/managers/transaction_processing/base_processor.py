@@ -18,7 +18,7 @@ from patriot_center_backend.managers.transaction_processing.trade_processor impo
     process_trade_transaction,
 )
 from patriot_center_backend.managers.validators import validate_transaction
-from patriot_center_backend.utils.helpers import fetch_sleeper_data
+from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
 class TransactionProcessor:

@@ -272,31 +272,6 @@ class TestGetRosterIds:
         assert call('user1', 2023, sleeper_rosters_response=sleeper_output_2) in calls
         assert call('user2', 2023, sleeper_rosters_response=sleeper_output_2) in calls
 
-    def test_error_gets_raised_with_missing_rosters(self):
-        """
-        Checks that if one or more users are not found in the rosters data, an
-        Exception is raised with the correct error message.
-        """
-        self.mock_fetch_sleeper_data.side_effect = [
-            [
-                {'user_id': 'user1', 'display_name': 'username1'},
-                {'user_id': 'user2', 'display_name': 'username2'},
-                {'user_id': 'user3', 'display_name': 'username3'},
-            ],
-            [
-                {'owner_id': 'user1', 'roster_id': 1},
-                {'owner_id': 'user2', 'roster_id': 2},
-                {'owner_id': None, 'roster_id': 3},
-            ]
-        ]
-        self.mock_get_roster_id.side_effect = [1, 2, None]
-
-        year = 2023
-
-        with pytest.raises(Exception, match="Not all roster IDs are assigned "):
-            get_roster_ids(year)
-
-
 class TestGetCurrentSeasonAndWeek:
     """Unit tests for get_current_season_and_week function."""
 

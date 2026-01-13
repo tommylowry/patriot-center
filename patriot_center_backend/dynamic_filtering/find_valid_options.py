@@ -34,6 +34,9 @@ def find_valid_years(
             continue
         valid.add(yr)
     
+    if valid == set():
+        print("WARNING: No valid years found.")
+    
     return valid
 
 def find_valid_weeks(
@@ -70,6 +73,10 @@ def find_valid_weeks(
             if player and player not in week_data.get("players", []):
                 continue
             valid.add(wk)
+
+    if valid == set():
+        print("WARNING: No valid weeks found.")
+
     return valid
 
 
@@ -117,6 +124,10 @@ def find_valid_managers(
                 if player and player not in manager_data.get("players", []):
                     continue
                 valid.add(mgr)
+
+    if valid == set():
+        print("WARNING: No valid managers found.")
+
     return valid
 
 
@@ -160,6 +171,9 @@ def find_valid_positions(
                 valid.update(week_data.get(manager, {}).get("positions", []))
             else:
                 valid.update(week_data.get("positions", []))
+
+    if valid == set():
+        print("WARNING: No valid positions found.")
 
     return valid
 

@@ -3,17 +3,17 @@
 from typing import Dict, List
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.dynamic_filter.find_valid_options import (
+from patriot_center_backend.dynamic_filtering.find_valid_options import (
     find_valid_managers,
     find_valid_positions,
     find_valid_weeks,
     find_valid_years,
 )
-from patriot_center_backend.dynamic_filter.formatter import format_output
-from patriot_center_backend.dynamic_filter.validator import validate_dynamic_filter_args
+from patriot_center_backend.dynamic_filtering.formatter import format_output
+from patriot_center_backend.dynamic_filtering.validator import validate_dynamic_filter_args
 
 
-def dynamic_filter(
+def filter(
         year: str | None = None,
         week: str | None = None,
         manager: str | None = None,

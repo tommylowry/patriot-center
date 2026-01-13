@@ -1,20 +1,8 @@
-"""
-Valid filtering options service for the Patriot Center backend.
+"""Service to compute valid filtering options based on selected criteria."""
 
-This service handles complex filtering logic to determine which combinations of
-year, week, manager, player, and position are valid based on the available data.
-It uses a bit-flag system to map filter combinations to specialized handler methods.
-
-The service supports up to 4 simultaneous filters (player, year, week, manager, position)
-and ensures that returned options are consistent with the underlying data cache.
-
-Key constraints:
-- Week filter requires year to be selected
-- Player filter restricts position to the player's actual position
-- Some combinations (5 filters) are not implemented as they exceed practical limits
-"""
 from contextlib import contextmanager
 from copy import deepcopy
+from typing import Dict, Generator, List
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
@@ -23,40 +11,29 @@ from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAM
 class ValidOptionsService:
     """
     Service to compute valid filtering options based on selected criteria.
-
-    Uses a bit-flag mapping system where each filter type has a bit value:
-    - Position: 1
-    - Manager: 2
-    - Week: 4
-    - Year: 8
-    - Player: 16
-
-    The sum of selected filter bits maps to a handler method that computes
-    which other filter values remain valid given the current selection.
     """
 
     def __init__(
-        self,
-        arg1: str | None,
-        arg2: str | None,
-        arg3: str | None,
-        arg4: str | None
-    ):
+            self,
+            arg1: str | None,
+            arg2: str | None,
+            arg3: str | None,
+            arg4: str | None
+        ) -> None:
         """
-        Initialize the service and compute valid options.
+        Initializes the ValidOptionsService with the provided arguments.
 
         Args:
-            arg1-arg4 (str | None): Up to 4 filter arguments that can be:
-                - Year (int matching LEAGUE_IDS)
-                - Week (int 1-17)
-                - Manager name (str matching NAME_TO_MANAGER_USERNAME)
-                - Player name (str matching PLAYERS_DATA)
-                - Position (str: QB, RB, WR, TE, K, DEF)
+            arg1 (str | None): Position filter value (e.g., "QB")
+            arg2 (str | None): Manager filter value (e.g., "Patriots")
+            arg3 (str | None): Week filter value (e.g., "1")
+            arg4 (str | None): Year filter value (e.g., "2020")
 
-        Raises:
-            ValueError: If arguments are invalid, duplicated, or violate constraints
+        Notes:
+            All arguments are optional and can be set to None if not used.
+            If any argument is set, it will be used as a filter to determine valid options.
+            The service will compute all possible combinations of valid options based on the provided filters.
         """
-
         # Initialize master lists with all possible values
         self._years_list     = list(str(year) for year in LEAGUE_IDS.keys())
         self._weeks_list     = list(str(week) for week in range(1, 18))
@@ -96,7 +73,6 @@ class ValidOptionsService:
         # Function IDs are computed using bit flags (see class docstring)
         # Note: [4-7], [20-23] week cannot be used as a filter without a year selected
         # Note: [31] all 5 filters selected simultaneously is not implemented (exceeds 4-filter limit)
-
         self._function_mapping = {
             0:  self._none_selected,
             1:  self._pos_selected,
@@ -150,15 +126,19 @@ class ValidOptionsService:
     # ---------- Internal Functions ----------
     # ----------------------------------------
 
-    def _parse_arg(self, arg : str | None):
-        """
-        Parse a single argument and classify it as year, week, manager, player, or position.
+    def _parse_arg(self, arg : str | None) -> None:
+        """Parses the given argument and sets the appropriate instance variable.
+
+        Determines whether the argument is a year, week, manager, player, or position
+        and assigns it to the corresponding instance variable.
 
         Args:
-            arg (str | None): Argument to parse
+            arg: The argument to parse. Can be a year, week number, manager name,
+                player name, or position code.
 
         Raises:
-            ValueError: If argument is invalid, duplicated, or unrecognized
+            ValueError: If multiple arguments of the same type are provided, or
+                if the argument is not recognized.
         """
         players_cache = CACHE_MANAGER.get_players_cache()
         
@@ -204,22 +184,29 @@ class ValidOptionsService:
             else:
                 raise ValueError(f"Unrecognized argument: {arg}")
 
-    def _check_year_and_week(self):
-        """
-        Validate that week filter is only used when year is also selected.
+    def _check_year_and_week(self) -> None:
+        """Validates that week filter is only used when year is also selected.
 
         Raises:
-            ValueError: If week is selected without year
+            ValueError: If week is selected without year.
         """
-        if self._week_selected() and not self._year_selected():
+        if (self._week is not None) and (self._year is None):
             raise ValueError("Week filter cannot be applied without a Year filter.")
 
-    def _get_function_id(self):
-        """
-        Compute function ID by summing bit flags for all active filters.
+    def _get_function_id(self) -> None:
+        """Computes a unique identifier for the handler function to execute.
 
-        The resulting ID maps to a handler function in _function_mapping that
-        knows how to compute valid options for that specific filter combination.
+        The identifier is determined by which filters are active, computed by
+        summing bit values for each present filter:
+            - Position: 1 (2^0)
+            - Manager: 2 (2^1)
+            - Week: 4 (2^2)
+            - Year: 8 (2^3)
+            - Player: 16 (2^4)
+
+        Examples:
+            - Position + Manager selected: ID = 3 (1 + 2)
+            - Position + Manager + Week selected: ID = 7 (1 + 2 + 4)
         """
         self._func_id = 0
         if self._position is not None:
@@ -240,69 +227,43 @@ class ValidOptionsService:
             filter2 : str | None = None,
             filter3 : str | None = None,
             filter4 : str | None = None
-        ):
-        """
-        Add a valid option value to the appropriate growing list.
+        ) -> None:
+        """Adds a valid option value to the appropriate growing list.
 
-        Tracks progress by checking if all possible values for the primary filter
-        have been found. Sets self._done = True when complete to short-circuit searches.
+        Tracks progress by checking if all possible values for the specified filters
+        have been found. Sets self._done to True when complete to short-circuit searches.
 
         Args:
-            value (str): The valid option value to add
-            filter1 (str): Primary filter type (e.g., "year", "manager")
-            filter2-4 (str | None): Additional filters to check for completeness
+            value: The valid option value to add.
+            filter1: Primary filter type (e.g., "year", "manager").
+            filter2: Second filter to check for completeness.
+            filter3: Third filter to check for completeness.
+            filter4: Fourth filter to check for completeness.
         """
-        
-        growing_filter1_list = getattr(self, f"_growing_{filter1}s_list")
-        filter1_list         = getattr(self, f"_{filter1}s_list")
+        # Add value to the first filter's growing list
+        growing = getattr(self, f"_growing_{filter1}s_list")
+        if value not in growing:
+            growing.append(value)
 
-        if value not in growing_filter1_list:
-            growing_filter1_list.append(value)
-
-            setattr(self, f"_growing_{filter1}s_list", growing_filter1_list)
-
-            if sorted(growing_filter1_list) != sorted(filter1_list):
+        # Check if all specified filters are complete
+        for filter_name in [filter1, filter2, filter3, filter4]:
+            if filter_name is None:
+                break
+            
+            growing_list = getattr(self, f"_growing_{filter_name}s_list")
+            full_list = getattr(self, f"_{filter_name}s_list")
+            
+            if sorted(growing_list) != sorted(full_list):
                 self._done = False
                 return
+        
+        self._done = True  # All filters complete
 
-            if filter2 != None:
-                growing_filter2_list = getattr(self, f"_growing_{filter2}s_list")
-                filter2_list         = getattr(self, f"_{filter2}s_list")
-                
-                if sorted(growing_filter2_list) != sorted(filter2_list):
-                    self._done = False
-                    return
-                
-                if filter3 != None:
-                    growing_filter3_list = getattr(self, f"_growing_{filter3}s_list")
-                    filter3_list         = getattr(self, f"_{filter3}s_list")
-                
-                    if sorted(growing_filter3_list) != sorted(filter3_list):
-                        self._done = False
-                        return
-                    
-                    if filter4 != None:
-                        growing_filter4_list = getattr(self, f"_growing_{filter4}s_list")
-                        filter4_list         = getattr(self, f"_{filter4}s_list")
-                        
-                        if sorted(growing_filter4_list) != sorted(filter4_list):
-                            self._done = False
-                            return
-                        else:
-                            self._done = True
-                    else:
-                        self._done = True
-                else:
-                    self._done = True
-            else:
-                self._done = True
+    def _reset_growing_lists(self) -> None:
+        """Resets all growing lists and sets self._done to False.
 
-    def _reset_growing_lists(self):
-        """
-        Reset all growing lists and done flag for a fresh filter computation.
-
-        Used when recursively calling handler functions to compute options for
-        different filter combinations.
+        Called when restarting the search for valid options, such as when a filter
+        changes or when recomputing valid options after processing a week.
         """
         self._done = False
         self._growing_years_list     = list()
@@ -310,12 +271,32 @@ class ValidOptionsService:
         self._growing_managers_list  = list()
         self._growing_positions_list = list()
 
-    def _deepcopy_growing(self, *list_names):
+    def _deepcopy_growing(self, *list_names) -> None:
+        """Copies the growing lists to the main lists for the specified filter types.
+
+        For each filter name provided, copies the contents of the growing list
+        (e.g., _growing_years_list) to the main list (e.g., _years_list).
+
+        Args:
+            *list_names: Variable number of filter names (e.g., "years", "weeks").
+        """
         for name in list_names:
             setattr(self, f"_{name}_list", deepcopy(getattr(self, f"_growing_{name}_list")))
     
     @contextmanager
-    def _preserve_lists(self, *list_names):
+    def _preserve_lists(self, *list_names) -> Generator[None, None, None]:
+        """Context manager that preserves and restores list state.
+
+        Saves the current state of the specified lists before yielding, then
+        restores them to their original state when the context exits.
+
+        Args:
+            *list_names: Variable number of filter names to preserve
+                (e.g., "years", "weeks").
+
+        Yields:
+            None: Control returns to the caller within the preserved context.
+        """
         saved = {name: deepcopy(getattr(self, f"_{name}_list")) for name in list_names}
         try:
             yield
@@ -323,7 +304,18 @@ class ValidOptionsService:
             for name, value in saved.items():
                 setattr(self, f"_{name}_list", value)
 
-    def _preserve_lists_and_call_functions(self, bits_to_call, *list_names):
+    def _preserve_lists_and_call_functions(self, bits_to_call, *list_names) -> None:
+        """Calls handler functions for each bit while optionally preserving list state.
+
+        Iterates over the provided function IDs and invokes the corresponding handler
+        function for each. If list_names are provided, the lists are saved and restored
+        around each function call.
+
+        Args:
+            bits_to_call: List of function IDs (bit combinations) to invoke.
+            *list_names: Variable number of filter names to preserve during calls
+                (e.g., "years", "weeks"). If empty, no preservation is done.
+        """
         for bit in bits_to_call:
             if not list_names:
                 self._call_new_function(bit)
@@ -331,18 +323,18 @@ class ValidOptionsService:
                 with self._preserve_lists(*list_names):
                     self._call_new_function(bit)
 
-    def _call_new_function(self, bit: int):
-        """
-        Invoke a handler function for a different filter combination.
+    def _call_new_function(self, bit: int) -> None:
+        """Invokes a handler function for a different filter combination.
 
-        Used to recursively compute valid options when one filter is changed
-        but others remain constant.
+        Used to recursively compute valid options when one filter changes
+        but others remain constant. Resets growing lists before and after
+        the function call.
 
         Args:
-            bit (int): Function ID computed from bit flags
+            bit: Function ID computed from bit flags.
 
         Raises:
-            ValueError: If the bit combination is not implemented
+            ValueError: If the bit combination is not implemented.
         """
         self._reset_growing_lists()
 
@@ -357,9 +349,18 @@ class ValidOptionsService:
     # -----------------------------------------
     # ---------- Public Functions--------------
     # -----------------------------------------
-    def get_valid_options(self) -> dict:
-        """
-        Returns the valid options based on the current filters.
+    def get_valid_options(self) -> Dict[str, List[str]]:
+        """Returns a dictionary containing all valid options for the given filters.
+
+        Each filter type is sorted appropriately for display:
+            - years: reverse chronological order
+            - weeks: numerical order
+            - managers: alphabetical order
+            - positions: original order (QB, RB, WR, TE, K, DEF)
+
+        Returns:
+            Dictionary with keys "years", "weeks", "managers", and "positions",
+            each containing a list of valid string options.
         """
 
         # Ensure weeks are sorted numerically
@@ -429,11 +430,27 @@ class ValidOptionsService:
 
 
     # 0
-    def _none_selected(self):
+    def _none_selected(self) -> None:
+        """Handles case when no filters are selected.
+
+        Returns all possible options for all filter types without restriction.
+            - All years available.
+            - All weeks available.
+            - All managers available.
+            - All positions available.
+        """
         return
     
     # 1
-    def _pos_selected(self):
+    def _pos_selected(self) -> None:
+        """Handles case when only position is selected.
+
+        Finds valid options for the selected position.
+            - Years available for the selected position.
+            - Weeks available for the selected position.
+            - Managers available for the selected position.
+            - All positions available.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Year, Week, and Manager options that have the selected Position
@@ -469,7 +486,15 @@ class ValidOptionsService:
         self._deepcopy_growing("years", "weeks", "managers")
     
     # 2
-    def _mgr_selected(self):
+    def _mgr_selected(self) -> None:
+        """Handles case when only manager is selected.
+
+        Finds valid options for the selected manager.
+            - Years available for the selected manager.
+            - Weeks available for the selected manager.
+            - All managers available.
+            - Positions available for the selected manager.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Year, Week, and Position options that have the selected Manager
@@ -505,7 +530,15 @@ class ValidOptionsService:
         self._deepcopy_growing("years", "weeks", "positions")
     
     # 3
-    def _mgr_pos_selected(self):
+    def _mgr_pos_selected(self) -> None:
+        """Handles case when manager and position are selected.
+
+        Finds valid options for the selected manager and position.
+            - Years available for the selected manager AND position.
+            - Weeks available for the selected manager AND position.
+            - Managers available for the selected position.
+            - Positions available for the selected manager.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Year and Week options that have the selected Manager and Position
@@ -549,6 +582,14 @@ class ValidOptionsService:
     
     # 8
     def _yr_selected(self):
+        """Handles case when only year is selected.
+
+        Finds valid options for the selected year.
+            - All years available.
+            - Weeks available for the selected year.
+            - Managers available for the selected year.
+            - Positions available for the selected year.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         data = valid_options_cache.get(self._year, {})
@@ -575,6 +616,14 @@ class ValidOptionsService:
                 
     # 9
     def _yr_pos_selected(self):
+        """Handles case when year and position are selected.
+
+        Finds valid options for the selected year and position.
+            - Years available for the selected position.
+            - Weeks available for the selected year AND position.
+            - Managers available for the selected year AND position.
+            - Positions available for the selected year.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Weeks and Managers options that have the selected Position for the selected Year
@@ -608,6 +657,14 @@ class ValidOptionsService:
     
     # 10
     def _yr_mgr_selected(self):
+        """Handles case when year and manager are selected.
+
+        Finds valid options for the selected year and manager.
+            - Years available for the selected manager.
+            - Weeks available for the selected year AND manager.
+            - Managers available for the selected year.
+            - Positions available for the selected year AND manager.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Weeks and Positions options that have the selected Manager for the selected Year
@@ -641,6 +698,14 @@ class ValidOptionsService:
     
     # 11
     def _yr_mgr_pos_selected(self):
+        """Handles case when year, manager, and position are selected.
+
+        Finds valid options for the selected manager and position.
+            - Years available for the selected manager AND position.
+            - Weeks available for the selected year AND manager AND position.
+            - Managers available for the selected year AND position.
+            - Positions available for the selected year AND manager.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Weeks options that have the selected Manager and Position for the selected Year
@@ -667,6 +732,17 @@ class ValidOptionsService:
 
     # 12
     def _yr_wk_selected(self):
+        """Handles case when year and week are selected.
+
+        Finds valid options for the selected year and week.
+            - All years available.
+            - Weeks available for the selected year.
+            - Managers available for the selected year AND week.
+            - Positions available for the selected year AND week.
+
+        Notes
+            - Year options available are not limited to weeks available as week depends on year to be selected.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Managers and Positions for the selected Year and Week
@@ -695,6 +771,17 @@ class ValidOptionsService:
     
     # 13
     def _yr_wk_pos_selected(self):
+        """Handles case when year, week, and position are selected.
+
+        Finds valid options for the selected year, week, and position.
+            - Years available for the selected position.
+            - Weeks available for the selected year AND position.
+            - Managers available for the selected year AND week AND position.
+            - Positions available for the selected year AND week.
+
+        Notes
+            - Year options available are not limited to weeks available as week depends on year to be selected.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Managers options that have the selected Position, Year, and Week
@@ -717,6 +804,17 @@ class ValidOptionsService:
     
     # 14
     def _yr_wk_mgr_selected(self):
+        """Handles case when year, week, and manager are selected.
+
+        Finds valid options for the selected year, week, and manager.
+            - Years available for the selected manager.
+            - Weeks available for the selected year AND manager.
+            - Managers available for the selected year AND week.
+            - Positions available for the selected year AND week AND manager.
+
+        Notes
+            - Year options available are not limited to weeks available as week depends on year to be selected.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Set positions list for the selected year, week, and manager
@@ -739,12 +837,34 @@ class ValidOptionsService:
     
     # 15
     def _yr_wk_mgr_pos_selected(self):
+        """Handles case when year, week, manager and position are selected.
+
+        Finds valid options for the selected year, week, manager, and position.
+            - Years available for the selected manager AND position.
+            - Weeks available for the selected year AND manager AND position.
+            - Managers available for the selected year AND week AND position.
+            - Positions available for the selected year AND week AND manager.
+
+        Notes
+            - Year options available are not limited to weeks available as week depends on year to be selected.
+        """
         self._preserve_lists_and_call_functions([self._year_bit + self._manager_bit + self._position_bit,
                                                  self._year_bit + self._week_bit + self._position_bit,
                                                  self._year_bit + self._week_bit + self._manager_bit])
     
     # 16
     def _plyr_selected(self):
+        """Handles case when player is selected.
+
+        Finds valid options for the selected player.
+            - Years available for the selected player.
+            - Weeks available for the selected player.
+            - Managers available for the selected player.
+            - Only the position of the selected player.
+
+        Notes
+            - Position options with a player selected can only be the position of the player.
+        """
         players_cache       = CACHE_MANAGER.get_players_cache()
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
@@ -787,12 +907,34 @@ class ValidOptionsService:
     
     # 17
     def _plyr_pos_selected(self):
+        """Handles case when player and position are selected.
 
+        Finds valid options for the selected player and position.
+            - Years available for the selected player.
+            - Weeks available for the selected player.
+            - Managers available for the selected player.
+            - Only the position of the selected player.
+
+        Notes
+            - Because position can only be the position of the player, having a position selected is the same as having a just player selected.
+            - Position options with a player selected can only be the position of the player.
+        """
         # Position can only be the position of the player
         self._call_new_function(self._player_bit)
     
     # 18
     def _plyr_mgr_selected(self):
+        """Handles case when player and manager are selected.
+
+        Finds valid options for the selected player and manager.
+            - Years available for the selected player AND manager.
+            - Weeks available for the selected player AND manager.
+            - Managers available for the selected player.
+            - Only the position of the selected player.
+
+        Notes
+            - Position options with a player selected can only be the position of the player.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # Filter out everything that does not have the player
@@ -818,12 +960,35 @@ class ValidOptionsService:
     
     # 19
     def _plyr_mgr_pos_selected(self):
-        
+        """Handles case when player is selected.
+
+        Finds valid options for the selected player.
+            - Years available for the selected player AND manager.
+            - Weeks available for the selected player AND manager.
+            - Managers available for the selected player.
+            - Only the position of the selected player.
+
+        Notes
+            - Because position can only be the position of the player, having a position selected is the same as having a just player selected.
+            - Position options with a player selected can only be the position of the player.
+        """
         # Position can only be the position of the player
         self._call_new_function(self._player_bit + self._manager_bit)
 
     # 24
     def _plyr_yr_selected(self):
+        """
+        Handles case when player and year are selected.
+
+        Finds valid options for the selected player and year.
+            - Years available for the selected player.
+            - Weeks available for the selected player AND year.
+            - Managers available for the selected player AND year.
+            - Only the position of the selected player.
+
+        Notes
+            - Position options with a player selected can only be the position of the player.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # filter out everything that does not have the player and shorten the lists to loop through
@@ -852,12 +1017,36 @@ class ValidOptionsService:
 
     # 25
     def _plyr_yr_pos_selected(self):
+        """
+        Handles case when player, year, and position are selected.
 
+        Finds valid options for the selected player, year, and position.
+            - Years available for the selected player.
+            - Weeks available for the selected player AND year.
+            - Managers available for the selected player AND year.
+            - Only the position of the selected player.
+
+        Notes
+            - Because position can only be the position of the player, having a position selected is the same as having a just player selected.
+            - Position options with a player selected can only be the position of the player.
+        """
         # Get the weeks and managers for the selected year and player (position is already set)
         self._call_new_function(self._player_bit + self._year_bit)
     
     # 26
     def _plyr_yr_mgr_selected(self):
+        """
+        Handles case when player, year, and manager are selected.
+
+        Finds valid options for the selected player, year, and manager.
+            - Years available for the selected player AND manager.
+            - Weeks available for the selected player AND year AND manager.
+            - Managers available for the selected player AND year.
+            - Only the position of the selected player.
+
+        Notes
+            - Position options with a player selected can only be the position of the player.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         self._preserve_lists_and_call_functions([self._player_bit,
@@ -879,12 +1068,38 @@ class ValidOptionsService:
         
     # 27
     def _plyr_yr_mgr_pos_selected(self):
+        """
+        Handles case when player, year, manager, and position are selected.
+
+        Finds valid options for the selected player, year, manager, and position.
+            - Years available for the selected player AND manager.
+            - Weeks available for the selected player AND year AND manager.
+            - Managers available for the selected player AND year.
+            - Only the position of the selected player.
+
+        Notes
+            - Because position can only be the position of the player, having a position selected is the same as having a just player selected.
+            - Position options with a player selected can only be the position of the player.
+        """
         
         # get the weeks for the selected year, manager, and player (position is already set)
         self._call_new_function(self._player_bit + self._year_bit + self._manager_bit)
         
     # 28
     def _plyr_yr_wk_selected(self):
+        """
+        Handles case when player, year, and week are selected.
+
+        Finds valid options for the selected player, year, and week.
+            - Years available for the selected player.
+            - Weeks available for the selected player AND year.
+            - Managers available for the selected player AND year AND week.
+            - Only the position of the selected player.
+
+        Notes
+            - Year options available are not limited to weeks available as week depends on year to be selected.
+            - Position options with a player selected can only be the position of the player.
+        """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         # filter out everything that does not have the player and shorten the lists to loop through
@@ -920,13 +1135,39 @@ class ValidOptionsService:
     
     # 29
     def _plyr_yr_wk_pos_selected(self):
+        """
+        Handles case when player, year, week, and position are selected.
+
+        Finds valid options for the selected player, year, week, and position.
+            - Years available for the selected player.
+            - Weeks available for the selected player AND year.
+            - Managers available for the selected player AND year AND week.
+            - Only the position of the selected player.
+
+        Notes
+            - Because position can only be the position of the player, having a position selected is the same as having a just player selected.
+            - Year options available are not limited to weeks available as week depends on year to be selected.
+            - Position options with a player selected can only be the position of the player.
+        """
 
         # get the managers for the selected year, week, and player (position is already set)
         self._call_new_function(self._player_bit + self._year_bit + self._week_bit)
     
     # 30
     def _plyr_yr_wk_mgr_selected(self):
+        """
+        Handles case when player, year, week, and manager are selected.
 
+        Finds valid options for the selected player, year, week, and manager.
+            - Years available for the selected player AND manager.
+            - Weeks available for the selected player AND year AND manager.
+            - Managers available for the selected player AND year AND week.
+            - Only the position of the selected player.
+
+        Notes
+            - Year options available are not limited to weeks available as week depends on year to be selected.
+            - Position options with a player selected can only be the position of the player.
+        """
         self._preserve_lists_and_call_functions(
             [
                 self._player_bit + self._manager_bit,
@@ -936,8 +1177,3 @@ class ValidOptionsService:
 
         # In a given year and week, the manager can only be the selected manager
         self._managers_list = list([self._manager])
-
-
-# option = ValidOptionsService("jonathan taylor", None, None, None)
-# valid_options = option.get_valid_options()
-# print(valid_options)

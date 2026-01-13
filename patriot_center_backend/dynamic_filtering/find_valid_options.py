@@ -25,14 +25,33 @@ def find_valid_years(
 
     valid = set()
 
-    for yr, data in valid_options_cache.items():
-        if manager and manager not in data.get("managers", []):
-            continue
-        if position and position not in data.get("positions", []):
-            continue
-        if player and player not in data.get("players", []):
-            continue
-        valid.add(yr)
+    for yr, year_data in valid_options_cache.items():
+        year_valid = False
+
+        for wk in year_data.get("weeks", []):
+            week_data = year_data.get(wk, {})
+
+            if manager:
+                if manager not in week_data.get("managers", []):
+                    continue
+
+                manager_data = week_data.get(manager, {})
+                if position and position not in manager_data.get("positions", []):
+                    continue
+                if player and player not in manager_data.get("players", []):
+                    continue
+
+            else:
+                if position and position not in week_data.get("positions", []):
+                    continue
+                if player and player not in week_data.get("players", []):
+                    continue
+            
+            year_valid = True
+            break
+        
+        if year_valid:
+            valid.add(yr)
     
     if valid == set():
         print("WARNING: No valid years found.")
@@ -62,16 +81,26 @@ def find_valid_weeks(
     valid = set()
     years_to_check = [year] if year else valid_options_cache.keys()
     
-    for yr in years_to_check:
-        year_data = valid_options_cache.get(yr, {})
+    for yr, year_data in years_to_check:
         for wk in year_data.get("weeks", []):
             week_data = year_data.get(wk, {})
-            if manager and manager not in week_data.get("managers", []):
-                continue
-            if position and position not in week_data.get("positions", []):
-                continue
-            if player and player not in week_data.get("players", []):
-                continue
+
+            if manager:
+                if manager not in week_data.get("managers", []):
+                    continue
+
+                manager_data = week_data.get(manager, {})
+                if position and position not in manager_data.get("positions", []):
+                    continue
+                if player and player not in manager_data.get("players", []):
+                    continue
+
+            else:
+                if position and position not in week_data.get("positions", []):
+                    continue
+                if player and player not in week_data.get("players", []):
+                    continue
+
             valid.add(wk)
 
     if valid == set():

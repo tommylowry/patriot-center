@@ -31,7 +31,7 @@ def filter(
 
     Returns:
         Dictionary with keys "years", "weeks", "managers", and "positions",
-        each containing a list of valid string options.
+            each containing a list of valid string options.
     """
     
     validate_dynamic_filter_args(year, week, manager, position, player)
@@ -52,3 +52,10 @@ def filter(
         positions = find_valid_positions(year, week, manager)
     
     return format_output(years, weeks, managers, positions)
+
+d = filter(
+    manager = "Mitch",
+    player = "Jaxon Smith-Njigba"
+)
+
+print(d)

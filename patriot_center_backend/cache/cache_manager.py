@@ -96,7 +96,7 @@ class CacheManager:
     
     # ===== MANAGER METADATA CACHE =====
     
-    def get_manager_cache(self, force_reload: bool = False) -> Dict[str, Any]:
+    def get_manager_cache(self, force_reload: bool = False) -> Dict[str, Dict[str, Any]]:
         """
         Get manager metadata cache.
         
@@ -126,7 +126,7 @@ class CacheManager:
         self._save_cache(MANAGER_METADATA_CACHE_FILE, data_to_save)
         self._manager_cache = data_to_save
     
-    def update_manager_cache(self, cache: Dict[str, Any]) -> None:
+    def update_manager_cache(self, cache: Dict[str, Dict[str, Any]]) -> None:
         """
         Update the in-memory manager cache (does not save to disk).
         
@@ -137,7 +137,7 @@ class CacheManager:
     
     # ===== TRANSACTION IDS CACHE =====
     
-    def get_transaction_ids_cache(self, force_reload: bool = False) -> Dict[str, Any]:
+    def get_transaction_ids_cache(self, force_reload: bool = False) -> Dict[str, Dict[str, Any]]:
         """
         Get transaction IDs cache.
         
@@ -167,13 +167,13 @@ class CacheManager:
         self._save_cache(TRANSACTION_IDS_FILE, data_to_save)
         self._transaction_ids_cache = data_to_save
     
-    def update_transaction_ids_cache(self, cache: Dict[str, Any]) -> None:
+    def update_transaction_ids_cache(self, cache:Dict[str, Dict[str, Any]]) -> None:
         """Update the in-memory transaction IDs cache (does not save to disk)."""
         self._transaction_ids_cache = cache
     
     # ===== PLAYERS CACHE =====
     
-    def get_players_cache(self, force_reload: bool = False) -> Dict[str, Any]:
+    def get_players_cache(self, force_reload: bool = False) -> Dict[str, Dict[str, str | None]]:
         """
         Get players cache.
         
@@ -205,7 +205,7 @@ class CacheManager:
     
     # ===== PLAYER IDS CACHE =====
     
-    def get_player_ids_cache(self, force_reload: bool = False) -> Dict[str, Any]:
+    def get_player_ids_cache(self, force_reload: bool = False) -> Dict[str, Dict[str, Any]]:
         """
         Get player IDs cache.
         
@@ -251,7 +251,7 @@ class CacheManager:
     
     # ===== STARTERS CACHE =====
     
-    def get_starters_cache(self, force_reload: bool = False, for_update = False) -> Dict[str, Any]:
+    def get_starters_cache(self, force_reload: bool = False, for_update: bool = False) -> Dict[str, Any]:
         """
         Get starters cache.
         
@@ -398,7 +398,7 @@ class CacheManager:
     
     # ===== VALID OPTIONS CACHE =====
     
-    def get_valid_options_cache(self, force_reload: bool = False) -> Dict[str, Any]:
+    def get_valid_options_cache(self, force_reload: bool = False) -> Dict[str, Dict[str, Any]]:
         """
         Get valid options cache.
         

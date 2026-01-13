@@ -1,20 +1,20 @@
 import { apiGet } from '../config/api';
 
 export async function fetchOptions() {
-  return apiGet('/valid_options');
+  return apiGet('/dynamic_filtering');
 }
 
 export async function fetchValidOptions(year = null, week = null, manager = null, player = null, position = null) {
-  const parts = [];
-  if (year) parts.push(String(year));
-  if (week) parts.push(String(week));
-  if (manager) parts.push(encodeURIComponent(String(manager)));
-  if (player) parts.push(encodeURIComponent(String(player)));
-  if (position && position !== 'ALL') parts.push(String(position));
+  const params = new URLSearchParams();
 
-  const path = parts.length > 0
-    ? `/valid_options/${parts.join('/')}`
-    : '/valid_options';
+  if (year) params.append('yr', String(year));
+  if (week) params.append('wk', String(week));
+  if (manager) params.append('mgr', String(manager));
+  if (player) params.append('plyr', String(player));
+  if (position && position !== 'ALL') params.append('pos', String(position));
+
+  const queryString = params.toString();
+  const path = queryString ? `/dynamic_filtering?${queryString}` : '/dynamic_filtering';
 
   return apiGet(path);
 }

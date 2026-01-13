@@ -22,6 +22,7 @@ from flask_cors import CORS
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
+from patriot_center_backend.dynamic_filtering import dynamic_filter
 from patriot_center_backend.managers import MANAGER_METADATA_MANAGER
 from patriot_center_backend.services.aggregated_data import (
     fetch_aggregated_managers,
@@ -37,7 +38,7 @@ CORS(app, resources={
     r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_aggregated_managers*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/options/list": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/valid_options*": {"origins": ["https://patriotcenter.netlify.app"]},
+    r"/dynamic_filtering*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get_player_manager_aggregation*": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/get/managers/list": {"origins": ["https://patriotcenter.netlify.app"]},
     r"/api/managers/*": {"origins": ["https://patriotcenter.netlify.app"]}
@@ -55,7 +56,7 @@ def index():
             "/get_starters",
             "/get_aggregated_players",
             "/get_aggregated_managers/<player>",
-            "/valid_options",
+            "/dynamic_filtering",
             "/options/list",
             "/get/managers/list/<active_only>",
             "/api/managers/<manager_name>/summary",
@@ -227,25 +228,28 @@ def list_players():
     response.headers['Cache-Control'] = 'public, max-age=3600'  # Cache for 1 hour
     return response, 200
 
-@app.route('/valid_options', defaults={'arg1': None, 'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/valid_options/<string:arg1>', defaults={'arg2': None, 'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/valid_options/<string:arg1>/<string:arg2>', defaults={'arg3': None, 'arg4': None}, methods=['GET'])
-@app.route('/valid_options/<string:arg1>/<string:arg2>/<string:arg3>', defaults={'arg4': None}, methods=['GET'])
-@app.route('/valid_options/<string:arg1>/<string:arg2>/<string:arg3>/<string:arg4>', methods=['GET'])
-def valid_options(arg1, arg2, arg3, arg4):
+@app.route('/dynamic_filtering', methods=['GET'])
+def dynamic_filtering():
     """
     Endpoint to validate provided season, week, manager, player, and position combinations.
     """
-    from patriot_center_backend.services._valid_options import ValidOptionsService
 
-    arg1 = slug_to_name(arg1)
-    arg2 = slug_to_name(arg2)
-    arg3 = slug_to_name(arg3)
-    arg4 = slug_to_name(arg4)
+    yr = request.args.get('yr')
+    wk = request.args.get('wk')
+    mgr = request.args.get('mgr')
+    pos = request.args.get('pos')
+    plyr = request.args.get('plyr')
+
+    plyr = slug_to_name(plyr)
 
     try:
-        options = ValidOptionsService(arg1, arg2, arg3, arg4)
-        data = options.get_valid_options()
+        data = dynamic_filter.filter(
+            year = yr,
+            week = wk,
+            manager = mgr,
+            position = pos,
+            player = plyr
+        )
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     response = jsonify(data)

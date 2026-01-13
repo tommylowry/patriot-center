@@ -236,7 +236,7 @@ def valid_options(arg1, arg2, arg3, arg4):
     """
     Endpoint to validate provided season, week, manager, player, and position combinations.
     """
-    from patriot_center_backend.services.valid_options import ValidOptionsService
+    from patriot_center_backend.services._valid_options import ValidOptionsService
 
     arg1 = slug_to_name(arg1)
     arg2 = slug_to_name(arg2)

@@ -80,16 +80,19 @@ class DataExporter:
         managers_list = []
 
         for manager in managers:
+            manager_summary = manager_cache[manager]["summary"]
+
+            overall_matchup_data = manager_summary["matchup_data"]["overall"]
             wins = (
-                manager_cache[manager]["summary"]["matchup_data"]["overall"]["wins"]["total"]
+                overall_matchup_data["wins"]["total"]
             )
 
             losses = (
-                manager_cache[manager]["summary"]["matchup_data"]["overall"]["losses"]["total"]
+                overall_matchup_data["losses"]["total"]
             )
 
             ties = (
-                manager_cache[manager]["summary"]["matchup_data"]["overall"]["ties"]["total"]
+                overall_matchup_data["ties"]["total"]
             )
 
             ranking_details = get_ranking_details_from_cache(
@@ -107,7 +110,7 @@ class DataExporter:
                 ),
 
                 "total_trades": (
-                    manager_cache[manager]["summary"]["transactions"]["trades"]["total"]
+                    manager_summary["transactions"]["trades"]["total"]
                 ),
 
                 "wins": wins,
@@ -126,13 +129,11 @@ class DataExporter:
             best_finish = 4
 
             overall_data_placements = (
-                manager_cache[manager]['summary']['overall_data']['placement']
+                manager_summary['overall_data']['placement']
             )
 
             for y in overall_data_placements:
-                year_placement = (
-                    manager_cache[manager]['summary']['overall_data']['placement'][y]
-                )
+                year_placement = overall_data_placements[y]
 
                 if year_placement == 1:
                     placements['first_place'] += 1
@@ -169,11 +170,11 @@ class DataExporter:
             )
 
             manager_item["total_adds"] = (
-                manager_cache[manager]['summary']['transactions']['adds']['total']
+                manager_summary['transactions']['adds']['total']
             )
 
             manager_item["total_drops"] = (
-                manager_cache[manager]['summary']['transactions']['drops']['total']
+                manager_summary['transactions']['drops']['total']
             )
 
             manager_item["is_active"] = (
@@ -505,7 +506,9 @@ class DataExporter:
 
                                 "transaction_id": transaction_id
                             }
-                            filtered_transactions.append(deepcopy(transaction_item))
+                            filtered_transactions.append(
+                                deepcopy(transaction_item)
+                            )
 
         # Set total count
         transaction_history["total_count"] = len(filtered_transactions)

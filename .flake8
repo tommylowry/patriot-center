@@ -1,6 +1,6 @@
 [flake8]
 max-line-length = 80
-select = E2
+select = E2,E501,DAR
 # E2xx rules are whitespace errors including:
 # E201 whitespace after '('
 # E202 whitespace before ')'

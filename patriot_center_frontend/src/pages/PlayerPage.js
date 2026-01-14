@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate, Link, useSearchParams } from "react-router-dom";
 import { usePlayerManagers } from '../hooks/usePlayerManagers';
-import { useValidOptions } from '../hooks/useValidOptions';
+import { useDynamicFiltering } from '../hooks/useDynamicFiltering';
 
 export default function PlayerPage() {
     const { playerSlug } = useParams();
@@ -35,7 +35,7 @@ export default function PlayerPage() {
         }, 0);
     }, [searchParams]);
 
-    const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager, slug);
+    const { options, loading: optionsLoading, error: optionsError } = useDynamicFiltering(year, week, manager, slug);
 
     // Update URL when filters change from user interaction (not from URL sync)
     useEffect(() => {

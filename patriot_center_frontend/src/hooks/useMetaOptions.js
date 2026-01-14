@@ -25,7 +25,7 @@ export function useMetaOptions() {
         setYears(yrs);
         setWeeksByYear(wksByYear);
         if (process.env.NODE_ENV === 'development') {
-          console.debug('valid_options normalized:', { years: yrs, weeksByYear: wksByYear });
+          console.debug('dynamic_filtering normalized:', { years: yrs, weeksByYear: wksByYear });
         }
       })
       .catch(e => active && setError(e.message))

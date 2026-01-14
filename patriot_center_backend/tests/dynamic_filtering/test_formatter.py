@@ -30,37 +30,32 @@ class TestFormatOutput:
 
     def test_formats_all_fields_correctly(self):
         """Formats years, weeks, managers, and positions correctly."""
-        result = format_output(
-            years={"2023", "2024"},
-            weeks={"1", "2", "10"},
-            managers={"Tommy", "Anthony"},
-            positions={"QB", "RB"}
-        )
+        result = format_output(years={"2023", "2024"},
+                               weeks={"1", "2", "10"},
+                               managers={"Tommy", "Anthony"},
+                               positions={"QB", "RB"})
 
         assert result["years"] == ["2024", "2023"]  # reverse sorted
         assert result["weeks"] == ["1", "2", "10"]  # from mock
-        assert result["managers"] == ["Anthony", "Tommy"]  # alphabetically sorted
+        assert result["managers"] == ["Anthony",
+                                      "Tommy"]  # alphabetically sorted
         assert result["positions"] == ["QB", "RB"]  # from mock
 
     def test_calls_format_weeks_with_weeks(self):
         """Calls format_weeks with the weeks set."""
-        format_output(
-            years={"2024"},
-            weeks={"1", "2"},
-            managers={"Tommy"},
-            positions={"QB"}
-        )
+        format_output(years={"2024"},
+                      weeks={"1", "2"},
+                      managers={"Tommy"},
+                      positions={"QB"})
 
         self.mock_format_weeks.assert_called_once_with({"1", "2"})
 
     def test_calls_format_positions_with_positions(self):
         """Calls format_positions with the positions set."""
-        format_output(
-            years={"2024"},
-            weeks={"1"},
-            managers={"Tommy"},
-            positions={"QB", "RB"}
-        )
+        format_output(years={"2024"},
+                      weeks={"1"},
+                      managers={"Tommy"},
+                      positions={"QB", "RB"})
 
         self.mock_format_positions.assert_called_once_with({"QB", "RB"})
 
@@ -69,12 +64,10 @@ class TestFormatOutput:
         self.mock_format_weeks.return_value = []
         self.mock_format_positions.return_value = []
 
-        result = format_output(
-            years=set(),
-            weeks=set(),
-            managers=set(),
-            positions=set()
-        )
+        result = format_output(years=set(),
+                               weeks=set(),
+                               managers=set(),
+                               positions=set())
 
         assert result["years"] == []
         assert result["weeks"] == []
@@ -86,12 +79,10 @@ class TestFormatOutput:
         self.mock_format_weeks.return_value = ["1"]
         self.mock_format_positions.return_value = ["QB"]
 
-        result = format_output(
-            years={"2024"},
-            weeks={"1"},
-            managers={"Tommy"},
-            positions={"QB"}
-        )
+        result = format_output(years={"2024"},
+                               weeks={"1"},
+                               managers={"Tommy"},
+                               positions={"QB"})
 
         assert result["years"] == ["2024"]
         assert result["weeks"] == ["1"]

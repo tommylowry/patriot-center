@@ -3,12 +3,8 @@
 from typing import Dict, List, Set
 
 
-def format_output(
-        years: Set[str],
-        weeks: Set[str],
-        managers: Set[str],
-        positions: Set[str]
-    ) -> Dict[str, List[str]]:
+def format_output(years: Set[str], weeks: Set[str], managers: Set[str],
+                  positions: Set[str]) -> Dict[str, List[str]]:
     """Formats the output of the dynamic filter into a dictionary.
 
     Args:
@@ -60,8 +56,6 @@ def format_positions(positions: Set[str]) -> List[str]:
     """
 
     desired_order = ["QB", "RB", "WR", "TE", "K", "DEF"]
-    positions_list = sorted(
-        [p for p in positions if p in desired_order],
-        key=lambda x: desired_order.index(x)
-    )
+    positions_list = sorted([p for p in positions if p in desired_order],
+                            key=lambda x: desired_order.index(x))
     return positions_list

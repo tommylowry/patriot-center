@@ -81,7 +81,8 @@ def find_valid_weeks(
     valid = set()
     years_to_check = [year] if year else valid_options_cache.keys()
     
-    for yr, year_data in years_to_check:
+    for yr in years_to_check:
+        year_data = valid_options_cache.get(yr, {})
         for wk in year_data.get("weeks", []):
             week_data = year_data.get(wk, {})
 

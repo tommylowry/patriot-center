@@ -52,10 +52,3 @@ def filter(
         positions = find_valid_positions(year, week, manager)
     
     return format_output(years, weeks, managers, positions)
-
-d = filter(
-    manager = "Mitch",
-    player = "Jaxon Smith-Njigba"
-)
-
-print(d)

@@ -22,7 +22,9 @@
     },
     
     "ruff.fixAll": false,
-    
+    "flake8.args": ["--select=E2"],
+
+
     "python.analysis.typeCheckingMode": "basic",
     "python.analysis.diagnosticSeverityOverrides": {}
 }

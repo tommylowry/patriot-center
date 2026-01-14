@@ -198,7 +198,7 @@ class DataExporter:
         return {"managers": managers_list}
 
     def get_manager_summary(
-        self, manager: str,year: str | None = None
+        self, manager: str, year: str | None = None
     ) -> dict[str, Any]:
         """Get comprehensive manager summary.
 
@@ -468,7 +468,7 @@ class DataExporter:
                 # Adds and Drops
                 adds_data = weekly_transactions.get("adds", {})
                 transaction_ids = deepcopy(
-                    trade_data.get("transaction_ids", [])
+                    adds_data.get("transaction_ids", [])
                 )
 
                 transaction_ids.reverse()
@@ -517,7 +517,7 @@ class DataExporter:
 
         return deepcopy(transaction_history)
 
-    def get_manager_awards(self,manager: str) -> dict[str, Any]:
+    def get_manager_awards(self, manager: str) -> dict[str, Any]:
         """Get awards and recognitions for a specific manager.
 
         Args:

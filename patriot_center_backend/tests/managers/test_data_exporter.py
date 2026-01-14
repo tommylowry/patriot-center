@@ -1,10 +1,7 @@
-"""
-Unit tests for data_exporter module.
+"""Unit tests for data_exporter module."""
 
-Tests the DataExporter class which provides public API for manager data.
-All tests mock underlying cache_queries functions.
-"""
 from copy import deepcopy
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -13,7 +10,7 @@ from patriot_center_backend.managers.data_exporter import DataExporter
 
 
 @pytest.fixture
-def mock_manager_cache():
+def mock_manager_cache() -> dict[str, Any]:
     """Create a sample cache for testing."""
     return {
         "Manager 1": {
@@ -87,7 +84,7 @@ def mock_manager_cache():
 
 
 @pytest.fixture
-def mock_valid_options_cache():
+def mock_valid_options_cache() -> dict[str, Any]:
     """Create a sample valid options cache."""
     return {
         "2025": {
@@ -97,7 +94,7 @@ def mock_valid_options_cache():
 
 
 @pytest.fixture
-def mock_data_exporter():
+def mock_data_exporter() -> DataExporter:
     """Create a mock data_exporter object."""
     return DataExporter()
 
@@ -116,31 +113,60 @@ class TestGetManagersList:
     """Test get_managers_list method."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, mock_manager_cache, mock_valid_options_cache):
+    def setup(
+        self,
+        mock_manager_cache: dict[str, Any],
+        mock_valid_options_cache: dict[str, Any]
+    ):
         """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.data_exporter.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
-             patch('patriot_center_backend.managers.data_exporter.CACHE_MANAGER.get_valid_options_cache') as mock_get_valid_options_cache, \
-             patch('patriot_center_backend.managers.data_exporter.get_ranking_details_from_cache') as mock_get_ranking_details, \
-             patch('patriot_center_backend.managers.data_exporter.get_current_manager_image_url') as mock_get_current_mgr_url, \
-             patch('patriot_center_backend.managers.data_exporter.LEAGUE_IDS', {2025: "mock_league_id"}):
-            
+        with (
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.CACHE_MANAGER.get_manager_cache'
+            ) as mock_get_manager_cache,
+
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.CACHE_MANAGER.get_valid_options_cache'
+            ) as mock_get_valid_options_cache,
+
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_ranking_details_from_cache'
+            ) as mock_get_ranking_details,
+
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_current_manager_image_url'
+            ) as mock_get_current_mgr_url,
+
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.LEAGUE_IDS',
+                {2025: "mock_league_id"}
+            ),
+        ):
+        # setup code here
+
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
 
             self.mock_valid_options_cache = mock_valid_options_cache
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
-            self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
+            self.mock_get_valid_options_cache.return_value = (
+                self.mock_valid_options_cache
+            )
 
             self.mock_get_ranking_details = mock_get_ranking_details
             self.mock_get_ranking_details.return_value = {}
 
             self.mock_get_current_mgr_url = mock_get_current_mgr_url
             self.mock_get_current_mgr_url.return_value = "http://example.com/manager.jpg"
-            
+
             yield
 
-    def test_get_active_managers_only(self, mock_data_exporter):
+    def test_get_active_managers_only(self, mock_data_exporter: DataExporter):
         """Test getting only active managers."""
         self.mock_get_ranking_details.return_value = {
             "values": {
@@ -162,7 +188,7 @@ class TestGetManagersList:
                 "worst": 10
             }
         }
-        
+
         result = mock_data_exporter.get_managers_list(active_only=True)
 
         assert "managers" in result
@@ -170,7 +196,7 @@ class TestGetManagersList:
         assert all("name" in m for m in result["managers"])
         assert all("image_url" in m for m in result["managers"])
 
-    def test_get_all_managers(self, mock_data_exporter):
+    def test_get_all_managers(self, mock_data_exporter: DataExporter):
         """Test getting all managers including inactive."""
         self.mock_get_ranking_details.return_value = {
             "values": {
@@ -198,17 +224,30 @@ class TestGetManagersList:
         assert "managers" in result
         # Should get all managers from cache keys
         assert len(result["managers"]) == 2
-    
-    def test_get_managers_list_immutable(self, mock_data_exporter):
+
+    def test_get_managers_list_immutable(
+        self, mock_data_exporter: DataExporter
+    ):
         """Test that get_managers_list doesn't modify cache."""
         self.mock_get_ranking_details.return_value = {
-            "values": {"win_percentage": 60.0, "average_points_for": 100.0,
-                      "average_points_against": 90.0, "average_points_differential": 10.0,
-                      "trades": 5, "playoffs": 2},
-            "ranks": {"win_percentage": 1, "average_points_for": 1,
-                     "average_points_against": 2, "average_points_differential": 1,
-                     "trades": 1, "playoffs": 1,
-                     "is_active_manager": True, "worst": 10}
+            "values": {
+                "win_percentage": 60.0,
+                "average_points_for": 100.0,
+                "average_points_against": 90.0,
+                "average_points_differential": 10.0,
+                "trades": 5,
+                "playoffs": 2
+            },
+            "ranks": {
+                "win_percentage": 1,
+                "average_points_for": 1,
+                "average_points_against": 2,
+                "average_points_differential": 1,
+                "trades": 1,
+                "playoffs": 1,
+                "is_active_manager": True,
+                "worst": 10
+            }
         }
 
         original = deepcopy(self.mock_manager_cache)
@@ -218,7 +257,9 @@ class TestGetManagersList:
         assert self.mock_manager_cache == original
 
 
-    def test_managers_list_sorted_by_weight(self, mock_data_exporter):
+    def test_managers_list_sorted_by_weight(
+        self, mock_data_exporter: DataExporter
+    ):
         """Test that managers are sorted by weight (best first)."""
         def ranking_side_effect(manager, manager_summary_usage, active_only):
             # Manager 1 should have better stats
@@ -233,10 +274,14 @@ class TestGetManagersList:
                         "playoffs": 2
                     },
                     "ranks": {
-                        "win_percentage": 1, "average_points_for": 1,
-                        "average_points_against": 2, "average_points_differential": 1,
-                        "trades": 1, "playoffs": 1,
-                        "is_active_manager": True, "worst": 10
+                        "win_percentage": 1,
+                        "average_points_for": 1,
+                        "average_points_against": 2,
+                        "average_points_differential": 1,
+                        "trades": 1,
+                        "playoffs": 1,
+                        "is_active_manager": True,
+                        "worst": 10
                     }
                 }
             else:
@@ -250,10 +295,14 @@ class TestGetManagersList:
                         "playoffs": 1
                     },
                     "ranks": {
-                        "win_percentage": 2, "average_points_for": 2,
-                        "average_points_against": 1, "average_points_differential": 2,
-                        "trades": 2, "playoffs": 2,
-                        "is_active_manager": True, "worst": 10
+                        "win_percentage": 2,
+                        "average_points_for": 2,
+                        "average_points_against": 1,
+                        "average_points_differential": 2,
+                        "trades": 2,
+                        "playoffs": 2,
+                        "is_active_manager": True,
+                        "worst": 10
                     }
                 }
 
@@ -268,17 +317,41 @@ class TestGetManagersList:
 class TestGetManagerSummary:
     """Test get_manager_summary method."""
 
+
     @pytest.fixture(autouse=True)
-    def setup(self, mock_manager_cache):
+    def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.data_exporter.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
-             patch('patriot_center_backend.managers.data_exporter.get_current_manager_image_url') as mock_get_current_mgr_url, \
-             patch('patriot_center_backend.managers.data_exporter.get_matchup_details_from_cache') as mock_get_matchup, \
-             patch('patriot_center_backend.managers.data_exporter.get_transaction_details_from_cache') as mock_get_trans, \
-             patch('patriot_center_backend.managers.data_exporter.get_overall_data_details_from_cache') as mock_get_overall, \
-             patch('patriot_center_backend.managers.data_exporter.get_ranking_details_from_cache') as mock_ranking, \
-             patch('patriot_center_backend.managers.data_exporter.get_head_to_head_details_from_cache') as mock_get_h2h:
-            
+        with (
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.CACHE_MANAGER.get_manager_cache'
+            ) as mock_get_manager_cache,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_current_manager_image_url'
+            ) as mock_get_current_mgr_url,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_matchup_details_from_cache'
+            ) as mock_get_matchup,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_transaction_details_from_cache'
+            ) as mock_get_trans,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_overall_data_details_from_cache',
+            ) as mock_get_overall,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_ranking_details_from_cache',
+            ) as mock_ranking,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_head_to_head_details_from_cache',
+            ) as mock_get_h2h,
+        ):
+
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
@@ -300,15 +373,20 @@ class TestGetManagerSummary:
 
             self.mock_get_h2h = mock_get_h2h
             self.mock_get_h2h.return_value = {}
-            
+
             yield
 
-    def test_get_manager_summary_all_time(self, mock_data_exporter):
+    def test_get_manager_summary_all_time(
+        self, mock_data_exporter: DataExporter
+    ):
         """Test getting manager summary for all-time stats."""
         self.mock_get_current_mgr_url.return_value = "http://example.com/manager.jpg"
         self.mock_get_matchup.return_value = {"overall": {"wins": 10}}
         self.mock_get_trans.return_value = {"trades": {"total": 5}}
-        self.mock_get_overall.return_value = {"placements": [], "playoff_appearances": 2}
+        self.mock_get_overall.return_value = {
+            "placements": [],
+            "playoff_appearances": 2
+        }
         self.mock_ranking.return_value = {"ranks": {}, "values": {}}
         self.mock_get_h2h.return_value = {}
 
@@ -322,18 +400,26 @@ class TestGetManagerSummary:
         assert "rankings" in result
         assert "head_to_head" in result
 
-    def test_get_manager_summary_single_year(self, mock_data_exporter):
+    def test_get_manager_summary_single_year(
+        self, mock_data_exporter: DataExporter
+    ):
         """Test getting manager summary for specific year."""
         self.mock_get_current_mgr_url.return_value = "http://example.com/manager.jpg"
         self.mock_get_matchup.return_value = {"overall": {"wins": 6}}
         self.mock_get_trans.return_value = {"trades": {"total": 2}}
-        self.mock_get_overall.return_value = {"placements": [], "playoff_appearances": 1}
+        self.mock_get_overall.return_value = {
+            "placements": [],
+            "playoff_appearances": 1
+        }
         self.mock_ranking.return_value = {"ranks": {}, "values": {}}
         self.mock_get_h2h.return_value = {}
 
-        result = mock_data_exporter.get_manager_summary("Manager 1", year="2023")
+        result = mock_data_exporter.get_manager_summary(
+            "Manager 1", year="2023"
+        )
 
         assert result["manager_name"] == "Manager 1"
+
         # Verify year was passed to underlying functions
         self.mock_get_matchup.assert_called_once()
         assert self.mock_get_matchup.call_args[1]["year"] == "2023"
@@ -343,35 +429,63 @@ class TestGetHeadToHead:
     """Test get_head_to_head method."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, mock_manager_cache):
+    def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.data_exporter.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
-             patch('patriot_center_backend.managers.data_exporter.get_current_manager_image_url') as mock_get_current_mgr_url, \
-             patch('patriot_center_backend.managers.data_exporter.get_head_to_head_overall_from_cache') as mock_get_h2h, \
-             patch('patriot_center_backend.managers.data_exporter.get_trade_history_between_two_managers') as mock_get_trade_history:
-            
+        with (
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.CACHE_MANAGER.get_manager_cache'
+            ) as mock_get_manager_cache,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_current_manager_image_url'
+            ) as mock_get_current_mgr_url,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_head_to_head_overall_from_cache'
+            ) as mock_get_h2h,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_trade_history_between_two_managers'
+            ) as mock_get_trade_history,
+        ):
+
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
 
             self.mock_get_current_mgr_url = mock_get_current_mgr_url
-            self.mock_get_current_mgr_url.return_value = "http://example.com/manager.jpg"
+            self.mock_get_current_mgr_url.return_value = (
+                "http://example.com/manager.jpg"
+            )
 
             self.mock_get_h2h = mock_get_h2h
             self.mock_get_h2h.return_value = {}
 
             self.mock_get_trade_history = mock_get_trade_history
             self.mock_get_trade_history.return_value = []
-            
+
             yield
 
-    def test_get_h2h_all_time(self, mock_data_exporter):
+    def test_get_h2h_all_time(self, mock_data_exporter: DataExporter):
         """Test getting H2H stats for all-time."""
-        self.mock_get_current_mgr_url.side_effect = lambda m, *args: f"http://example.com/{m}.jpg"
-        self.mock_get_h2h.side_effect = lambda *args, list_all_matchups=False, **kwargs: (
-            {"manager_1_wins": 7, "manager_2_wins": 3, "ties": 1} # if list_all_matchups is passed as a keyword argument (kwarg)
-            if list_all_matchups
-            else {"wins": 7, "losses": 3} # if list_all_matchups is NOT passed as a keyword argument
+        self.mock_get_current_mgr_url.side_effect = (
+            lambda m,
+            *args: f"http://example.com/{m}.jpg"
+        )
+
+        self.mock_get_h2h.side_effect = (
+            lambda *args,
+            list_all_matchups=False,
+            **kwargs: (
+
+                # if list_all_matchups is passed as a keyword argument (kwarg)
+                {"manager_1_wins": 7, "manager_2_wins": 3, "ties": 1}
+                if list_all_matchups
+
+                # if list_all_matchups is NOT passed as a keyword argument
+                else {"wins": 7, "losses": 3}
+            )
         )
 
         result = mock_data_exporter.get_head_to_head("Manager 1", "Manager 2")
@@ -382,16 +496,26 @@ class TestGetHeadToHead:
         assert "matchup_history" in result
         assert "trades_between" in result
 
-    def test_get_h2h_single_year(self, mock_data_exporter):
+    def test_get_h2h_single_year(self, mock_data_exporter: DataExporter):
         """Test getting H2H stats for specific year."""
-        self.mock_get_current_mgr_url.side_effect = lambda m, *args: f"http://example.com/{m}.jpg"
-        self.mock_get_h2h.side_effect = lambda *args, list_all_matchups=False, **kwargs: (
-            {"manager_1_wins": 2, "manager_2_wins": 1, "ties": 0}
-            if list_all_matchups
-            else {"wins": 2, "losses": 1}
+        self.mock_get_current_mgr_url.side_effect = (
+            lambda m,
+            *args: f"http://example.com/{m}.jpg"
         )
 
-        mock_data_exporter.get_head_to_head("Manager 1", "Manager 2", year="2023")
+        self.mock_get_h2h.side_effect = (
+            lambda *args,
+            list_all_matchups=False,
+            **kwargs: (
+                {"manager_1_wins": 2, "manager_2_wins": 1, "ties": 0}
+                if list_all_matchups
+                else {"wins": 2, "losses": 1}
+            )
+        )
+
+        mock_data_exporter.get_head_to_head(
+            "Manager 1", "Manager 2", year="2023"
+        )
 
         # Verify year was passed
         assert self.mock_get_h2h.call_args[1]["year"] == "2023"
@@ -401,13 +525,27 @@ class TestGetManagerTransactions:
     """Test get_manager_transactions method."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, mock_manager_cache):
+    def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.data_exporter.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
-             patch('patriot_center_backend.managers.data_exporter.CACHE_MANAGER.get_transaction_ids_cache') as mock_get_trans_ids, \
-             patch('patriot_center_backend.managers.data_exporter.get_image_url') as mock_get_image_url, \
-             patch('patriot_center_backend.managers.data_exporter.get_trade_card') as mock_get_trade_card:
-            
+        with (
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.CACHE_MANAGER.get_manager_cache'
+            ) as mock_get_manager_cache,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.CACHE_MANAGER.get_transaction_ids_cache'
+            ) as mock_get_trans_ids,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_image_url'
+            ) as mock_get_image_url,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_trade_card'
+            ) as mock_get_trade_card,
+        ):
+
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
@@ -417,16 +555,20 @@ class TestGetManagerTransactions:
             self.mock_get_trans_ids.return_value = self.mock_trans_ids_cache
 
             self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = {"name": "item", "image_url": "http://example.com/item.jpg"}
+            self.mock_get_image_url.return_value = {
+                "name": "item", "image_url": "http://example.com/item.jpg"
+            }
 
             self.mock_get_trade_card = mock_get_trade_card
             self.mock_get_trade_card.return_value = {}
-            
+
             yield
-    
-    def test_get_transactions_all_time(self, mock_data_exporter):
+
+    def test_get_transactions_all_time(self, mock_data_exporter: DataExporter):
         """Test getting all-time transaction details."""
-        self.mock_get_image_url.return_value = {"name": "Manager 1", "image_url": "http://example.com/manager1.jpg"}
+        self.mock_get_image_url.return_value = {
+            "name": "Manager 1", "image_url": "http://example.com/manager1.jpg"
+        }
 
         result = mock_data_exporter.get_manager_transactions("Manager 1")
 
@@ -435,17 +577,25 @@ class TestGetManagerTransactions:
         assert "transactions" in result
         assert isinstance(result["transactions"], list)
 
-    def test_get_transactions_single_year(self, mock_data_exporter):
+    def test_get_transactions_single_year(
+        self, mock_data_exporter: DataExporter
+    ):
         """Test getting transaction details for specific year."""
-        self.mock_get_image_url.return_value = {"name": "Manager 1", "image_url": "http://example.com/manager1.jpg"}
+        self.mock_get_image_url.return_value = {
+            "name": "Manager 1", "image_url": "http://example.com/manager1.jpg"
+        }
 
-        result = mock_data_exporter.get_manager_transactions("Manager 1", year="2023")
+        result = mock_data_exporter.get_manager_transactions(
+            "Manager 1", year="2023"
+        )
 
         assert "name" in result
         assert "total_count" in result
         assert "transactions" in result
 
-    def test_get_transactions_with_trades(self, mock_data_exporter):
+    def test_get_transactions_with_trades(
+        self, mock_data_exporter: DataExporter
+    ):
         """Test get_manager_transactions processes trade transactions."""
         # Setup cache with trade transaction IDs
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
@@ -457,21 +607,25 @@ class TestGetManagerTransactions:
                 }
             }
         }
-        self.mock_get_image_url.return_value = {"name": "Manager 1", "image_url": "http://example.com/manager1.jpg"}
+        self.mock_get_image_url.return_value = {
+            "name": "Manager 1", "image_url": "http://example.com/manager1.jpg"
+        }
         self.mock_get_trade_card.return_value = {
             "year": "2023",
             "week": "1",
             "managers_involved": ["Manager 1", "Manager 2"]
         }
 
-        result = mock_data_exporter.get_manager_transactions("Manager 1", year="2023")
+        result = mock_data_exporter.get_manager_transactions(
+            "Manager 1", year="2023"
+        )
 
         # Should have processed 2 trades
         assert result["total_count"] == 2
         trades = [t for t in result["transactions"] if t["type"] == "trade"]
         assert len(trades) == 2
 
-    def test_get_transactions_with_adds(self, mock_data_exporter):
+    def test_get_transactions_with_adds(self, mock_data_exporter: DataExporter):
         """Test get_manager_transactions processes add transactions."""
         # Setup cache with add transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
@@ -488,16 +642,22 @@ class TestGetManagerTransactions:
             "add": "Player A",
             "faab_spent": 50
         }
-        self.mock_get_image_url.return_value = {"name": "Player A", "image_url": "http://example.com/player.jpg"}
+        self.mock_get_image_url.return_value = {
+            "name": "Player A", "image_url": "http://example.com/player.jpg"
+        }
 
-        result = mock_data_exporter.get_manager_transactions("Manager 1", year="2023")
+        result = mock_data_exporter.get_manager_transactions(
+            "Manager 1", year="2023"
+        )
 
         # Should have 1 add transaction
         adds = [t for t in result["transactions"] if t["type"] == "add"]
         assert len(adds) == 1
         assert adds[0]["faab_spent"] == 50
 
-    def test_get_transactions_with_drops(self, mock_data_exporter):
+    def test_get_transactions_with_drops(
+        self, mock_data_exporter: DataExporter
+    ):
         """Test get_manager_transactions processes drop transactions."""
         # Setup cache with drop transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
@@ -513,16 +673,22 @@ class TestGetManagerTransactions:
             "types": ["drop"],
             "drop": "Player B"
         }
-        self.mock_get_image_url.return_value = {"name": "Player B", "image_url": "http://example.com/player.jpg"}
+        self.mock_get_image_url.return_value = {
+            "name": "Player B", "image_url": "http://example.com/player.jpg"
+        }
 
-        result = mock_data_exporter.get_manager_transactions("Manager 1", year="2023")
+        result = mock_data_exporter.get_manager_transactions(
+            "Manager 1", year="2023"
+        )
 
         # Should have 1 drop transaction
         drops = [t for t in result["transactions"] if t["type"] == "drop"]
         assert len(drops) == 1
         assert drops[0]["player"]["name"] == "Player B"
 
-    def test_get_transactions_with_add_and_drop(self, mock_data_exporter):
+    def test_get_transactions_with_add_and_drop(
+        self, mock_data_exporter: DataExporter
+    ):
         """Test get_manager_transactions processes add_and_drop transactions."""
         # Setup cache with add_and_drop transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
@@ -549,10 +715,14 @@ class TestGetManagerTransactions:
                 return {"name": "Manager 1", "image_url": "http://example.com/manager1.jpg"}
         self.mock_get_image_url.side_effect = image_url_side_effect
 
-        result = mock_data_exporter.get_manager_transactions("Manager 1", year="2023")
+        result = mock_data_exporter.get_manager_transactions(
+            "Manager 1", year="2023"
+        )
 
         # Should have 1 add_and_drop transaction
-        add_drops = [t for t in result["transactions"] if t["type"] == "add_and_drop"]
+        add_drops = (
+            [t for t in result["transactions"] if t["type"] == "add_and_drop"]
+        )
         assert len(add_drops) == 1
         assert add_drops[0]["added_player"]["name"] == "Player A"
         assert add_drops[0]["dropped_player"]["name"] == "Player B"
@@ -563,14 +733,31 @@ class TestGetManagerAwards:
     """Test get_manager_awards method."""
 
     @pytest.fixture(autouse=True)
-    def setup(self, mock_manager_cache):
+    def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.data_exporter.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
-             patch('patriot_center_backend.managers.data_exporter.get_image_url') as mock_get_image_url, \
-             patch('patriot_center_backend.managers.data_exporter.get_current_manager_image_url') as mock_get_current_mgr_url, \
-             patch('patriot_center_backend.managers.data_exporter.get_manager_awards_from_cache') as mock_get_manager_awards, \
-             patch('patriot_center_backend.managers.data_exporter.get_manager_score_awards_from_cache') as mock_get_manager_score_awards:
-            
+        with (
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.CACHE_MANAGER.get_manager_cache'
+            ) as mock_get_manager_cache,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_image_url'
+            ) as mock_get_image_url,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_current_manager_image_url'
+            ) as mock_get_current_mgr_url,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_manager_awards_from_cache'
+            ) as mock_get_manager_awards,
+            patch(
+                'patriot_center_backend.managers.data_exporter'
+                '.get_manager_score_awards_from_cache'
+            ) as mock_get_manager_score_awards,
+        ):
+
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
@@ -586,10 +773,10 @@ class TestGetManagerAwards:
 
             self.mock_get_manager_score_awards = mock_get_manager_score_awards
             self.mock_get_manager_score_awards.return_value = {}
-            
+
             yield
 
-    def test_get_awards(self, mock_data_exporter):
+    def test_get_awards(self, mock_data_exporter: DataExporter):
         """Test getting manager awards."""
         self.mock_get_image_url.return_value = "https://sleepercdn.com/avatars/acb123"
         self.mock_get_current_mgr_url.return_value = {

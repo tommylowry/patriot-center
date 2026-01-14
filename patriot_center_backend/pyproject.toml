@@ -1,0 +1,35 @@
+[tool.ruff]
+line-length = 80
+fix = false
+
+[tool.ruff.lint]
+select = [
+  "E",      # pycodestyle errors
+  "F",      # pyflakes
+  "W",      # pycodestyle warnings
+  "I",      # isort (imports)
+  "N",      # pep8-naming
+  "D",      # pydocstyle
+  "UP",     # pyupgrade (modern Python syntax)
+  "B",      # flake8-bugbear
+  "C4",     # flake8-comprehensions
+  "SIM",    # flake8-simplify
+  "RUF",    # Ruff-specific rules
+]
+
+ignore = [
+  "D203",   # conflicts with D211
+  "D213",   # conflicts with D212
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.pyright]
+pythonVersion = "3.10"
+typeCheckingMode = "basic"
+
+reportMissingTypeStubs = true
+reportUnknownParameterType = true
+reportUnknownVariableType = true
+reportUnknownMemberType = false

@@ -1,18 +1,18 @@
-"""
-Manager metadata processing module.
+"""Central manager metadata orchestration.
 
-Provides comprehensive manager metadata management including:
-- Transaction processing (trades, adds, drops, waivers)
-- Matchup and playoff tracking
-- Awards and statistics
-- Historical data queries
+This is the ONLY place where manager metadata operations should be coordinated.
+All other code should use ManagerMetadataManager methods.
 
-Main entry point: get_manager_metadata_manager()
+Single Responsibility: Orchestrate sub-processors and manage persistence.
 """
+
 from patriot_center_backend.managers.manager_metadata_manager import (
     ManagerMetadataManager,
     get_manager_metadata_manager,
 )
 
 MANAGER_METADATA_MANAGER = get_manager_metadata_manager()
-__all__ = ['ManagerMetadataManager', 'get_manager_metadata_manager', 'MANAGER_METADATA_MANAGER']
+__all__ = [
+    'MANAGER_METADATA_MANAGER',
+    'ManagerMetadataManager'
+]

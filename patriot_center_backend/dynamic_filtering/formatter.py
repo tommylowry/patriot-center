@@ -30,6 +30,7 @@ def format_output(
     }
     return result
 
+
 def format_weeks(weeks: Set[str]) -> List[str]:
     """Formats a set of week numbers into a sorted list of strings.
 
@@ -40,10 +41,11 @@ def format_weeks(weeks: Set[str]) -> List[str]:
         A sorted list of week numbers as strings
     """
 
-    weeks_list = list([int(week) for week in weeks])
+    weeks_list = [int(week) for week in weeks]
     weeks_list = sorted(weeks_list)
     weeks_list = [str(week) for week in weeks_list]
     return weeks_list
+
 
 def format_positions(positions: Set[str]) -> List[str]:
     """Formats a set of position strings into a sorted list of strings.
@@ -51,10 +53,10 @@ def format_positions(positions: Set[str]) -> List[str]:
     The positions are sorted in the order of (QB, RB, WR, TE, K, DEF).
 
     Args:
-        positions (Set[str]): Set of position strings
+        positions: Set of position strings
 
     Returns:
-        List[str]: A sorted list of position strings
+        A sorted list of position strings
     """
 
     desired_order = ["QB", "RB", "WR", "TE", "K", "DEF"]

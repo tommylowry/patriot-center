@@ -37,6 +37,7 @@ def validate_dynamic_filter_args(
     _validate_position(position, year, week, manager)
     _validate_player(player, year, week, manager, position)
 
+
 def _validate_year(year: str | None) -> None:
     """Validates the year argument.
 
@@ -51,6 +52,7 @@ def _validate_year(year: str | None) -> None:
         return
     if int(year) not in LEAGUE_IDS.keys():
         raise ValueError(f"Invalid year: {year}")
+
 
 def _validate_week(week: str | None, year: str | None) -> None:
     """Validates the week argument.
@@ -70,6 +72,7 @@ def _validate_week(week: str | None, year: str | None) -> None:
 
     if week not in valid_options_cache.get(year, {}).get("weeks", []):
         raise ValueError(f"Invalid week: {week}")
+
 
 def _validate_manager(
         manager: str | None,
@@ -100,7 +103,8 @@ def _validate_manager(
 
     if (year and week) and manager not in valid_options_cache.get(year, {}).get(week, {}).get("managers", []):
         raise ValueError(f"Invalid manager: {manager}")
-    
+
+
 def _validate_position(
         position: str | None,
         year: str | None,
@@ -144,6 +148,7 @@ def _validate_position(
     if (year and week and manager) and position not in valid_options_cache.get(year, {}).get(week, {}).get(manager, {}).get("positions", []):
         raise ValueError(f"Invalid position: {position}")
 
+
 def _validate_player(
         player: str | None,
         year: str | None,
@@ -151,15 +156,14 @@ def _validate_player(
         manager: str | None,
         position: str | None
     ) -> None:
-    """
-    Validates the player argument.
+    """Validates the player argument.
 
     Args:
-        player (str | None): The player of the data to filter.
-        year (str | None): The year of the data to filter.
-        week (str | None): The week of the data to filter.
-        manager (str | None): The manager of the data to filter.
-        position (str | None): The position of the data to filter.
+        player: The player of the data to filter.
+        year: The year of the data to filter.
+        week: The week of the data to filter.
+        manager: The manager of the data to filter.
+        position: The position of the data to filter.
 
     Raises:
         ValueError: If the player is invalid.
@@ -195,14 +199,14 @@ def _validate_player(
     if (year and week and manager) and player not in valid_options_cache.get(year, {}).get(week, {}).get(manager, {}).get("players", []):
         raise ValueError(f"Invalid player: {player}")
 
+
 def _traverse_for_year_and_manager(
         year: str,
         manager: str,
         item: str,
         item_type: Literal["player", "position"]
     ) -> None:
-    """
-    Validates the item argument when filtering by year, manager, and player/position.
+    """Validates the item argument when filtering by year, manager, and player/position.
 
     Args:
         year: The year of the data to filter.

@@ -1,8 +1,11 @@
 """Functions for finding valid filtering options based on selected criteria."""
 
+import logging
 from typing import List, Set
 
 from patriot_center_backend.cache import CACHE_MANAGER
+
+logger = logging.getLogger(__name__)
 
 
 def find_valid_years(
@@ -24,7 +27,7 @@ def find_valid_years(
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
     if not manager and not position and not player:
-        return set(CACHE_MANAGER.get_valid_options_cache().keys())
+        return set(valid_options_cache.keys())
 
     valid = set()
 
@@ -56,10 +59,11 @@ def find_valid_years(
         if year_valid:
             valid.add(yr)
     
-    if valid == set():
-        print("WARNING: No valid years found.")
+    if not valid:
+        logger.warning("No valid years found.")
     
     return valid
+
 
 def find_valid_weeks(
         year: str | None,
@@ -107,8 +111,8 @@ def find_valid_weeks(
 
             valid.add(wk)
 
-    if valid == set():
-        print("WARNING: No valid weeks found.")
+    if not valid:
+        logger.warning("No valid weeks found.")
 
     return valid
 
@@ -158,8 +162,8 @@ def find_valid_managers(
                     continue
                 valid.add(mgr)
 
-    if valid == set():
-        print("WARNING: No valid managers found.")
+    if not valid:
+        logger.warning("No valid managers found.")
 
     return valid
 
@@ -205,10 +209,11 @@ def find_valid_positions(
             else:
                 valid.update(week_data.get("positions", []))
 
-    if valid == set():
-        print("WARNING: No valid positions found.")
+    if not valid:
+        logger.warning("No valid positions found.")
 
     return valid
+
 
 def _get_weeks_to_check(year: str | None, week: str | None) -> List[str]:
     """Determines which weeks to iterate over.

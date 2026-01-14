@@ -44,7 +44,7 @@ def filter(
         position = players_cache[player]["position"]
         positions = set([position])
     
-    # Each function returns (matching_items, should_include_all)
+    # Each function returns a set of valid options for the given criteria
     years = find_valid_years(manager, position, player)
     weeks = find_valid_weeks(year, manager, position, player)
     managers = find_valid_managers(year, week, position, player)

@@ -189,7 +189,7 @@ class TestFindValidYears:
 
         assert result == {"2024"}
 
-    def test_filters_by_all_criteria_no_match(self, capsys):
+    def test_filters_by_all_criteria_no_match(self, caplog):
         """Returns empty set when no year matches all filters."""
         result = find_valid_years(
             manager="Tommy",
@@ -197,13 +197,12 @@ class TestFindValidYears:
             player="Amon-Ra St. Brown"
         )
 
-        captured = capsys.readouterr()
-        assert "No valid years found" in captured.out
+        assert "No valid years found" in caplog.text
 
         assert result == set()
 
     # ===== Edge cases =====
-    def test_returns_empty_set_when_no_matches(self, capsys):
+    def test_returns_empty_set_when_no_matches(self, caplog):
         """Returns empty set when no years match filters."""
         result = find_valid_years(
             manager="Owen",
@@ -211,8 +210,7 @@ class TestFindValidYears:
             player=None
         )
 
-        captured = capsys.readouterr()
-        assert "No valid years found" in captured.out
+        assert "No valid years found" in caplog.text
 
         assert result == set()
 
@@ -415,7 +413,7 @@ class TestFindValidWeeks:
         assert result == {"2", "3"}
 
     # ===== Edge cases =====
-    def test_returns_empty_set_when_no_matches(self, capsys):
+    def test_returns_empty_set_when_no_matches(self, caplog):
         """Returns empty set when no weeks match filters."""
         result = find_valid_weeks(
             year="2024",
@@ -424,8 +422,7 @@ class TestFindValidWeeks:
             player=None
         )
 
-        captured = capsys.readouterr()
-        assert "No valid weeks found" in captured.out
+        assert "No valid weeks found" in caplog.text
 
         assert result == set()
 
@@ -551,7 +548,7 @@ class TestFindValidManagers:
         assert result == {"Tommy"}
 
     # ===== Edge cases =====
-    def test_returns_empty_set_when_no_matches(self, capsys):
+    def test_returns_empty_set_when_no_matches(self, caplog):
         """Returns empty set when no managers match filters."""
         self.mock_get_weeks_to_check.return_value = ["1"]
 
@@ -562,8 +559,7 @@ class TestFindValidManagers:
             player=None
         )
 
-        captured = capsys.readouterr()
-        assert "No valid managers found" in captured.out
+        assert "No valid managers found" in caplog.text
 
         assert result == set()
 
@@ -658,7 +654,7 @@ class TestFindValidPositions:
         assert result == {"RB", "TE"}
 
     # ===== Edge cases =====
-    def test_returns_empty_set_when_no_matches(self, capsys):
+    def test_returns_empty_set_when_no_matches(self, caplog):
         """Returns empty set when no positions match filters."""
         self.mock_get_weeks_to_check.return_value = ["1"]
 
@@ -668,8 +664,7 @@ class TestFindValidPositions:
             manager="Owen"
         )
 
-        captured = capsys.readouterr()
-        assert "No valid positions found" in captured.out
+        assert "No valid positions found" in caplog.text
 
         assert result == set()
 

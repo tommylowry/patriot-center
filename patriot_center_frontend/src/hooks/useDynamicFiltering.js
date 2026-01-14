@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchValidOptions } from '../services/options';
+import { fetchDynamicFiltering } from '../services/options';
 import { useLoading } from '../contexts/LoadingContext';
 
 /**
@@ -37,7 +37,7 @@ export function useDynamicFiltering(
     setError(null);
 
     // Fetch valid filtering options from the API
-    fetchValidOptions(year, week, manager, player, position)
+    fetchDynamicFiltering(year, week, manager, player, position)
       .then(json => {
         if (!active) return;
 

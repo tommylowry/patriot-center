@@ -13,18 +13,92 @@ from patriot_center_backend.dynamic_filtering.find_valid_options import (
 )
 
 
+@pytest.fixture()
+def mock_valid_options_cache():
+    """Shared mock data for valid_options_cache used by all test classes.
+
+    Structure mirrors the real cache: cache[year][week][manager][positions/players]
+    """
+    return {
+        "2024": {
+            "weeks": ["1", "2", "3"],
+            "1": {
+                "managers": ["Tommy"],
+                "positions": ["QB"],
+                "players": ["Josh Allen"],
+                "Tommy": {
+                    "positions": ["QB"],
+                    "players": ["Josh Allen"]
+                }
+            },
+            "2": {
+                "managers": ["Anthony"],
+                "positions": ["RB"],
+                "players": ["Rico Dowdle"],
+                "Anthony": {
+                    "positions": ["RB"],
+                    "players": ["Rico Dowdle"]
+                }
+            },
+            "3": {
+                "managers": ["Tommy", "Anthony"],
+                "positions": ["QB", "RB"],
+                "players": ["Josh Allen", "Rico Dowdle"],
+                "Tommy": {
+                    "positions": ["QB"],
+                    "players": ["Josh Allen"]
+                },
+                "Anthony": {
+                    "positions": ["RB"],
+                    "players": ["Rico Dowdle"]
+                }
+            }
+        },
+        "2023": {
+            "weeks": ["1", "2"],
+            "1": {
+                "managers": ["Owen"],
+                "positions": ["WR"],
+                "players": ["Amon-Ra St. Brown"],
+                "Owen": {
+                    "positions": ["WR"],
+                    "players": ["Amon-Ra St. Brown"]
+                }
+            },
+            "2": {
+                "managers": ["Anthony"],
+                "positions": ["RB"],
+                "players": ["Rico Dowdle"],
+                "Anthony": {
+                    "positions": ["RB"],
+                    "players": ["Rico Dowdle"]
+                }
+            }
+        },
+        "2022": {
+            "weeks": ["1"],
+            "1": {
+                "managers": ["Anthony"],
+                "positions": ["TE"],
+                "players": ["George Kittle"],
+                "Anthony": {
+                    "positions": ["TE"],
+                    "players": ["George Kittle"]
+                }
+            }
+        }
+    }
+
+
 class TestFindValidYears:
     """Tests for find_valid_years function."""
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def setup(self, mock_valid_options_cache):
         """Setup common mocks for all tests."""
         with patch('patriot_center_backend.dynamic_filtering.find_valid_options.CACHE_MANAGER.get_valid_options_cache') as mock_get_valid_options_cache:
 
-            self.mock_valid_options_cache = {
-                "2024": {"managers": ["Tommy", "Anthony"], "positions": ["QB", "RB"], "players": ["Josh Allen", "Rico Dowdle"]},
-                "2023": {"managers": ["Anthony", "Owen"], "positions": ["RB", "WR"], "players": ["Rico Dowdle", "Amon-Ra St. Brown"]}
-            }
+            self.mock_valid_options_cache = mock_valid_options_cache
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
             self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
@@ -40,7 +114,7 @@ class TestFindValidYears:
             player=None
         )
 
-        assert result == {"2024", "2023"}
+        assert result == {"2024", "2023", "2022"}
 
     # ===== Single filter =====
     def test_filters_by_manager_only(self):
@@ -147,23 +221,11 @@ class TestFindValidWeeks:
     """Tests for find_valid_weeks function."""
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def setup(self, mock_valid_options_cache):
         """Setup common mocks for all tests."""
         with patch('patriot_center_backend.dynamic_filtering.find_valid_options.CACHE_MANAGER.get_valid_options_cache') as mock_get_valid_options_cache:
 
-            self.mock_valid_options_cache = {
-                "2024": {
-                    "weeks": ["1", "2", "3"],
-                    "1": {"managers": ["Tommy"], "positions": ["QB"], "players": ["Josh Allen"]},
-                    "2": {"managers": ["Anthony"], "positions": ["RB"], "players": ["Rico Dowdle"]},
-                    "3": {"managers": ["Tommy", "Anthony"], "positions": ["QB", "RB"], "players": ["Josh Allen", "Rico Dowdle"]}
-                },
-                "2023": {
-                    "weeks": ["1", "2"],
-                    "1": {"managers": ["Owen"], "positions": ["WR"], "players": ["Amon-Ra St. Brown"]},
-                    "2": {"managers": ["Anthony"], "positions": ["RB"], "players": ["Rico Dowdle"]}
-                }
-            }
+            self.mock_valid_options_cache = mock_valid_options_cache
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
             self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
@@ -372,34 +434,12 @@ class TestFindValidManagers:
     """Tests for find_valid_managers function."""
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def setup(self, mock_valid_options_cache):
         """Setup common mocks for all tests."""
         with patch('patriot_center_backend.dynamic_filtering.find_valid_options.CACHE_MANAGER.get_valid_options_cache') as mock_get_valid_options_cache, \
              patch('patriot_center_backend.dynamic_filtering.find_valid_options._get_weeks_to_check') as mock_get_weeks_to_check:
 
-            self.mock_valid_options_cache = {
-                "2024": {
-                    "weeks": ["1", "2"],
-                    "1": {
-                        "managers": ["Tommy", "Anthony"],
-                        "Tommy": {"positions": ["QB"], "players": ["Josh Allen"]},
-                        "Anthony": {"positions": ["RB"], "players": ["Rico Dowdle"]}
-                    },
-                    "2": {
-                        "managers": ["Tommy", "Owen"],
-                        "Tommy": {"positions": ["WR"], "players": ["Amon-Ra St. Brown"]},
-                        "Owen": {"positions": ["TE"], "players": ["Brock Bowers"]}
-                    }
-                },
-                "2023": {
-                    "weeks": ["1"],
-                    "1": {
-                        "managers": ["Anthony", "Owen"],
-                        "Anthony": {"positions": ["RB"], "players": ["Rico Dowdle"]},
-                        "Owen": {"positions": ["K"], "players": ["Justin Tucker"]}
-                    }
-                }
-            }
+            self.mock_valid_options_cache = mock_valid_options_cache
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
             self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
@@ -421,7 +461,7 @@ class TestFindValidManagers:
             player=None
         )
 
-        assert result == {"Tommy", "Anthony"}
+        assert result == {"Tommy"}
 
     def test_returns_all_managers_for_year_across_weeks(self):
         """Returns all managers for specified year across all weeks."""
@@ -432,7 +472,7 @@ class TestFindValidManagers:
             player=None
         )
 
-        assert result == {"Tommy", "Anthony", "Owen"}
+        assert result == {"Tommy", "Anthony"}
 
     def test_returns_all_managers_across_all_years_and_weeks(self):
         """Returns all managers when no year or week specified."""
@@ -532,36 +572,12 @@ class TestFindValidPositions:
     """Tests for find_valid_positions function."""
 
     @pytest.fixture(autouse=True)
-    def setup(self):
+    def setup(self, mock_valid_options_cache):
         """Setup common mocks for all tests."""
         with patch('patriot_center_backend.dynamic_filtering.find_valid_options.CACHE_MANAGER.get_valid_options_cache') as mock_get_valid_options_cache, \
              patch('patriot_center_backend.dynamic_filtering.find_valid_options._get_weeks_to_check') as mock_get_weeks_to_check:
 
-            self.mock_valid_options_cache = {
-                "2024": {
-                    "weeks": ["1", "2"],
-                    "1": {
-                        "managers": ["Tommy", "Anthony"],
-                        "positions": ["QB", "RB"],
-                        "Tommy": {"positions": ["QB"], "players": ["Josh Allen"]},
-                        "Anthony": {"positions": ["RB"], "players": ["Rico Dowdle"]}
-                    },
-                    "2": {
-                        "managers": ["Tommy", "Owen"],
-                        "positions": ["WR", "TE"],
-                        "Tommy": {"positions": ["WR"], "players": ["Amon-Ra St. Brown"]},
-                        "Owen": {"positions": ["TE"], "players": ["Brock Bowers"]}
-                    }
-                },
-                "2023": {
-                    "weeks": ["1"],
-                    "1": {
-                        "managers": ["Anthony"],
-                        "positions": ["K"],
-                        "Anthony": {"positions": ["K"], "players": ["Justin Tucker"]}
-                    }
-                }
-            }
+            self.mock_valid_options_cache = mock_valid_options_cache
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
             self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
@@ -582,7 +598,7 @@ class TestFindValidPositions:
             manager=None
         )
 
-        assert result == {"QB", "RB"}
+        assert result == {"QB"}
 
     def test_returns_all_positions_for_year_across_weeks(self):
         """Returns all positions for specified year across all weeks."""
@@ -592,7 +608,7 @@ class TestFindValidPositions:
             manager=None
         )
 
-        assert result == {"QB", "RB", "WR", "TE"}
+        assert result == {"QB", "RB"}
 
     def test_returns_all_positions_across_all_years_and_weeks(self):
         """Returns all positions when no year or week specified."""
@@ -604,7 +620,7 @@ class TestFindValidPositions:
             manager=None
         )
 
-        assert result == {"QB", "RB", "WR", "TE", "K"}
+        assert result == {"QB", "RB", "WR", "TE"}
 
     # ===== With manager filter =====
     def test_filters_by_manager_for_year_and_week(self):
@@ -627,7 +643,7 @@ class TestFindValidPositions:
             manager="Tommy"
         )
 
-        assert result == {"QB", "WR"}
+        assert result == {"QB"}
 
     def test_filters_by_manager_across_years(self):
         """Returns positions for manager across all years."""
@@ -639,19 +655,9 @@ class TestFindValidPositions:
             manager="Anthony"
         )
 
-        assert result == {"RB", "K"}
+        assert result == {"RB", "TE"}
 
     # ===== Edge cases =====
-    def test_skips_week_when_manager_not_present(self):
-        """Skips week data when specified manager not present."""
-        result = find_valid_positions(
-            year="2024",
-            week=None,
-            manager="Owen"
-        )
-
-        assert result == {"TE"}
-
     def test_returns_empty_set_when_no_matches(self, capsys):
         """Returns empty set when no positions match filters."""
         self.mock_get_weeks_to_check.return_value = ["1"]

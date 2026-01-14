@@ -23,6 +23,9 @@ def find_valid_years(
 
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
+    if not manager and not position and not player:
+        return set(CACHE_MANAGER.get_valid_options_cache().keys())
+
     valid = set()
 
     for yr, year_data in valid_options_cache.items():
@@ -80,7 +83,7 @@ def find_valid_weeks(
 
     valid = set()
     years_to_check = [year] if year else valid_options_cache.keys()
-    
+
     for yr in years_to_check:
         year_data = valid_options_cache.get(yr, {})
         for wk in year_data.get("weeks", []):

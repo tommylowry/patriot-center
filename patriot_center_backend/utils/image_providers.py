@@ -1,29 +1,35 @@
+"""Image URL provider for Patriot Center."""
 
+import logging
 from copy import deepcopy
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
+logger = logging.getLogger(__name__)
 
-def get_image_url(item: str, image_urls: dict, dictionary: bool = False) -> str:
-    """
-    Get image URL for various entity types (draft picks, FAAB, managers, players).
+
+def get_image_url(
+    item: str, image_urls: dict[str, str], dictionary: bool = False
+) -> dict[str, str] | str:
+    """Get image URL for various types (draft picks, FAAB, managers, players).
 
     Determines entity type from item string and returns appropriate image URL.
     Supports four entity types:
-    - Draft picks: NFL Draft logo
-    - FAAB (contains "$"): Mario coin image
+    - Draft picks: Draft logo
+    - FAAB (contains "$"): Coin image
     - Managers: Sleeper avatar
     - Players: Sleeper player headshot or team logo
 
     Args:
         item: Entity name/identifier string
         image_urls: Dict of image URLs
-        dictionary: If True, returns dict with name components; if False, returns URL string
+        dictionary: If True, returns dict with name components;
+            if False, returns URL string
 
     Returns:
-        Image URL string, or dict with name/URL if dictionary=True
+        Image URL string, or dict with name/URL if `dictionary`=True
     """
     players_cache = CACHE_MANAGER.get_players_cache()
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
@@ -37,82 +43,123 @@ def get_image_url(item: str, image_urls: dict, dictionary: bool = False) -> str:
             abridged_name = item.replace(" Draft Pick", "")
             abridged_name = abridged_name.replace("Round ", "R")
             first_name = abridged_name.split(" ")[0]
-            last_name  = abridged_name.replace(f"{first_name} ", "")
-            returning_dict["image_url"] = "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
+            last_name = abridged_name.replace(f"{first_name} ", "")
+            returning_dict["image_url"] = (
+                "https://upload.wikimedia.org/wikipedia/en/thumb/8/80"
+                "/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
+            )
+
             returning_dict["first_name"] = first_name
-            returning_dict["last_name"]  = last_name
+            returning_dict["last_name"] = last_name
             return deepcopy(returning_dict)
-        return "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
+        return (
+            "https://upload.wikimedia.org/wikipedia/en/thumb/8/80"
+            "/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
+        )
 
     # FAAB: identified by "$" in name
     if "$" in item:
         if dictionary:
             first_name = item.split(" ")[0]
-            last_name =  item.split(" ")[1]
-            returning_dict["image_url"]  = "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
+            last_name = item.split(" ")[1]
+            returning_dict["image_url"] = (
+                "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
+            )
+
             returning_dict["first_name"] = first_name
-            returning_dict["last_name"]  = last_name
+            returning_dict["last_name"] = last_name
             return deepcopy(returning_dict)
         return "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
 
     # Manager: identified by presence in manager username mapping
     if item in NAME_TO_MANAGER_USERNAME:
         if dictionary:
-            returning_dict["image_url"] = get_current_manager_image_url(item, image_urls)
+            returning_dict["image_url"] = (
+                get_current_manager_image_url(item, image_urls)
+            )
+
             return deepcopy(returning_dict)
         return get_current_manager_image_url(item, image_urls)
 
     # Player: identified by presence in players cache
     if item in players_cache:
-        player_id = players_cache[item]["player_id"]
-        first_name = player_ids_cache[player_id]['first_name']
-        last_name = player_ids_cache[player_id]['last_name']
-        # Numeric IDs are individual players (use player headshots)
-        if player_id.isnumeric():
-            url = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
-            if dictionary:
-                returning_dict["image_url"] = url
-                returning_dict["first_name"] = first_name
-                returning_dict["last_name"]  = last_name
-                return deepcopy(returning_dict)
-            return url
-        # Non-numeric IDs are team defenses (use team logos)
-        else:
-            url = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
-            if dictionary:
-                returning_dict["image_url"] = url
-                returning_dict["first_name"] = first_name
-                returning_dict["last_name"]  = last_name
-                return deepcopy(returning_dict)
-            return url
 
-    print("WARNING: Could not find image URL for item:", item)
+        player_id = players_cache[item]["player_id"]
+        if player_id:
+
+            first_name = player_ids_cache[player_id]['first_name']
+            last_name = player_ids_cache[player_id]['last_name']
+
+            # Numeric IDs are individual players (use player headshots)
+            if player_id.isnumeric():
+
+                url = (
+                    f"https://sleepercdn.com/content/"
+                    f"nfl/players/{player_id}.jpg"
+                )
+
+                if dictionary:
+                    returning_dict["image_url"] = url
+                    returning_dict["first_name"] = first_name
+                    returning_dict["last_name"] = last_name
+                    return deepcopy(returning_dict)
+                return url
+
+            # Non-numeric IDs are team defenses (use team logos)
+            else:
+
+                url = (
+                    f"https://sleepercdn.com/images/"
+                    f"team_logos/nfl/{player_id.lower()}.png"
+                )
+
+                if dictionary:
+                    returning_dict["image_url"] = url
+                    returning_dict["first_name"] = first_name
+                    returning_dict["last_name"] = last_name
+                    return deepcopy(returning_dict)
+                return url
+
+    logger.warning(f"Could not find image URL for item: {item}")
     return ""
 
-def get_current_manager_image_url(manager: str, image_urls: dict) -> str:
-    """
-    Get current manager's avatar image URL.
-    
+def get_current_manager_image_url(
+    manager: str, image_urls: dict[str, str]
+) -> str:
+    """Get current manager's avatar image URL.
+
     Args:
         manager: Manager name
         image_urls: Dict of image URLs (mutable, will be updated)
-    
+
     Returns:
         Image URL string
+
+    Raises:
+        ValueError: If manager not found in manager cache
     """
     manager_cache = CACHE_MANAGER.get_manager_cache()
 
     if manager in image_urls:
         return image_urls[manager]
 
-    user_id = manager_cache.get(manager, {}).get("summary", {}).get("user_id", "")
+    user_id = (
+        manager_cache.get(manager, {}).get("summary", {}).get("user_id", "")
+    )
 
-    if user_id == "":
-        raise ValueError(f"Manager {manager} does not have a user_id in manager_cache.")
+    if not user_id:
+        raise ValueError(
+            f"Manager {manager} does not have a user_id in manager_cache."
+        )
 
     user_payload = fetch_sleeper_data(f"user/{user_id}")
     if user_payload and "user_id" in user_payload:
-        image_urls[manager] = f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
-        return f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+        image_urls[manager] = (
+            f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+        )
+
+        return (
+            f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+        )
 
     return ""

@@ -167,7 +167,6 @@ class TestGetManagersList:
                 {2025: "mock_league_id"}
             ),
         ):
-        # setup code here
 
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache

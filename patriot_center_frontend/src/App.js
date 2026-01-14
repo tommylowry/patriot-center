@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { useAggregatedPlayers } from './hooks/useAggregatedPlayers';
 import { PlayerRow } from './components/PlayerRow';
-import { useValidOptions } from './hooks/useValidOptions';
+import { useDynamicFiltering } from './hooks/useDynamicFiltering';
 import { BrowserRouter as Router, Routes, Route, useSearchParams } from 'react-router-dom';
 import PlayerPage from './pages/PlayerPage';
 import ManagersPage from './pages/ManagersPage';
@@ -80,7 +80,7 @@ function HomePage() {
   }, [searchParams]);
 
   // Fetch dynamic filter options based on current selections
-  const { options, loading: optionsLoading, error: optionsError } = useValidOptions(year, week, manager, null, positionFilter !== 'ALL' ? positionFilter : null);
+  const { options, loading: optionsLoading, error: optionsError } = useDynamicFiltering(year, week, manager, null, positionFilter !== 'ALL' ? positionFilter : null);
 
   const { players, loading, error } = useAggregatedPlayers(year, week, manager);
 

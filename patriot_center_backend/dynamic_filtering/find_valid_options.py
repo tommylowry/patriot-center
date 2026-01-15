@@ -28,7 +28,6 @@ def find_valid_years(
     valid = set("")
 
     for yr, year_data in valid_options_cache.items():
-        year_valid = False
 
         for wk in year_data.get("weeks", []):
             week_data = year_data.get(wk, {})
@@ -51,11 +50,9 @@ def find_valid_years(
                 if player and player not in week_data.get("players", []):
                     continue
 
-            year_valid = True
-            break
-
-        if year_valid:
+            # Found a valid year, add it and move on to the next year
             valid.add(yr)
+            break
 
     if not valid:
         logger.warning("No valid years found.")

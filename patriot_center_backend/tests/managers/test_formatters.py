@@ -485,11 +485,31 @@ class TestGetMatchupCard:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache, \
-             patch('patriot_center_backend.managers.formatters.get_top_3_scorers_from_matchup_data') as mock_get_top_3, \
-             patch('patriot_center_backend.managers.formatters.get_image_url') as mock_get_image_url:
-            
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `get_top_3_scorers_from_matchup_data`: `mock_get_top_3`
+        - `get_image_url`: `mock_get_image_url`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.formatters"
+                ".CACHE_MANAGER.get_manager_cache"
+            ) as mock_get_manager_cache,
+            patch(
+                "patriot_center_backend.managers.formatters"
+                ".get_top_3_scorers_from_matchup_data"
+            ) as mock_get_top_3,
+            patch(
+                "patriot_center_backend.managers.data_exporter"
+                ".get_image_url"
+            ) as mock_get_image_url,
+        ):
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = {}
 
@@ -497,7 +517,7 @@ class TestGetMatchupCard:
             self.mock_get_top_3.return_value = {}
 
             self.mock_get_image_url = mock_get_image_url
-            
+
             yield
 
     def test_valid_matchup_card_win(self):
@@ -612,8 +632,12 @@ class TestGetMatchupCard:
 
         assert result["winner"] == "Tie"
 
-    def test_missing_matchup_data(self, capsys):
-        """Test with missing matchup data."""
+    def test_missing_matchup_data(self, caplog: pytest.LogCaptureFixture):
+        """Test with missing matchup data.
+
+        Args:
+            caplog: pytest caplog
+        """
         self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
@@ -633,15 +657,18 @@ class TestGetMatchupCard:
         )
 
         # Verify warning was printed for missing data
-        captured = capsys.readouterr()
-        assert "Incomplete matchup" in captured.out
-        assert "week 1" in captured.out
-        assert "2023" in captured.out
+        assert "Incomplete matchup" in caplog.text
+        assert "week 1" in caplog.text
+        assert "2023" in caplog.text
 
         assert result == {}
 
-    def test_zero_points_for(self, capsys):
-        """Test with zero points_for (incomplete data)."""
+    def test_zero_points_for(self, caplog: pytest.LogCaptureFixture):
+        """Test with zero points_for (incomplete data).
+
+        Args:
+            caplog: pytest capsys
+        """
         self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
@@ -668,15 +695,18 @@ class TestGetMatchupCard:
         )
 
         # Verify warning was printed for missing data
-        captured = capsys.readouterr()
-        assert "Incomplete matchup" in captured.out
-        assert "week 1" in captured.out
-        assert "2023" in captured.out
+        assert "Incomplete matchup" in caplog.text
+        assert "week 1" in caplog.text
+        assert "2023" in caplog.text
 
         assert result == {}
 
-    def test_zero_points_against(self, capsys):
-        """Test with zero points_against (incomplete data)."""
+    def test_zero_points_against(self, caplog: pytest.LogCaptureFixture):
+        """Test with zero points_against (incomplete data).
+
+        Args:
+            caplog: pytest capsys
+        """
         self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "years": {
@@ -703,10 +733,9 @@ class TestGetMatchupCard:
         )
 
         # Verify warning was printed for missing data
-        captured = capsys.readouterr()
-        assert "Incomplete matchup" in captured.out
-        assert "week 1" in captured.out
-        assert "2023" in captured.out
+        assert "Incomplete matchup" in caplog.text
+        assert "week 1" in caplog.text
+        assert "2023" in caplog.text
 
         assert result == {}
 
@@ -716,15 +745,31 @@ class TestGetTradeCard:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_transaction_ids_cache') as mock_get_trans_ids, \
-             patch('patriot_center_backend.managers.formatters.get_image_url') as mock_get_image_url:
-            
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_transaction_ids_cache`: `mock_get_trans_ids`
+        - `get_image_url`: `mock_get_image_url`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.formatters"
+                ".CACHE_MANAGER.get_transaction_ids_cache"
+            ) as mock_get_trans_ids,
+            patch(
+                "patriot_center_backend.managers.data_exporter"
+                ".get_image_url"
+            ) as mock_get_image_url,
+        ):
             self.mock_get_trans_ids = mock_get_trans_ids
             self.mock_get_trans_ids.return_value = {}
 
             self.mock_get_image_url = mock_get_image_url
-            
+
             yield
 
     def test_simple_two_team_trade(self):
@@ -755,7 +800,7 @@ class TestGetTradeCard:
 
         transaction_id = "trade123"
         image_urls = {}
-        
+
         result = get_trade_card(transaction_id, image_urls)
 
         assert result["year"] == "2023"
@@ -769,7 +814,9 @@ class TestGetTradeCard:
 
     def test_three_team_trade(self):
         """Test generating trade card for three-team trade."""
-        self.mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
+        self.mock_get_image_url.return_value = {
+            "name": "Test", "image_url": "http://example.com/test.jpg"
+        }
         self.mock_get_trans_ids.return_value = {
             "trade456": {
                 "year": "2023",
@@ -808,7 +855,9 @@ class TestGetTradeCard:
 
     def test_uneven_trade(self):
         """Test trade where one manager sends multiple players."""
-        self.mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
+        self.mock_get_image_url.return_value = {
+            "name": "Test", "image_url": "http://example.com/test.jpg"
+        }
         self.mock_get_trans_ids.return_value = {
             "trade789": {
                 "year": "2023",
@@ -845,7 +894,9 @@ class TestGetTradeCard:
 
     def test_manager_name_with_spaces(self):
         """Test handling manager names with spaces."""
-        self.mock_get_image_url.return_value = {"name": "Test", "image_url": "http://example.com/test.jpg"}
+        self.mock_get_image_url.return_value = {
+            "name": "Test", "image_url": "http://example.com/test.jpg"
+        }
         self.mock_get_trans_ids.return_value = {
             "trade999": {
                 "year": "2023",
@@ -877,12 +928,26 @@ class TestExtractDictData:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.formatters.get_image_url') as mock_get_image_url:
+        """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `get_image_url`: `mock_get_image_url`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.data_exporter"
+                ".get_image_url"
+            ) as mock_get_image_url,
+        ):
             self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = "http://example.com/image.jpg"
-            
+            self.mock_get_image_url.return_value = (
+                "http://example.com/image.jpg"
+            )
+
             yield
 
     def test_top_3_simple_dict(self):
@@ -893,7 +958,7 @@ class TestExtractDictData:
             "Player C": 6,
             "Player D": 4
         }
-        image_urls= {}
+        image_urls = {}
 
         result = extract_dict_data(data, image_urls)
 
@@ -913,7 +978,7 @@ class TestExtractDictData:
             "Player C": {"total": 6, "other": "data"},
             "Player D": {"total": 4, "other": "data"}
         }
-        image_urls= {}
+        image_urls = {}
 
         result = extract_dict_data(data, image_urls)
 
@@ -929,7 +994,7 @@ class TestExtractDictData:
             "Player C": 6,
             "Player D": 4
         }
-        image_urls= {}
+        image_urls = {}
 
         result = extract_dict_data(data, image_urls, cutoff=0)
 
@@ -945,7 +1010,7 @@ class TestExtractDictData:
             "Player E": 6,  # Tied with Player C and D
             "Player F": 4
         }
-        image_urls= {}
+        image_urls = {}
 
         result = extract_dict_data(data, image_urls, cutoff=3)
 
@@ -958,7 +1023,7 @@ class TestExtractDictData:
             "Player A": 10,
             "Player B": 8
         }
-        image_urls= {}
+        image_urls = {}
 
         result = extract_dict_data(data,
                                    image_urls,

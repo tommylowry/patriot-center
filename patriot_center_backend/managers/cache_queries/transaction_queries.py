@@ -11,7 +11,7 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.managers.formatters import extract_dict_data, get_trade_card
 
 
-def get_transaction_details_from_cache(year: str, manager: str,
+def get_transaction_details_from_cache(year: str | None, manager: str,
                                        image_urls: dict) -> Dict:
     """
     Get comprehensive transaction summary with formatted data and image URLs.

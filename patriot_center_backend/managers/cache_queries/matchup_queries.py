@@ -12,7 +12,7 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.managers.formatters import get_matchup_card
 
 
-def get_matchup_details_from_cache(manager: str, year: str = None) -> Dict:
+def get_matchup_details_from_cache(manager: str, year: str | None = None) -> Dict:
     """
     Get comprehensive matchup statistics broken down by season state.
 
@@ -105,7 +105,7 @@ def get_matchup_details_from_cache(manager: str, year: str = None) -> Dict:
 
     return deepcopy(matchup_data)
 
-def get_overall_data_details_from_cache(year: str, manager: str,
+def get_overall_data_details_from_cache(year: str | None, manager: str,
                                         image_urls: dict) -> Dict:
     """
     Get career achievements including playoff appearances and season placements.

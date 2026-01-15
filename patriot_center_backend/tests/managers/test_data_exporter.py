@@ -132,10 +132,17 @@ class TestGetManagersList:
     ):
         """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
+        - `mock_get_valid_options_cache`:
+            `CACHE_MANAGER.get_valid_options_cache`
+        - `mock_get_ranking_details`: `get_ranking_details_from_cache`
+        - `mock_get_current_mgr_url`: `get_current_manager_image_url`
+
         Args:
-            mock_manager_cache (dict[str, Any]): Sample manager cache
-            mock_valid_options_cache (dict[str, Any]): Sample valid
-                options cache
+            mock_manager_cache: Sample manager cache
+            mock_valid_options_cache: Sample valid options cache
 
         Yields:
             None
@@ -192,7 +199,7 @@ class TestGetManagersList:
         """Test getting only active managers.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_ranking_details.return_value = {
             "values": {
@@ -226,7 +233,7 @@ class TestGetManagersList:
         """Test getting all managers including inactive.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_ranking_details.return_value = {
             "values": {
@@ -261,7 +268,7 @@ class TestGetManagersList:
         """Test that get_managers_list doesn't modify cache.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_ranking_details.return_value = {
             "values": {
@@ -297,7 +304,7 @@ class TestGetManagersList:
         """Test that managers are sorted by weight (best first).
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         def ranking_side_effect(manager, manager_summary_usage, active_only):
             # Manager 1 should have better stats
@@ -355,13 +362,22 @@ class TestGetManagersList:
 class TestGetManagerSummary:
     """Test get_manager_summary method."""
 
-
     @pytest.fixture(autouse=True)
     def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
+        - `mock_get_current_mgr_url`: `get_current_manager_image_url`
+        - `mock_get_matchup`: `get_matchup_details_from_cache`
+        - `mock_get_trans`: `get_transaction_details_from_cache`
+        - `mock_get_overall`: `get_overall_data_details_from_cache`
+        - `mock_ranking`: `get_ranking_details_from_cache`
+        - `mock_get_h2h`: `get_head_to_head_details_from_cache`
+
         Args:
-            mock_manager_cache (dict[str, Any]): Mock manager cache
+            mock_manager_cache: Mock manager cache
 
         Yields:
             None
@@ -423,13 +439,14 @@ class TestGetManagerSummary:
 
             yield
 
+
     def test_get_manager_summary_all_time(
         self, mock_data_exporter: DataExporter
     ):
         """Test getting manager summary for all-time stats.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_current_mgr_url.return_value = (
             "http://example.com/manager.jpg"
@@ -459,7 +476,7 @@ class TestGetManagerSummary:
         """Test getting manager summary for specific year.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_current_mgr_url.return_value = (
             "http://example.com/manager.jpg"
@@ -492,8 +509,15 @@ class TestGetHeadToHead:
     def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
+        - `mock_get_current_mgr_url`: `get_current_manager_image_url`
+        - `mock_get_h2h`: `get_head_to_head_overall_from_cache`
+        - `mock_get_trade_history`: `get_trade_history_between_two_managers`
+
         Args:
-            mock_manager_cache (dict[str, Any]): Mock manager cache
+            mock_manager_cache: Mock manager cache
 
         Yields:
             None
@@ -538,7 +562,7 @@ class TestGetHeadToHead:
         """Test getting H2H stats for all-time.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_current_mgr_url.side_effect = (
             lambda m,
@@ -571,7 +595,7 @@ class TestGetHeadToHead:
         """Test getting H2H stats for specific year.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_current_mgr_url.side_effect = (
             lambda m,
@@ -603,8 +627,15 @@ class TestGetManagerTransactions:
     def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
+        - `mock_get_trans_ids`: `CACHE_MANAGER.get_transaction_ids_cache`
+        - `mock_get_image_url`: `get_image_url`
+        - `mock_get_trade_card`: `get_trade_card`
+
         Args:
-            mock_manager_cache (dict[str, Any]): Mock manager cache
+            mock_manager_cache: Mock manager cache
 
         Yields:
             None
@@ -650,7 +681,7 @@ class TestGetManagerTransactions:
         """Test getting all-time transaction details.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_image_url.return_value = {
             "name": "Manager 1", "image_url": "http://example.com/manager1.jpg"
@@ -669,7 +700,7 @@ class TestGetManagerTransactions:
         """Test getting transaction details for specific year.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_image_url.return_value = {
             "name": "Manager 1", "image_url": "http://example.com/manager1.jpg"
@@ -689,7 +720,7 @@ class TestGetManagerTransactions:
         """Test get_manager_transactions processes trade transactions.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         # Setup cache with trade transaction IDs
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
@@ -723,7 +754,7 @@ class TestGetManagerTransactions:
         """Test get_manager_transactions processes add transactions.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         # Setup cache with add transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
@@ -759,7 +790,7 @@ class TestGetManagerTransactions:
         """Test get_manager_transactions processes drop transactions.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         # Setup cache with drop transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
@@ -794,7 +825,7 @@ class TestGetManagerTransactions:
         """Test get_manager_transactions processes add_and_drop transactions.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         # Setup cache with add_and_drop transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
@@ -812,6 +843,7 @@ class TestGetManagerTransactions:
             "drop": "Player B",
             "faab_spent": 30
         }
+
         def image_url_side_effect(player, *args, **kwargs):
             if player == "Player A":
                 return {
@@ -851,8 +883,16 @@ class TestGetManagerAwards:
     def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
+        - `mock_get_image_url`: `get_image_url`
+        - `mock_get_current_mgr_url`: `get_current_manager_image_url`
+        - `mock_get_manager_awards`: `get_manager_awards_from_cache`
+        - `mock_get_manager_score_awards`: `get_manager_score_awards_from_cache`
+
         Args:
-            mock_manager_cache (dict[str, Any]): Mock manager cache
+            mock_manager_cache: Mock manager cache
 
         Yields:
             None
@@ -906,7 +946,7 @@ class TestGetManagerAwards:
         """Test getting manager awards.
 
         Args:
-            mock_data_exporter (DataExporter): Mock DataExporter object
+            mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_image_url.return_value = (
             "https://sleepercdn.com/avatars/acb123"

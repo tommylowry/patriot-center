@@ -17,6 +17,13 @@ class TestGetImageUrl:
     def setup(self):
         """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `mock_get_player_ids_cache`: `CACHE_MANAGER.get_player_ids_cache`
+        - `mock_get_players_cache`: `CACHE_MANAGER.get_players_cache`
+        - `mock_get_mgr_url`: `get_current_manager_image_url`
+        - `NAME_TO_MANAGER_USERNAME`: `NAME_TO_MANAGER_USERNAME`
+
         Yields:
             None
         """
@@ -53,6 +60,7 @@ class TestGetImageUrl:
             self.mock_get_mgr_url.return_value = ""
 
             yield
+
 
     def test_draft_pick_string_url(self):
         """Test draft pick returns NFL Draft logo URL."""
@@ -222,6 +230,11 @@ class TestGetCurrentManagerImageUrl:
     def setup(self):
         """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
+        - `mock_fetch_sleeper`: `fetch_sleeper_data`
+
         Yields:
             None
         """
@@ -244,6 +257,7 @@ class TestGetCurrentManagerImageUrl:
             mock_fetch_sleeper.return_value = self.mock_sleeper_data
 
             yield
+
 
     def test_manager_not_in_cache(self):
         """Test fetching manager image URL when not in cache."""

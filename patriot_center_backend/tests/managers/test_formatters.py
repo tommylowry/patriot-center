@@ -1,8 +1,6 @@
-"""
-Unit tests for formatters module.
+"""Test formatting functions with both good and bad scenarios."""
 
-Tests formatting functions with both good and bad scenarios.
-"""
+from typing import Any
 from unittest.mock import patch
 
 import pytest
@@ -22,12 +20,29 @@ class TestGetSeasonState:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.formatters.fetch_sleeper_data') as mock_fetch_sleeper, \
-             patch('patriot_center_backend.managers.formatters.LEAGUE_IDS', {2023: "league123"}):
-            
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `fetch_sleeper_data`: `mock_fetch_sleeper`
+        - `LEAGUE_IDS`: `{2023: "league123"}`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.formatters"
+                ".fetch_sleeper_data"
+            ) as mock_fetch_sleeper,
+            patch(
+                "patriot_center_backend.managers.data_exporter"
+                ".LEAGUE_IDS",
+                {2023: "league123"},
+            ),
+        ):
             self.mock_fetch_sleeper = mock_fetch_sleeper
-            
+
             yield
 
     def test_regular_season(self):
@@ -86,7 +101,7 @@ class TestGetSeasonState:
         playoff_week_start = 15
 
         with pytest.raises(ValueError, match="Week or Year not set"):
-            get_season_state(week, year, playoff_week_start)
+            get_season_state(week, year, playoff_week_start)  # type: ignore
 
     def test_empty_week_raises_error(self):
         """Test that empty week raises ValueError."""
@@ -104,7 +119,7 @@ class TestGetSeasonState:
         playoff_week_start = 15
 
         with pytest.raises(ValueError, match="Week or Year not set"):
-            get_season_state(week, year, playoff_week_start)
+            get_season_state(week, year, playoff_week_start)  # type: ignore
 
     def test_empty_year_raises_error(self):
         """Test that empty year raises ValueError."""
@@ -131,12 +146,36 @@ class TestGetTop3ScorersFromMatchupData:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_player_ids_cache') as mock_get_player_ids, \
-             patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_players_cache') as mock_get_players_cache, \
-             patch('patriot_center_backend.managers.formatters.CACHE_MANAGER.get_starters_cache') as mock_get_starters_cache, \
-             patch('patriot_center_backend.managers.formatters.get_image_url') as mock_get_image_url:
-            
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_player_ids_cache`: `mock_get_player_ids`
+        - `CACHE_MANAGER.get_players_cache`: `mock_get_players_cache`
+        - `CACHE_MANAGER.get_starters_cache`: `mock_get_starters_cache`
+        - `get_image_url`: `mock_get_image_url`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.formatters"
+                ".CACHE_MANAGER.get_player_ids_cache"
+            ) as mock_get_player_ids,
+            patch(
+                "patriot_center_backend.managers.formatters"
+                ".CACHE_MANAGER.get_players_cache"
+            ) as mock_get_players_cache,
+            patch(
+                "patriot_center_backend.managers.formatters"
+                ".CACHE_MANAGER.get_starters_cache"
+            ) as mock_get_starters_cache,
+            patch(
+                "patriot_center_backend.managers.data_exporter"
+                ".get_image_url"
+            ) as mock_get_image_url,
+        ):
             self.mock_get_player_ids = mock_get_player_ids
             self.mock_get_player_ids.return_value = {}
 
@@ -147,7 +186,7 @@ class TestGetTop3ScorersFromMatchupData:
             self.mock_get_starters_cache.return_value = {}
 
             self.mock_get_image_url = mock_get_image_url
-            
+
             yield
 
     def test_valid_matchup_data(self):
@@ -191,7 +230,7 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        matchup_data = {"year": "2023", "week": "1"}
+        matchup_data: dict[str, Any] = {"year": "2023", "week": "1"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
@@ -202,7 +241,7 @@ class TestGetTop3ScorersFromMatchupData:
             image_urls={}
         )
 
-        assert len(matchup_data) == 6 # original data and the 4 new lists
+        assert len(matchup_data) == 6  # original data and the 4 new lists
         assert len(matchup_data["manager_1_top_3_scorers"]) == 3
         assert len(matchup_data["manager_2_top_3_scorers"]) == 3
         assert matchup_data["manager_1_top_3_scorers"][0]["score"] == 25.5
@@ -210,8 +249,14 @@ class TestGetTop3ScorersFromMatchupData:
         assert matchup_data["manager_2_top_3_scorers"][0]["score"] == 30.0
         assert matchup_data["manager_2_lowest_scorer"]["score"] == 10.0
 
-    def test_missing_year_in_matchup_data(self, capsys):
-        """Test with missing year in matchup_data."""
+    def test_missing_year_in_matchup_data(
+        self, caplog: pytest.LogCaptureFixture
+    ):
+        """Test with missing year in matchup_data.
+
+        Args:
+            caplog: pytest fixture for capturing logs.
+        """
         matchup_data = {"week": "1"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
@@ -224,16 +269,21 @@ class TestGetTop3ScorersFromMatchupData:
         )
 
         # Verify warning was printed for missing data
-        captured = capsys.readouterr()
-        assert "matchup_data missing" in captured.out
+        assert "matchup_data missing" in caplog.text
 
         assert matchup_data["manager_1_top_3_scorers"] == []
         assert matchup_data["manager_2_top_3_scorers"] == []
         assert matchup_data["manager_1_lowest_scorer"] == []
         assert matchup_data["manager_2_lowest_scorer"] == []
 
-    def test_missing_week_in_matchup_data(self, capsys):
-        """Test with missing week in matchup_data."""
+    def test_missing_week_in_matchup_data(
+        self, caplog: pytest.LogCaptureFixture
+    ):
+        """Test with missing week in matchup_data.
+
+        Args:
+            caplog: pytest fixture for capturing logs.
+        """
         matchup_data = {"year": "2023"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
@@ -246,14 +296,17 @@ class TestGetTop3ScorersFromMatchupData:
         )
 
         # Verify warning was printed for missing data
-        captured = capsys.readouterr()
-        assert "matchup_data missing" in captured.out
+        assert "matchup_data missing" in caplog.text
 
         assert matchup_data["manager_1_top_3_scorers"] == []
         assert matchup_data["manager_2_top_3_scorers"] == []
 
-    def test_missing_manager_1_starters(self, capsys):
-        """Test with manager_1 missing from starters_cache."""
+    def test_missing_manager_1_starters(self, caplog: pytest.LogCaptureFixture):
+        """Test with manager_1 missing from starters_cache.
+
+        Args:
+            caplog: pytest fixture for capturing logs.
+        """
         self.mock_get_starters_cache.return_value = {
             "2023": {
                 "1": {
@@ -264,7 +317,7 @@ class TestGetTop3ScorersFromMatchupData:
                 }
             }
         }
-        
+
         matchup_data = {"year": "2023", "week": "1"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
@@ -277,16 +330,19 @@ class TestGetTop3ScorersFromMatchupData:
         )
 
         # Verify warning was printed for missing data
-        captured = capsys.readouterr()
-        assert "data missing" in captured.out
-        assert "week 1" in captured.out
-        assert "2023" in captured.out
+        assert "data missing" in caplog.text
+        assert "week 1" in caplog.text
+        assert "2023" in caplog.text
 
         assert matchup_data["manager_1_top_3_scorers"] == []
         assert matchup_data["manager_2_top_3_scorers"] == []
 
-    def test_missing_manager_2_starters(self, capsys):
-        """Test with manager_2 missing from starters_cache."""
+    def test_missing_manager_2_starters(self, caplog: pytest.LogCaptureFixture):
+        """Test with manager_2 missing from starters_cache.
+
+        Args:
+            caplog: pytest fixture for capturing logs.
+        """
         self.mock_get_starters_cache.return_value = {
             "2023": {
                 "1": {
@@ -297,7 +353,7 @@ class TestGetTop3ScorersFromMatchupData:
                 }
             }
         }
-        
+
         matchup_data = {"year": "2023", "week": "1"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
@@ -310,10 +366,9 @@ class TestGetTop3ScorersFromMatchupData:
         )
 
         # Verify warning was printed for missing data
-        captured = capsys.readouterr()
-        assert "data missing" in captured.out
-        assert "week 1" in captured.out
-        assert "2023" in captured.out
+        assert "data missing" in caplog.text
+        assert "week 1" in caplog.text
+        assert "2023" in caplog.text
 
         assert matchup_data["manager_1_top_3_scorers"] == []
         assert matchup_data["manager_2_top_3_scorers"] == []
@@ -392,7 +447,7 @@ class TestGetTop3ScorersFromMatchupData:
                         "Player B": {"points": 25.0, "position": "QB"},  # 1st
                         "Player C": {"points": 15.0, "position": "RB"},  # 3rd
                         "Player D": {"points": 20.0, "position": "TE"},  # 2nd
-                        "Player E": {"points": 5.0, "position": "K"},    # 5th (lowest)
+                        "Player E": {"points": 5.0, "position": "K"},    # 5th
                         "Total_Points": 75.0
                     },
                     "Manager 2": {
@@ -403,7 +458,7 @@ class TestGetTop3ScorersFromMatchupData:
             }
         }
 
-        matchup_data = {"year": "2023", "week": "1"}
+        matchup_data: dict[str, Any] = {"year": "2023", "week": "1"}
         manager_1 = "Manager 1"
         manager_2 = "Manager 2"
 
@@ -415,12 +470,14 @@ class TestGetTop3ScorersFromMatchupData:
         )
 
         # Verify top 3 are in descending order
-        assert matchup_data["manager_1_top_3_scorers"][0]["score"] == 25.0  # Player B
-        assert matchup_data["manager_1_top_3_scorers"][1]["score"] == 20.0  # Player D
-        assert matchup_data["manager_1_top_3_scorers"][2]["score"] == 15.0  # Player C
+        # Player B (25.0), Player D (20.0), Player C (15.0)
+        assert matchup_data["manager_1_top_3_scorers"][0]["score"] == 25.0
+        assert matchup_data["manager_1_top_3_scorers"][1]["score"] == 20.0
+        assert matchup_data["manager_1_top_3_scorers"][2]["score"] == 15.0
 
         # Verify lowest scorer
-        assert matchup_data["manager_1_lowest_scorer"]["score"] == 5.0  # Player E
+        # Player E (5.0)
+        assert matchup_data["manager_1_lowest_scorer"]["score"] == 5.0
 
 
 class TestGetMatchupCard:

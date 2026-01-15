@@ -157,7 +157,8 @@ class TestGetManagersList:
                 ".get_current_manager_image_url"
             ) as mock_get_current_mgr_url,
             patch(
-                "patriot_center_backend.managers.data_exporter.LEAGUE_IDS",
+                "patriot_center_backend.managers.data_exporter"
+                ".LEAGUE_IDS",
                 {2025: "mock_league_id"},
             ),
         ):
@@ -624,10 +625,12 @@ class TestGetManagerTransactions:
                 ".CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_ids,
             patch(
-                "patriot_center_backend.managers.data_exporter.get_image_url"
+                "patriot_center_backend.managers.data_exporter"
+                ".get_image_url"
             ) as mock_get_image_url,
             patch(
-                "patriot_center_backend.managers.data_exporter.get_trade_card"
+                "patriot_center_backend.managers.data_exporter"
+                ".get_trade_card"
             ) as mock_get_trade_card,
         ):
             self.mock_manager_cache = mock_manager_cache
@@ -860,7 +863,8 @@ class TestGetManagerAwards:
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.data_exporter.get_image_url"
+                "patriot_center_backend.managers.data_exporter"
+                ".get_image_url"
             ) as mock_get_image_url,
             patch(
                 "patriot_center_backend.managers.data_exporter"

@@ -28,7 +28,6 @@ def find_valid_years(
     valid = set("")
 
     for yr, year_data in valid_options_cache.items():
-
         for wk in year_data.get("weeks", []):
             week_data = year_data.get(wk, {})
 

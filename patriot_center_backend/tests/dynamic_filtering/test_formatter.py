@@ -20,8 +20,8 @@ class TestFormatOutput:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_format_weeks`: `format_weeks`
-        - `mock_format_positions`: `format_positions`
+        - `format_weeks`: `mock_format_weeks`
+        - `format_positions`: `mock_format_positions`
 
         Yields:
             None

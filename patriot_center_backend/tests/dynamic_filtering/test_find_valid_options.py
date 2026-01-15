@@ -83,8 +83,8 @@ class TestFindValidYears:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_valid_options_cache`:
-            `CACHE_MANAGER.get_valid_options_cache`
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
 
         Args:
             mock_valid_options_cache: Mock valid_options_cache
@@ -208,8 +208,8 @@ class TestFindValidWeeks:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_valid_options_cache`:
-            `CACHE_MANAGER.get_valid_options_cache`
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
 
         Args:
             mock_valid_options_cache: Mock valid_options_cache
@@ -393,9 +393,9 @@ class TestFindValidManagers:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_valid_options_cache`:
-            `CACHE_MANAGER.get_valid_options_cache`
-        - `mock_get_weeks_to_check`: `_get_weeks_to_check`
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
+        - `_get_weeks_to_check`: `mock_get_weeks_to_check`
 
         Args:
             mock_valid_options_cache: Mock valid_options_cache
@@ -531,9 +531,9 @@ class TestFindValidPositions:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_valid_options_cache`:
-            `CACHE_MANAGER.get_valid_options_cache`
-        - `mock_get_weeks_to_check`: `_get_weeks_to_check`
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
+        - `_get_weeks_to_check`: `mock_get_weeks_to_check`
 
         Args:
             mock_valid_options_cache: Mock valid_options_cache
@@ -636,8 +636,8 @@ class TestGetWeeksToCheck:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_valid_options_cache`:
-            `CACHE_MANAGER.get_valid_options_cache`
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
 
         Yields:
             None

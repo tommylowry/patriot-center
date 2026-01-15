@@ -38,7 +38,7 @@ class TestSlugToName:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_players_cache`: `CACHE_MANAGER.get_players_cache`
+        - `CACHE_MANAGER.get_players_cache`: `mock_get_players_cache`
 
         Yields:
             None

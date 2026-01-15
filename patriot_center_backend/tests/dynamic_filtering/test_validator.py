@@ -562,7 +562,7 @@ class TestTraverseForYearAndManager:
                             "players": ["Trey McBride"],
                             "positions": ["TE"],
                         }
-                    }
+                    },
                 },
             }
 

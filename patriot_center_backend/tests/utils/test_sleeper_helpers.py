@@ -18,8 +18,9 @@ def globals_setup():
 
     The mocks are set up to return a pre-defined
     set of values when accessed.
-    - `mock_league_ids`: `LEAGUE_IDS`
-    - `mock_username_to_real_name`: `USERNAME_TO_REAL_NAME`
+    - `LEAUGE_IDS`: `{2023: "leagueid2023", 2024: "leagueid2024"}`
+    - `USERNAME_TO_REAL_NAME`: `{username1: "Manager 1", username2:
+        "Manager 2", username3: "Manager 3"}`
 
     Yields:
         None
@@ -55,7 +56,7 @@ class TestFetchSleeperData:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get`: `requests.get`
+        - `requests.get`: `mock_get`
 
         Yields:
             None
@@ -102,7 +103,7 @@ class TestGetRosterId:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_fetch_sleeper_data`: `fetch_sleeper_data`
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
 
         Yields:
             None
@@ -197,8 +198,8 @@ class TestGetRosterIds:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_fetch_sleeper_data`: `fetch_sleeper_data`
-        - `mock_get_roster_id`: `get_roster_id`
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
+        - `get_roster_id`: `mock_get_roster_id`
 
         Yields:
             None
@@ -298,7 +299,7 @@ class TestGetCurrentSeasonAndWeek:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_fetch_sleeper_data`: `fetch_sleeper_data`
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
 
         Yields:
             None

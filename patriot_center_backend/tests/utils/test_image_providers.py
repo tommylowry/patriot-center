@@ -19,10 +19,10 @@ class TestGetImageUrl:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_player_ids_cache`: `CACHE_MANAGER.get_player_ids_cache`
-        - `mock_get_players_cache`: `CACHE_MANAGER.get_players_cache`
-        - `mock_get_mgr_url`: `get_current_manager_image_url`
-        - `{"Manager 1": "user1"}`: `NAME_TO_MANAGER_USERNAME`
+        - `CACHE_MANAGER.get_player_ids_cache`: `mock_get_player_ids_cache`
+        - `CACHE_MANAGER.get_players_cache`: `mock_get_players_cache`
+        - `get_current_manager_image_url`: `mock_get_mgr_url`
+        - `NAME_TO_MANAGER_USERNAME`: `{"Manager 1": "user1"}`
 
         Yields:
             None
@@ -227,8 +227,8 @@ class TestGetCurrentManagerImageUrl:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
-        - `mock_fetch_sleeper`: `fetch_sleeper_data`
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `fetch_sleeper_data`: `mock_fetch_sleeper`
 
         Yields:
             None

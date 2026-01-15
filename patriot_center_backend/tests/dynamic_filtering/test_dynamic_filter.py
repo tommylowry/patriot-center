@@ -16,13 +16,13 @@ class TestFilter:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_players_cache`: `CACHE_MANAGER.get_players_cache`
-        - `mock_validate`: `validate_dynamic_filter_args`
-        - `mock_find_years`: `find_valid_years`
-        - `mock_find_weeks`: `find_valid_weeks`
-        - `mock_find_managers`: `find_valid_managers`
-        - `mock_find_positions`: `find_valid_positions`
-        - `mock_format`: `format_output`
+        - `CACHE_MANAGER.get_players_cache`: `mock_get_players_cache`
+        - `validate_dynamic_filter_args`: `mock_validate`
+        - `find_valid_years`: `mock_find_years`
+        - `find_valid_weeks`: `mock_find_weeks`
+        - `find_valid_managers`: `mock_find_managers`
+        - `find_valid_positions`: `mock_find_positions`
+        - `format_output`: `mock_format`
 
         Yields:
                 None

@@ -126,11 +126,11 @@ class TestGetManagersList:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
-        - `mock_get_valid_options_cache`:
-            `CACHE_MANAGER.get_valid_options_cache`
-        - `mock_get_ranking_details`: `get_ranking_details_from_cache`
-        - `mock_get_current_mgr_url`: `get_current_manager_image_url`
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
+        - `get_ranking_details_from_cache`: `mock_get_ranking_details`
+        - `get_current_manager_image_url`: `mock_get_current_mgr_url`
 
         Args:
             mock_manager_cache: Sample manager cache
@@ -354,13 +354,13 @@ class TestGetManagerSummary:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
-        - `mock_get_current_mgr_url`: `get_current_manager_image_url`
-        - `mock_get_matchup`: `get_matchup_details_from_cache`
-        - `mock_get_trans`: `get_transaction_details_from_cache`
-        - `mock_get_overall`: `get_overall_data_details_from_cache`
-        - `mock_ranking`: `get_ranking_details_from_cache`
-        - `mock_get_h2h`: `get_head_to_head_details_from_cache`
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `get_current_manager_image_url`: `mock_get_current_mgr_url`
+        - `get_matchup_details_from_cache`: `mock_get_matchup`
+        - `get_transaction_details_from_cache`: `mock_get_trans`
+        - `get_overall_data_details_from_cache`: `mock_get_overall`
+        - `get_ranking_details_from_cache`: `mock_ranking`
+        - `get_head_to_head_details_from_cache`: `mock_get_h2h`
 
         Args:
             mock_manager_cache: Mock manager cache
@@ -494,10 +494,10 @@ class TestGetHeadToHead:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
-        - `mock_get_current_mgr_url`: `get_current_manager_image_url`
-        - `mock_get_h2h`: `get_head_to_head_overall_from_cache`
-        - `mock_get_trade_history`: `get_trade_history_between_two_managers`
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `get_current_manager_image_url`: `mock_get_current_mgr_url`
+        - `get_head_to_head_overall_from_cache`: `mock_get_h2h`
+        - `get_trade_history_between_two_managers`: `mock_get_trade_history`
 
         Args:
             mock_manager_cache: Mock manager cache
@@ -603,10 +603,10 @@ class TestGetManagerTransactions:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
-        - `mock_get_trans_ids`: `CACHE_MANAGER.get_transaction_ids_cache`
-        - `mock_get_image_url`: `get_image_url`
-        - `mock_get_trade_card`: `get_trade_card`
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_transaction_ids_cache`: `mock_get_trans_ids`
+        - `get_image_url`: `mock_get_image_url`
+        - `get_trade_card`: `mock_get_trade_card`
 
         Args:
             mock_manager_cache: Mock manager cache
@@ -843,11 +843,10 @@ class TestGetManagerAwards:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `mock_get_manager_cache`: `CACHE_MANAGER.get_manager_cache`
-        - `mock_get_image_url`: `get_image_url`
-        - `mock_get_current_mgr_url`: `get_current_manager_image_url`
-        - `mock_get_manager_awards`: `get_manager_awards_from_cache`
-        - `mock_get_manager_score_awards`: `get_manager_score_awards_from_cache`
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `get_image_url`: `mock_get_image_url`
+        - `get_manager_awards_from_cache`: `mock_get_manager_awards`
+        - `get_manager_score_awards_from_cache`: `mock_get_manager_score_awards`
 
         Args:
             mock_manager_cache: Mock manager cache

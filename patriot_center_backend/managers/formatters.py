@@ -62,7 +62,7 @@ def get_top_3_scorers_from_matchup_data(
     matchup_data: dict[str, Any],
     manager_1: str,
     manager_2: str,
-    image_urls: dict[str, str]
+    image_urls: dict[str, str],
 ) -> None:
     """Extract top 3 and lowest scorers from matchup data for both managers.
 
@@ -107,15 +107,9 @@ def get_top_3_scorers_from_matchup_data(
         )
         return
 
-    var_map = {
-        manager_1: "manager_1",
-        manager_2: "manager_2"
-    }
+    var_map = {manager_1: "manager_1", manager_2: "manager_2"}
     for manager in [manager_1, manager_2]:
-
-        manager_starters = deepcopy(
-            week_data.get[manager]
-        )
+        manager_starters = deepcopy(week_data.get[manager])
         # Remove total points aggregate, we only want individual players
         if "Total_Points" in manager_starters:
             manager_starters.pop("Total_Points")
@@ -142,15 +136,15 @@ def get_top_3_scorers_from_matchup_data(
                 )
                 return
 
-            first_name = player_ids_cache[player_id]['first_name']
-            last_name = player_ids_cache[player_id]['last_name']
+            first_name = player_ids_cache[player_id]["first_name"]
+            last_name = player_ids_cache[player_id]["last_name"]
 
             player_dict.update(
                 {
                     "first_name": first_name,
                     "last_name": last_name,
                     "score": manager_starters[player]["points"],
-                    "position": manager_starters[player]["position"]
+                    "position": manager_starters[player]["position"],
                 }
             )
 
@@ -189,12 +183,13 @@ def get_top_3_scorers_from_matchup_data(
             matchup_data[f"{var_map[manager]}_top_3_scorers"] = top_scorers
             matchup_data[f"{var_map[manager]}_lowest_scorer"] = lowest_scorer
 
+
 def get_matchup_card(
     manager_1: str,
     manager_2: str,
     year: str,
     week: str,
-    image_urls: dict[str, str]
+    image_urls: dict[str, str],
 ) -> dict[str, Any]:
     """Generate complete matchup card with scores, winner, and top performers.
 
@@ -236,19 +231,20 @@ def get_matchup_card(
     else:
         winner = "Tie"
 
-
     matchup = {
         "year": year,
         "week": week,
         "manager_1": {
-            "name": manager_1, "image_url": get_image_url(manager_1, image_urls)
+            "name": manager_1,
+            "image_url": get_image_url(manager_1, image_urls),
         },
         "manager_2": {
-            "name": manager_2, "image_url": get_image_url(manager_2, image_urls)
+            "name": manager_2,
+            "image_url": get_image_url(manager_2, image_urls),
         },
         "manager_1_score": manager_1_score,
         "manager_2_score": manager_2_score,
-        "winner": winner
+        "winner": winner,
     }
 
     get_top_3_scorers_from_matchup_data(
@@ -256,6 +252,7 @@ def get_matchup_card(
     )
 
     return deepcopy(matchup)
+
 
 def get_trade_card(
     transaction_id: str, image_urls: dict[str, str]
@@ -296,11 +293,7 @@ def get_trade_card(
         )
         return {}
 
-    trade_item = {
-        "year": year,
-        "week": week,
-        "managers_involved": []
-    }
+    trade_item = {"year": year, "week": week, "managers_involved": []}
 
     # Create sent/received arrays for each manager involved
     for m in managers_involved:
@@ -320,15 +313,15 @@ def get_trade_card(
         trade_details_player_details = (
             trans.get('trade_details', {}).get(player, {})
         )
-        old_manager = trade_details_player_details.get('old_manager', '')
-        new_manager = trade_details_player_details.get('new_manager', '')
+        old_manager = trade_details_player_details.get("old_manager", "")
+        new_manager = trade_details_player_details.get("new_manager", "")
 
         if not old_manager or not new_manager:
             logger.warning(f"Missing trade details for player {player}")
             continue
 
-        old_manager = old_manager.lower().replace(' ', '_')
-        new_manager = new_manager.lower().replace(' ', '_')
+        old_manager = old_manager.lower().replace(" ", "_")
+        new_manager = new_manager.lower().replace(" ", "_")
 
         player_dict = get_image_url(player, image_urls, dictionary=True)
 
@@ -345,7 +338,7 @@ def extract_dict_data(
     image_urls: dict[str, str],
     key_name: str = "name",
     value_name: str = "count",
-    cutoff: int = 3
+    cutoff: int = 3,
 ) -> list:
     """Extract top N items from a dictionary and format with image URLs.
 
@@ -397,6 +390,7 @@ def extract_dict_data(
         items.append(deepcopy(long_dict))
 
     return deepcopy(items)
+
 
 def draft_pick_decipher(
     draft_pick_dict: dict[str, Any], weekly_roster_ids: dict[int, str]

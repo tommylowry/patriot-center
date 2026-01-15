@@ -74,8 +74,8 @@ def get_image_url(
     # Manager: identified by presence in manager username mapping
     if item in NAME_TO_MANAGER_USERNAME:
         if dictionary:
-            returning_dict["image_url"] = (
-                get_current_manager_image_url(item, image_urls)
+            returning_dict["image_url"] = get_current_manager_image_url(
+                item, image_urls
             )
 
             return deepcopy(returning_dict)
@@ -83,16 +83,13 @@ def get_image_url(
 
     # Player: identified by presence in players cache
     if item in players_cache:
-
         player_id = players_cache[item]["player_id"]
         if player_id:
-
-            first_name = player_ids_cache[player_id]['first_name']
-            last_name = player_ids_cache[player_id]['last_name']
+            first_name = player_ids_cache[player_id]["first_name"]
+            last_name = player_ids_cache[player_id]["last_name"]
 
             # Numeric IDs are individual players (use player headshots)
             if player_id.isnumeric():
-
                 url = (
                     f"https://sleepercdn.com/content/"
                     f"nfl/players/{player_id}.jpg"
@@ -107,7 +104,6 @@ def get_image_url(
 
             # Non-numeric IDs are team defenses (use team logos)
             else:
-
                 url = (
                     f"https://sleepercdn.com/images/"
                     f"team_logos/nfl/{player_id.lower()}.png"
@@ -122,6 +118,7 @@ def get_image_url(
 
     logger.warning(f"Could not find image URL for item: {item}")
     return ""
+
 
 def get_current_manager_image_url(
     manager: str, image_urls: dict[str, str]
@@ -158,11 +155,11 @@ def get_current_manager_image_url(
 
     if user_payload and "user_id" in user_payload:
         image_urls[manager] = (
-            f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+            f"https://sleepercdn.com/avatars/{user_payload.get('avatar', '')}"
         )
 
         return (
-            f"https://sleepercdn.com/avatars/{user_payload.get('avatar','')}"
+            f"https://sleepercdn.com/avatars/{user_payload.get('avatar', '')}"
         )
 
     return ""

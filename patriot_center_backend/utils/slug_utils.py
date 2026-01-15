@@ -20,6 +20,7 @@ def slugify(item: str) -> str:
     slug = slug.replace("'", "%27")
     return slug
 
+
 def slug_to_name(slug: str) -> str:
     """Convert a slug string to a player name.
 

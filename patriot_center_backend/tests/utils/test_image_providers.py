@@ -29,27 +29,23 @@ class TestGetImageUrl:
         """
         with (
             patch(
-                'patriot_center_backend.utils.image_providers'
-                '.CACHE_MANAGER.get_player_ids_cache'
+                "patriot_center_backend.utils.image_providers"
+                ".CACHE_MANAGER.get_player_ids_cache"
             ) as mock_get_player_ids_cache,
-
             patch(
-                'patriot_center_backend.utils.image_providers'
-                '.CACHE_MANAGER.get_players_cache'
+                "patriot_center_backend.utils.image_providers"
+                ".CACHE_MANAGER.get_players_cache"
             ) as mock_get_players_cache,
-
             patch(
-                'patriot_center_backend.utils.image_providers'
-                '.get_current_manager_image_url'
+                "patriot_center_backend.utils.image_providers"
+                ".get_current_manager_image_url"
             ) as mock_get_mgr_url,
-
             patch(
-                'patriot_center_backend.utils.image_providers'
-                '.NAME_TO_MANAGER_USERNAME',
-                {"Manager 1": "user1"}
+                "patriot_center_backend.utils.image_providers"
+                ".NAME_TO_MANAGER_USERNAME",
+                {"Manager 1": "user1"},
             ),
         ):
-
             self.mock_player_ids_cache = {}
             mock_get_player_ids_cache.return_value = self.mock_player_ids_cache
 
@@ -60,7 +56,6 @@ class TestGetImageUrl:
             self.mock_get_mgr_url.return_value = ""
 
             yield
-
 
     def test_draft_pick_string_url(self):
         """Test draft pick returns NFL Draft logo URL."""
@@ -240,16 +235,14 @@ class TestGetCurrentManagerImageUrl:
         """
         with (
             patch(
-                'patriot_center_backend.utils.image_providers'
-                '.CACHE_MANAGER.get_manager_cache'
+                "patriot_center_backend.utils.image_providers"
+                ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
-
             patch(
-                'patriot_center_backend.utils.image_providers'
-                '.fetch_sleeper_data'
+                "patriot_center_backend.utils.image_providers"
+                ".fetch_sleeper_data"
             ) as mock_fetch_sleeper,
         ):
-
             self.mock_manager_cache = {}
             mock_get_manager_cache.return_value = self.mock_manager_cache
 
@@ -257,7 +250,6 @@ class TestGetCurrentManagerImageUrl:
             mock_fetch_sleeper.return_value = self.mock_sleeper_data
 
             yield
-
 
     def test_manager_not_in_cache(self):
         """Test fetching manager image URL when not in cache."""
@@ -287,9 +279,7 @@ class TestGetCurrentManagerImageUrl:
 
     def test_missing_user_id(self):
         """Test when manager doesn't have user_id in cache."""
-        self.mock_manager_cache.update(
-            {"Manager 1": {"summary": {}}}
-        )
+        self.mock_manager_cache.update({"Manager 1": {"summary": {}}})
 
         manager = "Manager 1"
         image_urls = {}

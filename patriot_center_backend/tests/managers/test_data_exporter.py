@@ -23,18 +23,18 @@ def mock_manager_cache() -> dict[str, Any]:
                     "overall": {
                         "wins": {"total": 10},
                         "losses": {"total": 5},
-                        "ties": {"total": 1}
+                        "ties": {"total": 1},
                     }
                 },
                 "transactions": {
                     "trades": {"total": 5},
                     "adds": {"total": 10},
-                    "drops": {"total": 10}
+                    "drops": {"total": 10},
                 },
                 "overall_data": {
                     "placement": {"2023": 1, "2022": 3},
-                    "playoff_appearances": ["2023", "2022"]
-                }
+                    "playoff_appearances": ["2023", "2022"],
+                },
             },
             "years": {
                 "2023": {
@@ -42,14 +42,12 @@ def mock_manager_cache() -> dict[str, Any]:
                         "matchup_data": {
                             "overall": {"wins": {"total": 1, "opponents": {}}}
                         },
-                        "transactions": {
-                            "trades": {"total": 1}
-                        }
+                        "transactions": {"trades": {"total": 1}},
                     },
-                    "weeks": {}
+                    "weeks": {},
                 },
-                "2022": {"summary": {}, "weeks": {}}
-            }
+                "2022": {"summary": {}, "weeks": {}},
+            },
         },
         "Manager 2": {
             "summary": {
@@ -57,18 +55,18 @@ def mock_manager_cache() -> dict[str, Any]:
                     "overall": {
                         "wins": {"total": 5},
                         "losses": {"total": 10},
-                        "ties": {"total": 1}
+                        "ties": {"total": 1},
                     }
                 },
                 "transactions": {
                     "trades": {"total": 3},
                     "adds": {"total": 8},
-                    "drops": {"total": 8}
+                    "drops": {"total": 8},
                 },
                 "overall_data": {
                     "placement": {"2023": 5},
-                    "playoff_appearances": ["2023"]
-                }
+                    "playoff_appearances": ["2023"],
+                },
             },
             "years": {
                 "2023": {
@@ -76,14 +74,12 @@ def mock_manager_cache() -> dict[str, Any]:
                         "matchup_data": {
                             "overall": {"wins": {"total": 1, "opponents": {}}}
                         },
-                        "transactions": {
-                            "trades": {"total": 1}
-                        }
+                        "transactions": {"trades": {"total": 1}},
                     },
-                    "weeks": {}
+                    "weeks": {},
                 }
-            }
-        }
+            },
+        },
     }
 
 
@@ -94,11 +90,7 @@ def mock_valid_options_cache() -> dict[str, Any]:
     Returns:
         Sample valid options cache
     """
-    return {
-        "2025": {
-            "managers": ["Manager 1", "Manager 2"]
-        }
-    }
+    return {"2025": {"managers": ["Manager 1", "Manager 2"]}}
 
 
 @pytest.fixture
@@ -128,7 +120,7 @@ class TestGetManagersList:
     def setup(
         self,
         mock_manager_cache: dict[str, Any],
-        mock_valid_options_cache: dict[str, Any]
+        mock_valid_options_cache: dict[str, Any],
     ):
         """Setup common mocks for all tests.
 
@@ -149,32 +141,26 @@ class TestGetManagersList:
         """
         with (
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.CACHE_MANAGER.get_manager_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
-
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.CACHE_MANAGER.get_valid_options_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".CACHE_MANAGER.get_valid_options_cache"
             ) as mock_get_valid_options_cache,
-
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_ranking_details_from_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_ranking_details_from_cache"
             ) as mock_get_ranking_details,
-
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_current_manager_image_url'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_current_manager_image_url"
             ) as mock_get_current_mgr_url,
-
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.LEAGUE_IDS',
-                {2025: "mock_league_id"}
+                "patriot_center_backend.managers.data_exporter.LEAGUE_IDS",
+                {2025: "mock_league_id"},
             ),
         ):
-
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
@@ -208,7 +194,7 @@ class TestGetManagersList:
                 "average_points_against": 90.0,
                 "average_points_differential": 10.0,
                 "trades": 5,
-                "playoffs": 2
+                "playoffs": 2,
             },
             "ranks": {
                 "win_percentage": 1,
@@ -218,8 +204,8 @@ class TestGetManagersList:
                 "trades": 1,
                 "playoffs": 1,
                 "is_active_manager": True,
-                "worst": 10
-            }
+                "worst": 10,
+            },
         }
 
         result = mock_data_exporter.get_managers_list(active_only=True)
@@ -242,7 +228,7 @@ class TestGetManagersList:
                 "average_points_against": 90.0,
                 "average_points_differential": 10.0,
                 "trades": 5,
-                "playoffs": 2
+                "playoffs": 2,
             },
             "ranks": {
                 "win_percentage": 1,
@@ -252,8 +238,8 @@ class TestGetManagersList:
                 "trades": 1,
                 "playoffs": 1,
                 "is_active_manager": True,
-                "worst": 10
-            }
+                "worst": 10,
+            },
         }
 
         result = mock_data_exporter.get_managers_list(active_only=False)
@@ -277,7 +263,7 @@ class TestGetManagersList:
                 "average_points_against": 90.0,
                 "average_points_differential": 10.0,
                 "trades": 5,
-                "playoffs": 2
+                "playoffs": 2,
             },
             "ranks": {
                 "win_percentage": 1,
@@ -287,8 +273,8 @@ class TestGetManagersList:
                 "trades": 1,
                 "playoffs": 1,
                 "is_active_manager": True,
-                "worst": 10
-            }
+                "worst": 10,
+            },
         }
 
         original = deepcopy(self.mock_manager_cache)
@@ -296,7 +282,6 @@ class TestGetManagersList:
         mock_data_exporter.get_managers_list(active_only=True)
 
         assert self.mock_manager_cache == original
-
 
     def test_managers_list_sorted_by_weight(
         self, mock_data_exporter: DataExporter
@@ -306,6 +291,7 @@ class TestGetManagersList:
         Args:
             mock_data_exporter: Mock DataExporter object
         """
+
         def ranking_side_effect(manager, manager_summary_usage, active_only):
             # Manager 1 should have better stats
             if manager == "Manager 1":
@@ -316,7 +302,7 @@ class TestGetManagersList:
                         "average_points_against": 90.0,
                         "average_points_differential": 10.0,
                         "trades": 5,
-                        "playoffs": 2
+                        "playoffs": 2,
                     },
                     "ranks": {
                         "win_percentage": 1,
@@ -326,8 +312,8 @@ class TestGetManagersList:
                         "trades": 1,
                         "playoffs": 1,
                         "is_active_manager": True,
-                        "worst": 10
-                    }
+                        "worst": 10,
+                    },
                 }
             else:
                 return {
@@ -337,7 +323,7 @@ class TestGetManagersList:
                         "average_points_against": 100.0,
                         "average_points_differential": -10.0,
                         "trades": 3,
-                        "playoffs": 1
+                        "playoffs": 1,
                     },
                     "ranks": {
                         "win_percentage": 2,
@@ -347,8 +333,8 @@ class TestGetManagersList:
                         "trades": 2,
                         "playoffs": 2,
                         "is_active_manager": True,
-                        "worst": 10
-                    }
+                        "worst": 10,
+                    },
                 }
 
         self.mock_get_ranking_details.side_effect = ranking_side_effect
@@ -384,35 +370,34 @@ class TestGetManagerSummary:
         """
         with (
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.CACHE_MANAGER.get_manager_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_current_manager_image_url'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_current_manager_image_url"
             ) as mock_get_current_mgr_url,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_matchup_details_from_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_matchup_details_from_cache"
             ) as mock_get_matchup,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_transaction_details_from_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_transaction_details_from_cache"
             ) as mock_get_trans,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_overall_data_details_from_cache',
+                "patriot_center_backend.managers.data_exporter"
+                ".get_overall_data_details_from_cache",
             ) as mock_get_overall,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_ranking_details_from_cache',
+                "patriot_center_backend.managers.data_exporter"
+                ".get_ranking_details_from_cache",
             ) as mock_ranking,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_head_to_head_details_from_cache',
+                "patriot_center_backend.managers.data_exporter"
+                ".get_head_to_head_details_from_cache",
             ) as mock_get_h2h,
         ):
-
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
@@ -439,7 +424,6 @@ class TestGetManagerSummary:
 
             yield
 
-
     def test_get_manager_summary_all_time(
         self, mock_data_exporter: DataExporter
     ):
@@ -455,7 +439,7 @@ class TestGetManagerSummary:
         self.mock_get_trans.return_value = {"trades": {"total": 5}}
         self.mock_get_overall.return_value = {
             "placements": [],
-            "playoff_appearances": 2
+            "playoff_appearances": 2,
         }
         self.mock_ranking.return_value = {"ranks": {}, "values": {}}
         self.mock_get_h2h.return_value = {}
@@ -485,7 +469,7 @@ class TestGetManagerSummary:
         self.mock_get_trans.return_value = {"trades": {"total": 2}}
         self.mock_get_overall.return_value = {
             "placements": [],
-            "playoff_appearances": 1
+            "playoff_appearances": 1,
         }
         self.mock_ranking.return_value = {"ranks": {}, "values": {}}
         self.mock_get_h2h.return_value = {}
@@ -503,7 +487,6 @@ class TestGetManagerSummary:
 
 class TestGetHeadToHead:
     """Test get_head_to_head method."""
-
 
     @pytest.fixture(autouse=True)
     def setup(self, mock_manager_cache: dict[str, Any]):
@@ -524,23 +507,22 @@ class TestGetHeadToHead:
         """
         with (
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.CACHE_MANAGER.get_manager_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_current_manager_image_url'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_current_manager_image_url"
             ) as mock_get_current_mgr_url,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_head_to_head_overall_from_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_head_to_head_overall_from_cache"
             ) as mock_get_h2h,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_trade_history_between_two_managers'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_trade_history_between_two_managers"
             ) as mock_get_trade_history,
         ):
-
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
@@ -565,19 +547,14 @@ class TestGetHeadToHead:
             mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_current_mgr_url.side_effect = (
-            lambda m,
-            *args: f"http://example.com/{m}.jpg"
+            lambda m, *args: f"http://example.com/{m}.jpg"
         )
 
         self.mock_get_h2h.side_effect = (
-            lambda *args,
-            list_all_matchups=False,
-            **kwargs: (
-
+            lambda *args, list_all_matchups=False, **kwargs: (
                 # if list_all_matchups is passed as a keyword argument (kwarg)
                 {"manager_1_wins": 7, "manager_2_wins": 3, "ties": 1}
                 if list_all_matchups
-
                 # if list_all_matchups is NOT passed as a keyword argument
                 else {"wins": 7, "losses": 3}
             )
@@ -598,14 +575,11 @@ class TestGetHeadToHead:
             mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_current_mgr_url.side_effect = (
-            lambda m,
-            *args: f"http://example.com/{m}.jpg"
+            lambda m, *args: f"http://example.com/{m}.jpg"
         )
 
         self.mock_get_h2h.side_effect = (
-            lambda *args,
-            list_all_matchups=False,
-            **kwargs: (
+            lambda *args, list_all_matchups=False, **kwargs: (
                 {"manager_1_wins": 2, "manager_2_wins": 1, "ties": 0}
                 if list_all_matchups
                 else {"wins": 2, "losses": 1}
@@ -642,23 +616,20 @@ class TestGetManagerTransactions:
         """
         with (
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.CACHE_MANAGER.get_manager_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.CACHE_MANAGER.get_transaction_ids_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_ids,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_image_url'
+                "patriot_center_backend.managers.data_exporter.get_image_url"
             ) as mock_get_image_url,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_trade_card'
+                "patriot_center_backend.managers.data_exporter.get_trade_card"
             ) as mock_get_trade_card,
         ):
-
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
@@ -669,7 +640,8 @@ class TestGetManagerTransactions:
 
             self.mock_get_image_url = mock_get_image_url
             self.mock_get_image_url.return_value = {
-                "name": "item", "image_url": "http://example.com/item.jpg"
+                "name": "item",
+                "image_url": "http://example.com/item.jpg",
             }
 
             self.mock_get_trade_card = mock_get_trade_card
@@ -684,7 +656,8 @@ class TestGetManagerTransactions:
             mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_image_url.return_value = {
-            "name": "Manager 1", "image_url": "http://example.com/manager1.jpg"
+            "name": "Manager 1",
+            "image_url": "http://example.com/manager1.jpg",
         }
 
         result = mock_data_exporter.get_manager_transactions("Manager 1")
@@ -703,7 +676,8 @@ class TestGetManagerTransactions:
             mock_data_exporter: Mock DataExporter object
         """
         self.mock_get_image_url.return_value = {
-            "name": "Manager 1", "image_url": "http://example.com/manager1.jpg"
+            "name": "Manager 1",
+            "image_url": "http://example.com/manager1.jpg",
         }
 
         result = mock_data_exporter.get_manager_transactions(
@@ -726,19 +700,18 @@ class TestGetManagerTransactions:
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
                 "transactions": {
-                    "trades": {
-                        "transaction_ids": ["trade1", "trade2"]
-                    }
+                    "trades": {"transaction_ids": ["trade1", "trade2"]}
                 }
             }
         }
         self.mock_get_image_url.return_value = {
-            "name": "Manager 1", "image_url": "http://example.com/manager1.jpg"
+            "name": "Manager 1",
+            "image_url": "http://example.com/manager1.jpg",
         }
         self.mock_get_trade_card.return_value = {
             "year": "2023",
             "week": "1",
-            "managers_involved": ["Manager 1", "Manager 2"]
+            "managers_involved": ["Manager 1", "Manager 2"],
         }
 
         result = mock_data_exporter.get_manager_transactions(
@@ -758,21 +731,16 @@ class TestGetManagerTransactions:
         """
         # Setup cache with add transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
-            "1": {
-                "transactions": {
-                    "adds": {
-                        "transaction_ids": ["add1"]
-                    }
-                }
-            }
+            "1": {"transactions": {"adds": {"transaction_ids": ["add1"]}}}
         }
         self.mock_trans_ids_cache["add1"] = {
             "types": ["add"],
             "add": "Player A",
-            "faab_spent": 50
+            "faab_spent": 50,
         }
         self.mock_get_image_url.return_value = {
-            "name": "Player A", "image_url": "http://example.com/player.jpg"
+            "name": "Player A",
+            "image_url": "http://example.com/player.jpg",
         }
 
         result = mock_data_exporter.get_manager_transactions(
@@ -794,20 +762,15 @@ class TestGetManagerTransactions:
         """
         # Setup cache with drop transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
-            "1": {
-                "transactions": {
-                    "drops": {
-                        "transaction_ids": ["drop1"]
-                    }
-                }
-            }
+            "1": {"transactions": {"drops": {"transaction_ids": ["drop1"]}}}
         }
         self.mock_trans_ids_cache["drop1"] = {
             "types": ["drop"],
-            "drop": "Player B"
+            "drop": "Player B",
         }
         self.mock_get_image_url.return_value = {
-            "name": "Player B", "image_url": "http://example.com/player.jpg"
+            "name": "Player B",
+            "image_url": "http://example.com/player.jpg",
         }
 
         result = mock_data_exporter.get_manager_transactions(
@@ -829,37 +792,32 @@ class TestGetManagerTransactions:
         """
         # Setup cache with add_and_drop transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
-            "1": {
-                "transactions": {
-                    "adds": {
-                        "transaction_ids": ["add_drop1"]
-                    }
-                }
-            }
+            "1": {"transactions": {"adds": {"transaction_ids": ["add_drop1"]}}}
         }
         self.mock_trans_ids_cache["add_drop1"] = {
             "types": ["add", "drop"],
             "add": "Player A",
             "drop": "Player B",
-            "faab_spent": 30
+            "faab_spent": 30,
         }
 
         def image_url_side_effect(player, *args, **kwargs):
             if player == "Player A":
                 return {
                     "name": "Player A",
-                    "image_url": "http://example.com/playerA.jpg"
+                    "image_url": "http://example.com/playerA.jpg",
                 }
             elif player == "Player B":
                 return {
                     "name": "Player B",
-                    "image_url": "http://example.com/playerB.jpg"
+                    "image_url": "http://example.com/playerB.jpg",
                 }
             else:
                 return {
                     "name": "Manager 1",
-                    "image_url": "http://example.com/manager1.jpg"
+                    "image_url": "http://example.com/manager1.jpg",
                 }
+
         self.mock_get_image_url.side_effect = image_url_side_effect
 
         result = mock_data_exporter.get_manager_transactions(
@@ -867,9 +825,9 @@ class TestGetManagerTransactions:
         )
 
         # Should have 1 add_and_drop transaction
-        add_drops = (
-            [t for t in result["transactions"] if t["type"] == "add_and_drop"]
-        )
+        add_drops = [
+            t for t in result["transactions"] if t["type"] == "add_and_drop"
+        ]
         assert len(add_drops) == 1
         assert add_drops[0]["added_player"]["name"] == "Player A"
         assert add_drops[0]["dropped_player"]["name"] == "Player B"
@@ -899,27 +857,25 @@ class TestGetManagerAwards:
         """
         with (
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.CACHE_MANAGER.get_manager_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_image_url'
+                "patriot_center_backend.managers.data_exporter.get_image_url"
             ) as mock_get_image_url,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_current_manager_image_url'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_current_manager_image_url"
             ) as mock_get_current_mgr_url,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_manager_awards_from_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_manager_awards_from_cache"
             ) as mock_get_manager_awards,
             patch(
-                'patriot_center_backend.managers.data_exporter'
-                '.get_manager_score_awards_from_cache'
+                "patriot_center_backend.managers.data_exporter"
+                ".get_manager_score_awards_from_cache"
             ) as mock_get_manager_score_awards,
         ):
-
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
@@ -953,19 +909,19 @@ class TestGetManagerAwards:
         )
         self.mock_get_current_mgr_url.return_value = {
             "image_url": "https://sleepercdn.com/avatars/abc123",
-            "name": "Manager 1"
+            "name": "Manager 1",
         }
         self.mock_get_manager_awards.return_value = {
             "first_place": 1,
             "second_place": 0,
             "third_place": 1,
-            "playoff_appearances": 2
+            "playoff_appearances": 2,
         }
         self.mock_get_manager_score_awards.return_value = {
             "highest_weekly_score": {},
             "lowest_weekly_score": {},
             "biggest_blowout_win": {},
-            "biggest_blowout_loss": {}
+            "biggest_blowout_loss": {},
         }
 
         result = mock_data_exporter.get_manager_awards("Manager 1")

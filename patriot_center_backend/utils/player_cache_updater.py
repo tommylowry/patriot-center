@@ -31,7 +31,6 @@ def update_players_cache(player_id: str) -> None:
         return
 
     if player_name not in players_cache:
-
         player_meta = player_ids_cache.get(player_id, {})
 
         players_cache[player_meta["full_name"]] = {
@@ -41,7 +40,7 @@ def update_players_cache(player_id: str) -> None:
             "position": player_meta.get("position", ""),
             "team": player_meta.get("team", ""),
             "slug": slugify(player_meta.get("full_name", "")),
-            "player_id": player_id
+            "player_id": player_id,
         }
 
 

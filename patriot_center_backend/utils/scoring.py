@@ -5,7 +5,7 @@ from collections.abc import Mapping
 
 def calculate_player_score(
     player_data: Mapping[str, int | float],
-    scoring_settings: Mapping[str, int | float]
+    scoring_settings: Mapping[str, int | float],
 ) -> float:
     """Calculate player score based on raw stats and scoring settings.
 

@@ -28,6 +28,7 @@ class TestSlugify:
 
         assert result == "patrick%20mahomes"
 
+
 class TestSlugToName:
     """Unit tests for the slug_to_name function."""
 
@@ -44,24 +45,24 @@ class TestSlugToName:
         """
         with (
             patch(
-                'patriot_center_backend.utils.slug_utils'
-                '.CACHE_MANAGER.get_players_cache'
+                "patriot_center_backend.utils.slug_utils"
+                ".CACHE_MANAGER.get_players_cache"
             ) as mock_get_players_cache,
         ):
-
             self.get_players_cache = mock_get_players_cache
 
             yield
-
 
     def test_slug_to_name_found(self):
         """Test returns the correct full name when given a slug that exists."""
         self.get_players_cache.return_value = {
             "Ja'Marr Chase": {
-                "slug": "ja%27marr%20chase", 'full_name': "Ja'Marr Chase"
+                "slug": "ja%27marr%20chase",
+                "full_name": "Ja'Marr Chase",
             },
             "Patrick Mahomes": {
-                "slug": "patrick%20mahomes", 'full_name': "Patrick Mahomes"
+                "slug": "patrick%20mahomes",
+                "full_name": "Patrick Mahomes",
             },
         }
         result = slug_to_name("ja%27marr%20chase")
@@ -72,10 +73,12 @@ class TestSlugToName:
         """Test returns the slug unchanged when a slug that does not exist."""
         self.get_players_cache.return_value = {
             "Ja'Marr Chase": {
-                "slug": "ja%27marr%20chase", 'full_name': "Ja'Marr Chase"
+                "slug": "ja%27marr%20chase",
+                "full_name": "Ja'Marr Chase",
             },
             "Patrick Mahomes": {
-                "slug": "patrick%20mahomes", 'full_name': "Patrick Mahomes"
+                "slug": "patrick%20mahomes",
+                "full_name": "Patrick Mahomes",
             },
         }
 

@@ -15,9 +15,7 @@ SLEEPER_API_URL = "https://api.sleeper.app/v1"
 logger = logging.getLogger(__name__)
 
 
-def fetch_sleeper_data(
-    endpoint: str
-) -> dict[str, Any] | list[Any]:
+def fetch_sleeper_data(endpoint: str) -> dict[str, Any] | list[Any]:
     """Fetches data from the Sleeper API given an endpoint.
 
     Args:
@@ -41,10 +39,11 @@ def fetch_sleeper_data(
     # Return parsed JSON
     return response.json()
 
+
 def get_roster_id(
     user_id: str,
     year: int,
-    sleeper_rosters_response: list[dict[str, Any]] | None = None
+    sleeper_rosters_response: list[dict[str, Any]] | None = None,
 ) -> int | None:
     """Retrieves a roster ID for a given user ID and year.
 
@@ -64,7 +63,6 @@ def get_roster_id(
             the rosters in list form.
     """
     if not sleeper_rosters_response:
-
         sleeper_response = fetch_sleeper_data(
             f"league/{LEAGUE_IDS[year]}/rosters"
         )
@@ -81,14 +79,13 @@ def get_roster_id(
     # Iterate over the rosters data and find the roster ID for the given user ID
     skipped_roster_id = None
     for user in sleeper_rosters_response:
-
-        if user['owner_id'] == user_id:
-            return user['roster_id']
+        if user["owner_id"] == user_id:
+            return user["roster_id"]
 
         # In 2024 special case, if there is only one user missing,
         #   assign them the roster_id missing from the roster_ids
-        elif user['owner_id'] is None:
-            skipped_roster_id = user['roster_id']
+        elif user["owner_id"] is None:
+            skipped_roster_id = user["roster_id"]
 
     if year == 2024 and skipped_roster_id is not None:
         return skipped_roster_id
@@ -126,15 +123,12 @@ def get_roster_ids(year: int) -> dict[int, str]:
 
     # Iterate over the users data and store the user IDs with their real names
     for user in sleeper_users_response:
-        user_ids[user['user_id']] = USERNAME_TO_REAL_NAME[user['display_name']]
-
+        user_ids[user["user_id"]] = USERNAME_TO_REAL_NAME[user["display_name"]]
 
     roster_ids = {}
 
     # Fetch the rosters data from the Sleeper API
-    sleeper_response = fetch_sleeper_data(
-        f"league/{LEAGUE_IDS[year]}/rosters"
-    )
+    sleeper_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/rosters")
 
     # Make sure the rosters data is in list form
     if isinstance(sleeper_response, list):
@@ -147,7 +141,7 @@ def get_roster_ids(year: int) -> dict[int, str]:
 
     # Iterate over the rosters data and store the roster IDs
     for user in sleeper_rosters_response:
-        user_id = user['owner_id']
+        user_id = user["owner_id"]
         roster_id = get_roster_id(
             user_id, year, sleeper_rosters_response=sleeper_rosters_response
         )
@@ -168,6 +162,7 @@ def get_roster_ids(year: int) -> dict[int, str]:
         raise Exception("Not all roster IDs are assigned to a user")
 
     return roster_ids
+
 
 def get_current_season_and_week() -> tuple[str, int]:
     """Retrieves the current season and week number from the Sleeper API.

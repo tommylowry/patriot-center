@@ -30,16 +30,14 @@ class TestUpdatePlayersCache:
         """
         with (
             patch(
-                'patriot_center_backend.utils.player_cache_updater'
-                '.CACHE_MANAGER.get_player_ids_cache'
+                "patriot_center_backend.utils.player_cache_updater"
+                ".CACHE_MANAGER.get_player_ids_cache"
             ) as mock_get_player_ids_cache,
-
             patch(
-                'patriot_center_backend.utils.player_cache_updater'
-                '.CACHE_MANAGER.get_players_cache'
+                "patriot_center_backend.utils.player_cache_updater"
+                ".CACHE_MANAGER.get_players_cache"
             ) as mock_get_players_cache,
         ):
-
             self.mock_player_ids_cache = {}
             self.mock_players_cache = {}
 
@@ -57,7 +55,7 @@ class TestUpdatePlayersCache:
                     "first_name": "Patrick",
                     "last_name": "Mahomes",
                     "position": "QB",
-                    "team": "KC"
+                    "team": "KC",
                 }
             }
         )
@@ -81,7 +79,7 @@ class TestUpdatePlayersCache:
                     "first_name": "D'Andre",
                     "last_name": "Swift",
                     "position": "RB",
-                    "team": "PHI"
+                    "team": "PHI",
                 }
             }
         )
@@ -103,7 +101,7 @@ class TestUpdatePlayersCache:
                 "Patrick Mahomes": {
                     "player_id": "4046",
                     "position": "QB",
-                    "slug": "patrick%20mahomes"
+                    "slug": "patrick%20mahomes",
                 }
             }
         )
@@ -114,7 +112,7 @@ class TestUpdatePlayersCache:
                     "first_name": "Patrick",
                     "last_name": "Mahomes",
                     "position": "QB",
-                    "team": "KC"
+                    "team": "KC",
                 }
             }
         )
@@ -161,7 +159,6 @@ class TestUpdatePlayersCache:
 class TestUpdatePlayersCacheWithList:
     """Test update_players_cache_with_list function."""
 
-
     @pytest.fixture(autouse=True)
     def setup(self):
         """Setup common mocks for all tests.
@@ -175,21 +172,17 @@ class TestUpdatePlayersCacheWithList:
         """
         with (
             patch(
-                'patriot_center_backend.utils.player_cache_updater'
-                '.update_players_cache'
+                "patriot_center_backend.utils.player_cache_updater"
+                ".update_players_cache"
             ) as mock_update_players,
         ):
-
             self.mock_update_players = mock_update_players
 
             yield
 
     def test_update_with_valid_matchup(self):
         """Test updates the players cache correctly with valid matchups."""
-        item = [
-            {"players": ["4046", "5678"]},
-            {"players": ["9999"]}
-        ]
+        item = [{"players": ["4046", "5678"]}, {"players": ["9999"]}]
         update_players_cache_with_list(item)
 
         # Verify that the correct player IDs were passed to update_players_cache

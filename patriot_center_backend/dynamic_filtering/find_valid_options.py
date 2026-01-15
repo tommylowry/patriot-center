@@ -1,15 +1,15 @@
 """Functions for finding valid filtering options based on selected criteria."""
 
 import logging
-from typing import List, Set
 
 from patriot_center_backend.cache import CACHE_MANAGER
 
 logger = logging.getLogger(__name__)
 
 
-def find_valid_years(manager: str | None, position: str | None,
-                     player: str | None) -> Set[str]:
+def find_valid_years(
+    manager: str | None, position: str | None, player: str | None
+) -> set[str]:
     """Finds years that have data matching the filters.
 
     Args:
@@ -20,13 +20,12 @@ def find_valid_years(manager: str | None, position: str | None,
     Returns:
         A set of years that match the filters.
     """
-
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
     if not manager and not position and not player:
         return set(valid_options_cache.keys())
 
-    valid = set()
+    valid = set("")
 
     for yr, year_data in valid_options_cache.items():
         year_valid = False
@@ -40,7 +39,8 @@ def find_valid_years(manager: str | None, position: str | None,
 
                 manager_data = week_data.get(manager, {})
                 if position and position not in manager_data.get(
-                        "positions", []):
+                    "positions", []
+                ):
                     continue
                 if player and player not in manager_data.get("players", []):
                     continue
@@ -63,8 +63,12 @@ def find_valid_years(manager: str | None, position: str | None,
     return valid
 
 
-def find_valid_weeks(year: str | None, manager: str | None,
-                     position: str | None, player: str | None) -> Set[str]:
+def find_valid_weeks(
+    year: str | None,
+    manager: str | None,
+    position: str | None,
+    player: str | None,
+) -> set[str]:
     """Find weeks that have data matching the filters.
 
     Args:
@@ -76,10 +80,9 @@ def find_valid_weeks(year: str | None, manager: str | None,
     Returns:
         A set of weeks that match the filters.
     """
-
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
-    valid = set()
+    valid = set("")
     years_to_check = [year] if year else valid_options_cache.keys()
 
     for yr in years_to_check:
@@ -93,7 +96,8 @@ def find_valid_weeks(year: str | None, manager: str | None,
 
                 manager_data = week_data.get(manager, {})
                 if position and position not in manager_data.get(
-                        "positions", []):
+                    "positions", []
+                ):
                     continue
                 if player and player not in manager_data.get("players", []):
                     continue
@@ -112,8 +116,9 @@ def find_valid_weeks(year: str | None, manager: str | None,
     return valid
 
 
-def find_valid_managers(year: str | None, week: str | None,
-                        position: str | None, player: str | None) -> Set[str]:
+def find_valid_managers(
+    year: str | None, week: str | None, position: str | None, player: str | None
+) -> set[str]:
     """Finds managers that have data matching the filters.
 
     Args:
@@ -125,10 +130,9 @@ def find_valid_managers(year: str | None, week: str | None,
     Returns:
         A set of managers that match the filters.
     """
-
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
-    valid = set()
+    valid = set("")
 
     # Set years to check to year if set, otherwise all
     years_to_check = [year] if year else valid_options_cache.keys()
@@ -148,7 +152,8 @@ def find_valid_managers(year: str | None, week: str | None,
                 manager_data = week_data.get(mgr, {})
 
                 if position and position not in manager_data.get(
-                        "positions", []):
+                    "positions", []
+                ):
                     continue
                 if player and player not in manager_data.get("players", []):
                     continue
@@ -160,8 +165,9 @@ def find_valid_managers(year: str | None, week: str | None,
     return valid
 
 
-def find_valid_positions(year: str | None, week: str | None,
-                         manager: str | None) -> Set[str]:
+def find_valid_positions(
+    year: str | None, week: str | None, manager: str | None
+) -> set[str]:
     """Finds positions that have data matching the filters.
 
     Args:
@@ -172,10 +178,9 @@ def find_valid_positions(year: str | None, week: str | None,
     Returns:
         A set of positions that match the filters.
     """
-
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
-    valid = set()
+    valid = set("")
 
     # Set years to check to year if set, otherwise all
     years_to_check = [year] if year else valid_options_cache.keys()
@@ -204,7 +209,7 @@ def find_valid_positions(year: str | None, week: str | None,
     return valid
 
 
-def _get_weeks_to_check(year: str | None, week: str | None) -> List[str]:
+def _get_weeks_to_check(year: str | None, week: str | None) -> list[str]:
     """Determines which weeks to iterate over.
 
     If `week` is provided, it is the only week to check.
@@ -218,7 +223,6 @@ def _get_weeks_to_check(year: str | None, week: str | None) -> List[str]:
     Returns:
         A list of weeks to check.
     """
-
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
     if week:

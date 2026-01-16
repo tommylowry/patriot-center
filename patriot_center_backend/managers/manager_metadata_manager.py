@@ -147,15 +147,11 @@ class ManagerMetadataManager:
             league_settings = sleeper_league_dict.get("settings", {})
 
             # Set use_faab to True if waiver_type == 2
-            waiver_type = (
-                league_settings.get("waiver_type", 1)
-            )
-            self._use_faab = (waiver_type == 2)
+            waiver_type = league_settings.get("waiver_type", 1)
+            self._use_faab = waiver_type == 2
 
             # Set playoff_week_start
-            self._playoff_week_start = (
-                league_settings.get("playoff_week_start")
-            )
+            self._playoff_week_start = league_settings.get("playoff_week_start")
 
         if not self._weekly_roster_ids:
             self._weekly_roster_ids = {}
@@ -165,7 +161,6 @@ class ManagerMetadataManager:
         manager_cache[manager]["years"][year]["roster_id"] = roster_id
 
         if "user_id" not in manager_cache[manager]["summary"]:
-
             username = NAME_TO_MANAGER_USERNAME.get(manager, "")
             if not username:  # No username mapping
                 raise ValueError(
@@ -210,14 +205,14 @@ class ManagerMetadataManager:
             year=year,
             week=week,
             weekly_roster_ids=self._weekly_roster_ids,
-            use_faab=self._use_faab
+            use_faab=self._use_faab,
         )
         self._matchup_processor.set_session_state(
             year=year,
             week=week,
             weekly_roster_ids=self._weekly_roster_ids,
             playoff_roster_ids=self._playoff_roster_ids,
-            playoff_week_start=self._playoff_week_start
+            playoff_week_start=self._playoff_week_start,
         )
 
         # Scrub transaction data for the week
@@ -376,29 +371,26 @@ class ManagerMetadataManager:
 
         manager = self._weekly_roster_ids.get(roster_id, None)
         if not manager:
-            raise ValueError(
-                f"Manager not found for roster ID {roster_id}."
-            )
+            raise ValueError(f"Manager not found for roster ID {roster_id}.")
 
         if manager not in manager_cache:
             manager_cache[manager] = {
                 "summary": deepcopy(
-                    self._templates['top_level_summary_template']
+                    self._templates["top_level_summary_template"]
                 ),
                 "years": {},
             }
 
         if self._year not in manager_cache[manager]["years"]:
             manager_cache[manager]["years"][self._year] = {
-                "summary": deepcopy(self._templates['yearly_summary_template']),
+                "summary": deepcopy(self._templates["yearly_summary_template"]),
                 "roster_id": None,
-                "weeks": {}
+                "weeks": {},
             }
 
         # Initialize week template if missing
         weeks_level = manager_cache[manager]["years"][self._year]["weeks"]
         if self._week not in weeks_level:
-
             # Differentiate between playoff and non-playoff weeks
             season_state = get_season_state(
                 self._week, self._year, self._playoff_week_start
@@ -409,12 +401,12 @@ class ManagerMetadataManager:
                 and roster_id not in self._playoff_roster_ids
             ):
                 weeks_level[self._week] = deepcopy(
-                    self._templates['weekly_summary_not_in_playoffs_template']
+                    self._templates["weekly_summary_not_in_playoffs_template"]
                 )
 
             else:  # season_state == "regular_season"
                 weeks_level[self._week] = deepcopy(
-                    self._templates['weekly_summary_template']
+                    self._templates["weekly_summary_template"]
                 )
 
         if self._use_faab:
@@ -439,6 +431,7 @@ class ManagerMetadataManager:
 
 # ===== SINGLETON INSTANCE =====
 _manager_metadata_instance = None
+
 
 def get_manager_metadata_manager() -> ManagerMetadataManager:
     """Get the singleton ManagerMetadataManager instance.

@@ -32,13 +32,13 @@ def globals_setup():
     """
     with (
         patch(
-            'patriot_center_backend.managers.manager_metadata_manager.'
-            'CACHE_MANAGER',
+            "patriot_center_backend.managers.manager_metadata_manager."
+            "CACHE_MANAGER",
             MagicMock(spec=CacheManager),
         ),
         patch(
-            'patriot_center_backend.managers.manager_metadata_manager.'
-            'NAME_TO_MANAGER_USERNAME',
+            "patriot_center_backend.managers.manager_metadata_manager."
+            "NAME_TO_MANAGER_USERNAME",
             {"Manager 1": "manager1_user"},
         ),
     ):
@@ -96,6 +96,7 @@ class TestManagerMetadataManagerInit:
         from patriot_center_backend.managers.manager_metadata_manager import (
             ManagerMetadataManager,
         )
+
         metadata_manager = ManagerMetadataManager()
 
         assert metadata_manager._data_exporter is not None
@@ -108,6 +109,7 @@ class TestManagerMetadataManagerInit:
         from patriot_center_backend.managers.manager_metadata_manager import (
             _manager_metadata_instance,
         )
+
         _manager_metadata_instance = None  # noqa: F811
 
         mgr1 = MANAGER_METADATA_MANAGER
@@ -175,22 +177,19 @@ class TestSetRosterId:
         """
         self.mock_fetch_sleeper_data.side_effect = [
             {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
+            {"user_id": "user123"},
         ]
         self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "summary": {},
                 "years": {
                     "2023": {"summary": {}, "roster_id": None, "weeks": {}}
-                }
+                },
             }
         }
 
         metadata_manager.set_roster_id(
-            manager="Manager 1",
-            year="2023",
-            week="1",
-            roster_id=1
+            manager="Manager 1", year="2023", week="1", roster_id=1
         )
 
         self.mock_set_defaults.assert_called_once_with(1)
@@ -205,22 +204,19 @@ class TestSetRosterId:
         """
         self.mock_fetch_sleeper_data.side_effect = [
             {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
+            {"user_id": "user123"},
         ]
         self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "summary": {},
                 "years": {
                     "2023": {"summary": {}, "roster_id": None, "weeks": {}}
-                }
+                },
             }
         }
 
         metadata_manager.set_roster_id(
-            manager="Manager 1",
-            year="2023",
-            week="1",
-            roster_id=1
+            manager="Manager 1", year="2023", week="1", roster_id=1
         )
 
         assert metadata_manager._weekly_roster_ids[1] == "Manager 1"
@@ -237,7 +233,7 @@ class TestSetRosterId:
             manager="Manager 1",
             year="2023",
             week="1",
-            roster_id=None  # type: ignore
+            roster_id=None,  # type: ignore
         )
 
         # Should not create any entries
@@ -254,22 +250,19 @@ class TestSetRosterId:
         """
         self.mock_fetch_sleeper_data.side_effect = [
             {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
-            {"user_id": "user123"}
+            {"user_id": "user123"},
         ]
         self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "summary": {},
                 "years": {
                     "2023": {"summary": {}, "roster_id": None, "weeks": {}}
-                }
+                },
             }
         }
 
         metadata_manager.set_roster_id(
-            manager="Manager 1",
-            year="2023",
-            week="1",
-            roster_id=1
+            manager="Manager 1", year="2023", week="1", roster_id=1
         )
 
         # Should fetch league settings
@@ -287,14 +280,14 @@ class TestSetRosterId:
         """
         self.mock_fetch_sleeper_data.side_effect = [
             {"settings": {"waiver_type": 1, "playoff_week_start": 15}},
-            {"user_id": "user123"}
+            {"user_id": "user123"},
         ]
         self.mock_get_manager_cache.return_value = {
             "Manager 1": {
                 "summary": {},
                 "years": {
                     "2023": {"summary": {}, "roster_id": None, "weeks": {}}
-                }
+                },
             }
         }
 
@@ -349,9 +342,7 @@ class TestCacheWeekData:
             mock_transaction_processor: Mock TransactionProcessor instance
             mock_matchup_processor: Mock MatchupProcessor instance
         """
-        metadata_manager._transaction_processor = (
-            mock_transaction_processor
-        )
+        metadata_manager._transaction_processor = mock_transaction_processor
         metadata_manager._matchup_processor = mock_matchup_processor
 
         metadata_manager.cache_week_data("2023", "1")
@@ -367,7 +358,7 @@ class TestCacheWeekData:
         self,
         metadata_manager: ManagerMetadataManager,
         mock_transaction_processor: TransactionProcessor,
-        mock_matchup_processor: MatchupProcessor
+        mock_matchup_processor: MatchupProcessor,
     ):
         """Test that cache_week_data checks for transaction reversals.
 
@@ -376,9 +367,7 @@ class TestCacheWeekData:
             mock_transaction_processor: Mock TransactionProcessor instance
             mock_matchup_processor: Mock MatchupProcessor instance
         """
-        metadata_manager._transaction_processor = (
-            mock_transaction_processor
-        )
+        metadata_manager._transaction_processor = mock_transaction_processor
         metadata_manager._matchup_processor = mock_matchup_processor
 
         metadata_manager.cache_week_data("2023", "1")
@@ -391,7 +380,7 @@ class TestCacheWeekData:
         self,
         metadata_manager: ManagerMetadataManager,
         mock_transaction_processor: TransactionProcessor,
-        mock_matchup_processor: MatchupProcessor
+        mock_matchup_processor: MatchupProcessor,
     ):
         """Test that playoff data is processed during playoff weeks.
 
@@ -402,9 +391,7 @@ class TestCacheWeekData:
         """
         self.mock_get_season_state.return_value = "playoffs"
 
-        metadata_manager._transaction_processor = (
-            mock_transaction_processor
-        )
+        metadata_manager._transaction_processor = mock_transaction_processor
         metadata_manager._matchup_processor = mock_matchup_processor
 
         metadata_manager.cache_week_data("2023", "15")
@@ -417,7 +404,7 @@ class TestCacheWeekData:
         self,
         metadata_manager: ManagerMetadataManager,
         mock_transaction_processor: TransactionProcessor,
-        mock_matchup_processor: MatchupProcessor
+        mock_matchup_processor: MatchupProcessor,
     ):
         """Test that session state is cleared after processing.
 
@@ -430,9 +417,7 @@ class TestCacheWeekData:
         metadata_manager._week = "1"
         metadata_manager._weekly_roster_ids = {1: "Manager 1"}
 
-        metadata_manager._transaction_processor = (
-            mock_transaction_processor
-        )
+        metadata_manager._transaction_processor = mock_transaction_processor
         metadata_manager._matchup_processor = mock_matchup_processor
 
         metadata_manager.cache_week_data("2023", "1")
@@ -484,19 +469,10 @@ class TestSetPlayoffPlacements:
         Args:
             metadata_manager: ManagerMetadataManager instance
         """
-        placements = {
-            "Manager 1": 1,
-            "Manager 2": 2
-        }
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "overall_data": {
-                        "placement": {}
-                    }
-                }
-            }
-        })
+        placements = {"Manager 1": 1, "Manager 2": 2}
+        self.mock_manager_cache.update(
+            {"Manager 1": {"summary": {"overall_data": {"placement": {}}}}}
+        )
 
         metadata_manager._year = "2023"
         metadata_manager._week = "1"
@@ -515,9 +491,7 @@ class TestSetPlayoffPlacements:
         Args:
             metadata_manager: ManagerMetadataManager instance
         """
-        placements = {
-            "Unknown Manager": 1
-        }
+        placements = {"Unknown Manager": 1}
 
         # Should not raise error
         metadata_manager.set_playoff_placements(placements, "2023")
@@ -529,7 +503,7 @@ class TestGetManagersList:
     def test_get_managers_list_delegates_to_exporter(
         self,
         metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter
+        mock_data_exporter: DataExporter,
     ):
         """Test that get_managers_list delegates to data exporter.
 
@@ -538,9 +512,9 @@ class TestGetManagersList:
             mock_data_exporter: Mock DataExporter instance
         """
         metadata_manager._data_exporter = mock_data_exporter
-        metadata_manager._data_exporter.get_managers_list.return_value = (
-            {"managers": []}
-        )
+        metadata_manager._data_exporter.get_managers_list.return_value = {
+            "managers": []
+        }
 
         result = metadata_manager.get_managers_list(active_only=True)
 
@@ -557,7 +531,7 @@ class TestGetManagerSummary:
     def test_get_manager_summary_delegates_to_exporter(
         self,
         metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter
+        mock_data_exporter: DataExporter,
     ):
         """Test that get_manager_summary delegates to data exporter.
 
@@ -584,7 +558,7 @@ class TestGetHeadToHead:
     def test_get_head_to_head_delegates_to_exporter(
         self,
         metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter
+        mock_data_exporter: DataExporter,
     ):
         """Test that get_head_to_head delegates to data exporter.
 
@@ -609,7 +583,7 @@ class TestGetManagerTransactions:
     def test_get_manager_transactions_delegates_to_exporter(
         self,
         metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter
+        mock_data_exporter: DataExporter,
     ):
         """Test that get_manager_transactions delegates to data exporter.
 
@@ -634,7 +608,7 @@ class TestGetManagerAwards:
     def test_get_manager_awards_delegates_to_exporter(
         self,
         metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter
+        mock_data_exporter: DataExporter,
     ):
         """Test that get_manager_awards delegates to data exporter.
 
@@ -796,7 +770,7 @@ class TestSetDefaultsIfMissing:
 
         # Yearly template should be called to be used
         calls = metadata_manager._templates.__getitem__.call_args_list
-        assert call('yearly_summary_template') in calls
+        assert call("yearly_summary_template") in calls
 
     def test_set_defaults_creates_week_entry(
         self, metadata_manager: ManagerMetadataManager
@@ -826,7 +800,7 @@ class TestSetDefaultsIfMissing:
 
         # Non-playoff weekly template should be called to be used
         calls = metadata_manager._templates.__getitem__.call_args_list
-        assert call('weekly_summary_template') in calls
+        assert call("weekly_summary_template") in calls
 
     def test_set_defaults_uses_playoff_template_when_not_in_playoffs(
         self, metadata_manager: ManagerMetadataManager
@@ -852,8 +826,8 @@ class TestSetDefaultsIfMissing:
 
         # Check if the not in playoffs template was used and NOT the normal one
         calls = metadata_manager._templates.__getitem__.call_args_list
-        assert call('weekly_summary_not_in_playoffs_template') in calls
-        assert call('weekly_summary_template') not in calls
+        assert call("weekly_summary_not_in_playoffs_template") in calls
+        assert call("weekly_summary_template") not in calls
 
     def test_set_defaults_skips_existing_entries(
         self, metadata_manager: ManagerMetadataManager
@@ -864,13 +838,9 @@ class TestSetDefaultsIfMissing:
             metadata_manager: ManagerMetadataManager instance
         """
         # Initialize with proper template structure plus custom data
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "existing": "data",
-                "summary": {},
-                "years": {}
-            }
-        })
+        self.mock_manager_cache.update(
+            {"Manager 1": {"existing": "data", "summary": {}, "years": {}}}
+        )
         self.mock_get_season_state.return_value = "regular_season"
 
         metadata_manager._year = "2023"
@@ -891,11 +861,11 @@ class TestSetDefaultsIfMissing:
         calls = metadata_manager._templates.__getitem__.call_args_list
 
         # top level summary template NOT called for
-        assert call('top_level_summary_template') not in calls
+        assert call("top_level_summary_template") not in calls
 
         # yearly and weekly summary templates called for
-        assert call('yearly_summary_template') in calls
-        assert call('weekly_summary_template') in calls
+        assert call("yearly_summary_template") in calls
+        assert call("weekly_summary_template") in calls
 
     def test_set_defaults_initializes_faab_when_enabled(
         self, metadata_manager: ManagerMetadataManager

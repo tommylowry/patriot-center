@@ -482,33 +482,33 @@ class DataExporter:
                     types = add_drop_details.get("types", [])
                     if types and "add" in types and "drop" in types:
 
-                            transaction_item = {
-                                "year": yr,
-                                "week": week,
-                                "type": "add_and_drop",
-                                "added_player": get_image_url(
-                                    add_drop_details.get("add", ""),
-                                    self._image_urls,
-                                    dictionary=True
-                                ),
+                        transaction_item = {
+                            "year": yr,
+                            "week": week,
+                            "type": "add_and_drop",
+                            "added_player": get_image_url(
+                                add_drop_details.get("add", ""),
+                                self._image_urls,
+                                dictionary=True
+                            ),
 
-                                "dropped_player": get_image_url(
-                                    add_drop_details.get("drop", ""),
-                                    self._image_urls,
-                                    dictionary=True
-                                ),
+                            "dropped_player": get_image_url(
+                                add_drop_details.get("drop", ""),
+                                self._image_urls,
+                                dictionary=True
+                            ),
 
-                                # None if FAAB not implemented yet
-                                # or a free agent add/drop
-                                "faab_spent": (
-                                    add_drop_details.get("faab_spent", None)
-                                ),
+                            # None if FAAB not implemented yet
+                            # or a free agent add/drop
+                            "faab_spent": (
+                                add_drop_details.get("faab_spent", None)
+                            ),
 
-                                "transaction_id": transaction_id
-                            }
-                            filtered_transactions.append(
-                                deepcopy(transaction_item)
-                            )
+                            "transaction_id": transaction_id
+                        }
+                        filtered_transactions.append(
+                            deepcopy(transaction_item)
+                        )
 
         # Set total count
         transaction_history["total_count"] = len(filtered_transactions)

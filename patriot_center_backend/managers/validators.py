@@ -13,7 +13,7 @@ class ValidationError(Exception):
     pass
 
 
-def validate_caching_preconditions(weekly_roster_ids: Dict[int, str],
+def validate_caching_preconditions(weekly_roster_ids: Dict[int, str] | None,
                                   year: Optional[str],
                                   week: Optional[str]) -> None:
     """

@@ -42,16 +42,17 @@ class TransactionProcessor:
     Uses session state pattern for thread safety during week processing.
     """
 
-    def __init__(self, use_faab: bool) -> None:
+    def __init__(self) -> None:
         """
         Initialize transaction processor with cache references.
 
         Args:
             use_faab: Whether league uses FAAB (Free Agent Acquisition Budget)
         """
-        self._use_faab = use_faab
+        
         
         # Session state (set externally before processing)
+        self._use_faab: Optional[bool] = None
         self._year: Optional[str] = None
         self._week: Optional[str] = None
         self._weekly_roster_ids: Dict[int, str] = {}

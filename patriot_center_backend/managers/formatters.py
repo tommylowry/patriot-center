@@ -2,7 +2,7 @@
 
 import logging
 from copy import deepcopy
-from typing import Any
+from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 def get_season_state(
     week: str, year: str, playoff_week_start: int | None = None
-) -> str:
+) -> Literal["regular_season", "playoffs"]:
     """Determine the current state of the season (regular season or playoffs).
 
     Args:

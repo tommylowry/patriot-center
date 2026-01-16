@@ -129,6 +129,8 @@ class ManagerMetadataManager:
         self._week = week
         if not playoff_roster_ids:
             self._playoff_roster_ids = {}
+        else:
+            self._playoff_roster_ids = playoff_roster_ids
 
         if (
             week == "1"

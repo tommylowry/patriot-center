@@ -179,7 +179,7 @@ class TestGetTop3ScorersFromMatchupData:
                 ".CACHE_MANAGER.get_starters_cache"
             ) as mock_get_starters_cache,
             patch(
-                "patriot_center_backend.managers.data_exporter.get_image_url"
+                "patriot_center_backend.managers.formatters.get_image_url"
             ) as mock_get_image_url,
         ):
             self.mock_get_player_ids = mock_get_player_ids
@@ -512,7 +512,7 @@ class TestGetMatchupCard:
                 ".get_top_3_scorers_from_matchup_data"
             ) as mock_get_top_3,
             patch(
-                "patriot_center_backend.managers.data_exporter.get_image_url"
+                "patriot_center_backend.managers.formatters.get_image_url"
             ) as mock_get_image_url,
         ):
             self.mock_get_manager_cache = mock_get_manager_cache
@@ -760,7 +760,7 @@ class TestGetTradeCard:
                 ".CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_ids,
             patch(
-                "patriot_center_backend.managers.data_exporter.get_image_url"
+                "patriot_center_backend.managers.formatters.get_image_url"
             ) as mock_get_image_url,
         ):
             self.mock_get_trans_ids = mock_get_trans_ids
@@ -940,7 +940,7 @@ class TestExtractDictData:
         """
         with (
             patch(
-                "patriot_center_backend.managers.data_exporter.get_image_url"
+                "patriot_center_backend.managers.formatters.get_image_url"
             ) as mock_get_image_url,
         ):
             self.mock_get_image_url = mock_get_image_url

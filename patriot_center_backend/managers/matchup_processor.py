@@ -258,7 +258,6 @@ class MatchupProcessor:
 
         # Add matchup details in all summaries
         for summary in summaries:
-
             # Points for
             #   Total
             points_for_dict = summary["points_for"]
@@ -273,25 +272,21 @@ class MatchupProcessor:
             if opponent_manager not in summary["points_for"]["opponents"]:
                 summary["points_for"]["opponents"][opponent_manager] = 0.0
 
-            opp_points_for = (
-                summary["points_for"]["opponents"]
-            )
+            opp_points_for = summary["points_for"]["opponents"]
             opp_points_for[opponent_manager] += points_for
-            opp_points_for[opponent_manager] = (
-                float(Decimal(opp_points_for[opponent_manager]).quantize(
-                    Decimal("0.01"))  # Quantize points to 2 decimal places
-                )
+            opp_points_for[opponent_manager] = float(
+                Decimal(opp_points_for[opponent_manager]).quantize(
+                    Decimal("0.01")
+                )  # Quantize points to 2 decimal places
             )
 
             # Points against
             #   Total
             points_against_dict = summary["points_against"]
             points_against_dict["total"] += points_against
-            points_against_dict["total"] = (
-                float(
-                    Decimal(points_against_dict["total"]).quantize(
-                        Decimal("0.01")  # Quantize points to 2 decimal places
-                    )
+            points_against_dict["total"] = float(
+                Decimal(points_against_dict["total"]).quantize(
+                    Decimal("0.01")  # Quantize points to 2 decimal places
                 )
             )
 
@@ -303,11 +298,9 @@ class MatchupProcessor:
                 summary["points_against"]["opponents"]
             )
             opp_points_against[opponent_manager] += points_against
-            opp_points_against[opponent_manager] = (
-                float(
-                    Decimal(opp_points_against[opponent_manager]).quantize(
-                        Decimal("0.01")  # Quantize points to 2 decimal places
-                    )
+            opp_points_against[opponent_manager] = float(
+                Decimal(opp_points_against[opponent_manager]).quantize(
+                    Decimal("0.01")  # Quantize points to 2 decimal places
                 )
             )
 

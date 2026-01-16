@@ -29,14 +29,14 @@ class MatchupProcessor:
         self._year: str | None = None
         self._week: str | None = None
         self._weekly_roster_ids: dict[int, str] = {}
-        self._playoff_roster_ids: dict[str, list[int]] = {}
+        self._playoff_roster_ids: list[int] = []
 
     def set_session_state(
         self,
         year: str,
         week: str,
         weekly_roster_ids: dict[int, str],
-        playoff_roster_ids: dict[str, list[int]],
+        playoff_roster_ids: list[int],
         playoff_week_start: int,
     ) -> None:
         """Set session state before processing matchup data.
@@ -47,7 +47,7 @@ class MatchupProcessor:
             year: Season year as string
             week: Week number as string
             weekly_roster_ids: Mapping of roster IDs to manager names
-            playoff_roster_ids: Dict with playoff bracket roster IDs
+            playoff_roster_ids: List with playoff bracket roster IDs
             playoff_week_start: Week when playoffs start
         """
         self._year = year
@@ -64,7 +64,7 @@ class MatchupProcessor:
         self._year = None
         self._week = None
         self._weekly_roster_ids = {}
-        self._playoff_roster_ids = {}
+        self._playoff_roster_ids = []
 
     def scrub_matchup_data(self) -> None:
         """Fetch and process all matchups for a given week.
@@ -107,14 +107,12 @@ class MatchupProcessor:
             manager_1_roster_id = manager_1_data.get("roster_id")
             if not manager_1_roster_id:
                 continue
-            if season_state == "playoffs":
-                playoff_roster_ids = (
-                    self._playoff_roster_ids.get("round_roster_ids", [])
-                )
-
-                if manager_1_roster_id not in playoff_roster_ids:
-                    # Manager not in playoffs; skip
-                    continue
+            if (
+                season_state == "playoffs"
+                and manager_1_roster_id not in self._playoff_roster_ids
+            ):
+                # Manager not in playoffs; skip
+                continue
 
             matchup_id = manager_1_data.get("matchup_id")
             if matchup_id in matchups_evaluated:
@@ -321,7 +319,7 @@ class MatchupProcessor:
         """
         manager_cache = CACHE_MANAGER.get_manager_cache()
 
-        for roster_ids in self._playoff_roster_ids.get("round_roster_ids", []):
+        for roster_ids in self._playoff_roster_ids:
             manager = self._weekly_roster_ids.get(roster_ids, None)
             if not manager:
                 continue

@@ -73,7 +73,7 @@ class ManagerMetadataManager:
         self._year: str | None = None
         self._week: str | None = None
         self._weekly_roster_ids: dict[int, str] = {}
-        self._playoff_roster_ids: dict[str, list[int]] = {}
+        self._playoff_roster_ids: list[int] = []
 
         # Initialize data_exporter subprocesser
         self._data_exporter = DataExporter()
@@ -93,7 +93,7 @@ class ManagerMetadataManager:
         year: str,
         week: str,
         roster_id: int,
-        playoff_roster_ids: dict[str, list[int]] | None = None,
+        playoff_roster_ids: list[int] | None = None,
         matchups: list[dict[str, Any]] | None = None,
     ) -> None:
         """Establish roster ID mapping and initialize manager data structures.
@@ -107,7 +107,7 @@ class ManagerMetadataManager:
             year: Season year as string
             week: Week number as string
             roster_id: Sleeper roster ID for this manager (None for co-managers)
-            playoff_roster_ids: Dict with playoff bracket roster IDs (only
+            playoff_roster_ids: List with playoff bracket roster IDs (only
                 relevant if season state is playoff)
             matchups: Matchup data for updating players cache (optional)
 
@@ -127,9 +127,8 @@ class ManagerMetadataManager:
 
         self._year = year
         self._week = week
-        if not playoff_roster_ids:
-            self._playoff_roster_ids = {}
-        else:
+        self._playoff_roster_ids = []
+        if playoff_roster_ids:
             self._playoff_roster_ids = playoff_roster_ids
 
         if (
@@ -218,13 +217,13 @@ class ManagerMetadataManager:
         )
 
         # Scrub transaction data for the week
-        self._transaction_processor.scrub_transaction_data(year, week)
+        self._transaction_processor.scrub_transaction_data()
 
         # Joke trades, add drop by accident, etc
         self._transaction_processor.check_for_reverse_transactions()
 
         # Scrub matchup data for the week
-        self._matchup_processor.scrub_matchup_data(year, week)
+        self._matchup_processor.scrub_matchup_data()
 
         # Scrub playoff data for the week if applicable
         if get_season_state(week, year, self._playoff_week_start) == "playoffs":

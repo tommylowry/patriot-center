@@ -176,8 +176,8 @@ def _get_relevant_playoff_roster_ids(season, week, league_id):
         league_id (str): Sleeper league identifier.
 
     Returns:
-        dict: {"round_roster_ids": [int]} or {} if regular season week.
-              Empty dict signals no playoff filtering needed.
+        [int]} or [] if regular season week.
+              Empty list signals no playoff filtering needed.
 
     Raises:
         ValueError: If week 17 in 2019/2020 or no rosters found for the round.
@@ -204,17 +204,15 @@ def _get_relevant_playoff_roster_ids(season, week, league_id):
     if round == 4:
         raise ValueError("Cannot get playoff roster IDs for week 17")
     
-    relevant_roster_ids = {
-        "round_roster_ids": [],
-    }
+    relevant_roster_ids = []
     for matchup in sleeper_response_playoff_bracket:
         if matchup['r'] == round:
             if "p" in matchup and matchup['p'] == 5:
                 continue  # Skip consolation match
-            relevant_roster_ids['round_roster_ids'].append(matchup['t1'])
-            relevant_roster_ids['round_roster_ids'].append(matchup['t2'])
+            relevant_roster_ids.append(matchup['t1'])
+            relevant_roster_ids.append(matchup['t2'])
 
-    if len(relevant_roster_ids['round_roster_ids']) == 0:
+    if len(relevant_roster_ids) == 0:
         raise ValueError("Cannot get playoff roster IDs for the given week")
     
     return relevant_roster_ids
@@ -323,7 +321,7 @@ def fetch_starters_for_week(season, week):
 
         # During playoff weeks, only include rosters actively competing in that round.
         # This filters out teams eliminated or in consolation bracket.
-        if playoff_roster_ids != {} and roster_id not in playoff_roster_ids['round_roster_ids']:
+        if roster_id not in playoff_roster_ids:
             continue  # Skip non-playoff rosters in playoff weeks
 
         starters_data, players_summary_array_per_manager, positions_summary_array_per_manager = get_starters_data(sleeper_response_matchups,

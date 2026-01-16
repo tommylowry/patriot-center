@@ -32,13 +32,13 @@ def globals_setup():
     """
     with (
         patch(
-            "patriot_center_backend.managers.manager_metadata_manager."
-            "CACHE_MANAGER",
+            "patriot_center_backend.managers.manager_metadata_manager"
+            ".CACHE_MANAGER",
             MagicMock(spec=CacheManager),
         ),
         patch(
-            "patriot_center_backend.managers.manager_metadata_manager."
-            "NAME_TO_MANAGER_USERNAME",
+            "patriot_center_backend.managers.manager_metadata_manager"
+            ".NAME_TO_MANAGER_USERNAME",
             {"Manager 1": "manager1_user"},
         ),
     ):
@@ -724,7 +724,7 @@ class TestSetDefaultsIfMissing:
         metadata_manager._week = "1"
         metadata_manager._use_faab = False
         metadata_manager._playoff_week_start = 15
-        metadata_manager._playoff_roster_ids = {}
+        metadata_manager._playoff_roster_ids = []
         metadata_manager._weekly_roster_ids = {1: "Manager 1"}
 
         metadata_manager._templates = MagicMock()
@@ -754,7 +754,7 @@ class TestSetDefaultsIfMissing:
         metadata_manager._week = "1"
         metadata_manager._use_faab = False
         metadata_manager._playoff_week_start = 15
-        metadata_manager._playoff_roster_ids = {}
+        metadata_manager._playoff_roster_ids = []
         metadata_manager._weekly_roster_ids = {1: "Manager 1"}
 
         metadata_manager._templates = MagicMock(spec=dict[str, Any])
@@ -786,7 +786,7 @@ class TestSetDefaultsIfMissing:
         metadata_manager._week = "1"
         metadata_manager._use_faab = False
         metadata_manager._playoff_week_start = 15
-        metadata_manager._playoff_roster_ids = {}
+        metadata_manager._playoff_roster_ids = []
         metadata_manager._weekly_roster_ids = {1: "Manager 1"}
 
         metadata_manager._templates = MagicMock(spec=dict[str, Any])
@@ -816,7 +816,7 @@ class TestSetDefaultsIfMissing:
         metadata_manager._week = "15"
         metadata_manager._use_faab = False
         metadata_manager._playoff_week_start = 15
-        metadata_manager._playoff_roster_ids = {"round_roster_ids": [2, 3]}
+        metadata_manager._playoff_roster_ids = [2, 3]
         metadata_manager._weekly_roster_ids[1] = "Manager 1"
 
         metadata_manager._templates = MagicMock(spec=dict[str, Any])
@@ -847,7 +847,7 @@ class TestSetDefaultsIfMissing:
         metadata_manager._week = "1"
         metadata_manager._use_faab = False
         metadata_manager._playoff_week_start = 15
-        metadata_manager._playoff_roster_ids = {"round_roster_ids": [2, 3]}
+        metadata_manager._playoff_roster_ids = [2, 3]
         metadata_manager._weekly_roster_ids[1] = "Manager 1"
 
         metadata_manager._templates = MagicMock(spec=dict[str, Any])
@@ -881,7 +881,7 @@ class TestSetDefaultsIfMissing:
         metadata_manager._week = "1"
         metadata_manager._use_faab = True
         metadata_manager._playoff_week_start = 15
-        metadata_manager._playoff_roster_ids = {}
+        metadata_manager._playoff_roster_ids = []
         metadata_manager._weekly_roster_ids[1] = "Manager 1"
 
         metadata_manager._templates = MagicMock(spec=dict[str, Any])

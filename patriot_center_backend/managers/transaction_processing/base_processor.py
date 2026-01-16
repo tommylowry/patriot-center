@@ -86,7 +86,7 @@ class TransactionProcessor:
         """Checks for reverse transactions"""
         transaction_reverter.check_for_reverse_transactions(self._weekly_transaction_ids)
     
-    def scrub_transaction_data(self, year: str, week: str) -> None:
+    def scrub_transaction_data(self) -> None:
         """
         Fetch and process all transactions for a given week.
 

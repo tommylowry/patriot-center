@@ -1,16 +1,13 @@
-"""
-Central manager metadata orchestration.
+"""Central manager metadata orchestration."""
 
-This is the ONLY place where manager metadata operations should be coordinated.
-All other code should use ManagerMetadataManager methods.
-
-Single Responsibility: Orchestrate sub-processors and manage persistence.
-"""
 from copy import deepcopy
 from typing import Any, Dict, Optional
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import LEAGUE_IDS, NAME_TO_MANAGER_USERNAME
+from patriot_center_backend.constants import (
+    LEAGUE_IDS,
+    NAME_TO_MANAGER_USERNAME,
+)
 from patriot_center_backend.managers.data_exporter import DataExporter
 from patriot_center_backend.managers.formatters import get_season_state
 from patriot_center_backend.managers.matchup_processor import MatchupProcessor
@@ -18,17 +15,20 @@ from patriot_center_backend.managers.templates import (
     initialize_faab_template,
     initialize_summary_templates,
 )
-from patriot_center_backend.managers.transaction_processing.base_processor import (
+from patriot_center_backend.managers.transaction_processing.base_processor import (  # noqa: E501
     TransactionProcessor,
 )
-from patriot_center_backend.managers.validators import validate_caching_preconditions
-from patriot_center_backend.utils.player_cache_updater import update_players_cache_with_list
+from patriot_center_backend.managers.validators import (
+    validate_caching_preconditions,
+)
+from patriot_center_backend.utils.player_cache_updater import (
+    update_players_cache_with_list,
+)
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
 class ManagerMetadataManager:
-    """
-    Central orchestrator for all manager metadata operations (Singleton).
+    """Central orchestrator for all manager metadata operations (Singleton).
 
     This is the ONLY entry point for manager metadata management.
     Coordinates between specialized processors and manages cache persistence.
@@ -40,7 +40,8 @@ class ManagerMetadataManager:
     - Session state management during week processing
 
     Coordinates:
-    - TransactionProcessor: Handles trades, adds, drops, FAAB, reversal detection
+    - TransactionProcessor: Handles trades, adds, drops, FAAB, reversal
+        detection
     - MatchupProcessor: Handles matchups, win/loss records, playoff tracking
     - DataExporter: Provides public read-only API
     - CacheManager: Handles cache loading/saving
@@ -55,33 +56,37 @@ class ManagerMetadataManager:
     """
 
     def __init__(self) -> None:
+        """Initializes the ManagerMetadataManager singleton.
 
+        Sets configuration state, initializes templates, and sets session state.
+        Also initializes sub-processors (data_exporter, transaction_processor,
+            matchup_processor) and caches (image_urls_cache).
+        """
         # Configuration state
-        self._use_faab: Optional[bool] = None
-        self._playoff_week_start: Optional[int] = None
-        
+        self._use_faab: bool | None = None
+        self._playoff_week_start: int | None = None
+
         # Initialize templates
         self._templates = {}  # Will be set when use_faab is known
-        
+
         # Session state
-        self._year: Optional[str] = None
-        self._week: Optional[str] = None
-        self._weekly_roster_ids: Dict[int, str] = {}
-        self._playoff_roster_ids: Dict[int, str] = {}
+        self._year: str | None = None
+        self._week: str | None = None
+        self._weekly_roster_ids: dict[int, str] | None = None
+        self._playoff_roster_ids: dict[str, list[int]] | None = None
 
         # Initialize data_exporter subprocesser
         self._data_exporter = DataExporter()
-        
+
         # Image URL cache
-        self._image_urls_cache: Dict[str, str] = {}
-        
+        self._image_urls_cache: dict[str, str] | None = None
+
         # Initialize sub-processors (will be created when needed)
-        self._transaction_processor: Optional[TransactionProcessor] = None
-        self._matchup_processor: Optional[MatchupProcessor] = None
-    
+        self._transaction_processor: TransactionProcessor | None = None
+        self._matchup_processor: MatchupProcessor | None = None
+
     def _ensure_processors_initialized(self) -> None:
-        """
-        Lazy initialization of processors once league configuration is known.
+        """Lazy initialization of processors once league configuration is known.
 
         Processors require use_faab and playoff_week_start, which are fetched
         during the first set_roster_id() call. This ensures processors are
@@ -92,22 +97,30 @@ class ManagerMetadataManager:
         """
         if self._transaction_processor is None:
             if self._use_faab is None:
-                raise ValueError("Cannot initialize processors before use_faab is set")
-            
+                raise ValueError(
+                    "Cannot initialize processors before use_faab is set"
+                )
+
             self._transaction_processor = TransactionProcessor(
-                use_faab = self._use_faab
+                use_faab=self._use_faab
             )
-            
+
             self._matchup_processor = MatchupProcessor(
-                playoff_week_start = self._playoff_week_start
+                playoff_week_start=self._playoff_week_start
             )
-    
+
     # ========== Update Cache Functions ==========
-    
-    def set_roster_id(self, manager: str, year: str, week: str, roster_id: int,
-                     playoff_roster_ids: dict = {}, matchups: dict = {}) -> None:
-        """
-        Establish roster ID mapping and initialize manager data structures.
+
+    def set_roster_id(
+        self,
+        manager: str,
+        year: str,
+        week: str,
+        roster_id: int,
+        playoff_roster_ids: dict[str, list[int]] | None = None,
+        matchups: list[dict[str, Any]] | None = None,
+    ) -> None:
+        """Establish roster ID mapping and initialize manager data structures.
 
         Must be called for each manager before cache_week_data().
         On first call (week 1), fetches league settings to determine FAAB usage
@@ -118,7 +131,8 @@ class ManagerMetadataManager:
             year: Season year as string
             week: Week number as string
             roster_id: Sleeper roster ID for this manager (None for co-managers)
-            playoff_roster_ids: Dict with playoff bracket roster IDs (optional)
+            playoff_roster_ids: Dict with playoff bracket roster IDs (only
+                relevant if season state is playoff)
             matchups: Matchup data for updating players cache (optional)
 
         Raises:
@@ -126,10 +140,10 @@ class ManagerMetadataManager:
         """
         manager_cache = CACHE_MANAGER.get_manager_cache()
 
-        if roster_id == None:
+        if not roster_id:
             # Co-manager scenario; skip
             return
-        
+
         if matchups:
             update_players_cache_with_list(matchups)
 
@@ -137,7 +151,7 @@ class ManagerMetadataManager:
         self._week = week
         self._playoff_roster_ids = playoff_roster_ids
 
-        if week == "1" or self._use_faab == None or self._playoff_week_start == None:
+        if week == "1" or self._use_faab is None or self._playoff_week_start is None:
             # Fetch league settings to determine FAAB usage at start of season
             league_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year))}")
             self._use_faab = True if league_settings.get("settings", {}).get("waiver_type", 1)==2 else False

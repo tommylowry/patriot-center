@@ -37,7 +37,7 @@ class MatchupProcessor:
         week: str,
         weekly_roster_ids: dict[int, str],
         playoff_roster_ids: dict[str, list[int]],
-        playoff_week_start: int
+        playoff_week_start: int,
     ) -> None:
         """Set session state before processing matchup data.
 
@@ -113,7 +113,6 @@ class MatchupProcessor:
                 )
 
                 if manager_1_roster_id not in playoff_roster_ids:
-
                     # Manager not in playoffs; skip
                     continue
 
@@ -242,8 +241,12 @@ class MatchupProcessor:
             manager_cache[manager]["summary"]["matchup_data"][season_state]
         )
 
-        summaries = [yearly_overall_summary, yearly_season_state_summary,
-                     top_level_overall_summary, top_level_season_state_summary]
+        summaries = [
+            yearly_overall_summary,
+            yearly_season_state_summary,
+            top_level_overall_summary,
+            top_level_season_state_summary,
+        ]
 
         # Determine result key
         if result == "win":
@@ -257,13 +260,12 @@ class MatchupProcessor:
 
         # Add matchup details in all summaries
         for summary in summaries:
-
             # Points for
             #   Total
             total_points_for = summary["points_for"]["total"]
             total_points_for += points_for
             total_points_for = (  # Quantize points to 2 decimal places
-                float(Decimal(total_points_for).quantize(Decimal('0.01')))
+                float(Decimal(total_points_for).quantize(Decimal("0.01")))
             )
 
             #   Opponent-specific
@@ -275,7 +277,7 @@ class MatchupProcessor:
             )
             opp_points_for += points_for
             opp_points_for = (  # Quantize points to 2 decimal places
-                float(Decimal(opp_points_for).quantize(Decimal('0.01')))
+                float(Decimal(opp_points_for).quantize(Decimal("0.01")))
             )
 
             # Points against
@@ -283,7 +285,7 @@ class MatchupProcessor:
             total_points_against = summary["points_against"]["total"]
             total_points_against += points_against
             total_points_against = (  # Quantize points to 2 decimal places
-                float(Decimal(total_points_against).quantize(Decimal('0.01')))
+                float(Decimal(total_points_against).quantize(Decimal("0.01")))
             )
 
             #   Opponent-specific
@@ -295,7 +297,7 @@ class MatchupProcessor:
             )
             opp_points_against += points_against
             opp_points_against = (  # Quantize points to 2 decimal places
-                float(Decimal(opp_points_against).quantize(Decimal('0.01')))
+                float(Decimal(opp_points_against).quantize(Decimal("0.01")))
             )
 
             # Total matchups

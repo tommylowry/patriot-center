@@ -18,14 +18,14 @@ faab_template = {
         "total": 0,
         "trade_partners": {
             # "trade_partner": amount_received
-        }
+        },
     },
     "acquired_from": {
         "total": 0,
         "trade_partners": {
             # "trade_partner": amount_received
-        }
-    }
+        },
+    },
 }
 
 
@@ -43,8 +43,8 @@ def initialize_faab_template(manager: str, year: str, week: str) -> None:
     manager_cache = CACHE_MANAGER.get_manager_cache()
 
     if "faab" not in manager_cache[manager]["summary"]["transactions"]:
-        manager_cache[manager]["summary"]["transactions"]["faab"] = (
-            deepcopy(faab_template)
+        manager_cache[manager]["summary"]["transactions"]["faab"] = deepcopy(
+            faab_template
         )
 
     year_cache = manager_cache[manager]["years"][year]
@@ -55,8 +55,8 @@ def initialize_faab_template(manager: str, year: str, week: str) -> None:
     if "faab" not in year_cache["weeks"][week]["transactions"]:
         faab_template_with_transaction_ids = deepcopy(faab_template)
         faab_template_with_transaction_ids["transaction_ids"] = []
-        year_cache["weeks"][week]["transactions"]["faab"] = (
-            deepcopy(faab_template_with_transaction_ids)
+        year_cache["weeks"][week]["transactions"]["faab"] = deepcopy(
+            faab_template_with_transaction_ids
         )
 
 
@@ -78,14 +78,14 @@ def initialize_summary_templates(use_faab: bool) -> dict[str, dict[str, Any]]:
         "total": 0,
         "opponents": {
             # "opponent_manager": value
-        }
+        },
     }
 
     matchup_data_float = {
         "total": 0.0,
         "opponents": {
             # "opponent_manager": value
-        }
+        },
     }
 
     full_matchup_data = {
@@ -94,7 +94,7 @@ def initialize_summary_templates(use_faab: bool) -> dict[str, dict[str, Any]]:
         "total_matchups": deepcopy(matchup_data_int),
         "wins": deepcopy(matchup_data_int),
         "losses": deepcopy(matchup_data_int),
-        "ties": deepcopy(matchup_data_int)
+        "ties": deepcopy(matchup_data_int),
     }
 
     # Transaction data template
@@ -119,20 +119,20 @@ def initialize_summary_templates(use_faab: bool) -> dict[str, dict[str, Any]]:
                 #         "trade_partner": num_times_acquired_from
                 #     }
                 # }
-            }
+            },
         },
         "adds": {
             "total": 0,
             "players": {
                 # "player_name": num_times_added
-            }
+            },
         },
         "drops": {
             "total": 0,
             "players": {
                 # "player_name": num_times_dropped
-            }
-        }
+            },
+        },
         # "faab" = {
         #     "total_lost_or_gained": 0,
         #     "players":{
@@ -163,9 +163,9 @@ def initialize_summary_templates(use_faab: bool) -> dict[str, dict[str, Any]]:
         "matchup_data": {
             "overall": deepcopy(full_matchup_data),
             "regular_season": deepcopy(full_matchup_data),
-            "playoffs": deepcopy(full_matchup_data)
+            "playoffs": deepcopy(full_matchup_data),
         },
-        "transactions": deepcopy(transaction_data)
+        "transactions": deepcopy(transaction_data),
     }
 
     weekly_summary_template = {
@@ -173,19 +173,19 @@ def initialize_summary_templates(use_faab: bool) -> dict[str, dict[str, Any]]:
             "opponent_manager": None,
             "result": None,  # "win", "loss", "tie"
             "points_for": 0.0,
-            "points_against": 0.0
+            "points_against": 0.0,
         },
-        "transactions": deepcopy(transaction_data)
+        "transactions": deepcopy(transaction_data),
     }
 
     weekly_summary_template_not_in_playoffs = {
         "matchup_data": {},  # No matchup data when not in playoffs
-        "transactions": deepcopy(transaction_data)
+        "transactions": deepcopy(transaction_data),
     }
 
     places_to_add = [
         weekly_summary_template["transactions"],
-        weekly_summary_template_not_in_playoffs["transactions"]
+        weekly_summary_template_not_in_playoffs["transactions"],
     ]
 
     for place in places_to_add:
@@ -203,9 +203,8 @@ def initialize_summary_templates(use_faab: bool) -> dict[str, dict[str, Any]]:
         },
         "playoff_appearances": [
             # list of years with playoff appearances
-        ]
+        ],
     }
-
 
     return {
         "yearly_summary_template": yearly_summary_template,
@@ -213,5 +212,5 @@ def initialize_summary_templates(use_faab: bool) -> dict[str, dict[str, Any]]:
         "weekly_summary_not_in_playoffs_template": (
             weekly_summary_template_not_in_playoffs
         ),
-        "top_level_summary_template": top_level_summary_template
+        "top_level_summary_template": top_level_summary_template,
     }

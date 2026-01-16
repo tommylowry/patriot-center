@@ -1,10 +1,7 @@
-"""
-Matchup and playoff processing for manager metadata.
+"""Matchup and playoff processing for manager metadata."""
 
-Handles matchup data collection and playoff bracket processing.
-"""
 from decimal import Decimal
-from typing import Dict, Optional
+from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
@@ -13,45 +10,43 @@ from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
 class MatchupProcessor:
-    """
-    Processes fantasy football matchups and playoff data.
+    """Processes fantasy football matchups and playoff data.
 
     Handles:
     - Fetching matchup data from Sleeper API
     - Determining matchup results (win/loss/tie)
-    - Updating cache at 4 levels (weekly, yearly-overall, yearly-season-state, all-time)
+    - Updating cache at 4 levels (weekly, yearly-overall, yearly-season-state,
+        all-time)
     - Tracking playoff appearances
 
     Uses session state pattern for thread safety during week processing.
     """
 
     def __init__(self) -> None:
-        """
-        Initialize matchup processor with cache reference.
-
-        Args:
-            playoff_week_start: Week when playoffs start (from league settings)
-        """
-        
-        
+        """Initialize matchup processor with cache reference."""
         # Session state (set externally before processing)
-        self._playoff_week_start: Optional[int] = None
-        self._year: Optional[str] = None
-        self._week: Optional[str] = None
-        self._weekly_roster_ids: Dict[int, str] = {}
-        self._playoff_roster_ids: Dict[int, str] = {}
-    
-    def set_session_state(self, year: str, week: str, weekly_roster_ids: Dict[int, str],
-                         playoff_roster_ids: dict[str, list[int]], playoff_week_start: int) -> None:
-        """
-        Set session state before processing matchup data.
+        self._playoff_week_start: int | None = None
+        self._year: str | None = None
+        self._week: str | None = None
+        self._weekly_roster_ids: dict[int, str] = {}
+        self._playoff_roster_ids: dict[str, list[int]] = {}
+
+    def set_session_state(
+        self,
+        year: str,
+        week: str,
+        weekly_roster_ids: dict[int, str],
+        playoff_roster_ids: dict[str, list[int]],
+        playoff_week_start: int
+    ) -> None:
+        """Set session state before processing matchup data.
 
         Must be called before scrub_matchup_data() to establish context.
 
         Args:
             year: Season year as string
             week: Week number as string
-            weekly_roster_ids: Mapping of roster IDs to manager names for this week
+            weekly_roster_ids: Mapping of roster IDs to manager names
             playoff_roster_ids: Dict with playoff bracket roster IDs
             playoff_week_start: Week when playoffs start
         """
@@ -60,10 +55,9 @@ class MatchupProcessor:
         self._weekly_roster_ids = weekly_roster_ids
         self._playoff_roster_ids = playoff_roster_ids
         self._playoff_week_start = playoff_week_start
-    
+
     def clear_session_state(self) -> None:
-        """
-        Clear session state after processing week.
+        """Clear session state after processing week.
 
         Prevents state leakage between weeks by resetting all session variables.
         """
@@ -72,9 +66,8 @@ class MatchupProcessor:
         self._weekly_roster_ids = {}
         self._playoff_roster_ids = {}
 
-    def scrub_matchup_data(self, year: str, week: str) -> None:
-        """
-        Fetch and process all matchups for a given week.
+    def scrub_matchup_data(self) -> None:
+        """Fetch and process all matchups for a given week.
 
         Workflow:
         1. Fetch matchup data from Sleeper API
@@ -83,52 +76,80 @@ class MatchupProcessor:
         4. Determine win/loss/tie based on points
         5. Update cache for both managers via _add_matchup_details_to_cache
 
-        Args:
-            year: Season year as string
-            week: Week number as string
-
         Raises:
             ValueError: If no league ID found for the year
         """
-        league_id = LEAGUE_IDS.get(int(year), "")
-        if not league_id:
-            raise ValueError(f"No league ID found for year {year}.")
-        
-        matchups_evaluated = []
-        manager_matchup_data = fetch_sleeper_data(f"league/{league_id}/matchups/{week}")
-        for manager_1_data in manager_matchup_data:
-            if get_season_state(self._week, self._year, self._playoff_week_start) == "playoffs" and manager_1_data.get("roster_id", None) not in self._playoff_roster_ids.get("round_roster_ids", []):
-                # Manager not in playoffs; skip
-                continue
+        if not self._week or not self._year:
+            raise ValueError("Week or Year not set. Cannot process matchups.")
 
-            matchup_id = manager_1_data.get("matchup_id", None)
+        if not self._playoff_week_start:
+            raise ValueError(
+                "Playoff week start not set. Cannot process matchups."
+            )
+
+        league_id = LEAGUE_IDS.get(int(self._year), "")
+        if not league_id:
+            raise ValueError(f"No league ID found for year {self._year}.")
+
+        matchups_evaluated = []
+        manager_matchup_data = fetch_sleeper_data(
+            f"league/{league_id}/matchups/{self._week}"
+        )
+
+        if isinstance(manager_matchup_data, dict):
+            raise ValueError("No matchup data found for week.")
+
+        season_state = get_season_state(
+            self._week, self._year, self._playoff_week_start
+        )
+
+        for manager_1_data in manager_matchup_data:
+            manager_1_roster_id = manager_1_data.get("roster_id")
+            if not manager_1_roster_id:
+                continue
+            if season_state == "playoffs":
+                playoff_roster_ids = (
+                    self._playoff_roster_ids.get("round_roster_ids", [])
+                )
+
+                if manager_1_roster_id not in playoff_roster_ids:
+
+                    # Manager not in playoffs; skip
+                    continue
+
+            matchup_id = manager_1_data.get("matchup_id")
             if matchup_id in matchups_evaluated:
                 continue
             matchups_evaluated.append(matchup_id)
 
             # Find opponent manager data
             for manager_2_data in manager_matchup_data:
-                if manager_2_data.get("roster_id", None) == manager_1_data.get("roster_id", None):
+                if manager_2_data.get("roster_id") == manager_1_roster_id:
                     continue
                 if manager_2_data.get("matchup_id", None) == matchup_id:
                     break
-            
+
+            manager_2_roster_id = manager_2_data.get("roster_id")
+
             # Extract points data
             manager_1_points = manager_1_data.get("points", 0.0)
             manager_2_points = manager_2_data.get("points", 0.0)
 
+            manager_1_name = self._weekly_roster_ids.get(manager_1_roster_id)
+            manager_2_name = self._weekly_roster_ids.get(manager_2_roster_id)
+
             # Construct manager matchup dicts
             manager_1 = {
-                "manager": self._weekly_roster_ids.get(manager_1_data.get("roster_id", None), None),
-                "opponent_manager": self._weekly_roster_ids.get(manager_2_data.get("roster_id", None), None),
+                "manager": manager_1_name,
+                "opponent_manager": manager_2_name,
                 "points_for": manager_1_points,
-                "points_against": manager_2_points
+                "points_against": manager_2_points,
             }
             manager_2 = {
-                "manager": self._weekly_roster_ids.get(manager_2_data.get("roster_id", None), None),
-                "opponent_manager": self._weekly_roster_ids.get(manager_1_data.get("roster_id", None), None),
-                "points_for": manager_2_data.get("points", 0.0),
-                "points_against": manager_1_points
+                "manager": manager_2_name,
+                "opponent_manager": manager_1_name,
+                "points_for": manager_2_points,
+                "points_against": manager_1_points,
             }
 
             # Determine results
@@ -141,14 +162,14 @@ class MatchupProcessor:
             else:
                 manager_1["result"] = "tie"
                 manager_2["result"] = "tie"
-            
 
             self._add_matchup_details_to_cache(manager_1)
             self._add_matchup_details_to_cache(manager_2)
-    
-    def _add_matchup_details_to_cache(self, matchup_data: dict) -> None:
-        """
-        Update cache with matchup results at all aggregation levels.
+
+    def _add_matchup_details_to_cache(
+        self, matchup_data: dict[str, Any]
+    ) -> None:
+        """Update cache with matchup results at all aggregation levels.
 
         Updates cache at 4 levels:
         1. Weekly summary (specific opponent and result)
@@ -164,39 +185,66 @@ class MatchupProcessor:
         Uses Decimal for precise point quantization to 2 decimal places.
 
         Args:
-            matchup_data: Dict with manager, opponent_manager, points_for, points_against, result
+            matchup_data: Dict with keys:
+                - manager
+                - opponent_manager
+                - points_for
+                - points_against
+                - result
 
         Raises:
             ValueError: If matchup data is invalid or missing required fields
         """
+        if not self._week or not self._year:
+            raise ValueError("Week or Year not set. Cannot process matchups.")
+
+        if not self._playoff_week_start:
+            raise ValueError(
+                "Playoff week start not set. Cannot process matchups."
+            )
+
         manager_cache = CACHE_MANAGER.get_manager_cache()
 
-        manager = matchup_data.get("manager", None)
-        opponent_manager = matchup_data.get("opponent_manager", None)
-        points_for = matchup_data.get("points_for", 0.0)
-        points_against = matchup_data.get("points_against", 0.0)
-        result = matchup_data.get("result", None)
+        manager = matchup_data.get("manager")
+        opponent_manager = matchup_data.get("opponent_manager")
+        points_for = matchup_data.get("points_for")
+        points_against = matchup_data.get("points_against")
+        result = matchup_data.get("result")
 
         if not manager or not opponent_manager or result is None:
             raise ValueError("Invalid matchup data for caching:", matchup_data)
-        
-        # Update weekly summary
-        weekly_summary = manager_cache[manager]["years"][self._year]["weeks"][self._week]["matchup_data"]
-        weekly_summary["opponent_manager"] = opponent_manager
-        weekly_summary["points_for"] = points_for
-        weekly_summary["points_against"] = points_against
-        weekly_summary["result"] = result
+
+        year_level = manager_cache[manager]["years"][self._year]
+
+        # Update weekly matchup summary
+        week_level = year_level["weeks"][self._week]
+        week_level["matchup_data"]["opponent_manager"] = opponent_manager
+        week_level["matchup_data"]["points_for"] = points_for
+        week_level["matchup_data"]["points_against"] = points_against
+        week_level["matchup_data"]["result"] = result
 
         # Prepare yearly and top-level summaries
-        yearly_overall_summary         = manager_cache[manager]["years"][self._year]["summary"]["matchup_data"]["overall"]
-        yearly_season_state_summary    = manager_cache[manager]["years"][self._year]["summary"]["matchup_data"][get_season_state(self._week, self._year, self._playoff_week_start)]
+        season_state = get_season_state(
+            self._week, self._year, self._playoff_week_start
+        )
 
-        top_level_overall_summary      = manager_cache[manager]["summary"]["matchup_data"]["overall"]
-        top_level_season_state_summary = manager_cache[manager]["summary"]["matchup_data"][get_season_state(self._week, self._year, self._playoff_week_start)]
-        
+        yearly_overall_summary = (
+            year_level["summary"]["matchup_data"]["overall"]
+        )
+        yearly_season_state_summary = (
+            year_level["summary"]["matchup_data"][season_state]
+        )
+
+        top_level_overall_summary = (
+            manager_cache[manager]["summary"]["matchup_data"]["overall"]
+        )
+        top_level_season_state_summary = (
+            manager_cache[manager]["summary"]["matchup_data"][season_state]
+        )
+
         summaries = [yearly_overall_summary, yearly_season_state_summary,
                      top_level_overall_summary, top_level_season_state_summary]
-        
+
         # Determine result key
         if result == "win":
             result_key = "wins"
@@ -206,22 +254,49 @@ class MatchupProcessor:
             result_key = "ties"
         else:
             raise ValueError("Invalid matchup result for caching:", result)
-        
-        
+
         # Add matchup details in all summaries
         for summary in summaries:
-            
+
             # Points for
-            summary["points_for"]["total"] += points_for
+            #   Total
+            total_points_for = summary["points_for"]["total"]
+            total_points_for += points_for
+            total_points_for = (  # Quantize points to 2 decimal places
+                float(Decimal(total_points_for).quantize(Decimal('0.01')))
+            )
+
+            #   Opponent-specific
             if opponent_manager not in summary["points_for"]["opponents"]:
                 summary["points_for"]["opponents"][opponent_manager] = 0.0
-            summary["points_for"]["opponents"][opponent_manager] += points_for
+
+            opp_points_for = (
+                summary["points_for"]["opponents"][opponent_manager]
+            )
+            opp_points_for += points_for
+            opp_points_for = (  # Quantize points to 2 decimal places
+                float(Decimal(opp_points_for).quantize(Decimal('0.01')))
+            )
 
             # Points against
-            summary["points_against"]["total"] += points_against
+            #   Total
+            total_points_against = summary["points_against"]["total"]
+            total_points_against += points_against
+            total_points_against = (  # Quantize points to 2 decimal places
+                float(Decimal(total_points_against).quantize(Decimal('0.01')))
+            )
+
+            #   Opponent-specific
             if opponent_manager not in summary["points_against"]["opponents"]:
                 summary["points_against"]["opponents"][opponent_manager] = 0.0
-            summary["points_against"]["opponents"][opponent_manager] += points_against
+
+            opp_points_against = (
+                summary["points_against"]["opponents"][opponent_manager]
+            )
+            opp_points_against += points_against
+            opp_points_against = (  # Quantize points to 2 decimal places
+                float(Decimal(opp_points_against).quantize(Decimal('0.01')))
+            )
 
             # Total matchups
             summary["total_matchups"]["total"] += 1
@@ -235,19 +310,12 @@ class MatchupProcessor:
                 summary[result_key]["opponents"][opponent_manager] = 0
             summary[result_key]["opponents"][opponent_manager] += 1
 
-            # Quantize points to 2 decimal places
-            summary["points_for"]["total"] = float(Decimal(summary["points_for"]["total"]).quantize(Decimal('0.01')))
-            summary["points_for"]["opponents"][opponent_manager] = float(Decimal(summary["points_for"]["opponents"][opponent_manager]).quantize(Decimal('0.01')))
-            
-            summary["points_against"]["total"] = float(Decimal(summary["points_against"]["total"]).quantize(Decimal('0.01')))
-            summary["points_against"]["opponents"][opponent_manager] = float(Decimal(summary["points_against"]["opponents"][opponent_manager]).quantize(Decimal('0.01')))
-    
     def scrub_playoff_data(self) -> None:
-        """
-        Mark playoff appearances for all teams in the playoff bracket.
+        """Mark playoff appearances for all teams in the playoff bracket.
 
         Adds the current year to each playoff team's playoff_appearances list
-        if not already present. This is used for awards and playoff streak tracking.
+        if not already present. This is used for awards and playoff streak
+        tracking.
         """
         manager_cache = CACHE_MANAGER.get_manager_cache()
 
@@ -256,7 +324,9 @@ class MatchupProcessor:
             if not manager:
                 continue
 
-            manager_overall_data = manager_cache[manager]["summary"]["overall_data"]
+            manager_overall_data = (
+                manager_cache[manager]["summary"]["overall_data"]
+            )
 
             # Mark week as playoff week in the weekly summary
             if self._year not in manager_overall_data["playoff_appearances"]:

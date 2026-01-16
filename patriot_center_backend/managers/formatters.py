@@ -109,7 +109,7 @@ def get_top_3_scorers_from_matchup_data(
 
     var_map = {manager_1: "manager_1", manager_2: "manager_2"}
     for manager in [manager_1, manager_2]:
-        manager_starters = deepcopy(week_data.get[manager])
+        manager_starters = deepcopy(week_data[manager])
         # Remove total points aggregate, we only want individual players
         if "Total_Points" in manager_starters:
             manager_starters.pop("Total_Points")

@@ -258,12 +258,15 @@ class MatchupProcessor:
 
         # Add matchup details in all summaries
         for summary in summaries:
+
             # Points for
             #   Total
-            total_points_for = summary["points_for"]["total"]
-            total_points_for += points_for
-            total_points_for = (  # Quantize points to 2 decimal places
-                float(Decimal(total_points_for).quantize(Decimal("0.01")))
+            points_for_dict = summary["points_for"]
+            points_for_dict["total"] += points_for
+            points_for_dict["total"] = (
+                float(  # Quantize points to 2 decimal places
+                    Decimal(points_for_dict["total"]).quantize(Decimal("0.01"))
+                )
             )
 
             #   Opponent-specific
@@ -271,19 +274,25 @@ class MatchupProcessor:
                 summary["points_for"]["opponents"][opponent_manager] = 0.0
 
             opp_points_for = (
-                summary["points_for"]["opponents"][opponent_manager]
+                summary["points_for"]["opponents"]
             )
-            opp_points_for += points_for
-            opp_points_for = (  # Quantize points to 2 decimal places
-                float(Decimal(opp_points_for).quantize(Decimal("0.01")))
+            opp_points_for[opponent_manager] += points_for
+            opp_points_for[opponent_manager] = (
+                float(Decimal(opp_points_for[opponent_manager]).quantize(
+                    Decimal("0.01"))  # Quantize points to 2 decimal places
+                )
             )
 
             # Points against
             #   Total
-            total_points_against = summary["points_against"]["total"]
-            total_points_against += points_against
-            total_points_against = (  # Quantize points to 2 decimal places
-                float(Decimal(total_points_against).quantize(Decimal("0.01")))
+            points_against_dict = summary["points_against"]
+            points_against_dict["total"] += points_against
+            points_against_dict["total"] = (
+                float(
+                    Decimal(points_against_dict["total"]).quantize(
+                        Decimal("0.01")  # Quantize points to 2 decimal places
+                    )
+                )
             )
 
             #   Opponent-specific
@@ -291,11 +300,15 @@ class MatchupProcessor:
                 summary["points_against"]["opponents"][opponent_manager] = 0.0
 
             opp_points_against = (
-                summary["points_against"]["opponents"][opponent_manager]
+                summary["points_against"]["opponents"]
             )
-            opp_points_against += points_against
-            opp_points_against = (  # Quantize points to 2 decimal places
-                float(Decimal(opp_points_against).quantize(Decimal("0.01")))
+            opp_points_against[opponent_manager] += points_against
+            opp_points_against[opponent_manager] = (
+                float(
+                    Decimal(opp_points_against[opponent_manager]).quantize(
+                        Decimal("0.01")  # Quantize points to 2 decimal places
+                    )
+                )
             )
 
             # Total matchups

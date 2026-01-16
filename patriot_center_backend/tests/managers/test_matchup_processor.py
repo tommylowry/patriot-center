@@ -491,6 +491,7 @@ class TestAddMatchupDetailsToCache:
 
         mock_matchup_processor._year = "2023"
         mock_matchup_processor._week = "1"
+        mock_matchup_processor._playoff_week_start = 15
 
         matchup_data = {
             "manager": "Manager 1",
@@ -522,6 +523,7 @@ class TestAddMatchupDetailsToCache:
 
         mock_matchup_processor._year = "2023"
         mock_matchup_processor._week = "1"
+        mock_matchup_processor._playoff_week_start = 15
 
         matchup_data = {
             "manager": "Manager 1",
@@ -559,6 +561,7 @@ class TestAddMatchupDetailsToCache:
 
         mock_matchup_processor._year = "2023"
         mock_matchup_processor._week = "15"
+        mock_matchup_processor._playoff_week_start = 15
 
         matchup_data = {
             "manager": "Manager 1",
@@ -593,6 +596,7 @@ class TestAddMatchupDetailsToCache:
 
         mock_matchup_processor._year = "2023"
         mock_matchup_processor._week = "1"
+        mock_matchup_processor._playoff_week_start = 15
 
         matchup_data = {
             "manager": "Manager 1",
@@ -623,6 +627,7 @@ class TestAddMatchupDetailsToCache:
 
         mock_matchup_processor._year = "2023"
         mock_matchup_processor._week = "1"
+        mock_matchup_processor._playoff_week_start = 15
 
         matchup_data = {
             "manager": "Manager 1",

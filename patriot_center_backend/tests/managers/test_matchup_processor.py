@@ -19,14 +19,12 @@ def globals_setup():
     Yields:
         None
     """
-    with (
-        patch(
-            "patriot_center_backend.managers.matchup_processor"
-            ".LEAGUE_IDS",
-            {2023: "mock_league_id"},
-        )
+    with patch(
+        "patriot_center_backend.managers.matchup_processor.LEAGUE_IDS",
+        {2023: "mock_league_id"},
     ):
         yield
+
 
 @pytest.fixture
 def mock_manager_cache() -> dict[str, Any]:
@@ -45,7 +43,7 @@ def mock_manager_cache() -> dict[str, Any]:
                         "ties": {"total": 0, "opponents": {}},
                         "points_for": {"total": 0.0, "opponents": {}},
                         "points_against": {"total": 0.0, "opponents": {}},
-                        "total_matchups": {"total": 0, "opponents": {}}
+                        "total_matchups": {"total": 0, "opponents": {}},
                     },
                     "regular_season": {
                         "wins": {"total": 0, "opponents": {}},
@@ -53,7 +51,7 @@ def mock_manager_cache() -> dict[str, Any]:
                         "ties": {"total": 0, "opponents": {}},
                         "points_for": {"total": 0.0, "opponents": {}},
                         "points_against": {"total": 0.0, "opponents": {}},
-                        "total_matchups": {"total": 0, "opponents": {}}
+                        "total_matchups": {"total": 0, "opponents": {}},
                     },
                     "playoffs": {
                         "wins": {"total": 0, "opponents": {}},
@@ -61,12 +59,10 @@ def mock_manager_cache() -> dict[str, Any]:
                         "ties": {"total": 0, "opponents": {}},
                         "points_for": {"total": 0.0, "opponents": {}},
                         "points_against": {"total": 0.0, "opponents": {}},
-                        "total_matchups": {"total": 0, "opponents": {}}
-                    }
+                        "total_matchups": {"total": 0, "opponents": {}},
+                    },
                 },
-                "overall_data": {
-                    "playoff_appearances": []
-                }
+                "overall_data": {"playoff_appearances": []},
             },
             "years": {
                 "2023": {
@@ -77,37 +73,42 @@ def mock_manager_cache() -> dict[str, Any]:
                                 "losses": {"total": 0, "opponents": {}},
                                 "ties": {"total": 0, "opponents": {}},
                                 "points_for": {"total": 0.0, "opponents": {}},
-                                "points_against": {"total": 0.0, "opponents": {}},
-                                "total_matchups": {"total": 0, "opponents": {}}
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {},
+                                },
+                                "total_matchups": {"total": 0, "opponents": {}},
                             },
                             "regular_season": {
                                 "wins": {"total": 0, "opponents": {}},
                                 "losses": {"total": 0, "opponents": {}},
                                 "ties": {"total": 0, "opponents": {}},
                                 "points_for": {"total": 0.0, "opponents": {}},
-                                "points_against": {"total": 0.0, "opponents": {}},
-                                "total_matchups": {"total": 0, "opponents": {}}
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {},
+                                },
+                                "total_matchups": {"total": 0, "opponents": {}},
                             },
                             "playoffs": {
                                 "wins": {"total": 0, "opponents": {}},
                                 "losses": {"total": 0, "opponents": {}},
                                 "ties": {"total": 0, "opponents": {}},
                                 "points_for": {"total": 0.0, "opponents": {}},
-                                "points_against": {"total": 0.0, "opponents": {}},
-                                "total_matchups": {"total": 0, "opponents": {}}
-                            }
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {},
+                                },
+                                "total_matchups": {"total": 0, "opponents": {}},
+                            },
                         }
                     },
                     "weeks": {
-                        "1": {
-                            "matchup_data": {}
-                        },
-                        "15": {
-                            "matchup_data": {}
-                        }
-                    }
+                        "1": {"matchup_data": {}},
+                        "15": {"matchup_data": {}},
+                    },
                 }
-            }
+            },
         },
         "Manager 2": {
             "summary": {
@@ -118,7 +119,7 @@ def mock_manager_cache() -> dict[str, Any]:
                         "ties": {"total": 0, "opponents": {}},
                         "points_for": {"total": 0.0, "opponents": {}},
                         "points_against": {"total": 0.0, "opponents": {}},
-                        "total_matchups": {"total": 0, "opponents": {}}
+                        "total_matchups": {"total": 0, "opponents": {}},
                     },
                     "regular_season": {
                         "wins": {"total": 0, "opponents": {}},
@@ -126,7 +127,7 @@ def mock_manager_cache() -> dict[str, Any]:
                         "ties": {"total": 0, "opponents": {}},
                         "points_for": {"total": 0.0, "opponents": {}},
                         "points_against": {"total": 0.0, "opponents": {}},
-                        "total_matchups": {"total": 0, "opponents": {}}
+                        "total_matchups": {"total": 0, "opponents": {}},
                     },
                     "playoffs": {
                         "wins": {"total": 0, "opponents": {}},
@@ -134,12 +135,10 @@ def mock_manager_cache() -> dict[str, Any]:
                         "ties": {"total": 0, "opponents": {}},
                         "points_for": {"total": 0.0, "opponents": {}},
                         "points_against": {"total": 0.0, "opponents": {}},
-                        "total_matchups": {"total": 0, "opponents": {}}
-                    }
+                        "total_matchups": {"total": 0, "opponents": {}},
+                    },
                 },
-                "overall_data": {
-                    "playoff_appearances": []
-                }
+                "overall_data": {"playoff_appearances": []},
             },
             "years": {
                 "2023": {
@@ -150,38 +149,43 @@ def mock_manager_cache() -> dict[str, Any]:
                                 "losses": {"total": 0, "opponents": {}},
                                 "ties": {"total": 0, "opponents": {}},
                                 "points_for": {"total": 0.0, "opponents": {}},
-                                "points_against": {"total": 0.0, "opponents": {}},
-                                "total_matchups": {"total": 0, "opponents": {}}
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {},
+                                },
+                                "total_matchups": {"total": 0, "opponents": {}},
                             },
                             "regular_season": {
                                 "wins": {"total": 0, "opponents": {}},
                                 "losses": {"total": 0, "opponents": {}},
                                 "ties": {"total": 0, "opponents": {}},
                                 "points_for": {"total": 0.0, "opponents": {}},
-                                "points_against": {"total": 0.0, "opponents": {}},
-                                "total_matchups": {"total": 0, "opponents": {}}
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {},
+                                },
+                                "total_matchups": {"total": 0, "opponents": {}},
                             },
                             "playoffs": {
                                 "wins": {"total": 0, "opponents": {}},
                                 "losses": {"total": 0, "opponents": {}},
                                 "ties": {"total": 0, "opponents": {}},
                                 "points_for": {"total": 0.0, "opponents": {}},
-                                "points_against": {"total": 0.0, "opponents": {}},
-                                "total_matchups": {"total": 0, "opponents": {}}
-                            }
+                                "points_against": {
+                                    "total": 0.0,
+                                    "opponents": {},
+                                },
+                                "total_matchups": {"total": 0, "opponents": {}},
+                            },
                         }
                     },
                     "weeks": {
-                        "1": {
-                            "matchup_data": {}
-                        },
-                        "15": {
-                            "matchup_data": {}
-                        }
-                    }
+                        "1": {"matchup_data": {}},
+                        "15": {"matchup_data": {}},
+                    },
                 }
-            }
-        }
+            },
+        },
     }
 
 
@@ -226,7 +230,7 @@ class TestSessionState:
             week="1",
             weekly_roster_ids=weekly_roster_ids,
             playoff_roster_ids=playoff_roster_ids,
-            playoff_week_start=15
+            playoff_week_start=15,
         )
 
         assert mock_matchup_processor._year == "2023"
@@ -249,7 +253,7 @@ class TestSessionState:
             week="1",
             weekly_roster_ids={1: "Manager 1"},
             playoff_roster_ids=[],
-            playoff_week_start=15
+            playoff_week_start=15,
         )
 
         # Then clear it
@@ -328,14 +332,14 @@ class TestScrubMatchupData:
                 "matchup_id": 1,
                 "roster_id": 1,
                 "points": 120.5,
-                "players": ["player1", "player2"]
+                "players": ["player1", "player2"],
             },
             {
                 "matchup_id": 1,
                 "roster_id": 2,
                 "points": 100.0,
-                "players": ["player3", "player4"]
-            }
+                "players": ["player3", "player4"],
+            },
         ]
 
         mock_matchup_processor.set_session_state(
@@ -343,7 +347,7 @@ class TestScrubMatchupData:
             week="1",
             weekly_roster_ids={1: "Manager 1", 2: "Manager 2"},
             playoff_roster_ids=[],
-            playoff_week_start=15
+            playoff_week_start=15,
         )
 
         mock_matchup_processor.scrub_matchup_data()
@@ -354,7 +358,8 @@ class TestScrubMatchupData:
 
         # Check that Manager 1's call has correct data
         manager_1_call = next(
-            call for call in self.mock_add_matchup_to_cache.call_args_list
+            call
+            for call in self.mock_add_matchup_to_cache.call_args_list
             if call[0][0]["manager"] == "Manager 1"
         )
         assert manager_1_call[0][0]["opponent_manager"] == "Manager 2"
@@ -372,18 +377,8 @@ class TestScrubMatchupData:
         """
         self.mock_get_season_state.return_value = "regular_season"
         self.mock_fetch_sleeper_data.return_value = [
-            {
-                "matchup_id": 1,
-                "roster_id": 1,
-                "points": 100.0,
-                "players": []
-            },
-            {
-                "matchup_id": 1,
-                "roster_id": 2,
-                "points": 100.0,
-                "players": []
-            }
+            {"matchup_id": 1, "roster_id": 1, "points": 100.0, "players": []},
+            {"matchup_id": 1, "roster_id": 2, "points": 100.0, "players": []},
         ]
 
         mock_matchup_processor.set_session_state(
@@ -391,7 +386,7 @@ class TestScrubMatchupData:
             week="1",
             weekly_roster_ids={1: "Manager 1", 2: "Manager 2"},
             playoff_roster_ids=[],
-            playoff_week_start=15
+            playoff_week_start=15,
         )
 
         mock_matchup_processor.scrub_matchup_data()
@@ -424,10 +419,13 @@ class TestScrubMatchupData:
             year="2023",
             week="15",
             weekly_roster_ids={
-                1: "Manager 1", 2: "Manager 2", 3: "Manager 3", 4: "Manager 4"
+                1: "Manager 1",
+                2: "Manager 2",
+                3: "Manager 3",
+                4: "Manager 4",
             },
             playoff_roster_ids=[1, 2],  # Only rosters 1 and 2 in playoffs
-            playoff_week_start=15
+            playoff_week_start=15,
         )
 
         mock_matchup_processor.scrub_matchup_data()
@@ -499,7 +497,7 @@ class TestAddMatchupDetailsToCache:
             "opponent_manager": "Manager 2",
             "points_for": 120.5,
             "points_against": 100.0,
-            "result": "win"
+            "result": "win",
         }
         mock_matchup_processor._add_matchup_details_to_cache(matchup_data)
 
@@ -530,7 +528,7 @@ class TestAddMatchupDetailsToCache:
             "opponent_manager": "Manager 2",
             "points_for": 120.5,
             "points_against": 100.0,
-            "result": "win"
+            "result": "win",
         }
         mock_matchup_processor._add_matchup_details_to_cache(matchup_data)
 
@@ -567,7 +565,7 @@ class TestAddMatchupDetailsToCache:
             "opponent_manager": "Manager 2",
             "points_for": 150.0,
             "points_against": 145.5,
-            "result": "win"
+            "result": "win",
         }
         mock_matchup_processor._add_matchup_details_to_cache(matchup_data)
 
@@ -601,7 +599,7 @@ class TestAddMatchupDetailsToCache:
             "opponent_manager": "Manager 2",
             "points_for": 90.0,
             "points_against": 110.5,
-            "result": "loss"
+            "result": "loss",
         }
         mock_matchup_processor._add_matchup_details_to_cache(matchup_data)
 
@@ -631,7 +629,7 @@ class TestAddMatchupDetailsToCache:
             "opponent_manager": "Manager 2",
             "points_for": 100.0,
             "points_against": 100.0,
-            "result": "tie"
+            "result": "tie",
         }
         mock_matchup_processor._add_matchup_details_to_cache(matchup_data)
 
@@ -661,7 +659,7 @@ class TestAddMatchupDetailsToCache:
             "manager": "Manager 1",
             "points_for": 100.0,
             "points_against": 100.0,
-            "result": "win"
+            "result": "win",
         }
 
         with pytest.raises(ValueError, match="Invalid matchup data") as e:
@@ -687,15 +685,15 @@ class TestAddMatchupDetailsToCache:
             week="1",
             weekly_roster_ids={1: "Manager 1", 2: "Manager 2"},
             playoff_roster_ids=[],
-            playoff_week_start=15
+            playoff_week_start=15,
         )
 
         matchup = {
-            'manager': 'Manager 1',
-            'opponent_manager': 'Manager 2',
-            'points_for': 120.5,
-            'points_against': 100.0,
-            'result': 'win'
+            "manager": "Manager 1",
+            "opponent_manager": "Manager 2",
+            "points_for": 120.5,
+            "points_against": 100.0,
+            "result": "win",
         }
         mock_matchup_processor._add_matchup_details_to_cache(matchup)
 
@@ -747,7 +745,7 @@ class TestScrubPlayoffData:
             week="15",
             weekly_roster_ids={1: "Manager 1", 2: "Manager 2"},
             playoff_roster_ids=[1, 2],
-            playoff_week_start=15
+            playoff_week_start=15,
         )
 
         mock_matchup_processor.scrub_playoff_data()
@@ -782,7 +780,7 @@ class TestScrubPlayoffData:
             week="15",
             weekly_roster_ids={1: "Manager 1"},
             playoff_roster_ids=[1],
-            playoff_week_start=15
+            playoff_week_start=15,
         )
 
         mock_matchup_processor.scrub_playoff_data()

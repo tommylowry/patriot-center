@@ -253,7 +253,7 @@ class DataExporter:
         )
 
         return_dict["transactions"] = get_transaction_details_from_cache(
-            year, manager, self._image_urls
+            manager, self._image_urls, year=year
         )
 
         return_dict["overall_data"] = get_overall_data_details_from_cache(

@@ -1,8 +1,5 @@
-"""
-Unit tests for validators module.
+"""Unit tests for validators module."""
 
-Tests all validation functions with both good and bad scenarios.
-"""
 from unittest.mock import patch
 
 import pytest
@@ -17,7 +14,11 @@ from patriot_center_backend.managers.validators import (
 
 @pytest.fixture
 def mock_manager_cache():
-    """Create a sample manager cache for testing."""
+    """Create a sample manager cache for testing.
+
+    Returns:
+        Sample manager cache
+    """
     return {"Manager 1": {}, "Manager 2": {}}
 
 
@@ -89,7 +90,8 @@ class TestValidateCachingPreconditions:
 
     def test_large_even_number_of_rosters(self):
         """Test with large even number of rosters - should pass."""
-        weekly_roster_ids = {i: f"Manager {i}" for i in range(1, 13)}  # 12 teams
+        # 12 teams
+        weekly_roster_ids = {i: f"Manager {i}" for i in range(1, 13)}
         year = "2023"
         week = "1"
 
@@ -102,13 +104,28 @@ class TestValidateMatchupData:
 
     @pytest.fixture(autouse=True)
     def setup(self, mock_manager_cache):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.validators.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache:
-            
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+
+        Args:
+            mock_manager_cache: A mock manager cache.
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.validators"
+                ".CACHE_MANAGER.get_manager_cache"
+            ) as mock_get_manager_cache,
+        ):
             self.mock_manager_cache = mock_manager_cache
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
-            
+
             yield
 
     def test_valid_matchup_data_win(self):
@@ -121,7 +138,7 @@ class TestValidateMatchupData:
         }
 
         result = validate_matchup_data(matchup_data)
-        
+
         assert result == ""
 
     def test_valid_matchup_data_loss(self):
@@ -134,7 +151,7 @@ class TestValidateMatchupData:
         }
 
         result = validate_matchup_data(matchup_data)
-        
+
         assert result == ""
 
     def test_valid_matchup_data_tie(self):
@@ -145,25 +162,25 @@ class TestValidateMatchupData:
             "points_for": 115.5,
             "points_against": 115.5
         }
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert result == ""
 
     def test_empty_matchup_data(self):
         """Test with empty matchup data - should return 'Empty'."""
         matchup_data = {}
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert result == "Empty"
 
     def test_none_matchup_data(self):
         """Test with None matchup data - should return 'Empty'."""
         matchup_data = None
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert result == "Empty"
 
     def test_missing_opponent_manager(self):
@@ -173,9 +190,9 @@ class TestValidateMatchupData:
             "points_for": 120.5,
             "points_against": 100.0
         }
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert "no opponent_data" in result
 
     def test_empty_opponent_manager(self):
@@ -188,7 +205,7 @@ class TestValidateMatchupData:
         }
 
         result = validate_matchup_data(matchup_data)
-        
+
         assert "no opponent_data" in result
 
     def test_invalid_opponent_manager(self):
@@ -199,9 +216,9 @@ class TestValidateMatchupData:
             "points_for": 120.5,
             "points_against": 100.0
         }
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert "invalid manager" in result
         assert "Manager 999" in result
 
@@ -215,7 +232,7 @@ class TestValidateMatchupData:
         }
 
         result = validate_matchup_data(matchup_data)
-        
+
         assert "invalid points_for" in result
 
     def test_negative_points_for(self):
@@ -228,7 +245,7 @@ class TestValidateMatchupData:
         }
 
         result = validate_matchup_data(matchup_data)
-        
+
         assert "invalid points_for" in result
 
     def test_zero_points_against(self):
@@ -241,7 +258,7 @@ class TestValidateMatchupData:
         }
 
         result = validate_matchup_data(matchup_data)
-        
+
         assert "invalid points_against" in result
 
     def test_negative_points_against(self):
@@ -254,7 +271,7 @@ class TestValidateMatchupData:
         }
 
         result = validate_matchup_data(matchup_data)
-        
+
         assert "invalid points_against" in result
 
     def test_missing_result(self):
@@ -264,9 +281,9 @@ class TestValidateMatchupData:
             "points_for": 120.5,
             "points_against": 100.0
         }
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert "no result" in result
 
     def test_empty_result(self):
@@ -279,7 +296,7 @@ class TestValidateMatchupData:
         }
 
         result = validate_matchup_data(matchup_data)
-        
+
         assert "no result" in result
 
     def test_invalid_result(self):
@@ -290,9 +307,9 @@ class TestValidateMatchupData:
             "points_for": 120.5,
             "points_against": 100.0
         }
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert "invalid result" in result
         assert "victory" in result
 
@@ -304,9 +321,9 @@ class TestValidateMatchupData:
             "points_for": 100.0,
             "points_against": 120.5
         }
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert "result is win but points_against" in result
 
     def test_loss_with_higher_points(self):
@@ -317,9 +334,9 @@ class TestValidateMatchupData:
             "points_for": 120.5,
             "points_against": 100.0
         }
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert "result is loss but points_for" in result
 
     def test_tie_with_unequal_points(self):
@@ -330,9 +347,9 @@ class TestValidateMatchupData:
             "points_for": 120.5,
             "points_against": 100.0
         }
-        
+
         result = validate_matchup_data(matchup_data)
-        
+
         assert "result is tie but points_for" in result
 
 
@@ -362,7 +379,9 @@ class TestValidateTransaction:
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
-        result = validate_transaction(transaction, "add_or_drop", weekly_roster_ids)
+        result = validate_transaction(
+            transaction, "add_or_drop", weekly_roster_ids
+        )
         assert result is True
 
     def test_failed_transaction(self):
@@ -380,8 +399,12 @@ class TestValidateTransaction:
         result = validate_transaction(transaction, "trade", weekly_roster_ids)
         assert result is False
 
-    def test_incomplete_transaction(self, capsys):
-        """Test with incomplete transaction - should return False."""
+    def test_incomplete_transaction(self, caplog: pytest.LogCaptureFixture):
+        """Test with incomplete transaction - should return False.
+
+        Args:
+            caplog: pytest.LogCaptureFixture
+        """
         transaction = {
             "status": "pending",
             "type": "trade",
@@ -395,14 +418,17 @@ class TestValidateTransaction:
         result = validate_transaction(transaction, "trade", weekly_roster_ids)
 
         # Verify warning was printed for incorrect data
-        captured = capsys.readouterr()
-        assert "Unexpected transaction status" in captured.out
-        assert "pending" in captured.out
+        assert "Unexpected transaction status" in caplog.text
+        assert "pending" in caplog.text
 
         assert result is False
 
-    def test_invalid_transaction_type(self, capsys):
-        """Test with invalid transaction type - should return False."""
+    def test_invalid_transaction_type(self, caplog: pytest.LogCaptureFixture):
+        """Test with incomplete transaction type - should return False.
+
+        Args:
+            caplog: pytest.LogCaptureFixture
+        """
         transaction = {
             "status": "complete",
             "type": "unknown"
@@ -412,14 +438,19 @@ class TestValidateTransaction:
         result = validate_transaction(transaction, "unknown", weekly_roster_ids)
 
         # Verify warning was printed for incorrect data
-        captured = capsys.readouterr()
-        assert "Unexpected transaction type" in captured.out
-        assert "unknown" in captured.out
+        assert "Unexpected transaction type" in caplog.text
+        assert "unknown" in caplog.text
 
         assert result is False
 
-    def test_trade_missing_transaction_id(self, capsys):
-        """Test trade without transaction_id - should return False."""
+    def test_trade_missing_transaction_id(
+        self, caplog: pytest.LogCaptureFixture
+    ):
+        """Test trade without transaction_id - should return False.
+
+        Args:
+            caplog: pytest.LogCaptureFixture
+        """
         transaction = {
             "status": "complete",
             "type": "trade",
@@ -432,15 +463,16 @@ class TestValidateTransaction:
         result = validate_transaction(transaction, "trade", weekly_roster_ids)
 
         # Verify warning was printed for incorrect data
-        captured = capsys.readouterr()
-        assert "missing transaction_id" in captured.out
+        assert "missing transaction_id" in caplog.text
 
         assert result is False
 
-        assert result is False
+    def test_trade_missing_roster_ids(self, caplog: pytest.LogCaptureFixture):
+        """Test trade without roster_ids - should return False.
 
-    def test_trade_missing_roster_ids(self, capsys):
-        """Test trade without roster_ids - should return False."""
+        Args:
+            caplog: pytest.LogCaptureFixture
+        """
         transaction = {
             "status": "complete",
             "type": "trade",
@@ -453,13 +485,16 @@ class TestValidateTransaction:
         result = validate_transaction(transaction, "trade", weekly_roster_ids)
 
         # Verify warning was printed for incorrect data
-        captured = capsys.readouterr()
-        assert "missing roster_ids" in captured.out
+        assert "missing roster_ids" in caplog.text
 
         assert result is False
 
-    def test_trade_single_roster(self, capsys):
-        """Test trade with only one roster - should return False."""
+    def test_trade_single_roster(self, caplog: pytest.LogCaptureFixture):
+        """Test trade with only one roster - should return False.
+
+        Args:
+            caplog: pytest.LogCaptureFixture
+        """
         transaction = {
             "status": "complete",
             "type": "trade",
@@ -473,13 +508,16 @@ class TestValidateTransaction:
         result = validate_transaction(transaction, "trade", weekly_roster_ids)
 
         # Verify warning was printed for incorrect data
-        captured = capsys.readouterr()
-        assert "missing roster_ids" in captured.out
+        assert "missing roster_ids" in caplog.text
 
         assert result is False
 
-    def test_trade_missing_adds(self, capsys):
-        """Test trade without adds - should return False."""
+    def test_trade_missing_adds(self, caplog: pytest.LogCaptureFixture):
+        """Test trade without adds - should return False.
+
+        Args:
+            caplog: pytest.LogCaptureFixture
+        """
         transaction = {
             "status": "complete",
             "type": "trade",
@@ -492,13 +530,16 @@ class TestValidateTransaction:
         result = validate_transaction(transaction, "trade", weekly_roster_ids)
 
         # Verify warning was printed for incorrect data
-        captured = capsys.readouterr()
-        assert "missing adds/drops" in captured.out
+        assert "missing adds/drops" in caplog.text
 
         assert result is False
 
-    def test_trade_missing_drops(self, capsys):
-        """Test trade without drops - should return False."""
+    def test_trade_missing_drops(self, caplog: pytest.LogCaptureFixture):
+        """Test trade without drops - should return False.
+
+        Args:
+            caplog: pytest.LogCaptureFixture
+        """
         transaction = {
             "status": "complete",
             "type": "trade",
@@ -511,13 +552,12 @@ class TestValidateTransaction:
         result = validate_transaction(transaction, "trade", weekly_roster_ids)
 
         # Verify warning was printed for incorrect data
-        captured = capsys.readouterr()
-        assert "missing adds/drops" in captured.out
+        assert "missing adds/drops" in caplog.text
 
         assert result is False
 
     def test_trade_no_relevant_rosters(self):
-        """Test trade with no rosters relevant to caching session - should return False."""
+        """Test trade with no rosters for caching session should be False."""
         transaction = {
             "status": "complete",
             "type": "trade",

@@ -52,7 +52,7 @@ def validate_caching_preconditions(
         raise ValidationError("Week not set. Cannot cache week data.")
 
 
-def validate_matchup_data(matchup_data: dict[str, Any]) -> str:
+def validate_matchup_data(matchup_data: dict[str, Any] | None) -> str:
     """Validate matchup data structure and logical consistency.
 
     Checks that:
@@ -181,8 +181,13 @@ def validate_transaction(
 
         # At least one involved roster must be
         # relevant to current caching session
+
         for roster_id in transaction.get("roster_ids", {}):
+            no_relevant_roster_ids = True
             if roster_id in roster_ids:
                 return True
+
+        if no_relevant_roster_ids:
+            return False
 
     return True

@@ -103,7 +103,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1", {})
 
         assert len(result["placements"]) == 2
         years = [p["year"] for p in result["placements"]]
@@ -125,7 +125,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("2023", "Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1", {})
 
         assert len(result["placements"]) == 2  # Still returns all-time data
         placement_2023 = next(p for p in result["placements"] if p["year"] == "2023")
@@ -133,7 +133,7 @@ class TestGetOverallDataDetailsFromCache:
 
     def test_manager_with_no_playoff_appearances(self):
         """Test manager with no playoff appearances."""
-        result = get_overall_data_details_from_cache("all_time", "Manager 3", {})
+        result = get_overall_data_details_from_cache("Manager 3", {})
 
         assert result["playoff_appearances"] == 0
         assert result["placements"] == []
@@ -156,7 +156,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("all_time", "Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1", {})
 
         # Find the call for 2020 - should use week '16'
         calls = self.mock_get_matchup_card.call_args_list
@@ -175,7 +175,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("all_time", "Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1", {})
 
         # All calls should use week '17' since both years are after 2020
         for call in self.mock_get_matchup_card.call_args_list:
@@ -191,7 +191,7 @@ class TestGetOverallDataDetailsFromCache:
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
 
-        result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1", {})
 
         # Verify warning was printed for missing opponent
         captured = capsys.readouterr()
@@ -222,7 +222,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("all_time", "Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1", {})
 
         for placement in result["placements"]:
             assert "matchup_card" in placement
@@ -240,7 +240,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("all_time", "Manager 1", image_urls)
+        get_overall_data_details_from_cache("Manager 1", image_urls)
 
         # Verify get_matchup_card was called with the correct parameters
         call_args = self.mock_get_matchup_card.call_args_list[0][0]
@@ -254,7 +254,7 @@ class TestGetOverallDataDetailsFromCache:
         """Test that function doesn't modify cache."""
         original = deepcopy(self.mock_manager_cache)
 
-        get_overall_data_details_from_cache("all_time", "Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1", {})
 
         # Verify warning was printed for missing opponent
         captured = capsys.readouterr()

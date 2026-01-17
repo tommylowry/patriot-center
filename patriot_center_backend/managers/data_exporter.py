@@ -257,7 +257,7 @@ class DataExporter:
         )
 
         return_dict["overall_data"] = get_overall_data_details_from_cache(
-            year, manager, self._image_urls
+            manager, self._image_urls
         )
 
         return_dict["rankings"] = get_ranking_details_from_cache(

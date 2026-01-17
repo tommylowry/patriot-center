@@ -24,7 +24,7 @@ def mock_transaction_ids_cache():
             "year": "2023",
             "week": "5",
             "managers_involved": ["Manager 1", "Manager 2"],
-            "trade_details": {}
+            "trade_details": {},
         }
     }
 
@@ -79,11 +79,13 @@ class TestGetTradeHistoryBetweenTwoManagers:
 
     def test_trade_history(self):
         """Test getting trade history between managers."""
-        self.mock_trade_card_value.update({
-            "year": "2023",
-            "week": "5",
-            "managers_involved": ["Manager 1", "Manager 2"]
-        })
+        self.mock_trade_card_value.update(
+            {
+                "year": "2023",
+                "week": "5",
+                "managers_involved": ["Manager 1", "Manager 2"],
+            }
+        )
 
         # Add transaction_ids to the cache
         years_cache = self.mock_manager_cache["Manager 1"]["years"]
@@ -159,16 +161,10 @@ class TestGetTransactionDetailsFromCache:
             "total_lost_or_gained": -150,
             "players": {
                 "Player A": {"num_bids_won": 2, "total_faab_spent": 100},
-                "Player B": {"num_bids_won": 1, "total_faab_spent": 50}
+                "Player B": {"num_bids_won": 1, "total_faab_spent": 50},
             },
-            "traded_away": {
-                "total": 25,
-                "trade_partners": {"Manager 2": 25}
-            },
-            "acquired_from": {
-                "total": 30,
-                "trade_partners": {"Manager 2": 30}
-            }
+            "traded_away": {"total": 25, "trade_partners": {"Manager 2": 25}},
+            "acquired_from": {"total": 30, "trade_partners": {"Manager 2": 30}},
         }
 
         result = get_transaction_details_from_cache("Manager 1", {})

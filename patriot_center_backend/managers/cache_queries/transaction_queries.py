@@ -32,12 +32,7 @@ def get_transaction_details_from_cache(
     """
     manager_cache = CACHE_MANAGER.get_manager_cache()
 
-    transaction_summary = {
-        "trades": {},
-        "adds": {},
-        "drops": {},
-        "faab": {}
-    }
+    transaction_summary = {"trades": {}, "adds": {}, "drops": {}, "faab": {}}
 
     # Get all-time stats by default, or single season stats if year specified
     trans_cache = deepcopy(manager_cache[manager]["summary"]["transactions"])
@@ -47,12 +42,10 @@ def get_transaction_details_from_cache(
         )
 
     # Flatten FAAB player data to just total spent (if FAAB exists)
-    if 'faab' in trans_cache:
-
-        players = trans_cache['faab']['players']
+    if "faab" in trans_cache:
+        players = trans_cache["faab"]["players"]
         for player in players:
-
-            players[player] = players[player]['total_faab_spent']
+            players[player] = players[player]["total_faab_spent"]
 
     trades = {
         "total": trans_cache["trades"]["total"],
@@ -117,40 +110,33 @@ def get_transaction_details_from_cache(
             "biggest_acquisitions": extract_dict_data(
                 deepcopy(trans_cache["faab"]["players"]),
                 image_urls,
-                value_name="amount"
-            )
+                value_name="amount",
+            ),
         }
 
         # FAAB Traded
         sent = trans_cache["faab"]["traded_away"]["total"]
         received = trans_cache["faab"]["acquired_from"]["total"]
         net = received - sent
-        faab["faab_traded"] = {
-            "sent": sent,
-            "received": received,
-            "net": net
-        }
+        faab["faab_traded"] = {"sent": sent, "received": received, "net": net}
     else:
         # FAAB not available for this year/manager
         faab = {
             "total_spent": 0,
             "biggest_acquisitions": [],
-            "faab_traded": {
-                "sent": 0,
-                "received": 0,
-                "net": 0
-            }
+            "faab_traded": {"sent": 0, "received": 0, "net": 0},
         }
     transaction_summary["faab"] = faab
 
     # Return final transaction summary
     return deepcopy(transaction_summary)
 
+
 def get_trade_history_between_two_managers(
     manager1: str,
     manager2: str,
     image_urls: dict[str, str],
-    year: str | None = None
+    year: str | None = None,
 ) -> list[dict[str, Any]]:
     """Get complete trade history between two managers.
 
@@ -185,7 +171,6 @@ def get_trade_history_between_two_managers(
                 .get("transaction_ids", [])
             )
             transaction_ids.extend(weekly_trade_transaction_ids)
-
 
     # Filter to only those involving both managers
     for tid in deepcopy(transaction_ids):

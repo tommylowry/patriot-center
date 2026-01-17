@@ -1,4 +1,5 @@
 """Unit tests for templates module."""
+
 from copy import deepcopy
 from unittest.mock import patch
 
@@ -64,25 +65,19 @@ class TestInitializeFaabTemplate:
 
     def test_initialize_all_levels(self):
         """Test initializing FAAB template at all cache levels."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {}
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {}
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {}
-                            }
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {"transactions": {}},
+                    "years": {
+                        "2023": {
+                            "summary": {"transactions": {}},
+                            "weeks": {"1": {"transactions": {}}},
                         }
-                    }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
@@ -115,30 +110,31 @@ class TestInitializeFaabTemplate:
 
     def test_skip_existing_top_level_faab(self):
         """Test that existing top-level FAAB is not overwritten."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {
-                        "faab": {
-                            "total_lost_or_gained": 50,
-                            "players": {"Player A": {"num_bids_won": 1, "total_faab_spent": 25}}
-                        }
-                    }
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {}
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {}
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {
+                        "transactions": {
+                            "faab": {
+                                "total_lost_or_gained": 50,
+                                "players": {
+                                    "Player A": {
+                                        "num_bids_won": 1,
+                                        "total_faab_spent": 25,
+                                    }
+                                },
                             }
                         }
-                    }
+                    },
+                    "years": {
+                        "2023": {
+                            "summary": {"transactions": {}},
+                            "weeks": {"1": {"transactions": {}}},
+                        }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
@@ -155,30 +151,26 @@ class TestInitializeFaabTemplate:
 
     def test_skip_existing_yearly_faab(self):
         """Test that existing yearly FAAB is not overwritten."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {}
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {
-                                "faab": {
-                                    "total_lost_or_gained": 30,
-                                    "players": {}
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {"transactions": {}},
+                    "years": {
+                        "2023": {
+                            "summary": {
+                                "transactions": {
+                                    "faab": {
+                                        "total_lost_or_gained": 30,
+                                        "players": {},
+                                    }
                                 }
-                            }
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {}
-                            }
+                            },
+                            "weeks": {"1": {"transactions": {}}},
                         }
-                    }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
@@ -193,30 +185,31 @@ class TestInitializeFaabTemplate:
 
     def test_skip_existing_weekly_faab(self):
         """Test that existing weekly FAAB is not overwritten."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {}
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {}
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {
-                                    "faab": {
-                                        "total_lost_or_gained": 20,
-                                        "transaction_ids": ["trans1", "trans2"]
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {"transactions": {}},
+                    "years": {
+                        "2023": {
+                            "summary": {"transactions": {}},
+                            "weeks": {
+                                "1": {
+                                    "transactions": {
+                                        "faab": {
+                                            "total_lost_or_gained": 20,
+                                            "transaction_ids": [
+                                                "trans1",
+                                                "trans2",
+                                            ],
+                                        }
                                     }
                                 }
-                            }
+                            },
                         }
-                    }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
@@ -232,25 +225,19 @@ class TestInitializeFaabTemplate:
 
     def test_weekly_template_has_transaction_ids(self):
         """Test that weekly FAAB template includes transaction_ids."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {}
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {}
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {}
-                            }
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {"transactions": {}},
+                    "years": {
+                        "2023": {
+                            "summary": {"transactions": {}},
+                            "weeks": {"1": {"transactions": {}}},
                         }
-                    }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
@@ -262,13 +249,16 @@ class TestInitializeFaabTemplate:
         # but top-level and yearly should not
         mgr_level = self.mock_manager_cache[manager]
 
-        assert "transaction_ids" in (
+        assert (
+            "transaction_ids" in
             mgr_level["years"][year]["weeks"][week]["transactions"]["faab"]
         )
-        assert "transaction_ids" not in (
+        assert (
+            "transaction_ids" not in
             mgr_level["summary"]["transactions"]["faab"]
         )
-        assert "transaction_ids" not in (
+        assert (
+            "transaction_ids" not in
             mgr_level["years"][year]["summary"]["transactions"]["faab"]
         )
 
@@ -290,8 +280,9 @@ class TestInitializeSummaryTemplates:
             assert "faab" in templates[template]["transactions"]
 
         # Weekly FAAB should have transaction_ids
-        assert "transaction_ids" in (
-            templates["weekly_summary_template"]["transactions"]["faab"]
+        assert (
+            "transaction_ids"
+            in (templates["weekly_summary_template"]["transactions"]["faab"])
         )
 
     def test_with_faab_disabled(self):
@@ -363,8 +354,8 @@ class TestInitializeSummaryTemplates:
 
         # But still have transaction tracking
         assert "transactions" in weekly_not_playoffs
-        assert "transaction_ids" in (
-            weekly_not_playoffs["transactions"]["trades"]
+        assert (
+            "transaction_ids" in (weekly_not_playoffs["transactions"]["trades"])
         )
 
     def test_top_level_summary_structure(self):

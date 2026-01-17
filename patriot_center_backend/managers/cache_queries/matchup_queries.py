@@ -1,4 +1,5 @@
 """Cache query helpers for reading matchup related manager metadata."""
+
 import logging
 from copy import deepcopy
 from decimal import Decimal
@@ -31,11 +32,7 @@ def get_matchup_details_from_cache(
     """
     manager_cache = CACHE_MANAGER.get_manager_cache()
 
-    matchup_data = {
-        "overall": {},
-        "regular_season": {},
-        "playoffs": {}
-    }
+    matchup_data = {"overall": {}, "regular_season": {}, "playoffs": {}}
 
     # Get all-time stats by default, or single season stats if year specified
     cached_matchup_data = deepcopy(
@@ -45,7 +42,6 @@ def get_matchup_details_from_cache(
         cached_matchup_data = deepcopy(
             manager_cache[manager]["years"][year]["summary"]["matchup_data"]
         )
-
 
     season_states = ["overall", "regular_season"]
 
@@ -73,7 +69,7 @@ def get_matchup_details_from_cache(
             "win_percentage": 0.0,
             "average_points_for": 0.0,
             "average_points_against": 0.0,
-            "average_point_differential": 0.0
+            "average_point_differential": 0.0,
         }
 
     for season_state in season_states:
@@ -93,7 +89,7 @@ def get_matchup_details_from_cache(
         if num_matchups != 0:
             win_percentage = (num_wins / num_matchups) * 100
             win_percentage = float(
-                Decimal(win_percentage).quantize(Decimal('0.1'))
+                Decimal(win_percentage).quantize(Decimal("0.1"))
             )
 
         matchup_data[season_state]["win_percentage"] = win_percentage
@@ -114,18 +110,18 @@ def get_matchup_details_from_cache(
 
         point_diff = total_points_for - total_points_against
         total_point_differential = float(
-            Decimal(point_diff).quantize(Decimal('0.01'))
+            Decimal(point_diff).quantize(Decimal("0.01"))
         )
 
         if num_matchups != 0:
             avg_pf = total_points_for / num_matchups
-            avg_pf = float(Decimal(avg_pf).quantize(Decimal('0.01')))
+            avg_pf = float(Decimal(avg_pf).quantize(Decimal("0.01")))
 
             avg_pa = total_points_against / num_matchups
-            avg_pa = float(Decimal(avg_pa).quantize(Decimal('0.01')))
+            avg_pa = float(Decimal(avg_pa).quantize(Decimal("0.01")))
 
             avg_pd = total_point_differential / num_matchups
-            avg_pd = float(Decimal(avg_pd).quantize(Decimal('0.01')))
+            avg_pd = float(Decimal(avg_pd).quantize(Decimal("0.01")))
 
         else:  # No matchups
             avg_pf = 0.0
@@ -137,6 +133,7 @@ def get_matchup_details_from_cache(
         matchup_data[season_state]["average_point_differential"] = avg_pd
 
     return deepcopy(matchup_data)
+
 
 def get_overall_data_details_from_cache(
     manager: str, image_urls: dict[str, str]
@@ -165,20 +162,19 @@ def get_overall_data_details_from_cache(
     # ----- Other Overall Data -----
     placements = []
     for year in cached_overall_data.get("placement", {}):
-
-        week = '17'
+        week = "17"
         if int(year) <= 2020:
-            week = '16'
+            week = "16"
 
         opponent = (
             manager_cache
             .get(manager, {})
-            .get('years', {})
+            .get("years", {})
             .get(year, {})
-            .get('weeks', {})
+            .get("weeks", {})
             .get(week, {})
-            .get('matchup_data', {})
-            .get('opponent_manager', "")
+            .get("matchup_data", {})
+            .get("opponent_manager", "")
         )
 
         matchup_card = {}
@@ -195,7 +191,7 @@ def get_overall_data_details_from_cache(
         placement_item = {
             "year": year,
             "placement": cached_overall_data["placement"][year],
-            'matchup_card': matchup_card
+            "matchup_card": matchup_card,
         }
         placements.append(placement_item)
 

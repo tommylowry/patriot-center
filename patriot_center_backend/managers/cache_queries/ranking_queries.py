@@ -12,7 +12,7 @@ def get_ranking_details_from_cache(
     manager: str,
     manager_summary_usage: bool = False,
     active_only: bool = True,
-    year: str | None = None
+    year: str | None = None,
 ) -> dict[str, Any] | dict[str, dict[str, Any]]:
     """Calculate manager rankings across all statistical categories.
 
@@ -63,9 +63,7 @@ def get_ranking_details_from_cache(
 
     current_year = year if year else str(max(LEAGUE_IDS.keys()))
 
-    managers = deepcopy(
-        valid_options_cache[current_year]["managers"]
-    )
+    managers = deepcopy(valid_options_cache[current_year]["managers"])
 
     returning_dictionary["is_active_manager"] = True
     if manager not in managers:
@@ -78,7 +76,6 @@ def get_ranking_details_from_cache(
     returning_dictionary["worst"] = len(managers)
 
     for m in managers:
-
         summary_section = deepcopy(manager_cache.get(m, {}).get("summary", {}))
         if year:
             summary_section = deepcopy(
@@ -102,9 +99,7 @@ def get_ranking_details_from_cache(
         win_pct = 0.0
         if num_matchups != 0:
             win_pct = (num_wins / num_matchups) * 100
-            win_pct = float(
-                Decimal(win_pct).quantize(Decimal('0.1'))
-            )
+            win_pct = float(Decimal(win_pct).quantize(Decimal("0.1")))
 
         # Points for/against and averages
         tot_pf = ovr_matchup_data["points_for"]["total"]
@@ -115,13 +110,13 @@ def get_ranking_details_from_cache(
         avg_pd = 0.0
         if num_matchups != 0:
             avg_pf = tot_pf / num_matchups
-            avg_pf = float(Decimal(avg_pf).quantize(Decimal('0.01')))
+            avg_pf = float(Decimal(avg_pf).quantize(Decimal("0.01")))
 
             avg_pa = tot_pa / num_matchups
-            avg_pa = float(Decimal(avg_pa).quantize(Decimal('0.01')))
+            avg_pa = float(Decimal(avg_pa).quantize(Decimal("0.01")))
 
             avg_pd = (tot_pf - tot_pa) / num_matchups
-            avg_pd = float(Decimal(avg_pd).quantize(Decimal('0.01')))
+            avg_pd = float(Decimal(avg_pd).quantize(Decimal("0.01")))
 
         num_trades = summary_section["transactions"]["trades"]["total"]
         num_playoffs = len(
@@ -167,7 +162,7 @@ def get_ranking_details_from_cache(
     if manager_summary_usage:
         return {
             "values": deepcopy(eval_manager_values),
-            "ranks": deepcopy(returning_dictionary)
+            "ranks": deepcopy(returning_dictionary),
         }
 
     return deepcopy(returning_dictionary)

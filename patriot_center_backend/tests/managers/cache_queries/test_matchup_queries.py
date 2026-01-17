@@ -94,6 +94,7 @@ class TestGetMatchupDetailsFromCache:
 
         assert self.mock_manager_cache == original
 
+
 class TestGetOverallDataDetailsFromCache:
     """Test get_overall_data_details_from_cache function."""
 
@@ -270,7 +271,7 @@ class TestGetOverallDataDetailsFromCache:
         """Test that matchup_card is included in each placement item."""
         self.mock_get_matchup_card.side_effect = [
             {"card": "2023_card"},
-            {"card": "2022_card"}
+            {"card": "2022_card"},
         ]
 
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
@@ -309,9 +310,7 @@ class TestGetOverallDataDetailsFromCache:
         # call_args[3] is week
         assert call_args[4] == image_urls
 
-    def test_get_overall_data_immutable(
-        self, caplog: pytest.LogCaptureFixture
-    ):
+    def test_get_overall_data_immutable(self, caplog: pytest.LogCaptureFixture):
         """Test that function doesn't modify cache.
 
         Args:

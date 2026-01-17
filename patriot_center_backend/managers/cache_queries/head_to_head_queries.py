@@ -59,14 +59,11 @@ def get_head_to_head_details_from_cache(
         opponents = [opponent]
 
     for opponent in opponents:
-
         if not opponent:
             continue
 
         opponent_data = {
-            "opponent": get_image_url(
-                opponent, image_urls, dictionary=True
-            ),
+            "opponent": get_image_url(opponent, image_urls, dictionary=True),
             "wins": matchup_data["wins"]["opponents"].get(opponent, 0),
             "losses": matchup_data["losses"]["opponents"].get(opponent, 0),
             "ties": matchup_data["ties"]["opponents"].get(opponent, 0),
@@ -84,6 +81,7 @@ def get_head_to_head_details_from_cache(
         return deepcopy(head_to_head_data[0])
 
     return deepcopy(head_to_head_data)
+
 
 def get_head_to_head_overall_from_cache(
     manager1: str,
@@ -203,7 +201,6 @@ def get_head_to_head_overall_from_cache(
 
     # Get average margin of victory
     for y in years:
-
         weeks = deepcopy(manager_cache[manager1]["years"][y]["weeks"])
 
         for w in weeks:
@@ -269,7 +266,6 @@ def get_head_to_head_overall_from_cache(
         matchup_history.reverse()
         return deepcopy(matchup_history)
 
-
     if len(manager_1_victory_margins) == 0:
         logger.warning(
             f"No victories found for {manager1} against "
@@ -279,7 +275,7 @@ def get_head_to_head_overall_from_cache(
     else:
         avg = sum(manager_1_victory_margins) / len(manager_1_victory_margins)
         manager_1_average_margin_of_victory = float(
-            Decimal(avg).quantize(Decimal('0.01'))
+            Decimal(avg).quantize(Decimal("0.01"))
         )
 
     if len(manager_2_victory_margins) == 0:
@@ -291,13 +287,13 @@ def get_head_to_head_overall_from_cache(
     else:
         avg = sum(manager_2_victory_margins) / len(manager_2_victory_margins)
         manager_2_average_margin_of_victory = float(
-            Decimal(avg).quantize(Decimal('0.01'))
+            Decimal(avg).quantize(Decimal("0.01"))
         )
 
     head_to_head_overall = {}
 
-    m1 = manager1.lower().replace(' ', '_')
-    m2 = manager1.lower().replace(' ', '_')
+    m1 = manager1.lower().replace(" ", "_")
+    m2 = manager1.lower().replace(" ", "_")
 
     # put all the data in
     head_to_head_overall[f"{m1}_points_for"] = manager_1_points_for

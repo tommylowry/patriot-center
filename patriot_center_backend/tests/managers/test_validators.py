@@ -134,7 +134,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "win",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -147,7 +147,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "loss",
             "points_for": 100.0,
-            "points_against": 120.5
+            "points_against": 120.5,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -160,7 +160,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "tie",
             "points_for": 115.5,
-            "points_against": 115.5
+            "points_against": 115.5,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -188,7 +188,7 @@ class TestValidateMatchupData:
         matchup_data = {
             "result": "win",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -201,7 +201,7 @@ class TestValidateMatchupData:
             "opponent_manager": "",
             "result": "win",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -214,7 +214,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 999",
             "result": "win",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -228,7 +228,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "loss",
             "points_for": 0.0,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -241,7 +241,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "loss",
             "points_for": -10.0,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -254,7 +254,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "win",
             "points_for": 100.0,
-            "points_against": 0.0
+            "points_against": 0.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -267,7 +267,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "win",
             "points_for": 100.0,
-            "points_against": -10.0
+            "points_against": -10.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -279,7 +279,7 @@ class TestValidateMatchupData:
         matchup_data = {
             "opponent_manager": "Manager 2",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -292,7 +292,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -305,7 +305,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "victory",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -319,7 +319,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "win",
             "points_for": 100.0,
-            "points_against": 120.5
+            "points_against": 120.5,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -332,7 +332,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "loss",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -345,7 +345,7 @@ class TestValidateMatchupData:
             "opponent_manager": "Manager 2",
             "result": "tie",
             "points_for": 120.5,
-            "points_against": 100.0
+            "points_against": 100.0,
         }
 
         result = validate_matchup_data(matchup_data)
@@ -364,7 +364,7 @@ class TestValidateTransaction:
             "transaction_id": "12345",
             "roster_ids": [1, 2],
             "adds": {"player1": 1},
-            "drops": {"player2": 2}
+            "drops": {"player2": 2},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -373,10 +373,7 @@ class TestValidateTransaction:
 
     def test_valid_add_or_drop_transaction(self):
         """Test with valid add_or_drop transaction - should return True."""
-        transaction = {
-            "status": "complete",
-            "type": "waiver"
-        }
+        transaction = {"status": "complete", "type": "waiver"}
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
         result = validate_transaction(
@@ -392,7 +389,7 @@ class TestValidateTransaction:
             "transaction_id": "12345",
             "roster_ids": [1, 2],
             "adds": {"player1": 1},
-            "drops": {"player2": 2}
+            "drops": {"player2": 2},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -411,7 +408,7 @@ class TestValidateTransaction:
             "transaction_id": "12345",
             "roster_ids": [1, 2],
             "adds": {"player1": 1},
-            "drops": {"player2": 2}
+            "drops": {"player2": 2},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -429,10 +426,7 @@ class TestValidateTransaction:
         Args:
             caplog: pytest.LogCaptureFixture
         """
-        transaction = {
-            "status": "complete",
-            "type": "unknown"
-        }
+        transaction = {"status": "complete", "type": "unknown"}
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
         result = validate_transaction(transaction, "unknown", weekly_roster_ids)
@@ -456,7 +450,7 @@ class TestValidateTransaction:
             "type": "trade",
             "roster_ids": [1, 2],
             "adds": {"player1": 1},
-            "drops": {"player2": 2}
+            "drops": {"player2": 2},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -478,7 +472,7 @@ class TestValidateTransaction:
             "type": "trade",
             "transaction_id": "12345",
             "adds": {"player1": 1},
-            "drops": {"player2": 2}
+            "drops": {"player2": 2},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -501,7 +495,7 @@ class TestValidateTransaction:
             "transaction_id": "12345",
             "roster_ids": [1],
             "adds": {"player1": 1},
-            "drops": {"player2": 2}
+            "drops": {"player2": 2},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -523,7 +517,7 @@ class TestValidateTransaction:
             "type": "trade",
             "transaction_id": "12345",
             "roster_ids": [1, 2],
-            "drops": {"player2": 2}
+            "drops": {"player2": 2},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -545,7 +539,7 @@ class TestValidateTransaction:
             "type": "trade",
             "transaction_id": "12345",
             "roster_ids": [1, 2],
-            "adds": {"player1": 1}
+            "adds": {"player1": 1},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -564,7 +558,7 @@ class TestValidateTransaction:
             "transaction_id": "12345",
             "roster_ids": [3, 4],
             "adds": {"player1": 3},
-            "drops": {"player2": 4}
+            "drops": {"player2": 4},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -579,7 +573,7 @@ class TestValidateTransaction:
             "transaction_id": "12345",
             "roster_ids": [1, 4],
             "adds": {"player1": 1},
-            "drops": {"player2": 4}
+            "drops": {"player2": 4},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
 
@@ -594,7 +588,7 @@ class TestValidateTransaction:
             "transaction_id": "12345",
             "roster_ids": [1, 2, 3],
             "adds": {"player1": 1, "player2": 2},
-            "drops": {"player3": 2, "player4": 3}
+            "drops": {"player3": 2, "player4": 3},
         }
         weekly_roster_ids = {1: "Manager 1", 2: "Manager 2", 3: "Manager 3"}
 

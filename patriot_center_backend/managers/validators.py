@@ -10,13 +10,12 @@ logger = logging.getLogger(__name__)
 
 class ValidationError(Exception):
     """Raised when validation fails."""
+
     pass
 
 
 def validate_caching_preconditions(
-    weekly_roster_ids: dict[int, str] | None,
-    year: str | None,
-    week: str | None
+    weekly_roster_ids: dict[int, str] | None, year: str | None, week: str | None
 ) -> None:
     """Validate that caching preconditions are met before processing week data.
 
@@ -119,6 +118,7 @@ def validate_matchup_data(matchup_data: dict[str, Any]) -> str:
         )
 
     return ""
+
 
 def validate_transaction(
     transaction: dict[str, Any],

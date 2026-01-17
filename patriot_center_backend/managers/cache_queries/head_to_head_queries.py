@@ -290,8 +290,6 @@ def get_head_to_head_overall_from_cache(
             Decimal(avg).quantize(Decimal("0.01"))
         )
 
-    head_to_head_overall = {}
-
     m1 = manager1.lower().replace(" ", "_")
     m2 = manager1.lower().replace(" ", "_")
 

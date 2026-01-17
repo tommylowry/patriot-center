@@ -7,6 +7,7 @@ from unittest.mock import patch
 import pytest
 
 from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+    _evaluate_matchup,
     get_head_to_head_details_from_cache,
     get_head_to_head_overall_from_cache,
 )
@@ -113,6 +114,10 @@ class TestGetHeadToHeadOverallFromCache:
             mock_get_matchup_card.return_value = self.mock_matchup_card_value
             mock_validate.return_value = ""
             mock_h2h_details.return_value = self.mock_h2h_details_value
+            self.mock_evaluate_matchup.return_value = (
+                {"year": "2023", "week": "1"},
+                {"year": "2023", "week": "1"},
+            )
 
             yield
 
@@ -135,6 +140,9 @@ class TestGetHeadToHeadOverallFromCache:
         assert "manager_2_wins" in result
         assert "ties" in result
 
+        # Verify _evaluate_matchup was called for manager 1's win
+        self.mock_evaluate_matchup.assert_called_once()
+
     def test_h2h_no_matchups(self, caplog: pytest.LogCaptureFixture):
         """Test H2H when managers never played.
 
@@ -152,6 +160,9 @@ class TestGetHeadToHeadOverallFromCache:
         # Should handle gracefully even with no matchups
         assert result is not None
         assert isinstance(result, dict)
+
+        # Verify _evaluate_matchup was NOT called (no matchups found)
+        self.mock_evaluate_matchup.assert_not_called()
 
     def test_h2h_list_all_matchups(self):
         """Test H2H with list_all_matchups=True returns matchup history."""
@@ -185,6 +196,9 @@ class TestGetHeadToHeadOverallFromCache:
         assert isinstance(result, list)
         assert len(result) == 2
 
+        # Verify _evaluate_matchup was NOT called (list_all_matchups mode)
+        self.mock_evaluate_matchup.assert_not_called()
+
     def test_h2h_with_specific_year(self, caplog: pytest.LogCaptureFixture):
         """Test H2H stats filtered to specific year.
 
@@ -203,19 +217,13 @@ class TestGetHeadToHeadOverallFromCache:
                 "transactions": {},
             }
         }
-        self.mock_manager_cache.update(
+        self.mock_manager_cache["Manager 1"]["years"]["2023"].update(
             {
-                "Manager 1": {
-                    "years": {
-                        "2023": {
-                            "summary": {
-                                "matchup_data": {
-                                    "overall": {
-                                        "points_for": {
-                                            "opponents": {"Manager 2": 100.0}
-                                        }
-                                    }
-                                }
+                "summary": {
+                    "matchup_data": {
+                        "overall": {
+                            "points_for": {
+                                "opponents": {"Manager 2": 100.0}
                             }
                         }
                     }
@@ -227,25 +235,20 @@ class TestGetHeadToHeadOverallFromCache:
             self.mock_manager_cache["Manager 1"]
         )
 
-        self.mock_manager_cache.update(
+        self.mock_manager_cache["Manager 2"]["years"]["2023"].update(
             {
-                "Manager 2": {
-                    "years": {
-                        "2023": {
-                            "summary": {
-                                "matchup_data": {
-                                    "overall": {
-                                        "points_for": {
-                                            "opponents": {"Manager 1": 100.0}
-                                        }
-                                    }
-                                }
+                "summary": {
+                    "matchup_data": {
+                        "overall": {
+                            "points_for": {
+                                "opponents": {"Manager 1": 100.0}
                             }
                         }
                     }
                 }
             }
         )
+
         self.mock_h2h_details_value = {"wins": 1, "losses": 0, "ties": 0}
 
         result = get_head_to_head_overall_from_cache(
@@ -258,6 +261,9 @@ class TestGetHeadToHeadOverallFromCache:
         # Should return dict with stats
         assert isinstance(result, dict)
         assert "manager_1_wins" in result
+
+        # Verify _evaluate_matchup was called for manager 1's win
+        self.mock_evaluate_matchup.assert_called_once()
 
     def test_h2h_manager2_wins(self, caplog: pytest.LogCaptureFixture):
         """Test H2H when manager2 wins (result='loss' for manager1).
@@ -307,3 +313,232 @@ class TestGetHeadToHeadOverallFromCache:
         # Should process manager2's wins correctly
         assert isinstance(result, dict)
         assert "manager_2_wins" in result
+
+        # Verify _evaluate_matchup was called for manager 2's wins (2 times)
+        assert self.mock_evaluate_matchup.call_count == 2
+
+
+class TestEvaluateMatchup:
+    """Test _evaluate_matchup function."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common test data for all tests.
+
+        Yields:
+            None
+        """
+        self.matchup_card = {
+            "year": "2023",
+            "week": "5",
+            "manager_1": "Tommy",
+            "manager_2": "Manager 2",
+            "manager_1_score": 120.5,
+            "manager_2_score": 100.0,
+        }
+
+        yield
+
+    def test_first_win_sets_last_win_and_biggest_blowout(self):
+        """Test first win sets both last_win and biggest_blowout."""
+        biggest_blowout = {}
+        last_win = {}
+        margins = []
+
+        result_last_win, result_biggest_blowout = _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=20.5,
+            margins=margins,
+        )
+
+        assert result_last_win == self.matchup_card
+        assert result_biggest_blowout == self.matchup_card
+        assert margins == [20.5]
+
+    def test_first_win_only_sets_last_win_when_biggest_blowout_exists(self):
+        """Test first win only sets last_win when biggest_blowout exists."""
+        existing_blowout = {
+            "year": "2022",
+            "week": "10",
+            "manager_1": "Tommy",
+            "manager_2": "Manager 2",
+            "manager_1_score": 150.0,
+            "manager_2_score": 90.0,
+        }
+        biggest_blowout = deepcopy(existing_blowout)
+        last_win = {}
+        margins = []
+
+        result_last_win, result_biggest_blowout = _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=20.5,
+            margins=margins,
+        )
+
+        assert result_last_win == self.matchup_card
+        assert result_biggest_blowout == existing_blowout
+        assert margins == [20.5]
+
+    def test_more_recent_win_updates_last_win(self):
+        """Test more recent win (later year/week) updates last_win."""
+        existing_last_win = {
+            "year": "2023",
+            "week": "3",
+            "manager_1": "Tommy",
+            "manager_2": "Manager 2",
+        }
+        last_win = deepcopy(existing_last_win)
+        biggest_blowout = deepcopy(existing_last_win)
+        margins = [15.0]
+
+        result_last_win, _ = _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=10.0,
+            margins=margins,
+        )
+
+        # Week 5 > week 3, so should update
+        assert result_last_win == self.matchup_card
+        assert margins == [15.0, 10.0]
+
+    def test_older_win_does_not_update_last_win(self):
+        """Test older win does not update last_win."""
+        existing_last_win = {
+            "year": "2023",
+            "week": "10",
+            "manager_1": "Tommy",
+            "manager_2": "Manager 2",
+        }
+        last_win = deepcopy(existing_last_win)
+        biggest_blowout = {"year": "2023", "week": "1"}
+        margins = [15.0]
+
+        result_last_win, _ = _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=10.0,
+            margins=margins,
+        )
+
+        # Week 5 < week 10, so should NOT update
+        assert result_last_win == existing_last_win
+        assert margins == [15.0, 10.0]
+
+    def test_more_recent_year_updates_last_win(self):
+        """Test win in more recent year updates last_win."""
+        existing_last_win = {
+            "year": "2022",
+            "week": "15",
+            "manager_1": "Tommy",
+            "manager_2": "Manager 2",
+        }
+        last_win = deepcopy(existing_last_win)
+        biggest_blowout = deepcopy(existing_last_win)
+        margins = [30.0]
+
+        result_last_win, _ = _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=20.5,
+            margins=margins,
+        )
+
+        # 2023 > 2022, so should update even though week 5 < week 15
+        assert result_last_win == self.matchup_card
+        assert margins == [30.0, 20.5]
+
+    def test_larger_margin_updates_biggest_blowout(self):
+        """Test larger victory margin updates biggest_blowout."""
+        existing_blowout = {
+            "year": "2023",
+            "week": "1",
+            "manager_1": "Tommy",
+            "manager_2": "Manager 2",
+        }
+        last_win = {"year": "2023", "week": "10"}
+        biggest_blowout = deepcopy(existing_blowout)
+        margins = [15.0]
+
+        _, result_biggest_blowout = _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=25.0,
+            margins=margins,
+        )
+
+        # 25.0 > 15.0, so should update biggest_blowout
+        assert result_biggest_blowout == self.matchup_card
+        assert margins == [15.0, 25.0]
+
+    def test_smaller_margin_does_not_update_biggest_blowout(self):
+        """Test smaller victory margin does not update biggest_blowout."""
+        existing_blowout = {
+            "year": "2023",
+            "week": "1",
+            "manager_1": "Tommy",
+            "manager_2": "Manager 2",
+        }
+        last_win = {"year": "2023", "week": "10"}
+        biggest_blowout = deepcopy(existing_blowout)
+        margins = [30.0]
+
+        _, result_biggest_blowout = _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=10.0,
+            margins=margins,
+        )
+
+        # 10.0 < 30.0, so should NOT update biggest_blowout
+        assert result_biggest_blowout == existing_blowout
+        assert margins == [30.0, 10.0]
+
+    def test_equal_margin_updates_biggest_blowout(self):
+        """Test equal victory margin updates biggest_blowout (most recent)."""
+        existing_blowout = {
+            "year": "2023",
+            "week": "1",
+            "manager_1": "Tommy",
+            "manager_2": "Manager 2",
+        }
+        last_win = {"year": "2023", "week": "10"}
+        biggest_blowout = deepcopy(existing_blowout)
+        margins = [20.5]
+
+        _, result_biggest_blowout = _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=20.5,
+            margins=margins,
+        )
+
+        # Equal margin (20.5 == max([20.5, 20.5])), so updates to most recent
+        assert result_biggest_blowout == self.matchup_card
+        assert margins == [20.5, 20.5]
+
+    def test_margins_list_always_updated(self):
+        """Test victory margin is always appended to margins list."""
+        last_win = {"year": "2024", "week": "1"}
+        biggest_blowout = {"year": "2024", "week": "1"}
+        margins = [5.0, 10.0, 15.0]
+
+        _evaluate_matchup(
+            biggest_blowout=biggest_blowout,
+            last_win=last_win,
+            matchup_card=self.matchup_card,
+            victory_margin=8.0,
+            margins=margins,
+        )
+
+        assert margins == [5.0, 10.0, 15.0, 8.0]

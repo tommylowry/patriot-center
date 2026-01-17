@@ -222,9 +222,7 @@ class TestGetHeadToHeadOverallFromCache:
                 "summary": {
                     "matchup_data": {
                         "overall": {
-                            "points_for": {
-                                "opponents": {"Manager 2": 100.0}
-                            }
+                            "points_for": {"opponents": {"Manager 2": 100.0}}
                         }
                     }
                 }
@@ -240,9 +238,7 @@ class TestGetHeadToHeadOverallFromCache:
                 "summary": {
                     "matchup_data": {
                         "overall": {
-                            "points_for": {
-                                "opponents": {"Manager 1": 100.0}
-                            }
+                            "points_for": {"opponents": {"Manager 1": 100.0}}
                         }
                     }
                 }

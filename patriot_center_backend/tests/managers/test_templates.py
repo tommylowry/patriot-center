@@ -421,27 +421,31 @@ class TestInitializeSummaryTemplates:
         """Test that modifying one template doesn't affect others."""
         templates = initialize_summary_templates(use_faab=True)
 
-        
+        yearly = templates["yearly_summary_template"]["matchup_data"]
+        weekly = templates["weekly_summary_template"]["matchup_data"]
+        top_level = templates["top_level_summary_template"]["matchup_data"]
 
         # Modify yearly template
-        templates["yearly_summary_template"]["matchup_data"]["overall"]["wins"]["total"] = 100
+        yearly["overall"]["wins"]["total"] = 100
 
         # Weekly should still be 0
-        assert templates["weekly_summary_template"]["matchup_data"]["points_for"] == 0.0
+        assert weekly["points_for"] == 0.0
 
         # Top-level should still be 0
-        assert templates["top_level_summary_template"]["matchup_data"]["overall"]["wins"]["total"] == 0
+        assert top_level["overall"]["wins"]["total"] == 0
 
     def test_nested_structure_isolation(self):
         """Test that nested structures are properly isolated."""
         templates = initialize_summary_templates(use_faab=True)
 
+        yearly = templates["yearly_summary_template"]["matchup_data"]
+
         # Modify regular_season wins
-        templates["yearly_summary_template"]["matchup_data"]["regular_season"]["wins"]["total"] = 10
+        yearly["regular_season"]["wins"]["total"] = 10
 
         # Playoffs and overall should still be 0
-        assert templates["yearly_summary_template"]["matchup_data"]["playoffs"]["wins"]["total"] == 0
-        assert templates["yearly_summary_template"]["matchup_data"]["overall"]["wins"]["total"] == 0
+        assert yearly["playoffs"]["wins"]["total"] == 0
+        assert yearly["overall"]["wins"]["total"] == 0
 
     def test_faab_structure_in_transactions(self):
         """Test FAAB structure when enabled."""
@@ -459,17 +463,24 @@ class TestInitializeSummaryTemplates:
         """Test that transaction_ids only appear in weekly templates."""
         templates = initialize_summary_templates(use_faab=True)
 
+        key = "transaction_ids"
+
+        weekly = templates["weekly_summary_template"]
+        yearly = templates["yearly_summary_template"]
+        top_level = templates["top_level_summary_template"]
+
         # Weekly should have transaction_ids
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["trades"]
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["adds"]
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["drops"]
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["faab"]
+        assert key in weekly["transactions"]["trades"]
+        assert key in weekly["transactions"]["adds"]
+        assert key in weekly["transactions"]["drops"]
+        assert key in weekly["transactions"]["faab"]
 
         # Yearly should not have transaction_ids
-        assert "transaction_ids" not in templates["yearly_summary_template"]["transactions"]["trades"]
-        assert "transaction_ids" not in templates["yearly_summary_template"]["transactions"]["adds"]
-        assert "transaction_ids" not in templates["yearly_summary_template"]["transactions"]["drops"]
-        assert "transaction_ids" not in templates["yearly_summary_template"]["transactions"]["faab"]
+        assert key not in yearly["transactions"]["trades"]
+        assert key not in yearly["transactions"]["adds"]
+        assert key not in yearly["transactions"]["drops"]
+        assert key not in yearly["transactions"]["faab"]
 
+        top_level = templates["top_level_summary_template"]
         # Top-level should not have transaction_ids
-        assert "transaction_ids" not in templates["top_level_summary_template"]["transactions"]["trades"]
+        assert key not in top_level["transactions"]["trades"]

@@ -37,11 +37,7 @@ def get_manager_awards_from_cache(
     )
 
     # First/Second/Third Place Finishes
-    placement_counts = {
-        "first_place": 0,
-        "second_place": 0,
-        "third_place": 0
-    }
+    placement_counts = {"first_place": 0, "second_place": 0, "third_place": 0}
     for year in cached_overall_data.get("placement", {}):
         placement = cached_overall_data["placement"][year]
         if placement == 1:
@@ -57,12 +53,8 @@ def get_manager_awards_from_cache(
         cached_overall_data.get("playoff_appearances", [])
     )
 
-
     # Most Trades in a Year
-    most_trades_in_year = {
-        "count": 0,
-        "year": ""
-    }
+    most_trades_in_year = {"count": 0, "year": ""}
 
     for year in manager_cache[manager].get("years", {}):
         mgr_yr_sum = manager_cache[manager]["years"][year]["summary"]
@@ -74,29 +66,21 @@ def get_manager_awards_from_cache(
     awards["most_trades_in_year"] = deepcopy(most_trades_in_year)
 
     # Biggest FAAB Bid
-    biggest_faab_bid = {
-        "player": "",
-        "amount": 0,
-        "year": ""
-    }
+    biggest_faab_bid = {"player": "", "amount": 0, "year": ""}
     # Check if FAAB data exists in summary before accessing
     mgr_summary = manager_cache[manager].get("summary", {})
     if (
         "faab" in mgr_summary.get("transactions", {})
         and mgr_summary["transactions"]["faab"]
     ):
-
         for year in manager_cache[manager].get("years", {}):
-
             weeks = deepcopy(manager_cache[manager]["years"][year]["weeks"])
             for week in weeks:
-
                 weekly_trans = weeks.get(week, {}).get("transactions", {})
                 weekly_faab_bids = deepcopy(
                     weekly_trans.get("faab", {}).get("players", {})
                 )
                 for player in weekly_faab_bids:
-
                     bid_amount = weekly_faab_bids[player]["total_faab_spent"]
                     if bid_amount > biggest_faab_bid["amount"]:
                         biggest_faab_bid["player"] = get_image_url(
@@ -108,6 +92,7 @@ def get_manager_awards_from_cache(
     awards["biggest_faab_bid"] = deepcopy(biggest_faab_bid)
 
     return deepcopy(awards)
+
 
 def get_manager_score_awards_from_cache(
     manager: str, image_urls: dict[str, str]
@@ -138,7 +123,6 @@ def get_manager_score_awards_from_cache(
     biggest_blowout_win = {}
     biggest_blowout_loss = {}
 
-
     for year in manager_cache[manager].get("years", {}):
         weeks = deepcopy(manager_cache[manager]["years"][year]["weeks"])
         for week in weeks:
@@ -154,7 +138,7 @@ def get_manager_score_awards_from_cache(
             points_for = matchup_data.get("points_for", 0.0)
             points_against = matchup_data.get("points_against", 0.0)
             point_differential = float(
-                Decimal(points_for - points_against).quantize(Decimal('0.01'))
+                Decimal(points_for - points_against).quantize(Decimal("0.01"))
             )
 
             # Highest Weekly Score
@@ -164,46 +148,44 @@ def get_manager_score_awards_from_cache(
                     matchup_data.get("opponent_manager", ""),
                     year,
                     week,
-                    image_urls
+                    image_urls,
                 )
 
             # Lowest Weekly Score
-            if (
-                points_for <
-                lowest_weekly_score.get("manager_1_score", float('inf'))
+            if points_for < lowest_weekly_score.get(
+                "manager_1_score", float("inf")
             ):
                 lowest_weekly_score = get_matchup_card(
-                    manager, matchup_data.get("opponent_manager", ""),
+                    manager,
+                    matchup_data.get("opponent_manager", ""),
                     year,
                     week,
-                    image_urls
+                    image_urls,
                 )
 
             # Biggest Blowout Win
-            if (
-                point_differential >
-                biggest_blowout_win.get("differential", 0.0)
+            if point_differential > biggest_blowout_win.get(
+                "differential", 0.0
             ):
                 biggest_blowout_win = get_matchup_card(
                     manager,
                     matchup_data.get("opponent_manager", ""),
                     year,
                     week,
-                    image_urls
+                    image_urls,
                 )
                 biggest_blowout_win["differential"] = point_differential
 
             # Biggest Blowout Loss
-            if (
-                point_differential <
-                biggest_blowout_loss.get("differential", 0.0)
+            if point_differential < biggest_blowout_loss.get(
+                "differential", 0.0
             ):
                 biggest_blowout_loss = get_matchup_card(
                     manager,
                     matchup_data.get("opponent_manager", ""),
                     year,
                     week,
-                    image_urls
+                    image_urls,
                 )
                 biggest_blowout_loss["differential"] = point_differential
 

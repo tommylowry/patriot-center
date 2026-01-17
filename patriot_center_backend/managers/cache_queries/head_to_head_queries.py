@@ -212,7 +212,7 @@ def get_head_to_head_overall_from_cache(
 
             validation = validate_matchup_data(matchup_data)
             if "Warning" in validation:
-                print(f"{validation} {manager1}, year {y}, week {w}")
+                logger.warning(f"{validation} {manager1}, year {y}, week {w}")
                 continue
             if validation == "Empty":
                 continue

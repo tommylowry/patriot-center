@@ -162,19 +162,19 @@ class TestGetHeadToHeadOverallFromCache:
                     "opponent_manager": "Manager 2",
                     "result": "win",
                     "points_for": 120.5,
-                    "points_against": 100.0
+                    "points_against": 100.0,
                 },
-                "transactions": {}
+                "transactions": {},
             },
             "2": {
                 "matchup_data": {
                     "opponent_manager": "Manager 2",
                     "result": "loss",
                     "points_for": 90.0,
-                    "points_against": 110.0
+                    "points_against": 110.0,
                 },
-                "transactions": {}
-            }
+                "transactions": {},
+            },
         }
 
         result = get_head_to_head_overall_from_cache(
@@ -198,9 +198,9 @@ class TestGetHeadToHeadOverallFromCache:
                     "opponent_manager": "Manager 2",
                     "result": "win",
                     "points_for": 120.5,
-                    "points_against": 100.0
+                    "points_against": 100.0,
                 },
-                "transactions": {}
+                "transactions": {},
             }
         }
         self.mock_manager_cache.update(
@@ -212,9 +212,7 @@ class TestGetHeadToHeadOverallFromCache:
                                 "matchup_data": {
                                     "overall": {
                                         "points_for": {
-                                            "opponents": {
-                                                "Manager 2": 100.0
-                                            }
+                                            "opponents": {"Manager 2": 100.0}
                                         }
                                     }
                                 }
@@ -238,9 +236,7 @@ class TestGetHeadToHeadOverallFromCache:
                                 "matchup_data": {
                                     "overall": {
                                         "points_for": {
-                                            "opponents": {
-                                                "Manager 1": 100.0
-                                            }
+                                            "opponents": {"Manager 1": 100.0}
                                         }
                                     }
                                 }
@@ -276,19 +272,19 @@ class TestGetHeadToHeadOverallFromCache:
                     "opponent_manager": "Manager 2",
                     "result": "loss",
                     "points_for": 90.0,
-                    "points_against": 110.0
+                    "points_against": 110.0,
                 },
-                "transactions": {}
+                "transactions": {},
             },
             "2": {
                 "matchup_data": {
                     "opponent_manager": "Manager 2",
                     "result": "loss",
                     "points_for": 85.0,
-                    "points_against": 115.0
+                    "points_against": 115.0,
                 },
-                "transactions": {}
-            }
+                "transactions": {},
+            },
         }
         self.mock_manager_cache["Manager 2"] = deepcopy(
             self.mock_manager_cache["Manager 1"]
@@ -296,7 +292,9 @@ class TestGetHeadToHeadOverallFromCache:
 
         self.mock_h2h_details_value = {"wins": 0, "losses": 2, "ties": 0}
         self.mock_matchup_card_value = {
-            "year": "2023", "week": "1", "margin": 20.0
+            "year": "2023",
+            "week": "1",
+            "margin": 20.0,
         }
 
         result = get_head_to_head_overall_from_cache(

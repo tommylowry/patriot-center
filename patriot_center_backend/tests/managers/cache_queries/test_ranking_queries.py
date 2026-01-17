@@ -17,11 +17,7 @@ def mock_valid_options_cache():
     Returns:
         Sample valid options cache
     """
-    return {
-        "2025": {
-            "managers": ["Manager 1", "Manager 2", "Manager 3"]
-        }
-    }
+    return {"2025": {"managers": ["Manager 1", "Manager 2", "Manager 3"]}}
 
 
 class TestGetRankingDetailsFromCache:

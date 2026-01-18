@@ -1,8 +1,10 @@
+"""Unit tests for transaction_id_processor module."""
+
 from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.transaction_processing.transaction_id_processor import (
+from patriot_center_backend.managers.transaction_processing.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
 )
 
@@ -12,13 +14,26 @@ class TestAddToTransactionIds:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.transaction_processing.transaction_id_processor.CACHE_MANAGER.get_transaction_ids_cache') as mock_get_trans_id:
-            
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_transaction_ids_cache`: `mock_get_trans_id`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.transaction_processing"
+                ".transaction_id_processor"
+                ".CACHE_MANAGER.get_transaction_ids_cache"
+            ) as mock_get_trans_id,
+        ):
             self.mock_ids_cache = {}
 
             mock_get_trans_id.return_value = self.mock_ids_cache
-            
+
             yield
 
     def test_add_trade_to_cache(self):
@@ -33,12 +48,12 @@ class TestAddToTransactionIds:
         }
 
         add_to_transaction_ids(
-            year="2023",
-            week="1",
-            transaction_info=transaction_info,
-            weekly_transaction_ids=[],
-            commish_action=False,
-            use_faab=True
+            "2023",
+            "1",
+            transaction_info,
+            [],
+            False,
+            True
         )
 
         assert "trans1" in self.mock_ids_cache
@@ -59,12 +74,12 @@ class TestAddToTransactionIds:
         }
 
         add_to_transaction_ids(
-            year="2023",
-            week="1",
-            transaction_info=transaction_info,
-            weekly_transaction_ids=[],
-            commish_action=False,
-            use_faab=True
+            "2023",
+            "1",
+            transaction_info,
+            [],
+            False,
+            True
         )
 
 
@@ -76,22 +91,22 @@ class TestAddToTransactionIds:
         """Test that missing type raises ValueError."""
         with pytest.raises(ValueError, match="Transaction type not found"):
             add_to_transaction_ids(
-                year="2023",
-                week="1",
-                transaction_info={"transaction_id": "trans1", "manager": "Manager 1"},
-                weekly_transaction_ids=[],
-                commish_action=False,
-                use_faab=True
+                "2023",
+                "1",
+                {"transaction_id": "trans1", "manager": "Manager 1"},
+                [],
+                False,
+                True
             )
 
     def test_add_to_cache_missing_transaction_id(self):
         """Test that missing transaction_id raises ValueError."""
         with pytest.raises(ValueError, match="transaction_id not found"):
             add_to_transaction_ids(
-                year="2023",
-                week="1",
-                transaction_info={"type": "trade", "manager": "Manager 1"},
-                weekly_transaction_ids=[],
-                commish_action=False,
-                use_faab=True
+                "2023",
+                "1",
+                {"type": "trade", "manager": "Manager 1"},
+                [],
+                False,
+                True
             )

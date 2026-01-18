@@ -97,7 +97,6 @@ def process_trade_transaction(
 
         if transaction.get("draft_picks"):
             for draft_pick in transaction.get("draft_picks", []):
-
                 # Acquired draft pick
                 if draft_pick.get("owner_id") == roster_id:
                     draft_pick_name = draft_pick_decipher(
@@ -105,7 +104,8 @@ def process_trade_transaction(
                     )
                     acquired[draft_pick_name] = roster_ids.get(
                         draft_pick.get("previous_owner_id", "unknown_manager"),
-                        "unknown_manager")
+                        "unknown_manager",
+                    )
 
                 # Sent draft pick
                 if draft_pick.get("previous_owner_id") == roster_id:
@@ -114,7 +114,8 @@ def process_trade_transaction(
                     )
                     sent[draft_pick_name] = roster_ids.get(
                         draft_pick.get("owner_id", "unknown_manager"),
-                        "unknown_manager")
+                        "unknown_manager",
+                    )
 
         transaction_id = transaction.get("transaction_id", "")
 
@@ -150,14 +151,13 @@ def process_trade_transaction(
             weekly_transaction_ids,
             transaction_id,
             commish_action,
-            use_faab
+            use_faab,
         )
 
     # Faab Trading
     waiver_budget = transaction.get("waiver_budget", [])
     if use_faab and waiver_budget:
         for faab_transaction in waiver_budget:
-
             faab_amount = faab_transaction.get("amount", 0)
             sender = roster_ids.get(faab_transaction.get("sender"))
             receiver = roster_ids.get(faab_transaction.get("receiver"))
@@ -192,7 +192,7 @@ def add_trade_details_to_cache(
     weekly_transaction_ids: list[str],
     transaction_id: str,
     commish_action: bool,
-    use_faab: bool
+    use_faab: bool,
 ) -> None:
     """Update cache with trade details at all aggregation levels.
 
@@ -220,7 +220,7 @@ def add_trade_details_to_cache(
         "total": 0,
         "trade_partners": {
             # "trade_partner": num_times_acquired_from
-        }
+        },
     }
 
     mgr_lvl = manager_cache[manager]
@@ -237,7 +237,7 @@ def add_trade_details_to_cache(
         "trade_partners": trade_partners,
         "acquired": acquired,
         "sent": sent,
-        "transaction_id": transaction_id
+        "transaction_id": transaction_id,
     }
     add_to_transaction_ids(
         year,
@@ -255,7 +255,6 @@ def add_trade_details_to_cache(
 
     # Add trade details in all summaries
     for summary in summaries:
-
         # Process total trades
         if trade_partners:
             summary["total"] += 1
@@ -266,19 +265,18 @@ def add_trade_details_to_cache(
                 summary["trade_partners"][trade_partner] = 0
             summary["trade_partners"][trade_partner] += 1
 
-
         # Process players acquired
         acquired_summary = summary["trade_players_acquired"]
         for player in acquired:
             if player not in acquired_summary:
                 acquired_summary[player] = deepcopy(player_initial_dict)
-            if acquired[player] not in (
-                acquired_summary[player]["trade_partners"]
+            if (
+                acquired[player]
+                not in (acquired_summary[player]["trade_partners"])
             ):
                 acquired_summary[player]["trade_partners"][acquired[player]] = 0
             acquired_summary[player]["trade_partners"][acquired[player]] += 1
             acquired_summary[player]["total"] += 1
-
 
         # Process players sent
         sent_summary = summary["trade_players_sent"]
@@ -297,7 +295,7 @@ def add_trade_details_to_cache(
 def revert_trade_transaction(
     transaction_id1: str,
     transaction_id2: str,
-    weekly_transaction_ids: list[str]
+    weekly_transaction_ids: list[str],
 ) -> None:
     """Revert two trade transactions that cancel each other out.
 
@@ -316,61 +314,57 @@ def revert_trade_transaction(
 
     transaction = deepcopy(transaction_ids_cache[transaction_id1])
 
-    year = transaction['year']
-    week = transaction['week']
+    year = transaction["year"]
+    week = transaction["week"]
 
-    for manager in transaction['managers_involved']:
-
+    for manager in transaction["managers_involved"]:
         mgr_lvl = manager_cache[manager]
         yr_lvl = mgr_lvl["years"][year]
         wk_lvl = yr_lvl["weeks"][week]
 
-        overall_trades = mgr_lvl['summary']['transactions']
-        yearly_trades = yr_lvl['summary']['transactions']
-        weekly_trades = wk_lvl['transactions']
+        overall_trades = mgr_lvl["summary"]["transactions"]
+        yearly_trades = yr_lvl["summary"]["transactions"]
+        weekly_trades = wk_lvl["transactions"]
 
         # Remove transaction IDs from cache
-        if transaction_id1 in weekly_trades['trades']['transaction_ids']:
-            weekly_trades['trades']['transaction_ids'].remove(transaction_id1)
-        if transaction_id2 in weekly_trades['trades']['transaction_ids']:
-            weekly_trades['trades']['transaction_ids'].remove(transaction_id2)
+        if transaction_id1 in weekly_trades["trades"]["transaction_ids"]:
+            weekly_trades["trades"]["transaction_ids"].remove(transaction_id1)
+        if transaction_id2 in weekly_trades["trades"]["transaction_ids"]:
+            weekly_trades["trades"]["transaction_ids"].remove(transaction_id2)
 
         if transaction_id1 in (
             weekly_trades.get("faab", {}).get("transaction_ids", [])
         ):
-            weekly_trades['faab']['transaction_ids'].remove(transaction_id1)
+            weekly_trades["faab"]["transaction_ids"].remove(transaction_id1)
 
         if transaction_id2 in (
             weekly_trades.get("faab", {}).get("transaction_ids", [])
         ):
-            weekly_trades['faab']['transaction_ids'].remove(transaction_id2)
+            weekly_trades["faab"]["transaction_ids"].remove(transaction_id2)
 
         for d in [overall_trades, yearly_trades, weekly_trades]:
-
             # if there were 2 trades made, these 2 were the 2,
             # so it should now be empty
-            d['trades']['total'] -= 2
-            if d['trades']['total'] == 0:
-                d['trades']['trade_partners'] = {}
-                d['trades']['trade_players_acquired'] = {}
-                d['trades']['trade_players_sent'] = {}
-                d['trades']['transaction_ids'] = []
+            d["trades"]["total"] -= 2
+            if d["trades"]["total"] == 0:
+                d["trades"]["trade_partners"] = {}
+                d["trades"]["trade_players_acquired"] = {}
+                d["trades"]["trade_players_sent"] = {}
+                d["trades"]["transaction_ids"] = []
                 continue
 
             # Remove from trade partners and
             # traverse trade details by trade partner
-            other_managers = deepcopy(transaction['managers_involved'])
+            other_managers = deepcopy(transaction["managers_involved"])
             other_managers.remove(manager)
             for other_manager in other_managers:
+                d["trades"]["trade_partners"][other_manager] -= 2
+                if d["trades"]["trade_partners"][other_manager] == 0:
+                    del d["trades"]["trade_partners"][other_manager]
 
-                d['trades']['trade_partners'][other_manager] -= 2
-                if d['trades']['trade_partners'][other_manager] == 0:
-                    del d['trades']['trade_partners'][other_manager]
-
-            for player in list(transaction['trade_details'].keys()):
-
-                new_mgr = (
-                    transaction['trade_details'][player].get('new_manager')
+            for player in list(transaction["trade_details"].keys()):
+                new_mgr = transaction["trade_details"][player].get(
+                    "new_manager"
                 )
                 old_mgr = (
                     transaction['trade_details'][player].get('old_manager')
@@ -378,8 +372,7 @@ def revert_trade_transaction(
 
                 if not new_mgr or not old_mgr:
                     logger.warning(
-                        f"Transaction {transaction} has "
-                        f"missing manager info."
+                        f"Transaction {transaction} has missing manager info."
                     )
                     continue
 
@@ -387,28 +380,28 @@ def revert_trade_transaction(
                 if manager != new_mgr and manager != old_mgr:
                     continue
 
-                plyrs_acq = d['trades']['trade_players_acquired']
-                plyrs_sent = d['trades']['trade_players_sent']
+                plyrs_acq = d["trades"]["trade_players_acquired"]
+                plyrs_sent = d["trades"]["trade_players_sent"]
 
                 trade_partner = new_mgr if manager == old_mgr else old_mgr
 
                 # Remove from acquired
-                plyrs_acq[player]['total'] -= 1
-                if plyrs_acq[player]['total'] == 0:
+                plyrs_acq[player]["total"] -= 1
+                if plyrs_acq[player]["total"] == 0:
                     del plyrs_acq[player]
                 else:
-                    plyrs_acq[player]['trade_partners'][trade_partner] -= 1
-                    if plyrs_acq[player]['trade_partners'][trade_partner] == 0:
-                        del plyrs_acq[player]['trade_partners'][trade_partner]
+                    plyrs_acq[player]["trade_partners"][trade_partner] -= 1
+                    if plyrs_acq[player]["trade_partners"][trade_partner] == 0:
+                        del plyrs_acq[player]["trade_partners"][trade_partner]
 
                 # Remove from sent
-                plyrs_sent[player]['total'] -= 1
-                if plyrs_sent[player]['total'] == 0:
+                plyrs_sent[player]["total"] -= 1
+                if plyrs_sent[player]["total"] == 0:
                     del plyrs_sent[player]
                 else:
-                    plyrs_sent[player]['trade_partners'][trade_partner] -= 1
-                    if plyrs_sent[player]['trade_partners'][trade_partner] == 0:
-                        del plyrs_sent[player]['trade_partners'][trade_partner]
+                    plyrs_sent[player]["trade_partners"][trade_partner] -= 1
+                    if plyrs_sent[player]["trade_partners"][trade_partner] == 0:
+                        del plyrs_sent[player]["trade_partners"][trade_partner]
 
                 # faab is here, the logic is to turn it
                 # into an int, so player = "$1 FAAB" -> faab = 1
@@ -418,20 +411,20 @@ def revert_trade_transaction(
                     faab = int(faab)
 
                     # Remove from traded
-                    faab_traded = d['faab']['faab_traded']
+                    faab_traded = d["faab"]["faab_traded"]
 
-                    faab_traded['total'] -= faab
-                    faab_traded['trade_partners'][trade_partner] -= faab
-                    if faab_traded['trade_partners'][trade_partner] == 0:
-                        del faab_traded['trade_partners'][trade_partner]
+                    faab_traded["total"] -= faab
+                    faab_traded["trade_partners"][trade_partner] -= faab
+                    if faab_traded["trade_partners"][trade_partner] == 0:
+                        del faab_traded["trade_partners"][trade_partner]
 
                     # Remove from acquired
-                    faab_acq = d['faab']['acquired_from']
+                    faab_acq = d["faab"]["acquired_from"]
 
-                    faab_acq['total'] -= faab
-                    faab_acq['trade_partners'][trade_partner] -= faab
-                    if faab_acq['trade_partners'][trade_partner] == 0:
-                        del faab_acq['trade_partners'][trade_partner]
+                    faab_acq["total"] -= faab
+                    faab_acq["trade_partners"][trade_partner] -= faab
+                    if faab_acq["trade_partners"][trade_partner] == 0:
+                        del faab_acq["trade_partners"][trade_partner]
 
     del transaction_ids_cache[transaction_id1]
     del transaction_ids_cache[transaction_id2]

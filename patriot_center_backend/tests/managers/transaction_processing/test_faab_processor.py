@@ -49,7 +49,7 @@ class TestAddFaabDetailsToCache:
             "Player One",
             50,
             "trans1",
-            trade_partner=None
+            trade_partner=None,
         )
 
         # Check weekly summary
@@ -72,7 +72,7 @@ class TestAddFaabDetailsToCache:
             "FAAB",
             100,
             "trans1",
-            trade_partner="Manager 2"
+            trade_partner="Manager 2",
         )
 
         yr = self.mock_manager_cache["Manager 1"]["years"]["2023"]
@@ -93,7 +93,7 @@ class TestAddFaabDetailsToCache:
             "FAAB",
             -100,
             "trans1",
-            trade_partner="Manager 2"
+            trade_partner="Manager 2",
         )
 
         yr = self.mock_manager_cache["Manager 1"]["years"]["2023"]

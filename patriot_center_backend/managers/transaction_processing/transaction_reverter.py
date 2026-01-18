@@ -142,13 +142,12 @@ def check_for_reverse_transactions(transaction_ids: list[str]) -> None:
                 sorted(transaction1['trade_details'].keys())
                 == sorted(transaction2['trade_details'].keys())
             ):
-
                 invalid_transaction = True
-                for plyr in transaction1['trade_details']:
-                    t1_old = transaction1['trade_details'][plyr]['old_manager']
-                    t1_new = transaction1['trade_details'][plyr]['new_manager']
-                    t2_old = transaction2['trade_details'][plyr]['old_manager']
-                    t2_new = transaction2['trade_details'][plyr]['new_manager']
+                for plyr in transaction1["trade_details"]:
+                    t1_old = transaction1["trade_details"][plyr]["old_manager"]
+                    t1_new = transaction1["trade_details"][plyr]["new_manager"]
+                    t2_old = transaction2["trade_details"][plyr]["old_manager"]
+                    t2_new = transaction2["trade_details"][plyr]["new_manager"]
 
                     if t1_old != t2_new or t1_new != t2_old:
                         invalid_transaction = False

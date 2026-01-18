@@ -2,6 +2,7 @@
 
 import logging
 from copy import deepcopy
+from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.managers.formatters import draft_pick_decipher
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 def process_trade_transaction(
     year: str,
     week: str,
-    transaction: dict,
+    transaction: dict[str, Any],
     roster_ids: dict[int, str],
     weekly_transaction_ids: list[str],
     commish_action: bool,
@@ -57,7 +58,7 @@ def process_trade_transaction(
             logger.warning(f"Unknown manager: {roster_id}")
             continue
 
-        trade_partners = transaction.get("roster_ids", []).copy()
+        trade_partners = deepcopy(transaction.get("roster_ids", []))
         trade_partners.remove(roster_id)
         for i in range(len(trade_partners)):
             trade_partners[i] = roster_ids.get(
@@ -186,9 +187,9 @@ def add_trade_details_to_cache(
     year: str,
     week: str,
     manager: str,
-    trade_partners: list,
-    acquired: dict,
-    sent: dict,
+    trade_partners: list[str],
+    acquired: dict[str, str],
+    sent: dict[str, str],
     weekly_transaction_ids: list[str],
     transaction_id: str,
     commish_action: bool,

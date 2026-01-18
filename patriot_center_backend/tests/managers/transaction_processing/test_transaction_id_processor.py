@@ -44,17 +44,10 @@ class TestAddToTransactionIds:
             "trade_partners": ["Manager 2"],
             "acquired": {"Player One": "Manager 2"},
             "sent": {"Player Two": "Manager 2"},
-            "transaction_id": "trans1"
+            "transaction_id": "trans1",
         }
 
-        add_to_transaction_ids(
-            "2023",
-            "1",
-            transaction_info,
-            [],
-            False,
-            True
-        )
+        add_to_transaction_ids("2023", "1", transaction_info, [], False, True)
 
         assert "trans1" in self.mock_ids_cache
         assert self.mock_ids_cache["trans1"]["year"] == "2023"
@@ -70,18 +63,10 @@ class TestAddToTransactionIds:
             "manager": "Manager 1",
             "player_name": "Player One",
             "transaction_id": "trans1",
-            "waiver_bid": 50
+            "waiver_bid": 50,
         }
 
-        add_to_transaction_ids(
-            "2023",
-            "1",
-            transaction_info,
-            [],
-            False,
-            True
-        )
-
+        add_to_transaction_ids("2023", "1", transaction_info, [], False, True)
 
         assert "trans1" in self.mock_ids_cache
         assert self.mock_ids_cache["trans1"]["add"] == "Player One"
@@ -96,7 +81,7 @@ class TestAddToTransactionIds:
                 {"transaction_id": "trans1", "manager": "Manager 1"},
                 [],
                 False,
-                True
+                True,
             )
 
     def test_add_to_cache_missing_transaction_id(self):
@@ -108,5 +93,5 @@ class TestAddToTransactionIds:
                 {"type": "trade", "manager": "Manager 1"},
                 [],
                 False,
-                True
+                True,
             )

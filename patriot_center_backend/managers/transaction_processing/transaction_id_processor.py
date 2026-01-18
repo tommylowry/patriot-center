@@ -9,7 +9,7 @@ def add_to_transaction_ids(
     transaction_info: dict,
     weekly_transaction_ids: list[str],
     commish_action: bool,
-    use_faab: bool
+    use_faab: bool,
 ) -> None:
     """Add transaction to global transaction IDs cache.
 
@@ -67,7 +67,7 @@ def add_to_transaction_ids(
             or transaction_type not in valid_add_or_drop_types
         ):
             raise ValueError(
-                f"Transaction type {transaction_info.get('type') } "
+                f"Transaction type {transaction_info.get('type')} "
                 f"is not a valid 'add_or_drop' type, needs to be one "
                 f"of: {valid_add_or_drop_types}"
             )
@@ -82,7 +82,7 @@ def add_to_transaction_ids(
             "commish_action": commish_action,
             "managers_involved": [],
             "types": [],
-            "players_involved": []
+            "players_involved": [],
         }
     transaction_info_to_cache = transaction_ids_cache[transaction_id]
 
@@ -100,14 +100,10 @@ def add_to_transaction_ids(
                 f"{transaction_type} with info: {transaction_info}"
             )
 
-        transaction_info_to_cache["players_involved"].append(
-            player_name
-        )
+        transaction_info_to_cache["players_involved"].append(player_name)
 
         if transaction_type in transaction_info_to_cache:
-            raise ValueError(
-                "Can only add or drop one player per transaction."
-            )
+            raise ValueError("Can only add or drop one player per transaction.")
 
         transaction_info_to_cache[transaction_type] = player_name
         bid = transaction_info.get("waiver_bid")
@@ -116,7 +112,6 @@ def add_to_transaction_ids(
 
     # Trade transaction
     elif transaction_type == "trade":
-
         # Get players acquired and players sent
         players_acquired = transaction_info.get("acquired", {})
         players_sent = transaction_info.get("sent", {})
@@ -143,7 +138,7 @@ def add_to_transaction_ids(
             if player not in transaction_info_to_cache["trade_details"]:
                 transaction_info_to_cache["trade_details"][player] = {
                     "old_manager": players_acquired[player],
-                    "new_manager": manager
+                    "new_manager": manager,
                 }
 
         # Adding player from players_sent into players_involved and into
@@ -158,9 +153,8 @@ def add_to_transaction_ids(
             if player not in transaction_info_to_cache["trade_details"]:
                 transaction_info_to_cache["trade_details"][player] = {
                     "old_manager": manager,
-                    "new_manager": players_sent[player]
+                    "new_manager": players_sent[player],
                 }
-
 
     # FAAB data being handled in trades and add/drop for transactions
     elif transaction_type != "faab":

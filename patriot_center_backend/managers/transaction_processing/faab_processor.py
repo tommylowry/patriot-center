@@ -16,7 +16,7 @@ def add_faab_details_to_cache(
     player_name: str,
     faab_amount: int,
     transaction_id: str,
-    trade_partner: str | None = None
+    trade_partner: str | None = None,
 ) -> None:
     """Update cache with FAAB spending and trading details.
 
@@ -52,8 +52,9 @@ def add_faab_details_to_cache(
     mgr = manager_cache[manager]
     yr_lvl = mgr["years"][year]
 
-    if transaction_id in (
-        yr_lvl["weeks"][week]["transactions"]["faab"]["transaction_ids"]
+    if (
+        transaction_id
+        in yr_lvl["weeks"][week]["transactions"]["faab"]["transaction_ids"]
     ):
         return  # Waiver already processed for this week
 
@@ -71,11 +72,11 @@ def add_faab_details_to_cache(
             # Process player-specific FAAB amounts
             if player_name not in summary["players"]:
                 summary["players"][player_name] = {
-                    'num_bids_won': 0,
-                    'total_faab_spent': 0
+                    "num_bids_won": 0,
+                    "total_faab_spent": 0,
                 }
-            summary["players"][player_name]['num_bids_won'] += 1
-            summary["players"][player_name]['total_faab_spent'] += faab_amount
+            summary["players"][player_name]["num_bids_won"] += 1
+            summary["players"][player_name]["total_faab_spent"] += faab_amount
 
     elif transaction_type == "trade":
         # Add trade FAAB details in all summaries

@@ -1,9 +1,15 @@
+"""This module contains fixtures for testing the transaction processing."""
+
 import pytest
 
 
 @pytest.fixture
 def mock_manager_cache():
-    """Create a sample manager cache for testing."""
+    """Create a sample manager cache for testing.
+
+    Returns:
+        Sample manager cache
+    """
     return {
         "Manager 1": {
             "summary": {
@@ -13,7 +19,7 @@ def mock_manager_cache():
                         "trade_partners": {},
                         "trade_players_acquired": {},
                         "trade_players_sent": {},
-                        "transaction_ids": []
+                        "transaction_ids": [],
                     },
                     "adds": {"total": 0, "players": {}, "transaction_ids": []},
                     "drops": {"total": 0, "players": {}, "transaction_ids": []},
@@ -22,8 +28,8 @@ def mock_manager_cache():
                         "players": {},
                         "acquired_from": {"total": 0, "trade_partners": {}},
                         "traded_away": {"total": 0, "trade_partners": {}},
-                        "transaction_ids": []
-                    }
+                        "transaction_ids": [],
+                    },
                 }
             },
             "years": {
@@ -35,17 +41,31 @@ def mock_manager_cache():
                                 "trade_partners": {},
                                 "trade_players_acquired": {},
                                 "trade_players_sent": {},
-                                "transaction_ids": []
+                                "transaction_ids": [],
                             },
-                            "adds": {"total": 0, "players": {}, "transaction_ids": []},
-                            "drops": {"total": 0, "players": {}, "transaction_ids": []},
+                            "adds": {
+                                "total": 0,
+                                "players": {},
+                                "transaction_ids": [],
+                            },
+                            "drops": {
+                                "total": 0,
+                                "players": {},
+                                "transaction_ids": [],
+                            },
                             "faab": {
                                 "total_lost_or_gained": 0,
                                 "players": {},
-                                "acquired_from": {"total": 0, "trade_partners": {}},
-                                "traded_away": {"total": 0, "trade_partners": {}},
-                                "transaction_ids": []
-                            }
+                                "acquired_from": {
+                                    "total": 0,
+                                    "trade_partners": {},
+                                },
+                                "traded_away": {
+                                    "total": 0,
+                                    "trade_partners": {},
+                                },
+                                "transaction_ids": [],
+                            },
                         }
                     },
                     "weeks": {
@@ -56,22 +76,36 @@ def mock_manager_cache():
                                     "trade_partners": {},
                                     "trade_players_acquired": {},
                                     "trade_players_sent": {},
-                                    "transaction_ids": []
+                                    "transaction_ids": [],
                                 },
-                                "adds": {"total": 0, "players": {}, "transaction_ids": []},
-                                "drops": {"total": 0, "players": {}, "transaction_ids": []},
+                                "adds": {
+                                    "total": 0,
+                                    "players": {},
+                                    "transaction_ids": [],
+                                },
+                                "drops": {
+                                    "total": 0,
+                                    "players": {},
+                                    "transaction_ids": [],
+                                },
                                 "faab": {
                                     "total_lost_or_gained": 0,
                                     "players": {},
-                                    "acquired_from": {"total": 0, "trade_partners": {}},
-                                    "traded_away": {"total": 0, "trade_partners": {}},
-                                    "transaction_ids": []
-                                }
+                                    "acquired_from": {
+                                        "total": 0,
+                                        "trade_partners": {},
+                                    },
+                                    "traded_away": {
+                                        "total": 0,
+                                        "trade_partners": {},
+                                    },
+                                    "transaction_ids": [],
+                                },
                             }
                         }
-                    }
+                    },
                 }
-            }
+            },
         },
         "Manager 2": {
             "summary": {
@@ -81,7 +115,7 @@ def mock_manager_cache():
                         "trade_partners": {},
                         "trade_players_acquired": {},
                         "trade_players_sent": {},
-                        "transaction_ids": []
+                        "transaction_ids": [],
                     },
                     "adds": {"total": 0, "players": {}, "transaction_ids": []},
                     "drops": {"total": 0, "players": {}, "transaction_ids": []},
@@ -90,8 +124,8 @@ def mock_manager_cache():
                         "players": {},
                         "acquired_from": {"total": 0, "trade_partners": {}},
                         "traded_away": {"total": 0, "trade_partners": {}},
-                        "transaction_ids": []
-                    }
+                        "transaction_ids": [],
+                    },
                 }
             },
             "years": {
@@ -103,17 +137,31 @@ def mock_manager_cache():
                                 "trade_partners": {},
                                 "trade_players_acquired": {},
                                 "trade_players_sent": {},
-                                "transaction_ids": []
+                                "transaction_ids": [],
                             },
-                            "adds": {"total": 0, "players": {}, "transaction_ids": []},
-                            "drops": {"total": 0, "players": {}, "transaction_ids": []},
+                            "adds": {
+                                "total": 0,
+                                "players": {},
+                                "transaction_ids": [],
+                            },
+                            "drops": {
+                                "total": 0,
+                                "players": {},
+                                "transaction_ids": [],
+                            },
                             "faab": {
                                 "total_lost_or_gained": 0,
                                 "players": {},
-                                "acquired_from": {"total": 0, "trade_partners": {}},
-                                "traded_away": {"total": 0, "trade_partners": {}},
-                                "transaction_ids": []
-                            }
+                                "acquired_from": {
+                                    "total": 0,
+                                    "trade_partners": {},
+                                },
+                                "traded_away": {
+                                    "total": 0,
+                                    "trade_partners": {},
+                                },
+                                "transaction_ids": [],
+                            },
                         }
                     },
                     "weeks": {
@@ -124,21 +172,35 @@ def mock_manager_cache():
                                     "trade_partners": {},
                                     "trade_players_acquired": {},
                                     "trade_players_sent": {},
-                                    "transaction_ids": []
+                                    "transaction_ids": [],
                                 },
-                                "adds": {"total": 0, "players": {}, "transaction_ids": []},
-                                "drops": {"total": 0, "players": {}, "transaction_ids": []},
+                                "adds": {
+                                    "total": 0,
+                                    "players": {},
+                                    "transaction_ids": [],
+                                },
+                                "drops": {
+                                    "total": 0,
+                                    "players": {},
+                                    "transaction_ids": [],
+                                },
                                 "faab": {
                                     "total_lost_or_gained": 0,
                                     "players": {},
-                                    "acquired_from": {"total": 0, "trade_partners": {}},
-                                    "traded_away": {"total": 0, "trade_partners": {}},
-                                    "transaction_ids": []
-                                }
+                                    "acquired_from": {
+                                        "total": 0,
+                                        "trade_partners": {},
+                                    },
+                                    "traded_away": {
+                                        "total": 0,
+                                        "trade_partners": {},
+                                    },
+                                    "transaction_ids": [],
+                                },
                             }
                         }
-                    }
+                    },
                 }
-            }
-        }
+            },
+        },
     }

@@ -209,8 +209,8 @@ class CacheManager:
         return self._players_cache
 
     def save_players_cache(
-            self, cache: dict[str, dict[str, str | None]] | None = None
-        ) -> None:
+        self, cache: dict[str, dict[str, str | None]] | None = None
+    ) -> None:
         """Save players cache to disk.
 
         Args:
@@ -373,8 +373,8 @@ class CacheManager:
         return self._player_data_cache
 
     def save_player_data_cache(
-            self, cache: dict[str, Any] | None = None
-        ) -> None:
+        self, cache: dict[str, Any] | None = None
+    ) -> None:
         """Save player data cache to disk.
 
         Args:

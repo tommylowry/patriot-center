@@ -54,7 +54,7 @@ class TransactionProcessor:
         year: str,
         week: str,
         weekly_roster_ids: dict[int, str],
-        use_faab: bool
+        use_faab: bool,
     ) -> None:
         """Set session state before processing transaction data.
 
@@ -192,11 +192,12 @@ class TransactionProcessor:
         elif transaction_type == "trade":
             process_trade_transaction(
                 self._year,
-                self._week, transaction,
+                self._week,
+                transaction,
                 self._weekly_roster_ids,
                 self._weekly_transaction_ids,
                 commish_action,
-                self._use_faab
+                self._use_faab,
             )
 
         else:

@@ -343,7 +343,7 @@ class TestRevertAddDropTransaction:
 
         # Verify warning was printed for missing opponent
         assert "Cannot revert type invalid_type in" in caplog.text
-        assert "for transaction_id trans1" in caplog.text
+        assert "for transaction_id: trans1" in caplog.text
 
         assert result is None
 
@@ -465,7 +465,7 @@ class TestProcessAddOrDropTransaction:
             "add1",
             False,
             True,
-            50
+            waiver_bid=50
         )
         self.mock_add_faab.assert_called_once()
 
@@ -499,7 +499,7 @@ class TestProcessAddOrDropTransaction:
             "add2",
             False,
             False,
-            None
+            waiver_bid=None
         )
         assert not self.mock_add_faab.called
 
@@ -592,5 +592,5 @@ class TestProcessAddOrDropTransaction:
             "commish_add",
             True,
             True,
-            None
+            waiver_bid=None
         )

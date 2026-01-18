@@ -51,7 +51,7 @@ def process_add_or_drop_transaction(
     drops = transaction.get("drops", {})
 
     if not adds and not drops:
-        print("Waiver transaction with no adds or drops:", transaction)
+        logger.warning("Waiver transaction with no adds or drops:", transaction)
         return
 
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
@@ -249,7 +249,7 @@ def revert_add_drop_transaction(
     transaction_id: str,
     transaction_type: Literal["add", "drop"],
     weekly_transaction_ids: list[str],
-) -> bool:
+) -> bool | None:
     """Revert a specific add or drop from a transaction.
 
     - Used for commissioner reversals.
@@ -276,7 +276,7 @@ def revert_add_drop_transaction(
             f"in revert_add_or_drop_transaction for "
             f"transaction_id: {transaction_id}"
         )
-        return True  # Returns true to avoid double processing
+        return None  # Returns None to signal failure
 
     transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
     manager_cache = CACHE_MANAGER.get_manager_cache()

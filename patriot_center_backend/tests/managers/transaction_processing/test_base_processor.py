@@ -27,6 +27,7 @@ class TestTransactionProcessorInit:
         from patriot_center_backend.managers.transaction_processing.base_processor import (  # noqa: E501
             TransactionProcessor,
         )
+
         processor = TransactionProcessor()
 
         assert processor._year is None
@@ -34,6 +35,7 @@ class TestTransactionProcessorInit:
         assert processor._use_faab is None
         assert processor._weekly_roster_ids == {}
         assert processor._weekly_transaction_ids == []
+
 
 class TestSessionState:
     """Test session state management."""
@@ -50,7 +52,7 @@ class TestSessionState:
             year="2023",
             week="1",
             weekly_roster_ids=weekly_roster_ids,
-            use_faab=True
+            use_faab=True,
         )
 
         assert processor._year == "2023"
@@ -69,7 +71,7 @@ class TestSessionState:
             year="2023",
             week="1",
             weekly_roster_ids={1: "Manager 1"},
-            use_faab=True
+            use_faab=True,
         )
         processor._weekly_transaction_ids = ["trans1", "trans2"]
 
@@ -80,6 +82,7 @@ class TestSessionState:
         assert processor._week is None
         assert processor._weekly_roster_ids == {}
         assert processor._weekly_transaction_ids == []
+
 
 class TestScrubTransactionData:
     """Test scrub_transaction_data method."""
@@ -121,14 +124,16 @@ class TestScrubTransactionData:
 
     def test_scrub_transaction_data_processes_transactions(self):
         """Test that function fetches and processes transactions."""
-        self.mock_sleeper_data.extend([
-            {
-                "transaction_id": "trans1",
-                "type": "free_agent",
-                "adds": {"player1": 1},
-                "drops": None
-            }
-        ])
+        self.mock_sleeper_data.extend(
+            [
+                {
+                    "transaction_id": "trans1",
+                    "type": "free_agent",
+                    "adds": {"player1": 1},
+                    "drops": None,
+                }
+            ]
+        )
 
         self.processor.scrub_transaction_data()
 
@@ -138,11 +143,13 @@ class TestScrubTransactionData:
 
     def test_scrub_transaction_data_reverses_order(self):
         """Test that transactions are reversed (oldest first)."""
-        self.mock_sleeper_data.extend([
-            {"transaction_id": "trans1", "type": "free_agent"},
-            {"transaction_id": "trans2", "type": "free_agent"},
-            {"transaction_id": "trans3", "type": "free_agent"}
-        ])
+        self.mock_sleeper_data.extend(
+            [
+                {"transaction_id": "trans1", "type": "free_agent"},
+                {"transaction_id": "trans2", "type": "free_agent"},
+                {"transaction_id": "trans3", "type": "free_agent"},
+            ]
+        )
 
         self.processor.scrub_transaction_data()
 
@@ -163,6 +170,7 @@ class TestScrubTransactionData:
 
         with pytest.raises(ValueError, match="No league ID found"):
             self.processor.scrub_transaction_data()
+
 
 class TestProcessTransaction:
     """Test _process_transaction method."""
@@ -214,7 +222,9 @@ class TestProcessTransaction:
         self.mock_validate_value = False
 
         transaction = {
-            "type": "free_agent", "adds": {"player1": 1}, "drops": None
+            "type": "free_agent",
+            "adds": {"player1": 1},
+            "drops": None,
         }
 
         self.processor._process_transaction(transaction)
@@ -225,7 +235,9 @@ class TestProcessTransaction:
     def test_process_transaction_routes_to_add_or_drop(self):
         """Test that fa/waiver transactions are routed to add_or_drop."""
         transaction = {
-            "type": "free_agent", "adds": {"player1": 1}, "drops": None
+            "type": "free_agent",
+            "adds": {"player1": 1},
+            "drops": None,
         }
 
         self.processor._process_transaction(transaction)
@@ -242,7 +254,9 @@ class TestProcessTransaction:
         use_faab = True
 
         transaction = {
-            "type": "free_agent", "adds": {"player1": 1}, "drops": None
+            "type": "free_agent",
+            "adds": {"player1": 1},
+            "drops": None,
         }
 
         self.processor._process_transaction(transaction)
@@ -266,7 +280,7 @@ class TestProcessTransaction:
             "type": "trade",
             "roster_ids": [1, 2],
             "adds": {"player1": 1, "player2": 2},
-            "drops": {"player2": 1, "player1": 2}
+            "drops": {"player2": 1, "player1": 2},
         }
 
         self.processor._process_transaction(transaction)
@@ -289,7 +303,7 @@ class TestProcessTransaction:
             "type": "trade",
             "roster_ids": [1, 2],
             "adds": {"player1": 1, "player2": 2},
-            "drops": {"player2": 1, "player1": 2}
+            "drops": {"player2": 1, "player1": 2},
         }
 
         self.processor._process_transaction(transaction)
@@ -309,7 +323,7 @@ class TestProcessTransaction:
         transaction = {
             "type": "commissioner",
             "adds": {"player1": 1},
-            "drops": None
+            "drops": None,
         }
 
         self.processor._process_transaction(transaction)
@@ -323,7 +337,7 @@ class TestProcessTransaction:
             "type": "commissioner",
             "transaction_id": "comm1",
             "adds": {"player1": 1},
-            "drops": None  # No drops means add_or_drop type
+            "drops": None,  # No drops means add_or_drop type
         }
 
         self.processor._process_transaction(transaction)
@@ -343,7 +357,7 @@ class TestProcessTransaction:
             "transaction_id": "comm2",
             "roster_ids": [1, 2],
             "adds": {"player1": 1, "player2": 2},
-            "drops": {"player1": 2, "player2": 1}
+            "drops": {"player1": 2, "player2": 1},
         }
 
         self.processor._process_transaction(transaction)

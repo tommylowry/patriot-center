@@ -1,9 +1,10 @@
+"""Unit tests for transaction_reverter module."""
 
 from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.transaction_processing.transaction_reverter import (
+from patriot_center_backend.managers.transaction_processing.transaction_reverter import (  # noqa: E501
     check_for_reverse_transactions,
 )
 
@@ -13,22 +14,44 @@ class TestCheckForReverseTransactions:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.transaction_processing.transaction_reverter.CACHE_MANAGER.get_transaction_ids_cache') as mock_get_trans_ids, \
-             patch('patriot_center_backend.managers.transaction_processing.transaction_reverter.revert_trade_transaction') as mock_revert_trade, \
-             patch('patriot_center_backend.managers.transaction_processing.transaction_reverter.revert_add_drop_transaction') as mock_revert_add_drop:
-            
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_transaction_ids_cache`: `mock_get_trans_ids`
+        - `revert_trade_transaction`: `mock_revert_trade`
+        - `revert_add_drop_transaction`: `mock_revert_add_drop`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.transaction_processing"
+                ".transaction_reverter.CACHE_MANAGER.get_transaction_ids_cache"
+            ) as mock_get_trans_ids,
+            patch(
+                "patriot_center_backend.managers.transaction_processing"
+                ".transaction_reverter.revert_trade_transaction"
+            ) as mock_revert_trade,
+            patch(
+                "patriot_center_backend.managers.transaction_processing"
+                ".transaction_reverter.revert_add_drop_transaction"
+            ) as mock_revert_add_drop,
+        ):
             self.mock_get_trans_ids = mock_get_trans_ids
             self.mock_revert_trade = mock_revert_trade
             self.mock_revert_add_drop = mock_revert_add_drop
-            
+
             self.mock_transaction_ids_cache = {}
             self.transaction_ids = ["trans1", "trans2"]
 
-            self.mock_get_trans_ids.return_value = self.mock_transaction_ids_cache
+            self.mock_get_trans_ids.return_value = (
+                self.mock_transaction_ids_cache
+            )
 
             yield
-    
+
     def test_check_for_reverse_transactions_detects_reversal(self):
         """Test that reversed trades are detected and removed."""
         # Set up two transactions that reverse each other
@@ -59,7 +82,7 @@ class TestCheckForReverseTransactions:
             }
         })
 
-        check_for_reverse_transactions(transaction_ids=self.transaction_ids)
+        check_for_reverse_transactions(self.transaction_ids)
 
         # Should detect reversal and revert trade
         assert self.mock_revert_trade.called
@@ -93,14 +116,14 @@ class TestCheckForReverseTransactions:
             }
         })
 
-        check_for_reverse_transactions(transaction_ids=self.transaction_ids)
+        check_for_reverse_transactions(self.transaction_ids)
 
         # Should NOT detect reversal
         assert not self.mock_revert_trade.called
         assert not self.mock_revert_add_drop.called
-    
+
     def test_commissioner_add_then_drop_reversal(self):
-        """Test check_for_reverse_transactions detects commissioner add followed by drop."""
+        """Test method detects commissioner add followed by drop."""
         self.mock_transaction_ids_cache.update({
             "trans1": {
                 "year": "2023",
@@ -122,21 +145,24 @@ class TestCheckForReverseTransactions:
             }
         })
 
-        check_for_reverse_transactions(transaction_ids=self.transaction_ids)
+        check_for_reverse_transactions(self.transaction_ids)
 
         # Should detect reversal and call revert for both add and drop
         assert self.mock_revert_add_drop.call_count == 2
         # Check that it was called with the correct transaction IDs and types
-        trans_id_calls = [call[0][0] for call in self.mock_revert_add_drop.call_args_list]
-        type_calls = [call[0][1] for call in self.mock_revert_add_drop.call_args_list]
-        
+        trans_id_calls = []
+        type_calls = []
+        for call in self.mock_revert_add_drop.call_args_list:
+            trans_id_calls.append(call[0][0])
+            type_calls.append(call[0][1])
+
         assert "trans1" in trans_id_calls
         assert "trans2" in trans_id_calls
         assert "add" in type_calls
         assert "drop" in type_calls
 
     def test_commissioner_drop_then_add_reversal(self):
-        """Test check_for_reverse_transactions detects commissioner drop followed by add."""
+        """Test method detects commissioner drop followed by add."""
         self.mock_transaction_ids_cache.update({
             "trans1": {
                 "year": "2023",
@@ -158,12 +184,12 @@ class TestCheckForReverseTransactions:
             }
         })
 
-        check_for_reverse_transactions(transaction_ids=self.transaction_ids)
+        check_for_reverse_transactions(self.transaction_ids)
 
         # Should detect reversal and call revert for both drop and add
         trans_id_calls = [call[0][0] for call in self.mock_revert_add_drop.call_args_list]
         type_calls = [call[0][1] for call in self.mock_revert_add_drop.call_args_list]
-        
+
         assert self.mock_revert_add_drop.call_count == 2
         assert "trans1" in trans_id_calls
         assert "trans2" in trans_id_calls
@@ -192,12 +218,15 @@ class TestCheckForReverseTransactions:
                 "drop": "Player One"
             }
         })
-            
-        check_for_reverse_transactions(transaction_ids=self.transaction_ids)
+
+        check_for_reverse_transactions(self.transaction_ids)
 
         # Should detect reversal and call revert for both add and drop
-        trans_id_calls = [call[0][0] for call in self.mock_revert_add_drop.call_args_list]
-        type_calls = [call[0][1] for call in self.mock_revert_add_drop.call_args_list]
+        trans_id_calls = []
+        type_calls = []
+        for call in self.mock_revert_add_drop.call_args_list:
+            trans_id_calls.append(call[0][0])
+            type_calls.append(call[0][1])
 
         assert self.mock_revert_add_drop.call_count == 2
         assert "trans1" in trans_id_calls
@@ -206,7 +235,7 @@ class TestCheckForReverseTransactions:
         assert "drop" in type_calls
 
     def test_commissioner_reversal_with_different_players_no_match(self):
-        """Test check_for_reverse_transactions doesn't detect reversal with different players."""
+        """Test method doesn't detect reversal with different players."""
         self.mock_transaction_ids_cache.update({
             "trans1": {
                 "year": "2023",
@@ -227,8 +256,8 @@ class TestCheckForReverseTransactions:
                 "drop": "Player Two"
             }
         })
-            
-        check_for_reverse_transactions(transaction_ids=self.transaction_ids)
+
+        check_for_reverse_transactions(self.transaction_ids)
 
         # Should NOT detect reversal because players are different
         assert not self.mock_revert_add_drop.called

@@ -21,14 +21,14 @@ def mock_player_ids_cache():
     """
     return {
         "player1": {"full_name": "Player One"},
-        "player2": {"full_name": "Player Two"}
+        "player2": {"full_name": "Player Two"},
     }
 
 
 class TestAddTradeDetailsToCache:
     """Test add_trade_details_to_cache method."""
 
-    pytest.fixture(autouse=True)
+    @pytest.fixture(autouse=True)
     def setup(self, mock_manager_cache: dict[str, Any]):
         """Setup common mocks for all tests.
 
@@ -73,7 +73,7 @@ class TestAddTradeDetailsToCache:
             [],
             "trans1",
             False,
-            True
+            True,
         )
 
         # Check weekly summary
@@ -98,7 +98,7 @@ class TestAddTradeDetailsToCache:
             [],
             "trans1",
             False,
-            True
+            True,
         )
 
         # Try to add again
@@ -112,7 +112,7 @@ class TestAddTradeDetailsToCache:
             [],
             "trans1",
             False,
-            True
+            True,
         )
 
         # Should only have 1 trade
@@ -174,7 +174,8 @@ class TestRevertTradeTransaction:
 
             wk_lvl["transactions"]["trades"]["total"] = 2
             wk_lvl["transactions"]["trades"]["transaction_ids"] = [
-                "trade1", "trade2"
+                "trade1",
+                "trade2",
             ]
             wk_lvl["transactions"]["trades"]["trade_partners"] = {
                 trade_partner: 2
@@ -192,12 +193,7 @@ class TestRevertTradeTransaction:
 
             # Setup acquired/sent
             wk_lvl["transactions"]["trades"][acq_key] = {
-                "Player One": {
-                    "total": 1,
-                    "trade_partners": {
-                        trade_partner: 1
-                    }
-                }
+                "Player One": {"total": 1, "trade_partners": {trade_partner: 1}}
             }
 
             t = "transactions"
@@ -228,9 +224,10 @@ class TestRevertTradeTransaction:
             "players_involved": ["Player One"],
             "trade_details": {
                 "Player One": {
-                    "old_manager": "Manager 1", "new_manager": "Manager 2"
+                    "old_manager": "Manager 1",
+                    "new_manager": "Manager 2",
                 }
-            }
+            },
         }
         self.mock_transaction_ids_cache["trade2"] = {
             "year": "2023",
@@ -241,16 +238,17 @@ class TestRevertTradeTransaction:
             "players_involved": ["Player One"],
             "trade_details": {
                 "Player One": {
-                    "old_manager": "Manager 2", "new_manager": "Manager 1"
+                    "old_manager": "Manager 2",
+                    "new_manager": "Manager 1",
                 }
-            }
+            },
         }
 
         # Call function directly
         revert_trade_transaction(
-            transaction_id1="trade1",
-            transaction_id2="trade2",
-            weekly_transaction_ids=self.weekly_transaction_ids
+            "trade1",
+            "trade2",
+            self.weekly_transaction_ids,
         )
 
         # Assert only THIS function's behavior
@@ -279,7 +277,8 @@ class TestRevertTradeTransaction:
 
             wk_lvl["transactions"]["trades"]["total"] = 4
             wk_lvl["transactions"]["trades"]["transaction_ids"] = [
-                "trade1", "trade2"
+                "trade1",
+                "trade2",
             ]
             wk_lvl["transactions"]["trades"]["trade_partners"] = {
                 trade_partner: 2
@@ -319,9 +318,10 @@ class TestRevertTradeTransaction:
         # Setup FAAB cache - the code decrements both traded_away and
         # acquired_from for each manager
         # Set up both fields for both managers
-        for manager, partner in (
-            [("Manager 1", "Manager 2"), ("Manager 2", "Manager 1")]
-        ):
+        for manager, partner in [
+            ("Manager 1", "Manager 2"),
+            ("Manager 2", "Manager 1"),
+        ]:
             mgr_lvl = self.mock_manager_cache[manager]
             yr_lvl = mgr_lvl["years"]["2023"]
             wk_lvl = yr_lvl["weeks"]["1"]
@@ -330,9 +330,7 @@ class TestRevertTradeTransaction:
             t = "transactions"
 
             wk_lvl[t]["faab"]["traded_away"]["total"] = 100
-            wk_lvl[t]["faab"]["traded_away"]["trade_partners"] = {
-                partner: 100
-            }
+            wk_lvl[t]["faab"]["traded_away"]["trade_partners"] = {partner: 100}
             wk_lvl[t]["faab"]["acquired_from"]["total"] = 100
             wk_lvl[t]["faab"]["acquired_from"]["trade_partners"] = {
                 partner: 100
@@ -365,9 +363,10 @@ class TestRevertTradeTransaction:
             "players_involved": ["$100 FAAB"],
             "trade_details": {
                 "$100 FAAB": {
-                    "old_manager": "Manager 1", "new_manager": "Manager 2"
+                    "old_manager": "Manager 1",
+                    "new_manager": "Manager 2",
                 }
-            }
+            },
         }
         self.mock_transaction_ids_cache["trade2"] = {
             "year": "2023",
@@ -378,15 +377,16 @@ class TestRevertTradeTransaction:
             "players_involved": ["$100 FAAB"],
             "trade_details": {
                 "$100 FAAB": {
-                    "old_manager": "Manager 2", "new_manager": "Manager 1"
+                    "old_manager": "Manager 2",
+                    "new_manager": "Manager 1",
                 }
-            }
+            },
         }
 
         revert_trade_transaction(
-            transaction_id1="trade1",
-            transaction_id2="trade2",
-            weekly_transaction_ids=self.weekly_transaction_ids
+            "trade1",
+            "trade2",
+            self.weekly_transaction_ids,
         )
 
         # Assert FAAB was removed
@@ -397,8 +397,9 @@ class TestRevertTradeTransaction:
 
         assert m["Manager 1"][s][t][f]["traded_away"]["total"] == 0
         assert m["Manager 2"][s][t][f]["acquired_from"]["total"] == 0
-        assert "Manager 2" not in (
-            m["Manager 1"][s][t][f]["traded_away"]["trade_partners"]
+        assert (
+            "Manager 2"
+            not in (m["Manager 1"][s][t][f]["traded_away"]["trade_partners"])
         )
 
     def test_revert_trade_removes_from_weekly_transaction_ids(self):
@@ -411,7 +412,9 @@ class TestRevertTradeTransaction:
 
             wk_lvl["transactions"]["trades"]["total"] = 3
             wk_lvl["transactions"]["trades"]["transaction_ids"] = [
-                "trade1", "trade2", "trade3"
+                "trade1",
+                "trade2",
+                "trade3",
             ]
             wk_lvl["transactions"]["trades"]["trade_partners"] = {
                 "Manager 2" if manager == "Manager 1" else "Manager 1": 3
@@ -442,7 +445,7 @@ class TestRevertTradeTransaction:
             "managers_involved": ["Manager 1", "Manager 2"],
             "types": ["trade"],
             "players_involved": [],
-            "trade_details": {}
+            "trade_details": {},
         }
         self.mock_transaction_ids_cache["trade2"] = {
             "year": "2023",
@@ -451,16 +454,16 @@ class TestRevertTradeTransaction:
             "managers_involved": ["Manager 1", "Manager 2"],
             "types": ["trade"],
             "players_involved": [],
-            "trade_details": {}
+            "trade_details": {},
         }
 
         # Adding in a 3rd trade that should still be in there
         self.weekly_transaction_ids.append("trade3")
 
         revert_trade_transaction(
-            transaction_id1="trade1",
-            transaction_id2="trade2",
-            weekly_transaction_ids=self.weekly_transaction_ids
+            "trade1",
+            "trade2",
+            self.weekly_transaction_ids,
         )
 
         # Assert trade3 still exists
@@ -481,7 +484,7 @@ class TestProcessTradeTransaction:
     def setup(
         self,
         mock_manager_cache: dict[str, Any],
-        mock_player_ids_cache: dict[str, dict[str, str]]
+        mock_player_ids_cache: dict[str, dict[str, str]],
     ):
         """Setup common mocks for all tests.
 
@@ -530,17 +533,17 @@ class TestProcessTradeTransaction:
             "adds": {"player1": 1, "player2": 2},
             "drops": {"player1": 2, "player2": 1},
             "draft_picks": None,
-            "waiver_budget": []
+            "waiver_budget": [],
         }
 
         process_trade_transaction(
-            year="2023",
-            week="1",
-            transaction=transaction,
-            roster_ids={1: "Manager 1", 2: "Manager 2"},
-            weekly_transaction_ids=[],
-            commish_action=False,
-            use_faab=False
+            "2023",
+            "1",
+            transaction,
+            {1: "Manager 1", 2: "Manager 2"},
+            [],
+            False,
+            False,
         )
 
         # Verify Manager 1 acquired player1
@@ -567,20 +570,20 @@ class TestProcessTradeTransaction:
                     "round": 1,
                     "roster_id": 2,  # Manager 1 acquired this pick
                     "owner_id": 1,
-                    "previous_owner_id": 2
+                    "previous_owner_id": 2,
                 }
             ],
-            "waiver_budget": []
+            "waiver_budget": [],
         }
 
         process_trade_transaction(
-            year="2023",
-            week="1",
-            transaction=transaction,
-            roster_ids={1: "Manager 1", 2: "Manager 2"},
-            weekly_transaction_ids=[],
-            commish_action=False,
-            use_faab=False
+            "2023",
+            "1",
+            transaction,
+            {1: "Manager 1", 2: "Manager 2"},
+            [],
+            False,
+            False,
         )
 
         # Should process successfully
@@ -596,23 +599,17 @@ class TestProcessTradeTransaction:
             "adds": {"player1": 1},
             "drops": {"player1": 2},
             "draft_picks": None,
-            "waiver_budget": [
-                {
-                    "sender": 1,
-                    "receiver": 2,
-                    "amount": 50
-                }
-            ]
+            "waiver_budget": [{"sender": 1, "receiver": 2, "amount": 50}],
         }
 
         process_trade_transaction(
-            year="2023",
-            week="1",
-            transaction=transaction,
-            roster_ids={1: "Manager 1", 2: "Manager 2"},
-            weekly_transaction_ids=[],
-            commish_action=False,
-            use_faab=True
+            "2023",
+            "1",
+            transaction,
+            {1: "Manager 1", 2: "Manager 2"},
+            [],
+            False,
+            True,
         )
 
         # Verify FAAB was tracked

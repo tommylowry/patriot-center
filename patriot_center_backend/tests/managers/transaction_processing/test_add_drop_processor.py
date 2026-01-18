@@ -58,7 +58,7 @@ class TestAddAddOrDropDetailsToCache:
             transaction_id="trans1",
             commish_action=False,
             use_faab=True,
-            waiver_bid=None
+            waiver_bid=None,
         )
 
         # Check weekly summary
@@ -80,7 +80,7 @@ class TestAddAddOrDropDetailsToCache:
             transaction_id="trans1",
             commish_action=False,
             use_faab=True,
-            waiver_bid=None
+            waiver_bid=None,
         )
 
         # Check weekly summary
@@ -101,7 +101,7 @@ class TestAddAddOrDropDetailsToCache:
             player_name="Player One",
             transaction_id="trans1",
             commish_action=False,
-            use_faab=True
+            use_faab=True,
         )
 
         assert result is None
@@ -137,12 +137,7 @@ class TestRevertAddDropTransaction:
         ):
             self.mock_manager_cache = mock_manager_cache
             self.mock_transaction_ids_cache = {
-                "trans1":
-                {
-                    "year": "2023",
-                    "week": "1",
-                    "commish_action": True
-                }
+                "trans1": {"year": "2023", "week": "1", "commish_action": True}
             }
             self.weekly_transaction_ids = ["trans1"]
 
@@ -174,7 +169,7 @@ class TestRevertAddDropTransaction:
                 "managers_involved": ["Manager 1"],
                 "types": ["add"],
                 "players_involved": ["Player One"],
-                "add": "Player One"
+                "add": "Player One",
             }
         )
 
@@ -182,7 +177,7 @@ class TestRevertAddDropTransaction:
         result = revert_add_drop_transaction(
             transaction_id="trans1",
             transaction_type="add",
-            weekly_transaction_ids=self.weekly_transaction_ids
+            weekly_transaction_ids=self.weekly_transaction_ids,
         )
 
         # Assert only THIS function's behavior
@@ -215,14 +210,14 @@ class TestRevertAddDropTransaction:
                 "managers_involved": ["Manager 1"],
                 "types": ["drop"],
                 "players_involved": ["Player Two"],
-                "drop": "Player Two"
+                "drop": "Player Two",
             }
         )
 
         result = revert_add_drop_transaction(
             transaction_id="trans1",
             transaction_type="drop",
-            weekly_transaction_ids=self.weekly_transaction_ids
+            weekly_transaction_ids=self.weekly_transaction_ids,
         )
 
         m1_summary = self.mock_manager_cache["Manager 1"]["summary"]
@@ -250,13 +245,16 @@ class TestRevertAddDropTransaction:
 
         m1_week["transactions"]["faab"]["transaction_ids"] = ["trans1"]
         m1_week["transactions"]["faab"]["players"]["Player One"] = {
-            "num_bids_won": 1, "total_faab_spent": 50
+            "num_bids_won": 1,
+            "total_faab_spent": 50,
         }
         m1_year["transactions"]["faab"]["players"]["Player One"] = {
-            "num_bids_won": 1, "total_faab_spent": 50
+            "num_bids_won": 1,
+            "total_faab_spent": 50,
         }
         m1_summary["transactions"]["faab"]["players"]["Player One"] = {
-            "num_bids_won": 1, "total_faab_spent": 50
+            "num_bids_won": 1,
+            "total_faab_spent": 50,
         }
 
         self.mock_transaction_ids_cache["trans1"].update(
@@ -265,14 +263,14 @@ class TestRevertAddDropTransaction:
                 "types": ["add"],
                 "players_involved": ["Player One"],
                 "add": "Player One",
-                "faab_spent": 50
+                "faab_spent": 50,
             }
         )
 
         result = revert_add_drop_transaction(
             transaction_id="trans1",
             transaction_type="add",
-            weekly_transaction_ids=self.weekly_transaction_ids
+            weekly_transaction_ids=self.weekly_transaction_ids,
         )
 
         # Assert FAAB data was removed
@@ -301,14 +299,14 @@ class TestRevertAddDropTransaction:
                 "types": ["add", "drop"],
                 "players_involved": ["Player One", "Player Two"],
                 "add": "Player One",
-                "drop": "Player Two"
+                "drop": "Player Two",
             }
         )
 
         result = revert_add_drop_transaction(
             transaction_id="trans1",
             transaction_type="add",
-            weekly_transaction_ids=self.weekly_transaction_ids
+            weekly_transaction_ids=self.weekly_transaction_ids,
         )
 
         # Transaction should still exist (drop remains)
@@ -331,14 +329,14 @@ class TestRevertAddDropTransaction:
                 "managers_involved": ["Manager 1"],
                 "types": ["add"],
                 "players_involved": ["Player One"],
-                "add": "Player One"
+                "add": "Player One",
             }
         )
 
         result = revert_add_drop_transaction(
             transaction_id="trans1",
             transaction_type="invalid_type",  # type: ignore
-            weekly_transaction_ids=[]
+            weekly_transaction_ids=[],
         )
 
         # Verify warning was printed for missing opponent
@@ -354,7 +352,7 @@ class TestRevertAddDropTransaction:
                 "managers_involved": ["Manager 1", "Manager 2"],
                 "types": ["add"],
                 "players_involved": ["Player One"],
-                "add": "Player One"
+                "add": "Player One",
             }
         )
 
@@ -416,11 +414,7 @@ class TestProcessAddOrDropTransaction:
         Args:
             caplog (pytest.LogCaptureFixture): pytest fixture for logs.
         """
-        transaction = {
-            "transaction_id": "empty1",
-            "adds": {},
-            "drops": {}
-        }
+        transaction = {"transaction_id": "empty1", "adds": {}, "drops": {}}
         process_add_or_drop_transaction(
             year="2023",
             week="1",
@@ -428,7 +422,7 @@ class TestProcessAddOrDropTransaction:
             roster_ids={1: "Manager 1"},
             weekly_transaction_ids=[],
             commish_action=False,
-            use_faab=True
+            use_faab=True,
         )
 
         # Should print warning and return early
@@ -442,7 +436,7 @@ class TestProcessAddOrDropTransaction:
             "transaction_id": "add1",
             "adds": {"player123": 1},
             "drops": {},
-            "settings": {"waiver_bid": 50}
+            "settings": {"waiver_bid": 50},
         }
         process_add_or_drop_transaction(
             year="2023",
@@ -451,7 +445,7 @@ class TestProcessAddOrDropTransaction:
             roster_ids={1: "Manager 1"},
             weekly_transaction_ids=[],
             commish_action=False,
-            use_faab=True
+            use_faab=True,
         )
 
         # Should call both add_details and add_faab_details
@@ -465,7 +459,7 @@ class TestProcessAddOrDropTransaction:
             "add1",
             False,
             True,
-            waiver_bid=50
+            waiver_bid=50,
         )
         self.mock_add_faab.assert_called_once()
 
@@ -476,7 +470,7 @@ class TestProcessAddOrDropTransaction:
         transaction = {
             "transaction_id": "add2",
             "adds": {"player123": 1},
-            "drops": {}
+            "drops": {},
         }
         process_add_or_drop_transaction(
             year="2023",
@@ -485,7 +479,7 @@ class TestProcessAddOrDropTransaction:
             roster_ids={1: "Manager 1"},
             weekly_transaction_ids=[],
             commish_action=False,
-            use_faab=False
+            use_faab=False,
         )
 
         # Should only call add_details (no FAAB)
@@ -499,7 +493,7 @@ class TestProcessAddOrDropTransaction:
             "add2",
             False,
             False,
-            waiver_bid=None
+            waiver_bid=None,
         )
         assert not self.mock_add_faab.called
 
@@ -510,7 +504,7 @@ class TestProcessAddOrDropTransaction:
         transaction = {
             "transaction_id": "drop1",
             "adds": {},
-            "drops": {"player456": 1}
+            "drops": {"player456": 1},
         }
         process_add_or_drop_transaction(
             year="2023",
@@ -519,7 +513,7 @@ class TestProcessAddOrDropTransaction:
             roster_ids={1: "Manager 1"},
             weekly_transaction_ids=[],
             commish_action=False,
-            use_faab=True
+            use_faab=True,
         )
 
         # Should call add_details for drop
@@ -532,7 +526,7 @@ class TestProcessAddOrDropTransaction:
             "Player B",
             "drop1",
             False,
-            True
+            True,
         )
         assert not self.mock_add_faab.called
 
@@ -545,7 +539,7 @@ class TestProcessAddOrDropTransaction:
             "transaction_id": "add_drop1",
             "adds": {"player123": 1},
             "drops": {"player456": 1},
-            "settings": {"waiver_bid": 30}
+            "settings": {"waiver_bid": 30},
         }
         process_add_or_drop_transaction(
             year="2023",
@@ -554,7 +548,7 @@ class TestProcessAddOrDropTransaction:
             roster_ids={1: "Manager 1"},
             weekly_transaction_ids=[],
             commish_action=False,
-            use_faab=True
+            use_faab=True,
         )
 
         # Should call add_details twice (once for add, once for drop)
@@ -569,7 +563,7 @@ class TestProcessAddOrDropTransaction:
         transaction = {
             "transaction_id": "commish_add",
             "adds": {"player123": 1},
-            "drops": {}
+            "drops": {},
         }
         process_add_or_drop_transaction(
             year="2023",
@@ -578,7 +572,7 @@ class TestProcessAddOrDropTransaction:
             roster_ids={1: "Manager 1"},
             weekly_transaction_ids=[],
             commish_action=True,
-            use_faab=True
+            use_faab=True,
         )
 
         # Should pass commish_action=True
@@ -592,5 +586,5 @@ class TestProcessAddOrDropTransaction:
             "commish_add",
             True,
             True,
-            waiver_bid=None
+            waiver_bid=None,
         )

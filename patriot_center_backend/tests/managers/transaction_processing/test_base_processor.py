@@ -46,7 +46,7 @@ class TestSessionState:
         Args:
             processor: A TransactionProcessor interface.
         """
-        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+        weekly_roster_ids = {1: "Tommy", 2: "Jay"}
 
         processor.set_session_state(
             year="2023",
@@ -70,7 +70,7 @@ class TestSessionState:
         processor.set_session_state(
             year="2023",
             week="1",
-            weekly_roster_ids={1: "Manager 1"},
+            weekly_roster_ids={1: "Tommy"},
             use_faab=True,
         )
         processor._weekly_transaction_ids = ["trans1", "trans2"]
@@ -117,7 +117,7 @@ class TestScrubTransactionData:
 
             self.mock_process_transaction = mock_process_transaction
 
-            processor.set_session_state("2023", "1", {1: "Manager 1"}, True)
+            processor.set_session_state("2023", "1", {1: "Tommy"}, True)
             self.processor = processor
 
             yield
@@ -166,7 +166,7 @@ class TestScrubTransactionData:
 
     def test_scrub_transaction_data_invalid_year(self):
         """Test that invalid year raises ValueError."""
-        self.processor.set_session_state("9999", "1", {1: "Manager 1"}, True)
+        self.processor.set_session_state("9999", "1", {1: "Tommy"}, True)
 
         with pytest.raises(ValueError, match="No league ID found"):
             self.processor.scrub_transaction_data()
@@ -211,9 +211,7 @@ class TestProcessTransaction:
             self.mock_proc_trade = mock_proc_trade
 
             self.mock_validate_transaction.return_value = True
-            self.processor.set_session_state(
-                "2023", "1", {1: "Manager 1"}, True
-            )
+            self.processor.set_session_state("2023", "1", {1: "Tommy"}, True)
 
             yield
 
@@ -248,7 +246,7 @@ class TestProcessTransaction:
         """Test process_add_or_drop_transaction is called correctly."""
         year = "2023"
         week = "1"
-        weekly_roster_ids = {1: "Manager 1"}
+        weekly_roster_ids = {1: "Tommy"}
         weekly_transaction_ids = []
         commish_action = False
         use_faab = True
@@ -274,7 +272,7 @@ class TestProcessTransaction:
     def test_process_transaction_routes_to_trade(self):
         """Test that trade transactions are routed to trade processor."""
         self.processor.set_session_state(
-            "2023", "1", {1: "Manager 1", 2: "Manager 2"}, True
+            "2023", "1", {1: "Tommy", 2: "Jay"}, True
         )
         transaction = {
             "type": "trade",
@@ -291,7 +289,7 @@ class TestProcessTransaction:
         """Test process_trade_transaction is called correctly."""
         year = "2023"
         week = "1"
-        weekly_roster_ids = {1: "Manager 1", 2: "Manager 2"}
+        weekly_roster_ids = {1: "Tommy", 2: "Jay"}
         weekly_transaction_ids = []
         commish_action = False
         use_faab = True
@@ -349,7 +347,7 @@ class TestProcessTransaction:
     def test_commissioner_forced_trade(self):
         """Test commissioner action with multiple players (forced trade)."""
         self.processor.set_session_state(
-            "2023", "1", {1: "Manager 1", 2: "Manager 2"}, True
+            "2023", "1", {1: "Tommy", 2: "Jay"}, True
         )
 
         transaction = {

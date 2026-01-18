@@ -53,7 +53,7 @@ class TestAddAddOrDropDetailsToCache:
             week="1",
             weekly_transaction_ids=[],
             free_agent_type="add",
-            manager="Manager 1",
+            manager="Tommy",
             player_name="Player One",
             transaction_id="trans1",
             commish_action=False,
@@ -62,7 +62,7 @@ class TestAddAddOrDropDetailsToCache:
         )
 
         # Check weekly summary
-        yr = self.mock_manager_cache["Manager 1"]["years"]["2023"]
+        yr = self.mock_manager_cache["Tommy"]["years"]["2023"]
         weekly = yr["weeks"]["1"]["transactions"]["adds"]
         assert weekly["total"] == 1
         assert "Player One" in weekly["players"]
@@ -75,7 +75,7 @@ class TestAddAddOrDropDetailsToCache:
             week="1",
             weekly_transaction_ids=[],
             free_agent_type="drop",
-            manager="Manager 1",
+            manager="Tommy",
             player_name="Player One",
             transaction_id="trans1",
             commish_action=False,
@@ -84,7 +84,7 @@ class TestAddAddOrDropDetailsToCache:
         )
 
         # Check weekly summary
-        yr = self.mock_manager_cache["Manager 1"]["years"]["2023"]
+        yr = self.mock_manager_cache["Tommy"]["years"]["2023"]
         weekly = yr["weeks"]["1"]["transactions"]["drops"]
         assert weekly["total"] == 1
         assert "Player One" in weekly["players"]
@@ -97,7 +97,7 @@ class TestAddAddOrDropDetailsToCache:
             week="1",
             weekly_transaction_ids=[],
             free_agent_type="invalid",
-            manager="Manager 1",
+            manager="Tommy",
             player_name="Player One",
             transaction_id="trans1",
             commish_action=False,
@@ -151,7 +151,7 @@ class TestRevertAddDropTransaction:
     def test_revert_add_removes_from_cache_and_transaction_ids(self):
         """Test revert_add_drop_transaction removes add from cache."""
         # Setup cache as if add was processed
-        m1 = self.mock_manager_cache["Manager 1"]
+        m1 = self.mock_manager_cache["Tommy"]
 
         m1_weeks = m1["years"]["2023"]["weeks"]
         m1_year_summary = m1["years"]["2023"]["summary"]
@@ -166,7 +166,7 @@ class TestRevertAddDropTransaction:
 
         self.mock_transaction_ids_cache["trans1"].update(
             {
-                "managers_involved": ["Manager 1"],
+                "managers_involved": ["Tommy"],
                 "types": ["add"],
                 "players_involved": ["Player One"],
                 "add": "Player One",
@@ -181,7 +181,7 @@ class TestRevertAddDropTransaction:
         )
 
         # Assert only THIS function's behavior
-        m1_summary = self.mock_manager_cache["Manager 1"]["summary"]
+        m1_summary = self.mock_manager_cache["Tommy"]["summary"]
 
         assert m1_summary["transactions"]["adds"]["total"] == 0
         assert "Player One" not in m1_summary["transactions"]["adds"]["players"]
@@ -191,7 +191,7 @@ class TestRevertAddDropTransaction:
 
     def test_revert_drop_removes_from_cache(self):
         """Test revert_add_drop_transaction removes drop from cache."""
-        m1 = self.mock_manager_cache["Manager 1"]
+        m1 = self.mock_manager_cache["Tommy"]
 
         m1_weeks = m1["years"]["2023"]["weeks"]
         m1_year_summary = m1["years"]["2023"]["summary"]
@@ -207,7 +207,7 @@ class TestRevertAddDropTransaction:
         self.mock_transaction_ids_cache["trans1"].update(
             {
                 "commish_action": False,
-                "managers_involved": ["Manager 1"],
+                "managers_involved": ["Tommy"],
                 "types": ["drop"],
                 "players_involved": ["Player Two"],
                 "drop": "Player Two",
@@ -220,7 +220,7 @@ class TestRevertAddDropTransaction:
             weekly_transaction_ids=self.weekly_transaction_ids,
         )
 
-        m1_summary = self.mock_manager_cache["Manager 1"]["summary"]
+        m1_summary = self.mock_manager_cache["Tommy"]["summary"]
 
         m1_drops = m1_summary["transactions"]["drops"]
         assert m1_drops["total"] == 0
@@ -231,7 +231,7 @@ class TestRevertAddDropTransaction:
     def test_revert_add_with_faab_removes_faab_data(self):
         """Test removes FAAB data when reverting add."""
         # Setup add and FAAB data
-        m1 = self.mock_manager_cache["Manager 1"]
+        m1 = self.mock_manager_cache["Tommy"]
         m1_week = m1["years"]["2023"]["weeks"]["1"]
         m1_year = m1["years"]["2023"]["summary"]
         m1_summary = m1["summary"]
@@ -259,7 +259,7 @@ class TestRevertAddDropTransaction:
 
         self.mock_transaction_ids_cache["trans1"].update(
             {
-                "managers_involved": ["Manager 1"],
+                "managers_involved": ["Tommy"],
                 "types": ["add"],
                 "players_involved": ["Player One"],
                 "add": "Player One",
@@ -281,7 +281,7 @@ class TestRevertAddDropTransaction:
 
     def test_revert_partial_transaction_keeps_other_type(self):
         """Test reverting only add portion of transaction keeps drop."""
-        m1 = self.mock_manager_cache["Manager 1"]
+        m1 = self.mock_manager_cache["Tommy"]
         m1_week = m1["years"]["2023"]["weeks"]["1"]
         m1_year = m1["years"]["2023"]["summary"]
         m1_summary = m1["summary"]
@@ -295,7 +295,7 @@ class TestRevertAddDropTransaction:
 
         self.mock_transaction_ids_cache["trans1"].update(
             {
-                "managers_involved": ["Manager 1"],
+                "managers_involved": ["Tommy"],
                 "types": ["add", "drop"],
                 "players_involved": ["Player One", "Player Two"],
                 "add": "Player One",
@@ -326,7 +326,7 @@ class TestRevertAddDropTransaction:
         """
         self.mock_transaction_ids_cache["trans1"].update(
             {
-                "managers_involved": ["Manager 1"],
+                "managers_involved": ["Tommy"],
                 "types": ["add"],
                 "players_involved": ["Player One"],
                 "add": "Player One",
@@ -349,7 +349,7 @@ class TestRevertAddDropTransaction:
         """Test method raises error for multiple managers."""
         self.mock_transaction_ids_cache["trans1"].update(
             {
-                "managers_involved": ["Manager 1", "Manager 2"],
+                "managers_involved": ["Tommy", "Jay"],
                 "types": ["add"],
                 "players_involved": ["Player One"],
                 "add": "Player One",
@@ -419,7 +419,7 @@ class TestProcessAddOrDropTransaction:
             year="2023",
             week="1",
             transaction=transaction,
-            roster_ids={1: "Manager 1"},
+            roster_ids={1: "Tommy"},
             weekly_transaction_ids=[],
             commish_action=False,
             use_faab=True,
@@ -442,7 +442,7 @@ class TestProcessAddOrDropTransaction:
             year="2023",
             week="1",
             transaction=transaction,
-            roster_ids={1: "Manager 1"},
+            roster_ids={1: "Tommy"},
             weekly_transaction_ids=[],
             commish_action=False,
             use_faab=True,
@@ -454,7 +454,7 @@ class TestProcessAddOrDropTransaction:
             "1",
             [],
             "add",
-            "Manager 1",
+            "Tommy",
             "Player A",
             "add1",
             False,
@@ -476,7 +476,7 @@ class TestProcessAddOrDropTransaction:
             year="2023",
             week="1",
             transaction=transaction,
-            roster_ids={1: "Manager 1"},
+            roster_ids={1: "Tommy"},
             weekly_transaction_ids=[],
             commish_action=False,
             use_faab=False,
@@ -488,7 +488,7 @@ class TestProcessAddOrDropTransaction:
             "1",
             [],
             "add",
-            "Manager 1",
+            "Tommy",
             "Player A",
             "add2",
             False,
@@ -510,7 +510,7 @@ class TestProcessAddOrDropTransaction:
             year="2023",
             week="1",
             transaction=transaction,
-            roster_ids={1: "Manager 1"},
+            roster_ids={1: "Tommy"},
             weekly_transaction_ids=[],
             commish_action=False,
             use_faab=True,
@@ -522,7 +522,7 @@ class TestProcessAddOrDropTransaction:
             "1",
             [],
             "drop",
-            "Manager 1",
+            "Tommy",
             "Player B",
             "drop1",
             False,
@@ -545,7 +545,7 @@ class TestProcessAddOrDropTransaction:
             year="2023",
             week="1",
             transaction=transaction,
-            roster_ids={1: "Manager 1"},
+            roster_ids={1: "Tommy"},
             weekly_transaction_ids=[],
             commish_action=False,
             use_faab=True,
@@ -569,7 +569,7 @@ class TestProcessAddOrDropTransaction:
             year="2023",
             week="1",
             transaction=transaction,
-            roster_ids={1: "Manager 1"},
+            roster_ids={1: "Tommy"},
             weekly_transaction_ids=[],
             commish_action=True,
             use_faab=True,
@@ -581,7 +581,7 @@ class TestProcessAddOrDropTransaction:
             "1",
             [],
             "add",
-            "Manager 1",
+            "Tommy",
             "Player A",
             "commish_add",
             True,

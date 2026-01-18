@@ -45,7 +45,7 @@ class TestAddFaabDetailsToCache:
             "2023",
             "1",
             "waiver",
-            "Manager 1",
+            "Tommy",
             "Player One",
             50,
             "trans1",
@@ -53,7 +53,7 @@ class TestAddFaabDetailsToCache:
         )
 
         # Check weekly summary
-        yr = self.mock_manager_cache["Manager 1"]["years"]["2023"]
+        yr = self.mock_manager_cache["Tommy"]["years"]["2023"]
         weekly = yr["weeks"]["1"]["transactions"]["faab"]
 
         assert weekly["total_lost_or_gained"] == -50
@@ -68,19 +68,19 @@ class TestAddFaabDetailsToCache:
             "2023",
             "1",
             "trade",
-            "Manager 1",
+            "Tommy",
             "FAAB",
             100,
             "trans1",
-            trade_partner="Manager 2",
+            trade_partner="Jay",
         )
 
-        yr = self.mock_manager_cache["Manager 1"]["years"]["2023"]
+        yr = self.mock_manager_cache["Tommy"]["years"]["2023"]
         weekly = yr["weeks"]["1"]["transactions"]["faab"]
 
         assert weekly["total_lost_or_gained"] == 100
         assert weekly["acquired_from"]["total"] == 100
-        assert "Manager 2" in weekly["acquired_from"]["trade_partners"]
+        assert "Jay" in weekly["acquired_from"]["trade_partners"]
 
     def test_add_faab_trade_sent(self):
         """Test that FAAB sent in trade is tracked correctly."""
@@ -89,16 +89,16 @@ class TestAddFaabDetailsToCache:
             "2023",
             "1",
             "trade",
-            "Manager 1",
+            "Tommy",
             "FAAB",
             -100,
             "trans1",
-            trade_partner="Manager 2",
+            trade_partner="Jay",
         )
 
-        yr = self.mock_manager_cache["Manager 1"]["years"]["2023"]
+        yr = self.mock_manager_cache["Tommy"]["years"]["2023"]
         weekly = yr["weeks"]["1"]["transactions"]["faab"]
 
         assert weekly["total_lost_or_gained"] == -100
         assert weekly["traded_away"]["total"] == 100
-        assert "Manager 2" in weekly["traded_away"]["trade_partners"]
+        assert "Jay" in weekly["traded_away"]["trade_partners"]

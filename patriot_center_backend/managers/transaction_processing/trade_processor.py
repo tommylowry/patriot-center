@@ -215,8 +215,8 @@ def add_trade_details_to_cache(
         manager: Manager name
         trade_partners: List of other managers involved in trade
         acquired: Dict of {player/asset: previous_owner} acquired by manager
-        weekly_transaction_ids: List of transaction IDs
         sent: Dict of {player/asset: new_owner} sent by manager
+        weekly_transaction_ids: List of transaction IDs
         transaction_id: Unique transaction ID
         commish_action: Whether this is a commissioner-forced trade
         use_faab: Whether FAAB was involved in this trade

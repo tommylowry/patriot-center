@@ -11,7 +11,7 @@ def mock_manager_cache():
         Sample manager cache
     """
     return {
-        "Manager 1": {
+        "Tommy": {
             "summary": {
                 "transactions": {
                     "trades": {
@@ -107,7 +107,7 @@ def mock_manager_cache():
                 }
             },
         },
-        "Manager 2": {
+        "Jay": {
             "summary": {
                 "transactions": {
                     "trades": {

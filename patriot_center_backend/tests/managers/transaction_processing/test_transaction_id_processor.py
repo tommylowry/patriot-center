@@ -40,10 +40,10 @@ class TestAddToTransactionIds:
         """Test adding trade to transaction IDs cache."""
         transaction_info = {
             "type": "trade",
-            "manager": "Manager 1",
-            "trade_partners": ["Manager 2"],
-            "acquired": {"Player One": "Manager 2"},
-            "sent": {"Player Two": "Manager 2"},
+            "manager": "Tommy",
+            "trade_partners": ["Jay"],
+            "acquired": {"Player One": "Jay"},
+            "sent": {"Player Two": "Jay"},
             "transaction_id": "trans1",
         }
 
@@ -52,15 +52,15 @@ class TestAddToTransactionIds:
         assert "trans1" in self.mock_ids_cache
         assert self.mock_ids_cache["trans1"]["year"] == "2023"
         assert self.mock_ids_cache["trans1"]["week"] == "1"
-        assert "Manager 1" in self.mock_ids_cache["trans1"]["managers_involved"]
-        assert "Manager 2" in self.mock_ids_cache["trans1"]["managers_involved"]
+        assert "Tommy" in self.mock_ids_cache["trans1"]["managers_involved"]
+        assert "Jay" in self.mock_ids_cache["trans1"]["managers_involved"]
 
     def test_add_add_or_drop_to_cache(self):
         """Test adding add/drop to transaction IDs cache."""
         transaction_info = {
             "type": "add_or_drop",
             "free_agent_type": "add",
-            "manager": "Manager 1",
+            "manager": "Tommy",
             "player_name": "Player One",
             "transaction_id": "trans1",
             "waiver_bid": 50,
@@ -78,7 +78,7 @@ class TestAddToTransactionIds:
             add_to_transaction_ids(
                 "2023",
                 "1",
-                {"transaction_id": "trans1", "manager": "Manager 1"},
+                {"transaction_id": "trans1", "manager": "Tommy"},
                 [],
                 False,
                 True,
@@ -90,7 +90,7 @@ class TestAddToTransactionIds:
             add_to_transaction_ids(
                 "2023",
                 "1",
-                {"type": "trade", "manager": "Manager 1"},
+                {"type": "trade", "manager": "Tommy"},
                 [],
                 False,
                 True,

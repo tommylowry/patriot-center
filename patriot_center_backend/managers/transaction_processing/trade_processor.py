@@ -170,14 +170,21 @@ def process_trade_transaction(
 
             # add faab trade details to the cache
             for mgr in [sender, receiver]:
-                opposite_manager = receiver if mgr == sender else sender
+
+                if mgr == sender:
+                    opposite_manager = receiver
+                    faab = -faab_amount
+                else:
+                    opposite_manager = sender
+                    faab = faab_amount
+
                 add_faab_details_to_cache(
                     year,
                     week,
                     "trade",
                     mgr,
                     "FAAB",
-                    faab_amount,
+                    faab,
                     transaction_id,
                     trade_partner=opposite_manager,
                 )
@@ -412,7 +419,7 @@ def revert_trade_transaction(
                     faab = int(faab)
 
                     # Remove from traded
-                    faab_traded = d["faab"]["faab_traded"]
+                    faab_traded = d["faab"]["traded_away"]
 
                     faab_traded["total"] -= faab
                     faab_traded["trade_partners"][trade_partner] -= faab

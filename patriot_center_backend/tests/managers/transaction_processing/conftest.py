@@ -73,11 +73,17 @@ def _create_manager_trades_data(trade_partner: str) -> dict[str, Any]:
         "total": 4,
         "trade_partners": {trade_partner: 2},
         "trade_players_acquired": {
-            "Jayden Daniels": {"total": 1, "trade_partners": {trade_partner: 1}},
+            "Jayden Daniels": {
+                "total": 1,
+                "trade_partners": {trade_partner: 1},
+            },
             "$50 FAAB": {"total": 1, "trade_partners": {trade_partner: 1}},
         },
         "trade_players_sent": {
-            "Jayden Daniels": {"total": 1, "trade_partners": {trade_partner: 1}},
+            "Jayden Daniels": {
+                "total": 1,
+                "trade_partners": {trade_partner: 1},
+            },
             "$50 FAAB": {"total": 1, "trade_partners": {trade_partner: 1}},
         },
         "transaction_ids": ["trade1", "trade2"],

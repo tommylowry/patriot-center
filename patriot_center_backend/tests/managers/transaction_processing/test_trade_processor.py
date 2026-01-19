@@ -417,8 +417,9 @@ class TestRevertTradeTransaction:
 
         mgr = self.mock_manager_cache["Tommy"]
         # Fixture starts with 2, decremented by 2 = 0, so key is deleted
-        assert "Jay" not in (
-            mgr["summary"]["transactions"]["trades"]["trade_partners"]
+        assert (
+            "Jay"
+            not in (mgr["summary"]["transactions"]["trades"]["trade_partners"])
         )
 
     def test_decrements_player_acquired_counts(
@@ -572,7 +573,13 @@ class TestProcessTradeTransaction:
     def test_calls_get_player_ids_cache(self):
         """Test that get_player_ids_cache is called."""
         process_trade_transaction(
-            "2023", "1", self.simple_trade, {1: "Tommy", 2: "Jay"}, [], False, False
+            "2023",
+            "1",
+            self.simple_trade,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            False,
         )
 
         self.mock_get_player_ids.assert_called_once()
@@ -580,7 +587,13 @@ class TestProcessTradeTransaction:
     def test_calls_update_players_cache_for_acquired_players(self):
         """Test that update_players_cache is called for each acquired player."""
         process_trade_transaction(
-            "2023", "1", self.simple_trade, {1: "Tommy", 2: "Jay"}, [], False, False
+            "2023",
+            "1",
+            self.simple_trade,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            False,
         )
 
         # player1 is acquired by Tommy, player2 is acquired by Jerry
@@ -598,7 +611,7 @@ class TestProcessTradeTransaction:
             {1: "Tommy", 2: "Jay"},
             [],
             False,
-            True
+            True,
         )
 
         assert self.mock_add_trade_details.call_count == 2
@@ -631,7 +644,13 @@ class TestProcessTradeTransaction:
         self.mock_draft_pick_decipher.return_value = "2024 Round 1 (Jerry)"
 
         process_trade_transaction(
-            "2023", "1", self.trade_w_draft_pick, {1: "Tommy", 2: "Jay"}, [], False, False
+            "2023",
+            "1",
+            self.trade_w_draft_pick,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            False,
         )
 
         assert self.mock_draft_pick_decipher.call_count >= 1
@@ -640,7 +659,13 @@ class TestProcessTradeTransaction:
         """Test that acquired draft picks are passed correctly."""
         self.mock_draft_pick_decipher.return_value = "2024 Round 1 (Jerry)"
         process_trade_transaction(
-            "2023", "1", self.trade_w_draft_pick, {1: "Tommy", 2: "Jay"}, [], False, False
+            "2023",
+            "1",
+            self.trade_w_draft_pick,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            False,
         )
 
         # Find Tommy's call and verify draft pick is in acquired
@@ -652,7 +677,13 @@ class TestProcessTradeTransaction:
     def test_calls_add_faab_details_when_faab_present(self):
         """Test that add_faab_details_to_cache is called for FAAB trades."""
         process_trade_transaction(
-            "2023", "1", self.trade_w_faab, {1: "Tommy", 2: "Jay"}, [], False, True
+            "2023",
+            "1",
+            self.trade_w_faab,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            True,
         )
 
         # Should be called twice (once for sender, once for receiver)
@@ -661,7 +692,13 @@ class TestProcessTradeTransaction:
     def test_add_faab_details_called_with_correct_sender_args(self):
         """Test add_faab_details_to_cache is called correctly for sender."""
         process_trade_transaction(
-            "2023", "1", self.trade_w_faab, {1: "Tommy", 2: "Jay"}, [], False, True
+            "2023",
+            "1",
+            self.trade_w_faab,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            True,
         )
 
         # Find the sender call (negative faab amount)
@@ -683,7 +720,13 @@ class TestProcessTradeTransaction:
     def test_add_faab_details_called_with_correct_receiver_args(self):
         """Test add_faab_details_to_cache is called correctly for receiver."""
         process_trade_transaction(
-            "2023", "1", self.trade_w_faab, {1: "Tommy", 2: "Jay"}, [], False, True
+            "2023",
+            "1",
+            self.trade_w_faab,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            True,
         )
 
         # Find the receiver call (positive faab amount)
@@ -701,7 +744,13 @@ class TestProcessTradeTransaction:
     def test_does_not_call_add_faab_when_use_faab_false(self):
         """Test that add_faab_details is not called when use_faab is False."""
         process_trade_transaction(
-            "2023", "1", self.trade_w_faab, {1: "Tommy", 2: "Jay"}, [], False, False
+            "2023",
+            "1",
+            self.trade_w_faab,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            False,
         )
 
         self.mock_add_faab_details.assert_not_called()
@@ -709,7 +758,13 @@ class TestProcessTradeTransaction:
     def test_does_not_call_add_faab_when_no_waiver_budget(self):
         """Test that add_faab_details is not called when no FAAB in trade."""
         process_trade_transaction(
-            "2023", "1", self.simple_trade, {1: "Tommy", 2: "Jay"}, [], False, True
+            "2023",
+            "1",
+            self.simple_trade,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            True,
         )
 
         self.mock_add_faab_details.assert_not_called()
@@ -766,7 +821,13 @@ class TestProcessTradeTransaction:
     def test_faab_in_acquired_and_sent_dicts(self):
         """Test that FAAB string is added to acquired/sent dicts."""
         process_trade_transaction(
-            "2023", "1", self.trade_w_faab, {1: "Tommy", 2: "Jay"}, [], False, True
+            "2023",
+            "1",
+            self.trade_w_faab,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            False,
+            True,
         )
 
         # Tommy (sender) should have FAAB in sent
@@ -783,7 +844,13 @@ class TestProcessTradeTransaction:
     def test_commish_action_passed_through(self):
         """Test that commish_action is passed to add_trade_details_to_cache."""
         process_trade_transaction(
-            "2023", "1", self.simple_trade, {1: "Tommy", 2: "Jay"}, [], True, False
+            "2023",
+            "1",
+            self.simple_trade,
+            {1: "Tommy", 2: "Jay"},
+            [],
+            True,
+            False,
         )
 
         for c in self.mock_add_trade_details.call_args_list:

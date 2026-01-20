@@ -22,27 +22,20 @@ def slugify(item: str) -> str:
 
 
 def slug_to_name(slug: str) -> str:
-    """Convert a slug string to a player name.
-
-    - This function takes a slug string as input and returns the corresponding
-    player name.
-    - If no match is found, the original slug string is returned.
+    """Converts a URL-friendly slug to a player name.
 
     Args:
-        slug: The slug string.
+        slug: The URL-friendly slug.
 
     Returns:
-        The player full name.
+        The player name if a match is found, otherwise the original slug.
     """
-    if not slug:
-        return slug
-
     players_cache = CACHE_MANAGER.get_players_cache()
 
     # ensure consistent encoding for lookup
-    slug = slugify(slug)
+    ensure_slug = slugify(slug)
     for p in players_cache:
-        if players_cache[p]["slug"] == slug:
+        if players_cache[p]["slug"] == ensure_slug:
             return p
 
     return slug  # Fallback to returning the original string if no match found

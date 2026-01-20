@@ -508,7 +508,9 @@ def _get_all_player_scores(
                 )
                 player_id = only_numeric
             else:
-                print(f"Unknown numeric player id encountered: {player_id}")
+                logger.warning(
+                    f"Unknown numeric player id encountered: {player_id}"
+                )
                 continue
 
         # Get player information from PLAYER_IDS

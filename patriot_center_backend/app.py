@@ -37,26 +37,33 @@ from patriot_center_backend.utils.slug_utils import slug_to_name
 app = Flask(__name__)
 
 # Configure CORS for production (Netlify frontend)
-CORS(app, resources={
-    r"/get_aggregated_players*": {
-        "origins": ["https://patriotcenter.netlify.app"]
+CORS(
+    app,
+    resources={
+        r"/get_aggregated_players*": {
+            "origins": ["https://patriotcenter.netlify.app"]
+        },
+        r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
+        r"/get_aggregated_managers*": {
+            "origins": ["https://patriotcenter.netlify.app"]
+        },
+        r"/options/list": {"origins": ["https://patriotcenter.netlify.app"]},
+        r"/dynamic_filtering*": {
+            "origins": ["https://patriotcenter.netlify.app"]
+        },
+        r"/get_player_manager_aggregation*": {
+            "origins": ["https://patriotcenter.netlify.app"]
+        },
+        r"/get/managers/list": {
+            "origins": ["https://patriotcenter.netlify.app"]
+        },
+        r"/api/managers/*": {"origins": ["https://patriotcenter.netlify.app"]},
     },
-    r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/get_aggregated_managers*": {
-        "origins": ["https://patriotcenter.netlify.app"]
-    },
-    r"/options/list": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/dynamic_filtering*": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/get_player_manager_aggregation*": {
-        "origins": ["https://patriotcenter.netlify.app"]
-    },
-    r"/get/managers/list": {"origins": ["https://patriotcenter.netlify.app"]},
-    r"/api/managers/*": {"origins": ["https://patriotcenter.netlify.app"]}
-})
+)
 CORS(app)  # Enable CORS for all routes during development
 
 
-@app.route('/')
+@app.route("/")
 def index() -> tuple[Response, int]:
     """Root endpoint with basic info.
 
@@ -64,26 +71,29 @@ def index() -> tuple[Response, int]:
         Response in JSON format with service name, version, and available
             endpoints.
     """
-    return jsonify({
-        "service": "Patriot Center Backend",
-        "version": "1.0.0",
-        "endpoints": [
-            "/get_starters",
-            "/get_aggregated_players",
-            "/get_aggregated_managers/<player>",
-            "/dynamic_filtering",
-            "/options/list",
-            "/get/managers/list/<active_only>",
-            "/api/managers/<manager_name>/summary",
-            "/api/managers/<manager_name>/head-to-head/<opponent_name>",
-            "/api/managers/<manager_name>/transactions",
-            "/api/managers/<manager_name>/awards",
-            "/ping",
-            "/health"
-        ]
-    }), 200
+    return jsonify(
+        {
+            "service": "Patriot Center Backend",
+            "version": "1.0.0",
+            "endpoints": [
+                "/get_starters",
+                "/get_aggregated_players",
+                "/get_aggregated_managers/<player>",
+                "/dynamic_filtering",
+                "/options/list",
+                "/get/managers/list/<active_only>",
+                "/api/managers/<manager_name>/summary",
+                "/api/managers/<manager_name>/head-to-head/<opponent_name>",
+                "/api/managers/<manager_name>/transactions",
+                "/api/managers/<manager_name>/awards",
+                "/ping",
+                "/health",
+            ],
+        }
+    ), 200
 
-@app.route('/ping')
+
+@app.route("/ping")
 def ping() -> tuple[str, int]:
     """Liveness check endpoint.
 
@@ -92,7 +102,8 @@ def ping() -> tuple[str, int]:
     """
     return "pong", 200
 
-@app.route('/health')
+
+@app.route("/health")
 def health() -> tuple[Response, int]:
     """Health check endpoint.
 
@@ -101,24 +112,26 @@ def health() -> tuple[Response, int]:
     """
     return jsonify({"status": "healthy"}), 200
 
+
 # Multiple route variants allow optional path parameters (year, manager, week)
 @app.route(
-    '/get_starters',
-    defaults={'arg1': None, 'arg2': None, 'arg3': None},
-    methods=['GET']
+    "/get_starters",
+    defaults={"arg1": None, "arg2": None, "arg3": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_starters/<string:arg1>',
-    defaults={'arg2': None, 'arg3': None},
-    methods=['GET']
+    "/get_starters/<string:arg1>",
+    defaults={"arg2": None, "arg3": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_starters/<string:arg1>/<string:arg2>',
-    defaults={'arg3': None},
-    methods=['GET']
+    "/get_starters/<string:arg1>/<string:arg2>",
+    defaults={"arg3": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_starters/<string:arg1>/<string:arg2>/<string:arg3>', methods=['GET'])
+    "/get_starters/<string:arg1>/<string:arg2>/<string:arg3>", methods=["GET"]
+)
 def get_starters(
     arg1: str | None, arg2: str | None, arg3: str | None
 ) -> tuple[Response, int]:
@@ -152,33 +165,34 @@ def get_starters(
         response = jsonify(data)
 
         # Cache for 1 hour
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers["Cache-Control"] = "public, max-age=3600"
         return response, 200
 
     response = jsonify(_to_records(data))
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
+
 @app.route(
-    '/get_aggregated_players',
-    defaults={'arg1': None, 'arg2': None, 'arg3': None},
-    methods=['GET']
+    "/get_aggregated_players",
+    defaults={"arg1": None, "arg2": None, "arg3": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_aggregated_players/<string:arg1>',
-    defaults={'arg2': None, 'arg3': None},
-    methods=['GET']
+    "/get_aggregated_players/<string:arg1>",
+    defaults={"arg2": None, "arg3": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_aggregated_players/<string:arg1>/<string:arg2>',
-    defaults={'arg3': None},
-    methods=['GET']
+    "/get_aggregated_players/<string:arg1>/<string:arg2>",
+    defaults={"arg3": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_aggregated_players/<string:arg1>/<string:arg2>/<string:arg3>',
-    methods=['GET']
+    "/get_aggregated_players/<string:arg1>/<string:arg2>/<string:arg3>",
+    methods=["GET"],
 )
 def get_aggregated_players(
     arg1: str | None, arg2: str | None, arg3: str | None
@@ -210,28 +224,29 @@ def get_aggregated_players(
         response = jsonify(data)
 
         # Cache for 1 hour
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers["Cache-Control"] = "public, max-age=3600"
         return response, 200
 
     response = jsonify(_to_records(data))
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
+
 @app.route(
-    '/get_aggregated_managers/<string:player>',
-    defaults={'arg2': None, 'arg3': None},
-    methods=['GET']
+    "/get_aggregated_managers/<string:player>",
+    defaults={"arg2": None, "arg3": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_aggregated_managers/<string:player>/<string:arg2>',
-    defaults={'arg3': None},
-    methods=['GET']
+    "/get_aggregated_managers/<string:player>/<string:arg2>",
+    defaults={"arg3": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_aggregated_managers/<string:player>/<string:arg2>/<string:arg3>',
-    methods=['GET']
+    "/get_aggregated_managers/<string:player>/<string:arg2>/<string:arg3>",
+    methods=["GET"],
 )
 def get_aggregated_managers(
     player: str, arg2: str | None, arg3: str | None
@@ -263,31 +278,31 @@ def get_aggregated_managers(
         response = jsonify(data)
 
         # Cache for 1 hour
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers["Cache-Control"] = "public, max-age=3600"
         return response, 200
 
     response = jsonify(_to_records(data, key_name="manager"))
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
+
 @app.route(
-    '/get_player_manager_aggregation/'
-    '<string:player>/<string:manager>',
-    defaults={'year': None, 'week': None},
-    methods=['GET']
+    "/get_player_manager_aggregation/<string:player>/<string:manager>",
+    defaults={"year": None, "week": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_player_manager_aggregation/'
-    '<string:player>/<string:manager>"/<string:year>',
-    defaults={'week': None},
-    methods=['GET']
+    "/get_player_manager_aggregation/"
+    "<string:player>/<string:manager>/<string:year>",
+    defaults={"week": None},
+    methods=["GET"],
 )
 @app.route(
-    '/get_player_manager_aggregation/'
-    '<string:player>/<string:manager>/<string:year>/<string:week>',
-    methods=['GET']
+    "/get_player_manager_aggregation/"
+    "<string:player>/<string:manager>/<string:year>/<string:week>",
+    methods=["GET"],
 )
 def get_player_manager_aggregation(
     player: str,
@@ -319,16 +334,17 @@ def get_player_manager_aggregation(
         response = jsonify(data)
 
         # Cache for 1 hour
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers["Cache-Control"] = "public, max-age=3600"
         return response, 200
 
     response = jsonify(_to_records(data, key_name="manager"))
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
-@app.route('/options/list', methods=['GET'])
+
+@app.route("/options/list", methods=["GET"])
 def list_players() -> tuple[Response, int]:
     """Endpoint to list all players and managers in the cache.
 
@@ -344,23 +360,24 @@ def list_players() -> tuple[Response, int]:
             "type": "manager",
             "name": manager,
             "full_name": manager,
-            "slug": manager
+            "slug": manager,
         }
 
     if request.args.get("format") == "json":
         response = jsonify(data)
 
         # Cache for 1 hour
-        response.headers['Cache-Control'] = 'public, max-age=3600'
+        response.headers["Cache-Control"] = "public, max-age=3600"
         return response, 200
 
     response = jsonify(_to_records(data, key_name="name"))
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
-@app.route('/dynamic_filtering', methods=['GET'])
+
+@app.route("/dynamic_filtering", methods=["GET"])
 def dynamic_filtering() -> tuple[Response, int]:
     """Endpoint retreive filtered data for provided input combinations.
 
@@ -378,40 +395,36 @@ def dynamic_filtering() -> tuple[Response, int]:
     Returns:
         Response in JSON format and status code.
     """
-    acceptable_args = ['yr', 'wk', 'mgr', 'pos', 'plyr']
+    acceptable_args = ["yr", "wk", "mgr", "pos", "plyr"]
     for arg in request.args:
         if arg not in acceptable_args:
             return jsonify({"error": f"Invalid argument: {arg}"}), 400
 
-    yr = request.args.get('yr')
-    wk = request.args.get('wk')
-    mgr = request.args.get('mgr')
-    pos = request.args.get('pos')
-    plyr = request.args.get('plyr')
+    yr = request.args.get("yr")
+    wk = request.args.get("wk")
+    mgr = request.args.get("mgr")
+    pos = request.args.get("pos")
+    plyr = request.args.get("plyr")
 
     if plyr:
         plyr = slug_to_name(plyr)
 
     try:
         data = dynamic_filter.filter(
-            year=yr,
-            week=wk,
-            manager=mgr,
-            position=pos,
-            player=plyr
+            year=yr, week=wk, manager=mgr, position=pos, player=plyr
         )
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     response = jsonify(data)
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
 
-@app.route('/get/managers/list/<string:active_only>', methods=['GET'])
+@app.route("/get/managers/list/<string:active_only>", methods=["GET"])
 def list_managers(
-    active_only: Literal["true", "false"]
+    active_only: Literal["true", "false"],
 ) -> tuple[Response, int]:
     """Endpoint to list all managers in the system and their top-level info.
 
@@ -440,18 +453,17 @@ def list_managers(
     response = jsonify(data)
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
 
 @app.route(
-    '/api/managers/<string:manager_name>/summary',
-    defaults={'year': None},
-    methods=['GET']
+    "/api/managers/<string:manager_name>/summary",
+    defaults={"year": None},
+    methods=["GET"],
 )
 @app.route(
-    '/api/managers/<string:manager_name>/summary/<string:year>',
-    methods=['GET']
+    "/api/managers/<string:manager_name>/summary/<string:year>", methods=["GET"]
 )
 def manager_summary(
     manager_name: str, year: str | None
@@ -475,20 +487,19 @@ def manager_summary(
     response = jsonify(data)
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
 
 @app.route(
-    '/api/managers/'
-    '<string:manager_name>/head-to-head/<string:opponent_name>',
-    defaults={'year': None},
-    methods=['GET']
+    "/api/managers/<string:manager_name>/head-to-head/<string:opponent_name>",
+    defaults={"year": None},
+    methods=["GET"],
 )
 @app.route(
-    '/api/managers/'
-    '<string:manager_name>/head-to-head/<string:opponent_name>/<string:year>',
-    methods=['GET']
+    "/api/managers/"
+    "<string:manager_name>/head-to-head/<string:opponent_name>/<string:year>",
+    methods=["GET"],
 )
 def manager_head_to_head(
     manager_name: str, opponent_name: str, year: str | None
@@ -517,18 +528,18 @@ def manager_head_to_head(
     response = jsonify(data)
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
 
 @app.route(
-    '/api/managers/<string:manager_name>/transactions',
-    defaults={'year': None},
-    methods=['GET']
+    "/api/managers/<string:manager_name>/transactions",
+    defaults={"year": None},
+    methods=["GET"],
 )
 @app.route(
-    '/api/managers/<string:manager_name>/transactions/<string:year>',
-    methods=['GET']
+    "/api/managers/<string:manager_name>/transactions/<string:year>",
+    methods=["GET"],
 )
 def manager_transactions(
     manager_name: str, year: str | None
@@ -544,7 +555,7 @@ def manager_transactions(
         and status code.
     """
     # Convert 'all' strings to None for proper filtering
-    if year == 'all':
+    if year == "all":
         year = None
 
     try:
@@ -559,11 +570,11 @@ def manager_transactions(
     response = jsonify(data)
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
 
-@app.route('/api/managers/<string:manager_name>/awards', methods=['GET'])
+@app.route("/api/managers/<string:manager_name>/awards", methods=["GET"])
 def manager_awards(manager_name: str) -> tuple[Response, int]:
     """Endpoint to get awards and recognitions for a specific manager.
 
@@ -583,7 +594,7 @@ def manager_awards(manager_name: str) -> tuple[Response, int]:
     response = jsonify(data)
 
     # Cache for 1 hour
-    response.headers['Cache-Control'] = 'public, max-age=3600'
+    response.headers["Cache-Control"] = "public, max-age=3600"
     return response, 200
 
 
@@ -679,6 +690,7 @@ def _flatten_dict(
             out[nk] = v
     return out
 
+
 def _to_records(data: Any, key_name: str = "key") -> list[dict[str, Any]]:
     """Normalize mixed dict/list structures into a list of record dicts.
 
@@ -697,7 +709,8 @@ def _to_records(data: Any, key_name: str = "key") -> list[dict[str, Any]]:
     if isinstance(data, list):
         for item in data:
             return (
-                [_flatten_dict(item)] if isinstance(item, dict)
+                [_flatten_dict(item)]
+                if isinstance(item, dict)
                 else [{"value": item}]
             )
 
@@ -710,7 +723,8 @@ def _to_records(data: Any, key_name: str = "key") -> list[dict[str, Any]]:
                 for item in v:
                     row = {key_name: k}
                     row.update(
-                        _flatten_dict(item) if isinstance(item, dict)
+                        _flatten_dict(item)
+                        if isinstance(item, dict)
                         else {"value": item}
                     )
                     rows.append(row)
@@ -731,7 +745,9 @@ def _to_records(data: Any, key_name: str = "key") -> list[dict[str, Any]]:
     # Fallback for scalar inputs: wrap in single-item list
     return [{"value": data}]
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     from os import getenv
+
     # Run app
     app.run(host="0.0.0.0", port=int(getenv("PORT", "8080")))

@@ -1,18 +1,8 @@
 """Player IDs loader and refresher for the Patriot Center backend.
 
-Responsibilities:
-- Read a cached player_ids.json file with selected player metadata fields.
-- Refresh data from the Sleeper API if the cache is older than one week.
-- Ensure all NFL team defenses are present as synthetic "players" with position
-DEF.
-- Persist refreshed data back to disk in a stable, readable format.
-
-Notes:
-- This module may perform network requests to Sleeper.
-- Cache freshness is determined by file modification time (not a timestamp
-field).
-- Only a subset of fields specified in FIELDS_TO_KEEP is retained from the
-Sleeper API.
+This module:
+- Updates the player IDs cache by fetching fresh data from Sleeper API.
+- Inserts synthetic team defense entries as players with position "DEF".
 """
 
 import logging

@@ -1,9 +1,9 @@
-"""
-Replacement-score cache builder for Patriot Center.
+"""Replacement-score cache builder for Patriot Center.
 
 Responsibilities:
 - Maintain a JSON cache of per-week replacement-level scores by position.
-- Backfill historical seasons and compute 3-year rolling averages keyed by bye counts.
+- Backfill historical seasons and compute 3-year rolling averages keyed by bye
+counts.
 - Persist an incrementally updated cache to disk and expose it to callers.
 
 Notes:
@@ -11,6 +11,10 @@ Notes:
 - Seed player metadata via load_player_ids to filter and position players.
 - Current season/week is resolved at runtime and weeks are capped by era rules.
 """
+
+import logging
+from typing import Any
+
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.scoring import calculate_player_score
@@ -19,33 +23,51 @@ from patriot_center_backend.utils.sleeper_helpers import (
     get_current_season_and_week,
 )
 
+logger = logging.getLogger(__name__)
 
-def update_replacement_score_cache():
-    """
-    Incrementally build replacement-level scores cache.
 
-    Key points:
-    - Adds 3 historical seasons for 3yr averages.
-    - Computes only missing weeks (resumable).
-    - Injects <POS>_3yr_avg once prior year - 3 data exists.
+def update_replacement_score_cache() -> None:
+    """Incrementally update the replacement score cache.
+
+    Algorithm summary:
+    - Dynamically determine the current season and week.
+    - Process all years in LEAGUE_IDS with extra years for replacement score
+        backfill.
+    - Skip years that are already fully processed.
+    - Fetch and update only the missing weeks for each year.
+    - Compute the 3-year average if data from three years ago exists.
+    - Update the metadata for the last updated season and week.
+    - Save the updated cache to the file.
+    - Reload to remove the metadata fields.
+
+    Notes:
+    - Uses Sleeper API data (network I/O) via fetch_sleeper_data.
+    - Seed player metadata via load_player_ids to filter and position players.
+    - Current season/week is resolved at runtime and weeks are capped by era
+        rules.
     """
-    replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache(for_update=True)
+    replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache(
+        for_update=True
+    )
 
     # Dynamically determine the current season and week
     current_season, current_week = get_current_season_and_week()
     if current_week > 18:
-        current_week = 18  # Cap the current week at 18 (NFL's maximum regular season weeks)
+        current_week = 18  # Cap the current week at 18 (NFL's maximum)
 
     # Process all years in LEAGUE_IDS with extra years for replacement score
     years = list(LEAGUE_IDS.keys())
     first_year = min(years)
-    # Add the three years prior to the first year in LEAGUE_IDS for historical averages
+    # Add the three years prior to the first year in LEAGUE_IDS
+    # for historical averages
     years.extend([first_year - 3, first_year - 2, first_year - 1])
     years = sorted(years)
 
     for year in years:
         # Get the last updated season and week from the cache
-        last_updated_season = int(replacement_score_cache.get("Last_Updated_Season", 0))
+        last_updated_season = int(
+            replacement_score_cache.get("Last_Updated_Season", 0)
+        )
         last_updated_week = replacement_score_cache.get("Last_Updated_Week", 0)
 
         # Skip years that are already fully processed
@@ -53,18 +75,24 @@ def update_replacement_score_cache():
             if year < last_updated_season:
                 continue
             if last_updated_season < year:
-                replacement_score_cache["Last_Updated_Week"] = 0  # Reset the week if moving to a new year
+                # Reset the week if moving to a new year
+                replacement_score_cache["Last_Updated_Week"] = 0
 
-        # If the cache is already up-to-date for the current season and week, stop processing
-        if last_updated_season == int(current_season) and last_updated_week == current_week:
+        # If the cache is already up-to-date for the
+        # current season and week, stop processing
+        if (
+            last_updated_season == int(current_season)
+            and last_updated_week == current_week
+        ):
             break
 
-        year = int(year)  # Ensure year is an integer
-        max_weeks = _get_max_weeks(year, current_season, current_week)
+        max_weeks = _get_max_weeks(year, int(current_season), current_week)
 
         # Determine the range of weeks to update
-        if year == current_season or year == last_updated_season:
-            last_updated_week = replacement_score_cache.get("Last_Updated_Week", 0)
+        if year in (int(current_season), last_updated_season):
+            last_updated_week = replacement_score_cache.get(
+                "Last_Updated_Week", 0
+            )
             weeks_to_update = range(last_updated_week + 1, max_weeks + 1)
         else:
             weeks_to_update = range(1, max_weeks + 1)
@@ -73,7 +101,10 @@ def update_replacement_score_cache():
             # No new weeks to process
             continue
 
-        print(f"Updating replacement score cache for season {year}, weeks: {list(weeks_to_update)}")
+        logger.info(
+            f"Updating replacement score cache for "
+            f"season {year}, weeks: {list(weeks_to_update)}"
+        )
 
         # Fetch and update only the missing weeks for the year
         for week in weeks_to_update:
@@ -81,18 +112,25 @@ def update_replacement_score_cache():
                 replacement_score_cache[str(year)] = {}
 
             # Fetch replacement scores for the week
-            replacement_score_cache[str(year)][str(week)] = _fetch_replacement_score_for_week(year, week)
+            replacement_score_cache[str(year)][str(week)] = (
+                _fetch_replacement_score_for_week(year, week)
+            )
 
             # Compute the 3-year average if data from three years ago exists
             if str(year - 3) in replacement_score_cache:
                 # Augment with bye-aware 3-year rolling averages
-                replacement_score_cache[str(year)][str(week)] = _get_three_yr_avg(year, week)
+                replacement_score_cache[str(year)][str(week)] = (
+                    _get_three_yr_avg(year, week)
+                )
 
             # Update the metadata for the last updated season and week
             replacement_score_cache["Last_Updated_Season"] = str(year)
             replacement_score_cache["Last_Updated_Week"] = week
 
-            print("  Replacement score cache updated internally for season {}, week {}".format(year, week))
+            logger.info(
+                f"\tReplacement score cache updated "
+                f"internally for season {year}, week {week}"
+            )
 
     # Save the updated cache to the file
     CACHE_MANAGER.save_replacement_score_cache()
@@ -101,22 +139,21 @@ def update_replacement_score_cache():
     CACHE_MANAGER.get_replacement_score_cache(force_reload=True)
 
 
-def _get_max_weeks(season, current_season, current_week):
-    """
-    Determine the maximum number of weeks for a given season.
+def _get_max_weeks(season: int, current_season: int, current_week: int) -> int:
+    """Determine maximum playable weeks for a season.
+
+    Rules:
+    - Live season -> current_week.
+    - 2020 and earlier -> 17 (legacy rule set).
+    - Other seasons -> 18 (regular season boundary).
 
     Args:
-        season (int): The season to determine the max weeks for.
-        current_season (int): The current season.
-        current_week (int): The current week.
+        season: The season to determine the max weeks for.
+        current_season: The current season.
+        current_week: The current week.
 
     Returns:
-        int: The maximum number of weeks for the season.
-
-    Notes:
-    - For the current live season, limit to current_week.
-    - For 2020 and earlier, the NFL regular season had 17 weeks.
-    - For 2021 and later, the regular season has 18 weeks.
+        Max week to process for season.
     """
     if season == current_season:
         return current_week  # Use the current week for the current season
@@ -126,9 +163,8 @@ def _get_max_weeks(season, current_season, current_week):
         return 18  # Cap at 18 weeks for other seasons
 
 
-def _fetch_replacement_score_for_week(season, week):
-    """
-    Derive positional replacement thresholds for a week.
+def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
+    """Derive positional replacement thresholds for a week.
 
     Thresholds (descending rank):
         QB13, RB31, WR31, TE13
@@ -140,37 +176,45 @@ def _fetch_replacement_score_for_week(season, week):
 
     # Fetch data from the Sleeper API for the given season and week
     week_data = fetch_sleeper_data(f"stats/nfl/regular/{season}/{week}")
-    
-    final_week_scores = {"byes": None}
+    if not isinstance(week_data, dict):
+        raise ValueError(
+            f"Sleeper API call failed for season {season}, week {week}"
+        )
+
     yearly_scoring_settings = {}
     for yr in range(season, season + 4):
-        if yr not in LEAGUE_IDS.keys():
+        if yr not in LEAGUE_IDS:
             continue
         scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS[yr]}")
+        if not isinstance(scoring_settings, dict):
+            raise ValueError(
+                f"Sleeper API call failed to retrieve "
+                f"scoring settings for year {yr}"
+            )
         yearly_scoring_settings[yr] = scoring_settings["scoring_settings"]
-        final_week_scores[f"{yr}_scoring"] = {}
 
-    # Initialize the number of byes to 32 (all teams initially assumed to be playing)
-    byes = 32
+    # Initialize the byes counter
+    final_week_scores = {
+        "byes": 32
+    }
+    for yr in yearly_scoring_settings:
 
-    for yr in yearly_scoring_settings.keys():
-        
         week_scores = {
-                "QB": [],  # List of QB scores for the week
-                "RB": [],  # List of RB scores for the week
-                "WR": [],  # List of WR scores for the week
-                "TE": [],  # List of TE scores for the week
-                "K":  [],  # List of K scores for the week
-                "DEF": []  # List of DEF scores for the week
-            }
-        
+            "QB": [],   # List of QB scores for the week
+            "RB": [],   # List of RB scores for the week
+            "WR": [],   # List of WR scores for the week
+            "TE": [],   # List of TE scores for the week
+            "K": [],    # List of K scores for the week
+            "DEF": [],  # List of DEF scores for the week
+        }
+
         for player_id in week_data:
 
             if "TEAM_" in player_id:
-                    if final_week_scores.get("byes") is None:
-                        # TEAM_ entries represent real teams -> decrement byes
-                        byes -= 1
-                    continue
+                if final_week_scores.get("byes") is None:
+                    # TEAM_ entries represent real teams -> decrement byes
+                    final_week_scores["byes"] -= 1
+                continue
 
             if player_id not in player_ids_cache:
                 only_numeric = ''.join(filter(str.isdigit, player_id))
@@ -191,7 +235,7 @@ def _fetch_replacement_score_for_week(season, week):
 
             if player_info["position"] in week_scores:
                 player_data = week_data[player_id]
-                
+
                 if "gp" not in player_data or player_data["gp"] == 0.0:
                     continue
 
@@ -204,12 +248,12 @@ def _fetch_replacement_score_for_week(season, week):
             week_scores[position].sort(reverse=True)
 
         # Determine the replacement scores for each position
-        # QB13 (13th best QB), RB31 (31st best RB), WR31 (31st best WR), TE13 (13th best TE)
-        final_week_scores[f"{yr}_scoring"]["QB"]  = week_scores["QB"][12]  # 13th QB
-        final_week_scores[f"{yr}_scoring"]["RB"]  = week_scores["RB"][30]  # 31st RB
-        final_week_scores[f"{yr}_scoring"]["WR"]  = week_scores["WR"][30]  # 31st WR
-        final_week_scores[f"{yr}_scoring"]["TE"]  = week_scores["TE"][12]  # 13th TE
-        final_week_scores[f"{yr}_scoring"]["K"]   = week_scores["K"][12]   # 13th K
+        final_week_scores[f"{yr}_scoring"] = {}
+        final_week_scores[f"{yr}_scoring"]["QB"] = week_scores["QB"][12]   # 13th QB
+        final_week_scores[f"{yr}_scoring"]["RB"] = week_scores["RB"][30]   # 31st RB
+        final_week_scores[f"{yr}_scoring"]["WR"] = week_scores["WR"][30]   # 31st WR
+        final_week_scores[f"{yr}_scoring"]["TE"] = week_scores["TE"][12]   # 13th TE
+        final_week_scores[f"{yr}_scoring"]["K"] = week_scores["K"][12]     # 13th K
         final_week_scores[f"{yr}_scoring"]["DEF"] = week_scores["DEF"][12] # 13th DEF
 
         # Add the final number of byes to the scores
@@ -311,3 +355,5 @@ def _get_three_yr_avg(season, week):
 
     # Return the updated current week's scores with three-year averages added
     return current_week_scores
+
+_fetch_replacement_score_for_week(2019, 11)

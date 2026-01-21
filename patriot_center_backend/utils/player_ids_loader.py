@@ -27,8 +27,17 @@ logger = logging.getLogger(__name__)
 
 # Fields to keep from Sleeper's player payload; reduces storage and surface area
 FIELDS_TO_KEEP = [
-    "full_name", "first_name", "last_name", "age", "years_exp", "college",
-    "team", "depth_chart_position", "fantasy_positions", "position", "number"
+    "full_name",
+    "first_name",
+    "last_name",
+    "age",
+    "years_exp",
+    "college",
+    "team",
+    "depth_chart_position",
+    "fantasy_positions",
+    "position",
+    "number",
 ]
 
 
@@ -51,7 +60,6 @@ def update_player_ids() -> None:
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
     if CACHE_MANAGER.is_player_ids_cache_stale():
-
         response = fetch_sleeper_data("players/nfl")
         if not isinstance(response, dict):
             raise ValueError("Expected a dictionary from the Sleeper API.")
@@ -66,7 +74,7 @@ def update_player_ids() -> None:
                     "first_name": TEAM_DEFENSE_NAMES[player_id]["first_name"],
                     "last_name": TEAM_DEFENSE_NAMES[player_id]["last_name"],
                     "team": player_id,
-                    "position": "DEF"
+                    "position": "DEF",
                 }
                 continue
 
@@ -84,7 +92,7 @@ def update_player_ids() -> None:
                     "first_name": TEAM_DEFENSE_NAMES[player_id]["first_name"],
                     "last_name": TEAM_DEFENSE_NAMES[player_id]["last_name"],
                     "team": player_id,
-                    "position": "DEF"
+                    "position": "DEF",
                 }
 
         # If players change their names they need to be
@@ -99,13 +107,12 @@ def _update_new_names(old_ids: dict[str, dict[str, Any]]) -> None:
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
     for id in player_ids_cache:
-
         # New player entirely being added, continue
         if id not in old_ids:
             continue
 
         # player did not change their name, continue
-        if old_ids[id]['full_name'] == player_ids_cache[id]['full_name']:
+        if old_ids[id]["full_name"] == player_ids_cache[id]["full_name"]:
             continue
 
         logger.info("New Player Name Found:")
@@ -126,38 +133,36 @@ def _update_new_names(old_ids: dict[str, dict[str, Any]]) -> None:
 
         manager_metadata_cache = _recursive_replace(
             manager_metadata_cache,
-            old_player['full_name'],
-            new_player['full_name'],
+            old_player["full_name"],
+            new_player["full_name"],
         )
 
         player_data_cache = _recursive_replace(
-            player_data_cache, old_player['full_name'], new_player['full_name']
+            player_data_cache, old_player["full_name"], new_player["full_name"]
         )
 
         starters_cache = _recursive_replace(
-            starters_cache, old_player['full_name'], new_player['full_name']
+            starters_cache, old_player["full_name"], new_player["full_name"]
         )
 
         transaction_ids_cache = _recursive_replace(
             transaction_ids_cache,
-            old_player['full_name'],
-            new_player['full_name'],
+            old_player["full_name"],
+            new_player["full_name"],
         )
 
         valid_options_cache = _recursive_replace(
             valid_options_cache,
-            old_player['full_name'],
-            new_player['full_name'],
+            old_player["full_name"],
+            new_player["full_name"],
         )
 
         players_cache = _recursive_replace(
-            players_cache, old_player['full_name'], new_player['full_name']
+            players_cache, old_player["full_name"], new_player["full_name"]
         )
 
 
-def _recursive_replace(
-    data: Any, old_str: str, new_str: str
-) -> Any:
+def _recursive_replace(data: Any, old_str: str, new_str: str) -> Any:
     """Recursively replaces all occurrences of `old_str` with `new_str` in data.
 
     Args:

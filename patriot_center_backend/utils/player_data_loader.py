@@ -182,27 +182,19 @@ def _fetch_ffwar(
 
     weekly_data = starters_cache[str(season)][str(week)]
 
-    players = {
-        "QB": {},
-        "RB": {},
-        "WR": {},
-        "TE": {},
-        "K": {},
-        "DEF": {}
-    }
+    players = {"QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}}
 
     for manager in weekly_data:
         for position in players:
-
             old_players_position = players[position]
             old_players_position[manager] = {
-                'total_points': weekly_data[manager]['Total_Points'],
-                'players': {},
+                "total_points": weekly_data[manager]["Total_Points"],
+                "players": {},
             }
             players[position] = old_players_position
 
         for player in weekly_data[manager]:
-            if player == 'Total_Points':
+            if player == "Total_Points":
                 continue
 
             position = weekly_data[manager][player]['position']
@@ -221,7 +213,7 @@ def _fetch_ffwar(
             week,
             position,
             all_player_scores[position],
-            all_rostered_players
+            all_rostered_players,
         )
         if not calculated_ffwar:
             continue
@@ -233,11 +225,12 @@ def _fetch_ffwar(
     ffwar_results = dict(
         sorted(
             ffwar_results.items(),
-            key=lambda item: (-item[1]['ffWAR'], item[1]['name'])
+            key=lambda item: (-item[1]["ffWAR"], item[1]["name"]),
         )
     )
 
     return ffwar_results
+
 
 def _calculate_ffwar_position(
     scores: dict[str, dict[str, Any]],
@@ -276,33 +269,30 @@ def _calculate_ffwar_position(
     key = f"{position}_3yr_avg"
     replacement_average = replacement_scores_cache[str(season)][str(week)][key]
 
-
     # Calculate the average score across all players at this position this week
     # This helps normalize scores when simulating replacement scenarios
     num_players = 0
     total_position_score = 0.0
     for manager in scores:
-        num_players += len(scores[manager]['players'])
-        for player in scores[manager]['players']:
-            total_position_score += scores[manager]['players'][player]
+        num_players += len(scores[manager]["players"])
+        for player in scores[manager]["players"]:
+            total_position_score += scores[manager]["players"][player]
 
     if num_players == 0:
         return {}  # No players at this position this week
 
     average_player_score_this_week = total_position_score / num_players
 
-
     # Pre-compute normalized scores for each manager
     # These values are used in the simulation to isolate positional impact
     for manager in scores:
-
         # Calculate this manager's average score at this position
         player_total_for_manager = 0.0
-        for player in scores[manager]['players']:
-            player_total_for_manager += scores[manager]['players'][player]
+        for player in scores[manager]["players"]:
+            player_total_for_manager += scores[manager]["players"][player]
 
         # If no players at this position, set average to 0
-        if len(scores[manager]['players']) == 0:
+        if len(scores[manager]["players"]) == 0:
             player_average_for_manager = 0
         else:
             player_average_for_manager = (
@@ -312,14 +302,14 @@ def _calculate_ffwar_position(
         # Store manager's total points minus their positional contribution
         # This represents the manager's "baseline" without this position's
         #   impact
-        scores[manager]['total_minus_position'] = (
+        scores[manager]["total_minus_position"] = (
             scores[manager]["total_points"] - player_average_for_manager
         )
 
         # Store normalized weighted score (baseline + league average at
         #   position)
         # Used as opponent's score in simulations
-        scores[manager]['weighted_total_score'] = (
+        scores[manager]["weighted_total_score"] = (
             scores[manager]["total_points"]
             - player_average_for_manager
             + average_player_score_this_week
@@ -329,11 +319,10 @@ def _calculate_ffwar_position(
     ffwar_position = {}
 
     for player_id in all_player_scores:
-
         image_url = get_image_url(player_id, IMAGE_URLS)
 
         # Player's Full Name
-        player = all_player_scores[player_id]['name']
+        player = all_player_scores[player_id]["name"]
 
         # Determine if this player is rostered and started, and by whom
         player_data_manager_value = None
@@ -344,20 +333,20 @@ def _calculate_ffwar_position(
 
                 # Some managers may roster but not count in the scores if they
                 # didn't play in the playoffs
-                if player in scores.get(manager, {}).get('players', {}):
+                if player in scores.get(manager, {}).get("players", {}):
                     started = True
                 break
 
-        player_score = all_player_scores[player_id]['score']
+        player_score = all_player_scores[player_id]["score"]
 
         player_data = {
             "name": player,
             "image_url": image_url,
-            "score": all_player_scores[player_id]['score'],
+            "score": all_player_scores[player_id]["score"],
             "ffWAR": 0.0,
             "position": position,
             "manager": player_data_manager_value,
-            "started": started
+            "started": started,
         }
 
         # Initialize counters for simulated head-to-head comparisons
@@ -380,13 +369,13 @@ def _calculate_ffwar_position(
 
                 # Manager's score WITH this player at this position
                 simulated_player_score = (
-                    scores[manager_playing]['total_minus_position']
+                    scores[manager_playing]["total_minus_position"]
                     + player_score
                 )
 
                 # Manager's score with REPLACEMENT-level player at this position
                 simulated_replacement_score = (
-                    scores[manager_playing]['total_minus_position']
+                    scores[manager_playing]["total_minus_position"]
                     + replacement_average
                 )
 
@@ -420,9 +409,8 @@ def _calculate_ffwar_position(
             #   play each week
             # 2020 and earlier: playoffs start week 14
             # 2021 and later: playoffs start week 15
-            if (
-                (season <= 2020 and week >= 14)
-                or (season >= 2021 and week >= 15)
+            if (season <= 2020 and week >= 14) or (
+                season >= 2021 and week >= 15
             ):
                 ffwar_score = round(ffwar_score / 3, 3)
 
@@ -431,6 +419,7 @@ def _calculate_ffwar_position(
         ffwar_position[player_id] = player_data
 
     return ffwar_position
+
 
 def _get_all_player_scores(
     year: int, week: int
@@ -488,7 +477,6 @@ def _get_all_player_scores(
     }
 
     for player_id in week_data:
-
         # "TEAM_*" is stats for an entire team, so skip it
         if "TEAM_" in player_id:
             continue
@@ -496,7 +484,7 @@ def _get_all_player_scores(
         # Zach Ertz traded from PHI to ARI causes his player ID to be weird
         # sometimes
         if player_id not in player_ids_cache:
-            only_numeric = ''.join(filter(str.isdigit, player_id))
+            only_numeric = "".join(c for c in player_id if c.isnumeric())
             if only_numeric in player_ids_cache:
                 player_name = player_ids_cache[only_numeric]["full_name"]
                 logger.info(
@@ -534,6 +522,7 @@ def _get_all_player_scores(
             }
 
     return final_week_scores
+
 
 def _get_all_rostered_players(
     roster_ids: dict[int, str], season: int, week: int

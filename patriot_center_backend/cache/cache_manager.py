@@ -530,6 +530,8 @@ class CacheManager:
             self.save_player_data_cache()
         if self._replacement_score_cache is not None:
             self.save_replacement_score_cache()
+        if self._valid_options_cache is not None:
+            self.save_valid_options_cache()
 
 
 # ===== SINGLETON INSTANCE =====

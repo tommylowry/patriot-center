@@ -107,7 +107,7 @@ def add_to_transaction_ids(
 
         transaction_info_to_cache[transaction_type] = player_name
         bid = transaction_info.get("waiver_bid")
-        if transaction_type == "add" and use_faab and bid:
+        if transaction_type == "add" and use_faab and bid is not None:
             transaction_info_to_cache["faab_spent"] = bid
 
     # Trade transaction

@@ -51,9 +51,7 @@ def update_player_data_cache() -> None:
     - Saves the updated cache to the file.
     - Reloads to remove the metadata fields.
     """
-    player_data_cache = CACHE_MANAGER.get_player_data_cache()
-    player_data_cache["Last_Updated_Season"] = 0
-    player_data_cache["Last_Updated_Week"] = 0
+    player_data_cache = CACHE_MANAGER.get_player_data_cache(for_update=True)
 
     # Dynamically determine the current season and week
     # according to Sleeper API/util logic.
@@ -572,3 +570,7 @@ def _get_all_rostered_players(
         )
 
     return rostered_players
+
+if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO)
+    update_player_data_cache()

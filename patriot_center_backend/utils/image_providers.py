@@ -82,40 +82,45 @@ def get_image_url(
         return get_current_manager_image_url(item, image_urls)
 
     # Player: identified by presence in players cache
-    if item in players_cache:
-        player_id = players_cache[item]["player_id"]
-        if player_id:
-            first_name = player_ids_cache[player_id]["first_name"]
-            last_name = player_ids_cache[player_id]["last_name"]
+    player = players_cache.get(item)
 
-            # Numeric IDs are individual players (use player headshots)
-            if player_id.isnumeric():
-                url = (
-                    f"https://sleepercdn.com/content/"
-                    f"nfl/players/{player_id}.jpg"
-                )
+    # player_id is ether the item or the player's player_id
+    player_id = item if not player else player.get("player_id")
 
-                if dictionary:
-                    returning_dict["image_url"] = url
-                    returning_dict["first_name"] = first_name
-                    returning_dict["last_name"] = last_name
-                    return deepcopy(returning_dict)
-                return url
+    if player_id:
 
-            # Non-numeric IDs are team defenses (use team logos)
-            else:
-                url = (
-                    f"https://sleepercdn.com/images/"
-                    f"team_logos/nfl/{player_id.lower()}.png"
-                )
+        first_name = player_ids_cache[player_id]["first_name"]
+        last_name = player_ids_cache[player_id]["last_name"]
 
-                if dictionary:
-                    returning_dict["image_url"] = url
-                    returning_dict["first_name"] = first_name
-                    returning_dict["last_name"] = last_name
-                    return deepcopy(returning_dict)
-                return url
+        # Numeric IDs are individual players (use player headshots)
+        if player_id.isnumeric():
+            url = (
+                f"https://sleepercdn.com/content/"
+                f"nfl/players/{player_id}.jpg"
+            )
 
+            if dictionary:
+                returning_dict["image_url"] = url
+                returning_dict["first_name"] = first_name
+                returning_dict["last_name"] = last_name
+                return deepcopy(returning_dict)
+            return url
+
+        # Non-numeric IDs are team defenses (use team logos)
+        else:
+            url = (
+                f"https://sleepercdn.com/images/"
+                f"team_logos/nfl/{player_id.lower()}.png"
+            )
+
+            if dictionary:
+                returning_dict["image_url"] = url
+                returning_dict["first_name"] = first_name
+                returning_dict["last_name"] = last_name
+                return deepcopy(returning_dict)
+            return url
+
+    # If no match, return empty string
     logger.warning(f"Could not find image URL for item: {item}")
     return ""
 

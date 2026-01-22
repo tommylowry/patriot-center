@@ -53,7 +53,7 @@ def update_starters_cache() -> None:
 
     for year in LEAGUE_IDS:
         last_updated_season = int(
-            starters_cache.get("Last_Updated_Season", '0')
+            starters_cache.get("Last_Updated_Season", "0")
         )
         last_updated_week = starters_cache.get("Last_Updated_Week", 0)
 
@@ -62,12 +62,11 @@ def update_starters_cache() -> None:
             if year < last_updated_season:
                 continue
             if last_updated_season < year:
-                starters_cache['Last_Updated_Week'] = 0  # Reset for new season
+                starters_cache["Last_Updated_Week"] = 0  # Reset for new season
 
         # Early exit if fully up to date (prevents unnecessary API calls).
         if last_updated_season == int(current_season):
             if last_updated_week == current_week:
-
                 # Week 17 is the final playoff week; assign placements.
                 if current_week == 17:
                     retroactively_assign_team_placement_for_player(year)
@@ -109,7 +108,6 @@ def update_starters_cache() -> None:
             }
 
         for week in weeks_to_update:
-
             starters_cache[str(year)][str(week)] = {}
 
             valid_options_cache[str(year)][str(week)] = {
@@ -127,18 +125,18 @@ def update_starters_cache() -> None:
             MANAGER_METADATA_MANAGER.cache_week_data(str(year), str(week))
 
             # Advance progress markers (enables resumable incremental updates).
-            starters_cache['Last_Updated_Season'] = str(year)
-            starters_cache['Last_Updated_Week'] = week
+            starters_cache["Last_Updated_Season"] = str(year)
+            starters_cache["Last_Updated_Week"] = week
             logger.info(
                 f"\tStarters cache updated internally "
                 f"for season {year}, week {week}"
             )
 
-
     CACHE_MANAGER.save_all_caches()
 
     # Reload to remove the metadata fields
     CACHE_MANAGER.get_starters_cache(force_reload=True)
+
 
 def _get_max_weeks(season: int, current_season: int, current_week: int) -> int:
     """Determine maximum playable weeks for a season.
@@ -161,6 +159,7 @@ def _get_max_weeks(season: int, current_season: int, current_week: int) -> int:
     elif season in [2019, 2020]:
         return 16
     return 17
+
 
 def _get_relevant_playoff_roster_ids(year: int, week: int) -> list[int]:
     """Return relevant playoff roster IDs for the given year and week.
@@ -204,11 +203,11 @@ def _get_relevant_playoff_roster_ids(year: int, week: int) -> list[int]:
         raise ValueError("Cannot get playoff roster IDs for week 17")
 
     for matchup in sleeper_response_playoff_bracket:
-        if isinstance(matchup, dict) and matchup.get('r') == round:
-            if matchup.get('p') == 5:
+        if isinstance(matchup, dict) and matchup.get("r") == round:
+            if matchup.get("p") == 5:
                 continue  # Skip consolation match
-            relevant_roster_ids.append(matchup['t1'])
-            relevant_roster_ids.append(matchup['t2'])
+            relevant_roster_ids.append(matchup["t1"])
+            relevant_roster_ids.append(matchup["t2"])
 
     if len(relevant_roster_ids) == 0:
         raise ValueError("Cannot get playoff roster IDs for the given week")
@@ -254,13 +253,13 @@ def _get_playoff_placement(year: int) -> dict[str, int]:
 
     for manager in sleeper_response_users:
         for roster in sleeper_response_rosters:
-            if manager['user_id'] == roster['owner_id']:
-                real_name = USERNAME_TO_REAL_NAME[manager['display_name']]
-                if roster['roster_id'] == championship['w']:
+            if manager["user_id"] == roster["owner_id"]:
+                real_name = USERNAME_TO_REAL_NAME[manager["display_name"]]
+                if roster["roster_id"] == championship["w"]:
                     placement[real_name] = 1
-                if roster['roster_id'] == championship['l']:
+                if roster["roster_id"] == championship["l"]:
                     placement[real_name] = 2
-                if roster['roster_id'] == third_place['w']:
+                if roster["roster_id"] == third_place["w"]:
                     placement[real_name] = 3
 
     return placement
@@ -304,13 +303,13 @@ def cache_starters_for_week(year: int, week: int) -> None:
 
     managers = sleeper_response_users
     for manager in managers:
-        if manager['display_name'] not in USERNAME_TO_REAL_NAME:
+        if manager["display_name"] not in USERNAME_TO_REAL_NAME:
             raise ValueError(
                 f"{manager['display_name']} not "
                 f"in {USERNAME_TO_REAL_NAME.keys()}"
             )
 
-        real_name = USERNAME_TO_REAL_NAME[manager['display_name']]
+        real_name = USERNAME_TO_REAL_NAME[manager["display_name"]]
 
         # Historical correction: In 2019 weeks 1-3, Tommy played under Cody's
         #   roster.
@@ -319,7 +318,7 @@ def cache_starters_for_week(year: int, week: int) -> None:
             real_name = "Tommy"
 
         roster_id = get_roster_id(
-            manager['user_id'],
+            manager["user_id"],
             year,
             sleeper_rosters_response=sleeper_response_rosters,
         )
@@ -351,11 +350,7 @@ def cache_starters_for_week(year: int, week: int) -> None:
             continue  # Skip non-playoff rosters in playoff weeks
 
         cache_starters_data(
-            year,
-            week,
-            sleeper_response_matchups,
-            roster_id,
-            real_name
+            year, week, sleeper_response_matchups, roster_id, real_name
         )
 
 
@@ -364,7 +359,7 @@ def cache_starters_data(
     week: int,
     matchups: list[dict[str, Any]],
     roster_id: int,
-    manager_name: str
+    manager_name: str,
 ) -> None:
     """Cache weekly starters data from matchup data.
 
@@ -382,7 +377,7 @@ def cache_starters_data(
     wk_starters = starters_cache[str(year)][str(week)]
 
     for matchup in matchups:
-        if matchup['roster_id'] == roster_id:
+        if matchup["roster_id"] == roster_id:
             wk_starters[manager_name] = {"Total_Points": 0.0}
 
             yr_lvl_options = valid_options_cache[str(year)]
@@ -405,14 +400,13 @@ def cache_starters_data(
             mgr_players = yr_lvl_options[str(week)][manager_name]["players"]
             mgr_positions = yr_lvl_options[str(week)][manager_name]["positions"]
 
-            for player_id in matchup['starters']:
-
+            for player_id in matchup["starters"]:
                 player_meta = player_ids_cache.get(player_id, {})
 
-                player_name = player_meta.get('full_name')
+                player_name = player_meta.get("full_name")
                 if not player_name:
                     continue  # Skip unknown player
-                player_position = player_meta.get('position')
+                player_position = player_meta.get("position")
                 if not player_position:
                     continue  # Skip if no position resolved
 
@@ -429,21 +423,20 @@ def cache_starters_data(
 
                 update_players_cache(player_id)
 
-                player_score = matchup['players_points'].get(player_id, 0.0)
+                player_score = matchup["players_points"].get(player_id, 0.0)
 
                 wk_starters[manager_name][player_name] = {
                     "points": player_score,
                     "position": player_position,
-                    "player_id": player_id
+                    "player_id": player_id,
                 }
 
                 wk_starters[manager_name]["Total_Points"] += player_score
 
             wk_starters[manager_name]["Total_Points"] = float(
-                Decimal(
-                    wk_starters[manager_name]["Total_Points"]).quantize(
-                        Decimal('0.01')
-                ).normalize()
+                Decimal(wk_starters[manager_name]["Total_Points"])
+                .quantize(Decimal("0.01"))
+                .normalize()
             )
             return
 
@@ -472,9 +465,9 @@ def retroactively_assign_team_placement_for_player(year: int) -> None:
 
     MANAGER_METADATA_MANAGER.set_playoff_placements(placements, str(year))
 
-    weeks = ['15', '16', '17']
+    weeks = ["15", "16", "17"]
     if year <= 2020:
-        weeks = ['14', '15', '16']
+        weeks = ["14", "15", "16"]
 
     need_to_print = True
     for week in weeks:
@@ -483,7 +476,6 @@ def retroactively_assign_team_placement_for_player(year: int) -> None:
                 manager_lvl = starters_cache[str(year)][week][manager]
                 for player in manager_lvl:
                     if player != "Total_Points":
-
                         # placement already assigned
                         if "placement" in manager_lvl[player]:
                             return
@@ -495,4 +487,4 @@ def retroactively_assign_team_placement_for_player(year: int) -> None:
                             )
                             need_to_print = False
 
-                        manager_lvl[player]['placement'] = placements[manager]
+                        manager_lvl[player]["placement"] = placements[manager]

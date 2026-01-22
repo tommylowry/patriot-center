@@ -570,7 +570,3 @@ def _get_all_rostered_players(
         )
 
     return rostered_players
-
-if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO)
-    update_player_data_cache()

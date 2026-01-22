@@ -164,13 +164,24 @@ def _get_max_weeks(season: int, current_season: int, current_week: int) -> int:
 
 
 def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
-    """Derive positional replacement thresholds for a week.
+    """Fetches replacement scores for the given season and week.
 
-    Thresholds (descending rank):
-        QB13, RB31, WR31, TE13
+    The replacement scores are determined by sorting the fantasy scores
+    for each position in descending order and taking the 13th score for
+    QB, TE, K, and DEF, and the 31st score for RB and WR.
+
+    Args:
+        season: The season to fetch replacement scores for.
+        week: The week to fetch replacement scores for.
 
     Returns:
-        dict: {QB, RB, WR, TE, byes}
+        A dictionary with the replacement scores for each position given
+            each fantasy year's scoring settings along with the number of byes
+            in the week.
+
+    Raises:
+        ValueError: If the Sleeper API call fails to retrieve the necessary
+            data.
     """
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
@@ -194,11 +205,11 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
         yearly_scoring_settings[yr] = scoring_settings["scoring_settings"]
 
     # Initialize the byes counter
-    final_week_scores = {
+    final_week_scores: dict[str, Any] = {
         "byes": 32
     }
+    first = True
     for yr in yearly_scoring_settings:
-
         week_scores = {
             "QB": [],   # List of QB scores for the week
             "RB": [],   # List of RB scores for the week
@@ -211,19 +222,30 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
         for player_id in week_data:
 
             if "TEAM_" in player_id:
-                if final_week_scores.get("byes") is None:
+                if first:
                     # TEAM_ entries represent real teams -> decrement byes
                     final_week_scores["byes"] -= 1
                 continue
 
+
+            # Zach Ertz traded from PHI to ARI causes his player ID to be weird
+            # sometimes
             if player_id not in player_ids_cache:
-                only_numeric = ''.join(filter(str.isdigit, player_id))
+                only_numeric = "".join(c for c in player_id if c.isnumeric())
                 if only_numeric in player_ids_cache:
                     player_name = player_ids_cache[only_numeric]["full_name"]
-                    print(f"Weird possibly traded player id encountered in replacement score calculation for season {season} week {week}, probably {player_name}, using {only_numeric} instead of {player_id}")
+                    logger.info(
+                        f"Encountered player id with numeric and non numeric "
+                        f"chars for season {yr} week {week} in sleeper's "
+                        f"output of player data, removing the non-numeric "
+                        f"chars and using {player_name}, player-id"
+                        f"{only_numeric} instead of {player_id}"
+                    )
                     player_id = only_numeric
                 else:
-                    print("Unknown numeric player id encountered in replacement score calculation for:", player_id)
+                    logger.warning(
+                        f"Unknown numeric player id encountered: {player_id}"
+                    )
                     continue
 
             # Get player information from PLAYER_IDS
@@ -239,34 +261,49 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
                 if "gp" not in player_data or player_data["gp"] == 0.0:
                     continue
 
-                player_score = calculate_player_score(player_data, yearly_scoring_settings[yr])
+                player_score = calculate_player_score(
+                    player_data, yearly_scoring_settings[yr]
+                )
                 # Add the player's points to the appropriate position list
                 week_scores[player_info["position"]].append(player_score)
+
+        # Set first to false after first iteration
+        # since we have the number of byes
+        first = False
 
         # Sort scores for each position in descending order
         for position in week_scores:
             week_scores[position].sort(reverse=True)
 
         # Determine the replacement scores for each position
-        final_week_scores[f"{yr}_scoring"] = {}
-        final_week_scores[f"{yr}_scoring"]["QB"] = week_scores["QB"][12]   # 13th QB
-        final_week_scores[f"{yr}_scoring"]["RB"] = week_scores["RB"][30]   # 31st RB
-        final_week_scores[f"{yr}_scoring"]["WR"] = week_scores["WR"][30]   # 31st WR
-        final_week_scores[f"{yr}_scoring"]["TE"] = week_scores["TE"][12]   # 13th TE
-        final_week_scores[f"{yr}_scoring"]["K"] = week_scores["K"][12]     # 13th K
-        final_week_scores[f"{yr}_scoring"]["DEF"] = week_scores["DEF"][12] # 13th DEF
-
-        # Add the final number of byes to the scores
-        final_week_scores["byes"] = byes
+        final_week_scores[f"{yr}_scoring"] = {
+            "QB": week_scores["QB"][12],   # 13th QB
+            "RB": week_scores["RB"][30],   # 31st RB
+            "WR": week_scores["WR"][30],   # 31st WR
+            "TE": week_scores["TE"][12],   # 13th TE
+            "K": week_scores["K"][12],     # 13th K
+            "DEF": week_scores["DEF"][12]  # 13th DEF
+        }
 
     return final_week_scores
 
-def _get_three_yr_avg(season, week):
-    """
-    Compute bye-aware 3-year rolling averages for replacement scores.
+def _get_three_yr_avg(season: int, week: int) -> dict[str, Any]:
+    """Compute the three-year average replacement scores for each position.
 
-    Monotonicity:
-        More byes => scores must not decrease (enforced by backward pass).
+    - Iterates through the past three years (and the current year)
+    - Determines the weeks to consider for the past year
+    - Processes each week in the determined range
+    - Computes the average replacement scores for each position and bye
+    count
+    - Ensures monotonicity: more byes should not lead to lower replacement
+    scores
+
+    Parameters:
+        season: The current season
+        week: The current week
+
+    Returns:
+        The updated current week's scores with three-year averages added
     """
     replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
 
@@ -287,6 +324,10 @@ def _get_three_yr_avg(season, week):
 
     # Iterate through the past three years (and the current year)
     for past_year in [season, season - 1, season - 2, season - 3]:
+
+        if str(past_year) not in replacement_score_cache:
+            continue
+
         # Determine the weeks to consider for the past year
         weeks = range(1, 18 if past_year <= 2020 else 19)
 
@@ -295,65 +336,77 @@ def _get_three_yr_avg(season, week):
             # Only include weeks completed this season
             weeks = range(1, week + 1)
 
-        # For the season three years ago, only consider from the current week onward
+        # For the season three years ago, only consider
+        # from the current week onward
         if past_year == season - 3:
-            # Mirror future-season portion to balance sample across bye distributions
+            # Mirror future-season portion to balance
+            # sample across bye distributions
             weeks = range(week, 18 if past_year <= 2020 else 19)
 
         # Process each week in the determined range
         for w in weeks:
             # Skip if the data for the past year or week is missing
-            if str(past_year) not in replacement_score_cache or str(w) not in replacement_score_cache[str(past_year)]:
+            if str(w) not in replacement_score_cache[str(past_year)]:
                 continue
 
             if w == week and past_year == season - 3:
-                # Skip the current week of the season three years ago as this week makes it 3 years
+                # Skip the current week of the season three years
+                # ago as this week makes it 3 years
                 continue
 
+            week_data = replacement_score_cache[str(past_year)][str(w)]
+
             # Get the number of byes for the past week
-            past_byes = replacement_score_cache[str(past_year)][str(w)]["byes"]
+            past_byes = week_data["byes"]
 
             # Process scores for each position (QB, RB, WR, TE)
             for past_position in three_yr_season_scores:
                 # Get the score for the position in the past week
-                past_score = replacement_score_cache[str(past_year)][str(w)][f"{season}_scoring"][past_position]
+                past_score = week_data[f"{season}_scoring"][past_position]
+
+                past_position_scores = three_yr_season_scores[past_position]
 
                 # Initialize the list for the bye count if it doesn't exist
-                if past_byes not in three_yr_season_scores[past_position]:
-                    three_yr_season_scores[past_position][past_byes] = []
+                if past_byes not in past_position_scores:
+                    past_position_scores[past_byes] = []
 
                 # Append the score to the list for the corresponding bye count
-                three_yr_season_scores[past_position][past_byes].append(past_score)
+                past_position_scores[past_byes].append(past_score)
 
     # Compute the average replacement scores for each position and bye count
     for past_position in three_yr_season_scores:
         for past_byes in three_yr_season_scores[past_position]:
             # Calculate the average score for the position and bye count
-            avg = sum(three_yr_season_scores[past_position][past_byes]) / len(
-                three_yr_season_scores[past_position][past_byes]
+            avg = (
+                sum(three_yr_season_scores[past_position][past_byes])
+                / len(three_yr_season_scores[past_position][past_byes])
             )
             three_yr_season_average[past_position][past_byes] = avg
 
     # Ensure monotonicity: more byes should not lead to lower replacement scores
-    # This ensures that the replacement scores are non-decreasing as the number of byes increases
-    list_of_byes = sorted(three_yr_season_average["QB"].keys())  # Use QB as a reference for bye counts
+    # This ensures that the replacement scores are non-decreasing as the
+    #   number of byes increases
+
+    # Use QB as a reference for bye counts
+    list_of_byes = sorted(three_yr_season_average["QB"].keys())
     for past_position in three_yr_season_average:
+        position_dict = three_yr_season_average[past_position]
         for i in range(len(list_of_byes) - 1, 0, -1):
-            # If the score for a higher bye count is greater than the score for a lower bye count,
-            # adjust the lower bye count's score to ensure monotonicity
-            if three_yr_season_average[past_position][list_of_byes[i]] > three_yr_season_average[past_position][
-                list_of_byes[i - 1]
-            ]:
-                three_yr_season_average[past_position][list_of_byes[i - 1]] = three_yr_season_average[past_position][
-                    list_of_byes[i]
-                ]
+            more_byes = list_of_byes[i]
+            less_byes = list_of_byes[i - 1]
+
+            # If the score for a higher bye count is greater than the score for
+            # a lower bye count, adjust the lower bye count's score to ensure
+            # monotonicity
+            if position_dict[more_byes] > position_dict[less_byes]:
+                position_dict[less_byes] = position_dict[more_byes]
 
     # Add the three-year averages to the current week's scores
     for past_position in three_yr_season_average:
         new_key = f"{past_position}_3yr_avg"
-        current_week_scores[new_key] = three_yr_season_average[past_position][byes]
+        current_week_scores[new_key] = (
+            three_yr_season_average[past_position][byes]
+        )
 
     # Return the updated current week's scores with three-year averages added
     return current_week_scores
-
-_fetch_replacement_score_for_week(2019, 11)

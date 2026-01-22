@@ -164,7 +164,7 @@ def get_roster_ids(year: int) -> dict[int, str]:
     return roster_ids
 
 
-def get_current_season_and_week() -> tuple[str, int]:
+def get_current_season_and_week() -> tuple[int, int]:
     """Retrieves the current season and week number from the Sleeper API.
 
     - The current season is determined by the current year and the latest
@@ -204,6 +204,8 @@ def get_current_season_and_week() -> tuple[str, int]:
             f"current season in sleeper's league/<league_id>"
             f"call for year {current_year}"
         )
+
+    current_season = int(current_season)
 
     # last_scored_leg is the latest completed/scored fantasy week
     # (0 if preseason)

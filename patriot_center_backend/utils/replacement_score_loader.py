@@ -81,15 +81,15 @@ def update_replacement_score_cache() -> None:
         # If the cache is already up-to-date for the
         # current season and week, stop processing
         if (
-            last_updated_season == int(current_season)
+            last_updated_season == current_season
             and last_updated_week == current_week
         ):
             break
 
-        max_weeks = _get_max_weeks(year, int(current_season), current_week)
+        max_weeks = _get_max_weeks(year, current_season, current_week)
 
         # Determine the range of weeks to update
-        if year in (int(current_season), last_updated_season):
+        if year in (current_season, last_updated_season):
             last_updated_week = replacement_score_cache.get(
                 "Last_Updated_Week", 0
             )

@@ -85,16 +85,16 @@ def update_player_data_cache() -> None:
         # If the cache is already up-to-date for the
         # current season and week, stop processing.
         if (
-            last_updated_season == int(current_season)
+            last_updated_season == current_season
             and last_updated_week == current_week
         ):
             return
 
         year = int(year)  # Ensure year is an integer
-        max_weeks = _get_max_weeks(year, int(current_season), current_week)
+        max_weeks = _get_max_weeks(year, current_season, current_week)
 
         # Determine the range of weeks to update.
-        if year in (int(current_season), last_updated_season):
+        if year in (current_season, last_updated_season):
             last_updated_week = player_data_cache.get("Last_Updated_Week", 0)
             weeks_to_update = range(last_updated_week + 1, max_weeks + 1)
         else:

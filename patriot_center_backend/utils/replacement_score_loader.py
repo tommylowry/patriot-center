@@ -205,9 +205,7 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
         yearly_scoring_settings[yr] = scoring_settings["scoring_settings"]
 
     # Initialize the byes counter
-    final_week_scores: dict[str, Any] = {
-        "byes": 32
-    }
+    final_week_scores: dict[str, Any] = {"byes": 32}
     first = True
     for yr in yearly_scoring_settings:
         week_scores = {
@@ -220,13 +218,11 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
         }
 
         for player_id in week_data:
-
             if "TEAM_" in player_id:
                 if first:
                     # TEAM_ entries represent real teams -> decrement byes
                     final_week_scores["byes"] -= 1
                 continue
-
 
             # Zach Ertz traded from PHI to ARI causes his player ID to be weird
             # sometimes
@@ -287,6 +283,7 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
 
     return final_week_scores
 
+
 def _get_three_yr_avg(season: int, week: int) -> dict[str, Any]:
     """Compute the three-year average replacement scores for each position.
 
@@ -324,7 +321,6 @@ def _get_three_yr_avg(season: int, week: int) -> dict[str, Any]:
 
     # Iterate through the past three years (and the current year)
     for past_year in [season, season - 1, season - 2, season - 3]:
-
         if str(past_year) not in replacement_score_cache:
             continue
 

@@ -5,14 +5,14 @@ from copy import deepcopy
 from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters.player_cache_updater import (
+    update_players_cache,
+)
 from patriot_center_backend.cache.updaters.processors.transactions.faab_processor import (  # noqa: E501
     add_faab_details_to_cache,
 )
 from patriot_center_backend.cache.updaters.processors.transactions.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
-)
-from patriot_center_backend.cache.updaters.player_cache_updater import (
-    update_players_cache,
 )
 
 logger = logging.getLogger(__name__)

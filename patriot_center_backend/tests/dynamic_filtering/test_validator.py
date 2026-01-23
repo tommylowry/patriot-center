@@ -20,13 +20,41 @@ class TestValidateDynamicFilterArgs:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.dynamic_filtering.validator._validate_year') as mock_validate_year, \
-             patch('patriot_center_backend.dynamic_filtering.validator._validate_week') as mock_validate_week, \
-             patch('patriot_center_backend.dynamic_filtering.validator._validate_manager') as mock_validate_manager, \
-             patch('patriot_center_backend.dynamic_filtering.validator._validate_position') as mock_validate_position, \
-             patch('patriot_center_backend.dynamic_filtering.validator._validate_player') as mock_validate_player:
+        """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `_validate_year`: `mock_validate_year`
+        - `_validate_week`: `mock_validate_week`
+        - `_validate_manager`: `mock_validate_manager`
+        - `_validate_position`: `mock_validate_position`
+        - `_validate_player`: `mock_validate_player`
+
+        Yields:
+                None
+        """
+        with (
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                "._validate_year"
+            ) as mock_validate_year,
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                "._validate_week"
+            ) as mock_validate_week,
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                "._validate_manager"
+            ) as mock_validate_manager,
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                "._validate_position"
+            ) as mock_validate_position,
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                "._validate_player"
+            ) as mock_validate_player,
+        ):
             self.mock_validate_year = mock_validate_year
             self.mock_validate_week = mock_validate_week
             self.mock_validate_manager = mock_validate_manager
@@ -38,94 +66,80 @@ class TestValidateDynamicFilterArgs:
     def test_raises_when_all_filters_provided(self):
         """Raises ValueError when all 5 filters are provided."""
         with pytest.raises(
-                ValueError,
-                match=
-                "Cannot filter by year, week, manager, position, and player"):
-            validate_dynamic_filter_args(year="2024",
-                                         week="1",
-                                         manager="Tommy",
-                                         position="QB",
-                                         player="Josh Allen")
-
-    def test_raises_when_week_without_year(self):
-        """Raises ValueError when week is provided without year."""
-        with pytest.raises(
-                ValueError,
-                match="Week filter cannot be applied without a Year filter"):
-            validate_dynamic_filter_args(year=None,
-                                         week="1",
-                                         manager=None,
-                                         position=None,
-                                         player=None)
+            ValueError,
+            match="Cannot filter by year, week, manager, position, and player",
+        ):
+            validate_dynamic_filter_args(
+                year="2024",
+                week="1",
+                manager="Tommy",
+                position="QB",
+                player="Josh Allen",
+            )
 
     def test_calls_validate_year(self):
         """Calls validate_year with the year argument."""
-        validate_dynamic_filter_args(year="2024",
-                                     week=None,
-                                     manager=None,
-                                     position=None,
-                                     player=None)
+        validate_dynamic_filter_args(
+            year="2024", week=None, manager=None, position=None, player=None
+        )
 
         self.mock_validate_year.assert_called_once_with("2024")
 
     def test_calls_validate_week(self):
         """Calls validate_week with week and year arguments."""
-        validate_dynamic_filter_args(year="2024",
-                                     week="1",
-                                     manager=None,
-                                     position=None,
-                                     player=None)
+        validate_dynamic_filter_args(
+            year="2024", week="1", manager=None, position=None, player=None
+        )
 
         self.mock_validate_week.assert_called_once_with("1", "2024")
 
     def test_calls_validate_manager(self):
         """Calls validate_manager with manager, year, and week arguments."""
-        validate_dynamic_filter_args(year="2024",
-                                     week="1",
-                                     manager="Tommy",
-                                     position=None,
-                                     player=None)
+        validate_dynamic_filter_args(
+            year="2024", week="1", manager="Tommy", position=None, player=None
+        )
 
-        self.mock_validate_manager.assert_called_once_with(
-            "Tommy", "2024", "1")
+        self.mock_validate_manager.assert_called_once_with("Tommy", "2024", "1")
 
     def test_calls_validate_position(self):
-        """Calls validate_position with position, year, week, and manager arguments."""
-        validate_dynamic_filter_args(year="2024",
-                                     week="1",
-                                     manager="Tommy",
-                                     position="QB",
-                                     player=None)
+        """Calls with position, year, week, and manager arguments."""
+        validate_dynamic_filter_args(
+            year="2024", week="1", manager="Tommy", position="QB", player=None
+        )
 
         self.mock_validate_position.assert_called_once_with(
-            "QB", "2024", "1", "Tommy")
+            "QB", "2024", "1", "Tommy"
+        )
 
     def test_calls_validate_player(self):
-        """Calls validate_player with player, year, week, manager, and position arguments."""
-        validate_dynamic_filter_args(year="2024",
-                                     week="1",
-                                     manager="Tommy",
-                                     position=None,
-                                     player="Josh Allen")
+        """Calls with player, year, week, manager, and position arguments."""
+        validate_dynamic_filter_args(
+            year="2024",
+            week="1",
+            manager="Tommy",
+            position=None,
+            player="Josh Allen",
+        )
 
         self.mock_validate_player.assert_called_once_with(
-            "Josh Allen", "2024", "1", "Tommy", None)
+            "Josh Allen", "2024", "1", "Tommy", None
+        )
 
     def test_calls_all_validators_with_no_filters(self):
         """Calls all validators even when no filters are provided."""
-        validate_dynamic_filter_args(year=None,
-                                     week=None,
-                                     manager=None,
-                                     position=None,
-                                     player=None)
+        validate_dynamic_filter_args(
+            year=None, week=None, manager=None, position=None, player=None
+        )
 
         self.mock_validate_year.assert_called_once_with(None)
         self.mock_validate_week.assert_called_once_with(None, None)
         self.mock_validate_manager.assert_called_once_with(None, None, None)
         self.mock_validate_position.assert_called_once_with(
-            None, None, None, None)
+            None, None, None, None
+        )
         self.mock_validate_player.assert_called_once_with(
-            None, None, None, None, None)
+            None, None, None, None, None
+        )
 
 
 class TestValidateYear:
@@ -133,14 +147,19 @@ class TestValidateYear:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch(
-                'patriot_center_backend.dynamic_filtering.validator.LEAGUE_IDS',
-            {
-                2024: "league_id_1",
-                2023: "league_id_2"
-            }):
+        """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `LEAGUE_IDS`: `{2024: "league_id_1", 2023: "league_id_2"}`
+
+        Yields:
+                None
+        """
+        with patch(
+            "patriot_center_backend.dynamic_filtering.validator.LEAGUE_IDS",
+            {2024: "league_id_1", 2023: "league_id_2"},
+        ):
             yield
 
     def test_passes_when_year_is_none(self):
@@ -162,22 +181,31 @@ class TestValidateWeek:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch(
-                'patriot_center_backend.dynamic_filtering.validator.CACHE_MANAGER.get_valid_options_cache'
-        ) as mock_get_valid_options_cache:
+        """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
+
+        Yields:
+                None
+        """
+        with (
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                ".CACHE_MANAGER.get_valid_options_cache"
+            ) as mock_get_valid_options_cache,
+        ):
             self.mock_valid_options_cache = {
-                "2024": {
-                    "weeks": ["1", "2", "3"]
-                },
-                "2023": {
-                    "weeks": ["1"]
-                }
+                "2024": {"weeks": ["1", "2", "3"]},
+                "2023": {"weeks": ["1"]},
             }
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
-            self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
+            self.mock_get_valid_options_cache.return_value = (
+                self.mock_valid_options_cache
+            )
 
             yield
 
@@ -199,28 +227,55 @@ class TestValidateWeek:
         with pytest.raises(ValueError, match="Invalid week"):
             _validate_week("3", "2023")
 
+    def test_raises_when_week_without_year(self):
+        """Raises ValueError when week is provided without year."""
+        with pytest.raises(
+            ValueError,
+            match="Week filter cannot be applied without a Year filter",
+        ):
+            _validate_week("1", None)
+
 
 class TestValidateManager:
     """Tests for _validate_manager function."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.dynamic_filtering.validator.CACHE_MANAGER.get_valid_options_cache') as mock_get_valid_options_cache, \
-             patch('patriot_center_backend.dynamic_filtering.validator.NAME_TO_MANAGER_USERNAME', {"Tommy": "username_1", "Anthony": "username_2"}):
+        """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
+        - `NAME_TO_MANAGER_USERNAME`:
+            `{"Tommy": "username_1", "Anthony": "username_2"}`
+
+        Yields:
+                None
+        """
+        with (
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                ".CACHE_MANAGER.get_valid_options_cache"
+            ) as mock_get_valid_options_cache,
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                ".NAME_TO_MANAGER_USERNAME",
+                {"Tommy": "username_1", "Anthony": "username_2"},
+            ),
+        ):
             self.mock_valid_options_cache = {
                 "2024": {
                     "managers": ["Tommy"],
                     "weeks": ["1"],
-                    "1": {
-                        "managers": ["Tommy"]
-                    }
+                    "1": {"managers": ["Tommy"]},
                 }
             }
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
-            self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
+            self.mock_get_valid_options_cache.return_value = (
+                self.mock_valid_options_cache
+            )
 
             yield
 
@@ -244,9 +299,7 @@ class TestValidateManager:
 
     def test_raises_when_manager_not_in_week(self):
         """Raises ValueError when manager not in week's managers."""
-        self.mock_valid_options_cache["2024"]["managers"] = [
-            "Tommy", "Anthony"
-        ]
+        self.mock_valid_options_cache["2024"]["managers"] = ["Tommy", "Anthony"]
         self.mock_valid_options_cache["2024"]["1"]["managers"] = ["Tommy"]
 
         with pytest.raises(ValueError, match="Invalid manager"):
@@ -258,10 +311,27 @@ class TestValidatePosition:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.dynamic_filtering.validator.CACHE_MANAGER.get_valid_options_cache') as mock_get_valid_options_cache, \
-             patch('patriot_center_backend.dynamic_filtering.validator._traverse_for_year_and_manager') as mock_traverse:
+        """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
+        - `_traverse_for_year_and_manager`: `mock_traverse`
+
+        Yields:
+                None
+        """
+        with (
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                ".CACHE_MANAGER.get_valid_options_cache"
+            ) as mock_get_valid_options_cache,
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                "._traverse_for_year_and_manager"
+            ) as mock_traverse,
+        ):
             self.mock_valid_options_cache = {
                 "2024": {
                     "positions": ["QB", "RB"],
@@ -270,15 +340,15 @@ class TestValidatePosition:
                     "1": {
                         "positions": ["QB"],
                         "managers": ["Tommy"],
-                        "Tommy": {
-                            "positions": ["QB"]
-                        }
-                    }
+                        "Tommy": {"positions": ["QB"]},
+                    },
                 }
             }
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
-            self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
+            self.mock_get_valid_options_cache.return_value = (
+                self.mock_valid_options_cache
+            )
 
             self.mock_traverse = mock_traverse
 
@@ -311,21 +381,16 @@ class TestValidatePosition:
             _validate_position("RB", "2024", "1", None)
 
     def test_calls_traverse_when_year_and_manager(self):
-        """Calls _traverse_for_year_and_manager when year and manager provided."""
+        """Calls when year and manager provided."""
         _validate_position("QB", "2024", None, "Tommy")
 
-        self.mock_traverse.assert_called_once_with("2024", "Tommy", "QB",
-                                                   "position")
+        self.mock_traverse.assert_called_once_with(
+            "2024", "Tommy", "QB", "position"
+        )
 
     def test_does_not_call_traverse_when_no_manager(self):
         """Does not call _traverse_for_year_and_manager when manager is None."""
         _validate_position("QB", "2024", None, None)
-
-        self.mock_traverse.assert_not_called()
-
-    def test_does_not_call_traverse_when_no_year(self):
-        """Does not call _traverse_for_year_and_manager when year is None."""
-        _validate_position("QB", None, None, "Tommy")
 
         self.mock_traverse.assert_not_called()
 
@@ -335,11 +400,32 @@ class TestValidatePlayer:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.dynamic_filtering.validator.CACHE_MANAGER.get_valid_options_cache') as mock_get_valid_options_cache, \
-             patch('patriot_center_backend.dynamic_filtering.validator.CACHE_MANAGER.get_players_cache') as mock_get_players_cache, \
-             patch('patriot_center_backend.dynamic_filtering.validator._traverse_for_year_and_manager') as mock_traverse:
+        """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
+        - `CACHE_MANAGER.get_players_cache`: `mock_get_players_cache`
+        - `_traverse_for_year_and_manager`: `mock_traverse`
+
+        Yields:
+                None
+        """
+        with (
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                ".CACHE_MANAGER.get_valid_options_cache"
+            ) as mock_get_valid_options_cache,
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                ".CACHE_MANAGER.get_players_cache"
+            ) as mock_get_players_cache,
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                "._traverse_for_year_and_manager"
+            ) as mock_traverse,
+        ):
             self.mock_valid_options_cache = {
                 "2024": {
                     "players": ["Josh Allen"],
@@ -348,23 +434,19 @@ class TestValidatePlayer:
                     "1": {
                         "players": ["Josh Allen"],
                         "managers": ["Tommy"],
-                        "Tommy": {
-                            "players": ["Josh Allen"]
-                        }
-                    }
+                        "Tommy": {"players": ["Josh Allen"]},
+                    },
                 }
             }
             self.mock_players_cache = {
-                "Josh Allen": {
-                    "position": "QB"
-                },
-                "Rico Dowdle": {
-                    "position": "RB"
-                }
+                "Josh Allen": {"position": "QB"},
+                "Rico Dowdle": {"position": "RB"},
             }
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
-            self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
+            self.mock_get_valid_options_cache.return_value = (
+                self.mock_valid_options_cache
+            )
 
             self.mock_get_players_cache = mock_get_players_cache
             self.mock_get_players_cache.return_value = self.mock_players_cache
@@ -399,7 +481,8 @@ class TestValidatePlayer:
     def test_raises_when_player_not_in_week(self):
         """Raises ValueError when player not in week's players."""
         self.mock_valid_options_cache["2024"]["players"] = [
-            "Josh Allen", "Rico Dowdle"
+            "Josh Allen",
+            "Rico Dowdle",
         ]
         self.mock_valid_options_cache["2024"]["1"]["players"] = ["Josh Allen"]
 
@@ -407,21 +490,16 @@ class TestValidatePlayer:
             _validate_player("Rico Dowdle", "2024", "1", None, None)
 
     def test_calls_traverse_when_year_and_manager(self):
-        """Calls _traverse_for_year_and_manager when year and manager provided."""
+        """Calls when year and manager provided."""
         _validate_player("Josh Allen", "2024", None, "Tommy", None)
 
-        self.mock_traverse.assert_called_once_with("2024", "Tommy",
-                                                   "Josh Allen", "player")
+        self.mock_traverse.assert_called_once_with(
+            "2024", "Tommy", "Josh Allen", "player"
+        )
 
     def test_does_not_call_traverse_when_no_manager(self):
         """Does not call _traverse_for_year_and_manager when manager is None."""
         _validate_player("Josh Allen", "2024", None, None, None)
-
-        self.mock_traverse.assert_not_called()
-
-    def test_does_not_call_traverse_when_no_year(self):
-        """Does not call _traverse_for_year_and_manager when year is None."""
-        _validate_player("Josh Allen", None, None, "Tommy", None)
 
         self.mock_traverse.assert_not_called()
 
@@ -431,45 +509,67 @@ class TestTraverseForYearAndManager:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch(
-                'patriot_center_backend.dynamic_filtering.validator.CACHE_MANAGER.get_valid_options_cache'
-        ) as mock_get_valid_options_cache:
+        """Setup common mocks for all tests.
 
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_valid_options_cache`:
+            `mock_get_valid_options_cache`
+
+        Yields:
+                None
+        """
+        with (
+            patch(
+                "patriot_center_backend.dynamic_filtering.validator"
+                ".CACHE_MANAGER.get_valid_options_cache"
+            ) as mock_get_valid_options_cache,
+        ):
             self.mock_valid_options_cache = {
                 "2024": {
                     "weeks": ["1", "2", "3"],
                     "1": {
                         "Tommy": {
                             "players": ["Josh Allen", "Stefon Diggs"],
-                            "positions": ["QB", "WR"]
+                            "positions": ["QB", "WR"],
                         },
                         "Anthony": {
                             "players": ["Lamar Jackson"],
-                            "positions": ["QB"]
-                        }
+                            "positions": ["QB"],
+                        },
                     },
                     "2": {
                         "Tommy": {
                             "players": ["Josh Allen", "James Cook"],
-                            "positions": ["QB", "RB"]
+                            "positions": ["QB", "RB"],
                         },
                         "Anthony": {
                             "players": ["Lamar Jackson", "Derrick Henry"],
-                            "positions": ["QB", "RB"]
-                        }
+                            "positions": ["QB", "RB"],
+                        },
                     },
                     "3": {
                         "Tommy": {
                             "players": ["Josh Allen"],
-                            "positions": ["QB"]
+                            "positions": ["QB"],
                         }
-                    }
-                }
+                    },
+                },
+                "2025": {
+                    "weeks": ["1"],
+                    "1": {
+                        "Tommy": {
+                            "players": ["Trey McBride"],
+                            "positions": ["TE"],
+                        }
+                    },
+                },
             }
 
             self.mock_get_valid_options_cache = mock_get_valid_options_cache
-            self.mock_get_valid_options_cache.return_value = self.mock_valid_options_cache
+            self.mock_get_valid_options_cache.return_value = (
+                self.mock_valid_options_cache
+            )
 
             yield
 
@@ -480,20 +580,34 @@ class TestTraverseForYearAndManager:
 
     def test_passes_when_player_found_in_only_one_week(self):
         """Does not raise when player found in only one week."""
-        _traverse_for_year_and_manager("2024", "Tommy", "Stefon Diggs",
-                                       "player")
+        _traverse_for_year_and_manager(
+            "2024", "Tommy", "Stefon Diggs", "player"
+        )
+
+    def test_passes_when_player_found_in_any_year(self):
+        """Does not raise when player found in any year."""
+        _traverse_for_year_and_manager(None, "Tommy", "Trey McBride", "player")
 
     def test_raises_when_player_not_found_in_any_week(self):
         """Raises ValueError when player not in any week for manager."""
         with pytest.raises(ValueError, match="Invalid player"):
-            _traverse_for_year_and_manager("2024", "Tommy", "Lamar Jackson",
-                                           "player")
+            _traverse_for_year_and_manager(
+                "2024", "Tommy", "Lamar Jackson", "player"
+            )
+
+    def test_raises_when_player_not_found_in_any_year(self):
+        """Raises ValueError when player not in any week for manager."""
+        with pytest.raises(ValueError, match="Invalid player"):
+            _traverse_for_year_and_manager(
+                None, "Tommy", "Washington Commanders", "player"
+            )
 
     def test_raises_when_player_with_wrong_manager(self):
-        """Raises ValueError when player exists but not for specified manager."""
+        """Raises ValueError when player exists but not for manager."""
         with pytest.raises(ValueError, match="Invalid player"):
-            _traverse_for_year_and_manager("2024", "Anthony", "Josh Allen",
-                                           "player")
+            _traverse_for_year_and_manager(
+                "2024", "Anthony", "Josh Allen", "player"
+            )
 
     # ===== Position validation =====
     def test_passes_when_position_found_in_week(self):
@@ -504,25 +618,36 @@ class TestTraverseForYearAndManager:
         """Does not raise when position found in only one week."""
         _traverse_for_year_and_manager("2024", "Tommy", "WR", "position")
 
+    def test_passes_when_position_found_in_any_year(self):
+        """Does not raise when position found in any year."""
+        _traverse_for_year_and_manager(None, "Tommy", "TE", "position")
+
     def test_raises_when_position_not_found_in_any_week(self):
         """Raises ValueError when position not in any week for manager."""
         with pytest.raises(ValueError, match="Invalid position"):
             _traverse_for_year_and_manager("2024", "Tommy", "TE", "position")
 
+    def test_raises_when_position_not_found_in_any_year(self):
+        """Raises ValueError when position not in any year for manager."""
+        with pytest.raises(ValueError, match="Invalid position"):
+            _traverse_for_year_and_manager(None, "Tommy", "K", "position")
+
     # ===== Edge cases =====
     def test_raises_when_manager_not_in_any_week(self):
         """Raises ValueError when manager not in any week."""
         with pytest.raises(ValueError, match="Invalid player"):
-            _traverse_for_year_and_manager("2024", "Owen", "Josh Allen",
-                                           "player")
+            _traverse_for_year_and_manager(
+                "2024", "Owen", "Josh Allen", "player"
+            )
 
     def test_raises_when_year_has_no_weeks(self):
         """Raises ValueError when year has no weeks."""
         self.mock_valid_options_cache["2023"] = {"weeks": []}
 
         with pytest.raises(ValueError, match="Invalid player"):
-            _traverse_for_year_and_manager("2023", "Tommy", "Josh Allen",
-                                           "player")
+            _traverse_for_year_and_manager(
+                "2023", "Tommy", "Josh Allen", "player"
+            )
 
     def test_raises_when_year_not_in_cache(self):
         """Raises ValueError when year not in cache."""

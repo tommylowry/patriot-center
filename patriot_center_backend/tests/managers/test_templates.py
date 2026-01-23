@@ -1,8 +1,5 @@
-"""
-Unit tests for templates module.
+"""Unit tests for templates module."""
 
-Tests template initialization with both good and bad scenarios.
-"""
 from copy import deepcopy
 from unittest.mock import patch
 
@@ -45,82 +42,99 @@ class TestInitializeFaabTemplate:
 
     @pytest.fixture(autouse=True)
     def setup(self):
-        """Setup common mocks for all tests."""
-        with patch('patriot_center_backend.managers.templates.CACHE_MANAGER.get_manager_cache') as mock_get_manager_cache:
-            
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.templates"
+                ".CACHE_MANAGER.get_manager_cache"
+            ) as mock_get_manager_cache,
+        ):
             self.mock_manager_cache = {}
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
-            
+
             yield
 
     def test_initialize_all_levels(self):
         """Test initializing FAAB template at all cache levels."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {}
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {}
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {}
-                            }
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {"transactions": {}},
+                    "years": {
+                        "2023": {
+                            "summary": {"transactions": {}},
+                            "weeks": {"1": {"transactions": {}}},
                         }
-                    }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
         week = "1"
-        
+
         initialize_faab_template(manager, year, week)
 
+        top_lvl = self.mock_manager_cache[manager]
+        yr_lvl = top_lvl["years"][year]
+        wk_lvl = yr_lvl["weeks"][week]
+
         # Top-level summary
-        assert "faab" in self.mock_manager_cache[manager]["summary"]["transactions"]
-        assert self.mock_manager_cache[manager]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 0
+        mgr_lvl_sum_trans = top_lvl["summary"]["transactions"]
+
+        assert "faab" in mgr_lvl_sum_trans
+        assert mgr_lvl_sum_trans["faab"]["total_lost_or_gained"] == 0
 
         # Yearly summary
-        assert "faab" in self.mock_manager_cache[manager]["years"][year]["summary"]["transactions"]
-        assert self.mock_manager_cache[manager]["years"][year]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 0
+        yr_lvl_sum_trans = yr_lvl["summary"]["transactions"]
+
+        assert "faab" in yr_lvl_sum_trans
+        assert yr_lvl_sum_trans["faab"]["total_lost_or_gained"] == 0
 
         # Weekly summary
-        assert "faab" in self.mock_manager_cache[manager]["years"][year]["weeks"][week]["transactions"]
-        assert "transaction_ids" in self.mock_manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
-        assert self.mock_manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"] == []
+        wk_lvl_trans = wk_lvl["transactions"]
+
+        assert "faab" in wk_lvl_trans
+        assert "transaction_ids" in wk_lvl_trans["faab"]
+        assert wk_lvl_trans["faab"]["transaction_ids"] == []
 
     def test_skip_existing_top_level_faab(self):
         """Test that existing top-level FAAB is not overwritten."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {
-                        "faab": {
-                            "total_lost_or_gained": 50,
-                            "players": {"Player A": {"num_bids_won": 1, "total_faab_spent": 25}}
-                        }
-                    }
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {}
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {}
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {
+                        "transactions": {
+                            "faab": {
+                                "total_lost_or_gained": 50,
+                                "players": {
+                                    "Player A": {
+                                        "num_bids_won": 1,
+                                        "total_faab_spent": 25,
+                                    }
+                                },
                             }
                         }
-                    }
+                    },
+                    "years": {
+                        "2023": {
+                            "summary": {"transactions": {}},
+                            "weeks": {"1": {"transactions": {}}},
+                        }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
@@ -129,35 +143,34 @@ class TestInitializeFaabTemplate:
         initialize_faab_template(manager, year, week)
 
         # Existing FAAB should be preserved
-        assert self.mock_manager_cache[manager]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 50
-        assert "Player A" in self.mock_manager_cache[manager]["summary"]["transactions"]["faab"]["players"]
+        mgr_summary = self.mock_manager_cache[manager]["summary"]
+        faab_summary = mgr_summary["transactions"]["faab"]
+
+        assert faab_summary["total_lost_or_gained"] == 50
+        assert "Player A" in faab_summary["players"]
 
     def test_skip_existing_yearly_faab(self):
         """Test that existing yearly FAAB is not overwritten."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {}
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {
-                                "faab": {
-                                    "total_lost_or_gained": 30,
-                                    "players": {}
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {"transactions": {}},
+                    "years": {
+                        "2023": {
+                            "summary": {
+                                "transactions": {
+                                    "faab": {
+                                        "total_lost_or_gained": 30,
+                                        "players": {},
+                                    }
                                 }
-                            }
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {}
-                            }
+                            },
+                            "weeks": {"1": {"transactions": {}}},
                         }
-                    }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
@@ -166,77 +179,88 @@ class TestInitializeFaabTemplate:
         initialize_faab_template(manager, year, week)
 
         # Existing yearly FAAB should be preserved
-        assert self.mock_manager_cache[manager]["years"][year]["summary"]["transactions"]["faab"]["total_lost_or_gained"] == 30
+        yr_summary = self.mock_manager_cache[manager]["years"][year]["summary"]
+
+        assert yr_summary["transactions"]["faab"]["total_lost_or_gained"] == 30
 
     def test_skip_existing_weekly_faab(self):
         """Test that existing weekly FAAB is not overwritten."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {}
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {}
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {
-                                    "faab": {
-                                        "total_lost_or_gained": 20,
-                                        "transaction_ids": ["trans1", "trans2"]
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {"transactions": {}},
+                    "years": {
+                        "2023": {
+                            "summary": {"transactions": {}},
+                            "weeks": {
+                                "1": {
+                                    "transactions": {
+                                        "faab": {
+                                            "total_lost_or_gained": 20,
+                                            "transaction_ids": [
+                                                "trans1",
+                                                "trans2",
+                                            ],
+                                        }
                                     }
                                 }
-                            }
+                            },
                         }
-                    }
+                    },
                 }
             }
-        })
+        )
 
         manager = "Manager 1"
         year = "2023"
         week = "1"
-        
+
         initialize_faab_template(manager, year, week)
 
         # Existing weekly FAAB should be preserved
-        assert self.mock_manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["total_lost_or_gained"] == 20
-        assert len(self.mock_manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"]) == 2
+        wk_lvl = self.mock_manager_cache[manager]["years"][year]["weeks"][week]
+
+        assert wk_lvl["transactions"]["faab"]["total_lost_or_gained"] == 20
+        assert len(wk_lvl["transactions"]["faab"]["transaction_ids"]) == 2
 
     def test_weekly_template_has_transaction_ids(self):
         """Test that weekly FAAB template includes transaction_ids."""
-        self.mock_manager_cache.update({
-            "Manager 1": {
-                "summary": {
-                    "transactions": {}
-                },
-                "years": {
-                    "2023": {
-                        "summary": {
-                            "transactions": {}
-                        },
-                        "weeks": {
-                            "1": {
-                                "transactions": {}
-                            }
+        self.mock_manager_cache.update(
+            {
+                "Manager 1": {
+                    "summary": {"transactions": {}},
+                    "years": {
+                        "2023": {
+                            "summary": {"transactions": {}},
+                            "weeks": {"1": {"transactions": {}}},
                         }
-                    }
+                    },
                 }
             }
-        })
-        
+        )
+
         manager = "Manager 1"
         year = "2023"
         week = "1"
 
         initialize_faab_template(manager, year, week)
 
-        # Weekly should have transaction_ids, but top-level and yearly should not
-        assert "transaction_ids" in self.mock_manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
-        assert "transaction_ids" not in self.mock_manager_cache[manager]["summary"]["transactions"]["faab"]
-        assert "transaction_ids" not in self.mock_manager_cache[manager]["years"][year]["summary"]["transactions"]["faab"]
+        # Weekly should have transaction_ids,
+        # but top-level and yearly should not
+        mgr_level = self.mock_manager_cache[manager]
+
+        assert (
+            "transaction_ids" in
+            mgr_level["years"][year]["weeks"][week]["transactions"]["faab"]
+        )
+        assert (
+            "transaction_ids" not in
+            mgr_level["summary"]["transactions"]["faab"]
+        )
+        assert (
+            "transaction_ids" not in
+            mgr_level["years"][year]["summary"]["transactions"]["faab"]
+        )
 
 
 class TestInitializeSummaryTemplates:
@@ -246,29 +270,33 @@ class TestInitializeSummaryTemplates:
         """Test template initialization with FAAB enabled."""
         templates = initialize_summary_templates(use_faab=True)
 
-        assert "yearly_summary_template" in templates
-        assert "weekly_summary_template" in templates
-        assert "weekly_summary_not_in_playoffs_template" in templates
-        assert "top_level_summary_template" in templates
-
-        # Check that FAAB is present
-        assert "faab" in templates["yearly_summary_template"]["transactions"]
-        assert "faab" in templates["weekly_summary_template"]["transactions"]
-        assert "faab" in templates["weekly_summary_not_in_playoffs_template"]["transactions"]
-        assert "faab" in templates["top_level_summary_template"]["transactions"]
+        for template in [
+            "yearly_summary_template",
+            "weekly_summary_template",
+            "weekly_summary_not_in_playoffs_template",
+            "top_level_summary_template",
+        ]:
+            assert template in templates
+            assert "faab" in templates[template]["transactions"]
 
         # Weekly FAAB should have transaction_ids
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["faab"]
+        assert (
+            "transaction_ids"
+            in (templates["weekly_summary_template"]["transactions"]["faab"])
+        )
 
     def test_with_faab_disabled(self):
         """Test template initialization with FAAB disabled."""
         templates = initialize_summary_templates(use_faab=False)
 
         # Check that FAAB is not present
-        assert "faab" not in templates["yearly_summary_template"]["transactions"]
-        assert "faab" not in templates["weekly_summary_template"]["transactions"]
-        assert "faab" not in templates["weekly_summary_not_in_playoffs_template"]["transactions"]
-        assert "faab" not in templates["top_level_summary_template"]["transactions"]
+        for template in [
+            "yearly_summary_template",
+            "weekly_summary_template",
+            "weekly_summary_not_in_playoffs_template",
+            "top_level_summary_template",
+        ]:
+            assert "faab" not in templates[template]["transactions"]
 
     def test_yearly_summary_structure(self):
         """Test yearly summary template structure."""
@@ -316,7 +344,9 @@ class TestInitializeSummaryTemplates:
     def test_weekly_not_in_playoffs_structure(self):
         """Test weekly not-in-playoffs template structure."""
         templates = initialize_summary_templates(use_faab=True)
-        weekly_not_playoffs = templates["weekly_summary_not_in_playoffs_template"]
+        weekly_not_playoffs = (
+            templates["weekly_summary_not_in_playoffs_template"]
+        )
 
         # Should have empty matchup data
         assert "matchup_data" in weekly_not_playoffs
@@ -324,7 +354,9 @@ class TestInitializeSummaryTemplates:
 
         # But still have transaction tracking
         assert "transactions" in weekly_not_playoffs
-        assert "transaction_ids" in weekly_not_playoffs["transactions"]["trades"]
+        assert (
+            "transaction_ids" in (weekly_not_playoffs["transactions"]["trades"])
+        )
 
     def test_top_level_summary_structure(self):
         """Test top-level summary template structure."""
@@ -340,25 +372,29 @@ class TestInitializeSummaryTemplates:
         assert "placement" in top_level["overall_data"]
         assert "playoff_appearances" in top_level["overall_data"]
         assert isinstance(top_level["overall_data"]["placement"], dict)
-        assert isinstance(top_level["overall_data"]["playoff_appearances"], list)
+        assert isinstance(
+            top_level["overall_data"]["playoff_appearances"], list
+        )
 
     def test_matchup_data_initial_values(self):
         """Test that matchup data has correct initial values."""
         templates = initialize_summary_templates(use_faab=False)
         yearly = templates["yearly_summary_template"]
 
+        yr_ovr_matchup = yearly["matchup_data"]["overall"]
+
         # Check integer fields
-        assert yearly["matchup_data"]["overall"]["total_matchups"]["total"] == 0
-        assert yearly["matchup_data"]["overall"]["wins"]["total"] == 0
-        assert yearly["matchup_data"]["overall"]["losses"]["total"] == 0
-        assert yearly["matchup_data"]["overall"]["ties"]["total"] == 0
+        assert yr_ovr_matchup["total_matchups"]["total"] == 0
+        assert yr_ovr_matchup["wins"]["total"] == 0
+        assert yr_ovr_matchup["losses"]["total"] == 0
+        assert yr_ovr_matchup["ties"]["total"] == 0
 
         # Check float fields
-        assert yearly["matchup_data"]["overall"]["points_for"]["total"] == 0.0
-        assert yearly["matchup_data"]["overall"]["points_against"]["total"] == 0.0
+        assert yr_ovr_matchup["points_for"]["total"] == 0.0
+        assert yr_ovr_matchup["points_against"]["total"] == 0.0
 
         # Check opponent dicts are empty
-        assert yearly["matchup_data"]["overall"]["wins"]["opponents"] == {}
+        assert yr_ovr_matchup["wins"]["opponents"] == {}
 
     def test_transaction_data_initial_values(self):
         """Test that transaction data has correct initial values."""
@@ -376,25 +412,31 @@ class TestInitializeSummaryTemplates:
         """Test that modifying one template doesn't affect others."""
         templates = initialize_summary_templates(use_faab=True)
 
+        yearly = templates["yearly_summary_template"]["matchup_data"]
+        weekly = templates["weekly_summary_template"]["matchup_data"]
+        top_level = templates["top_level_summary_template"]["matchup_data"]
+
         # Modify yearly template
-        templates["yearly_summary_template"]["matchup_data"]["overall"]["wins"]["total"] = 100
+        yearly["overall"]["wins"]["total"] = 100
 
         # Weekly should still be 0
-        assert templates["weekly_summary_template"]["matchup_data"]["points_for"] == 0.0
+        assert weekly["points_for"] == 0.0
 
         # Top-level should still be 0
-        assert templates["top_level_summary_template"]["matchup_data"]["overall"]["wins"]["total"] == 0
+        assert top_level["overall"]["wins"]["total"] == 0
 
     def test_nested_structure_isolation(self):
         """Test that nested structures are properly isolated."""
         templates = initialize_summary_templates(use_faab=True)
 
+        yearly = templates["yearly_summary_template"]["matchup_data"]
+
         # Modify regular_season wins
-        templates["yearly_summary_template"]["matchup_data"]["regular_season"]["wins"]["total"] = 10
+        yearly["regular_season"]["wins"]["total"] = 10
 
         # Playoffs and overall should still be 0
-        assert templates["yearly_summary_template"]["matchup_data"]["playoffs"]["wins"]["total"] == 0
-        assert templates["yearly_summary_template"]["matchup_data"]["overall"]["wins"]["total"] == 0
+        assert yearly["playoffs"]["wins"]["total"] == 0
+        assert yearly["overall"]["wins"]["total"] == 0
 
     def test_faab_structure_in_transactions(self):
         """Test FAAB structure when enabled."""
@@ -412,17 +454,24 @@ class TestInitializeSummaryTemplates:
         """Test that transaction_ids only appear in weekly templates."""
         templates = initialize_summary_templates(use_faab=True)
 
+        key = "transaction_ids"
+
+        weekly = templates["weekly_summary_template"]
+        yearly = templates["yearly_summary_template"]
+        top_level = templates["top_level_summary_template"]
+
         # Weekly should have transaction_ids
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["trades"]
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["adds"]
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["drops"]
-        assert "transaction_ids" in templates["weekly_summary_template"]["transactions"]["faab"]
+        assert key in weekly["transactions"]["trades"]
+        assert key in weekly["transactions"]["adds"]
+        assert key in weekly["transactions"]["drops"]
+        assert key in weekly["transactions"]["faab"]
 
         # Yearly should not have transaction_ids
-        assert "transaction_ids" not in templates["yearly_summary_template"]["transactions"]["trades"]
-        assert "transaction_ids" not in templates["yearly_summary_template"]["transactions"]["adds"]
-        assert "transaction_ids" not in templates["yearly_summary_template"]["transactions"]["drops"]
-        assert "transaction_ids" not in templates["yearly_summary_template"]["transactions"]["faab"]
+        assert key not in yearly["transactions"]["trades"]
+        assert key not in yearly["transactions"]["adds"]
+        assert key not in yearly["transactions"]["drops"]
+        assert key not in yearly["transactions"]["faab"]
 
+        top_level = templates["top_level_summary_template"]
         # Top-level should not have transaction_ids
-        assert "transaction_ids" not in templates["top_level_summary_template"]["transactions"]["trades"]
+        assert key not in top_level["transactions"]["trades"]

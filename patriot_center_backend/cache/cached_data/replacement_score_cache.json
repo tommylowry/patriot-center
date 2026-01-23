@@ -1,6 +1,4 @@
 {
-    "Last_Updated_Season": "2025",
-    "Last_Updated_Week": 17,
     "2016": {
         "1": {
             "byes": 0,
@@ -5192,5 +5190,7 @@
             "K_3yr_avg": 6.051724137931035,
             "DEF_3yr_avg": 11.461724137931034
         }
-    }
+    },
+    "Last_Updated_Season": "2025",
+    "Last_Updated_Week": 17
 }

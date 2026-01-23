@@ -1,15 +1,5 @@
-"""
-Configuration constants for the Patriot Center backend.
+"""Configuration constants for the Patriot Center backend."""
 
-This module defines all static configuration values used throughout the application:
-- League identifiers mapped to seasons
-- Username mappings for display purposes
-- API endpoints and URLs
-- File paths for cache storage
-- NFL team defense metadata
-
-All constants are loaded at import time and referenced across services and utilities.
-"""
 
 # Map year to the league ids (Sleeper league IDs for each fantasy season)
 LEAGUE_IDS = {
@@ -24,24 +14,24 @@ LEAGUE_IDS = {
 
 # Map usernames to real name for display
 USERNAME_TO_REAL_NAME = {
-    "aalvaa":          "Anthony",
-    "bbennick":        "Benz",
+    "aalvaa": "Anthony",
+    "bbennick": "Benz",
     "BilliamBlowland": "Billiam",
-    "senorpapi":       "Christian",
-    "codestoppable":   "Cody",
-    "dpereira7":       "Davey",
-    "BrownBoyLove":    "Dheeraj",
-    "jkjackson16":     "Jack",
-    "Jrazzam":         "Jay",
-    "lukehellyer":     "Luke",
-    "mitchwest":       "Mitch",
-    "owen0010":        "Owen",
-    "parkdaddy":       "Parker",
-    "Siemonster":      "Sach",
-    "samprice18":      "Sam",
-    "charris34":       "Soup",
-    "tommylowry":      "Tommy",
-    "bispity":         "Ty"
+    "senorpapi": "Christian",
+    "codestoppable": "Cody",
+    "dpereira7": "Davey",
+    "BrownBoyLove": "Dheeraj",
+    "jkjackson16": "Jack",
+    "Jrazzam": "Jay",
+    "lukehellyer": "Luke",
+    "mitchwest": "Mitch",
+    "owen0010": "Owen",
+    "parkdaddy": "Parker",
+    "Siemonster": "Sach",
+    "samprice18": "Sam",
+    "charris34": "Soup",
+    "tommylowry": "Tommy",
+    "bispity": "Ty",
 }
 
 # Invert the MANAGER_USERNAME_TO_REAL_NAME mapping
@@ -219,5 +209,5 @@ TEAM_DEFENSE_NAMES = {
         "full_name": "Washington Commanders",
         "first_name": "Washington",
         "last_name": "Commanders",
-    }
+    },
 }

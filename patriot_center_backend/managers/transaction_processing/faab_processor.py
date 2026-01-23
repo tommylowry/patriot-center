@@ -1,13 +1,24 @@
+"""Process FAAB spending and trading details."""
+
+import logging
+from typing import Literal
+
 from patriot_center_backend.cache import CACHE_MANAGER
 
+logger = logging.getLogger(__name__)
 
-def add_faab_details_to_cache(year: str, week: str,
-                              transaction_type: str, manager: str,
-                              player_name: str, faab_amount: int,
-                              transaction_id: str,
-                              trade_partner: str = None) -> None:
-    """
-    Update cache with FAAB spending and trading details.
+
+def add_faab_details_to_cache(
+    year: str,
+    week: str,
+    transaction_type: Literal["waiver", "free_agent", "commissioner", "trade"],
+    manager: str,
+    player_name: str,
+    faab_amount: int,
+    transaction_id: str,
+    trade_partner: str | None = None,
+) -> None:
+    """Update cache with FAAB spending and trading details.
 
     Handles two types of FAAB transactions:
     1. Waiver/free agent: FAAB spent on player acquisitions
@@ -24,22 +35,32 @@ def add_faab_details_to_cache(year: str, week: str,
         transaction_type: "waiver", "free_agent", "commissioner", or "trade"
         manager: Manager name
         player_name: Player name (for waivers) or "FAAB" (for trades)
-        faab_amount: Amount of FAAB (positive for spent/sent, negative for received in trade)
+        faab_amount: Amount of FAAB (positive for spent/sent, negative for
+            received in trade)
         transaction_id: Unique transaction ID
         trade_partner: Other manager in FAAB trade (required for trades)
     """
-    if transaction_type == "trade" and trade_partner is None:
-        print("Trade transaction missing trade partner for FAAB processing:", transaction_type, manager, player_name, faab_amount, transaction_id)
+    if transaction_type == "trade" and not trade_partner:
+        logger.warning(
+            f"Trade transaction missing trade partner for :"
+            f"FAAB processing: transaction_id: {transaction_id}"
+        )
         return
-    
+
     manager_cache = CACHE_MANAGER.get_manager_cache()
 
-    if transaction_id in manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]["transaction_ids"]:
-        return # Waiver already processed for this week
-    
-    top_level_summary = manager_cache[manager]["summary"]["transactions"]["faab"]
-    yearly_summary    = manager_cache[manager]["years"][year]["summary"]["transactions"]["faab"]
-    weekly_summary    = manager_cache[manager]["years"][year]["weeks"][week]["transactions"]["faab"]
+    mgr = manager_cache[manager]
+    yr_lvl = mgr["years"][year]
+
+    if (
+        transaction_id
+        in yr_lvl["weeks"][week]["transactions"]["faab"]["transaction_ids"]
+    ):
+        return  # Waiver already processed for this week
+
+    top_level_summary = mgr["summary"]["transactions"]["faab"]
+    yearly_summary = yr_lvl["summary"]["transactions"]["faab"]
+    weekly_summary = yr_lvl["weeks"][week]["transactions"]["faab"]
     summaries = [top_level_summary, yearly_summary, weekly_summary]
 
     if transaction_type in ["free_agent", "waiver", "commissioner"]:
@@ -51,36 +72,43 @@ def add_faab_details_to_cache(year: str, week: str,
             # Process player-specific FAAB amounts
             if player_name not in summary["players"]:
                 summary["players"][player_name] = {
-                    'num_bids_won': 0,
-                    'total_faab_spent': 0
+                    "num_bids_won": 0,
+                    "total_faab_spent": 0,
                 }
-            summary["players"][player_name]['num_bids_won']     += 1
-            summary["players"][player_name]['total_faab_spent'] += faab_amount
-    
+            summary["players"][player_name]["num_bids_won"] += 1
+            summary["players"][player_name]["total_faab_spent"] += faab_amount
+
     elif transaction_type == "trade":
         # Add trade FAAB details in all summaries
         for summary in summaries:
             if faab_amount > 0:
                 # Acquired FAAB
                 summary["total_lost_or_gained"] += faab_amount
-                summary["acquired_from"]["total"] += faab_amount
-                
-                if trade_partner not in summary["acquired_from"]["trade_partners"]:
-                    summary["acquired_from"]["trade_partners"][trade_partner] = 0
-                summary["acquired_from"]["trade_partners"][trade_partner] += faab_amount
-            
+
+                acq_from = summary["acquired_from"]
+                acq_from["total"] += faab_amount
+
+                if trade_partner not in acq_from["trade_partners"]:
+                    acq_from["trade_partners"][trade_partner] = 0
+                acq_from["trade_partners"][trade_partner] += faab_amount
+
             # Traded FAAB away
             if faab_amount < 0:
                 summary["total_lost_or_gained"] += faab_amount
-                summary["traded_away"]["total"] -= faab_amount
-                
-                if trade_partner not in summary["traded_away"]["trade_partners"]:
-                    summary["traded_away"]["trade_partners"][trade_partner] = 0
-                summary["traded_away"]["trade_partners"][trade_partner] -= faab_amount
-    
+
+                traded_away = summary["traded_away"]
+
+                traded_away["total"] -= faab_amount
+                if trade_partner not in traded_away["trade_partners"]:
+                    traded_away["trade_partners"][trade_partner] = 0
+                traded_away["trade_partners"][trade_partner] -= faab_amount
+
     else:
-        print("Unexpected transaction type for FAAB processing:", transaction_type)
+        logger.warning(
+            f"Unexpected transaction type "
+            f"for FAAB processing: {transaction_type}"
+        )
         return
-    
+
     # Finally, add transaction ID to weekly summary to avoid double counting
     weekly_summary["transaction_ids"].append(transaction_id)

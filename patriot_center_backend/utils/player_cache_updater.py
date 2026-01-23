@@ -1,32 +1,36 @@
 """This module provides utility functions for updating the players cache."""
 
-from typing import Any, Dict, List
+import logging
+from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.utils.slug_utils import slugify
 
+logger = logging.getLogger(__name__)
+
 
 def update_players_cache(player_id: str) -> None:
-    """
-    Updates the players cache by adding a new player if the player_id is present in the player_ids cache.
+    """Updates the players cache if applicable.
+
+    This function updates the players cache by adding a new player if
+        the player_id is present in the player_ids cache.
 
     Args:
-        player_id (str): The ID of the player to add to the cache.
+        player_id: The ID of the player to add to the cache.
 
     Returns:
         None
     """
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-    players_cache    = CACHE_MANAGER.get_players_cache()
+    players_cache = CACHE_MANAGER.get_players_cache()
 
     player_name = player_ids_cache.get(player_id, {}).get("full_name", "")
-    
-    if player_name == "":
-        print(f"WARNING: player_id {player_id} not found in player_ids")
+
+    if not player_name:
+        logger.warning(f"player_id {player_id} not found in player_ids")
         return
 
     if player_name not in players_cache:
-
         player_meta = player_ids_cache.get(player_id, {})
 
         players_cache[player_meta["full_name"]] = {
@@ -36,26 +40,27 @@ def update_players_cache(player_id: str) -> None:
             "position": player_meta.get("position", ""),
             "team": player_meta.get("team", ""),
             "slug": slugify(player_meta.get("full_name", "")),
-            "player_id": player_id
+            "player_id": player_id,
         }
 
-def update_players_cache_with_list(item: List[Dict[str, Any]]):
-    """
-    Updates the players cache by adding a new player for each player_id in the item parameter.
+
+def update_players_cache_with_list(item: list[dict[str, Any]]) -> None:
+    """Updates the players cache with a list of matchup dictionaries.
+
+    This function updates the players cache by adding new players from a
+        list of matchup dictionaries if the player_ids are present in the
+        player_ids cache and the players are not already in the players cache.
 
     Args:
-        item (List[Dict[str, Any]]): A list of matchup dictionaries, each containing a 'players' key with a list of player_ids.
-
-    Returns:
-        None
-
-    Raises:
-        None
+        item: A list of matchup dictionaries,
+            each containing a 'players' key with a list of player_ids.
     """
     if not isinstance(item, list):
-        print("WARNING: Item inputted into update_players_cache_with_list is not a list.")
+        logging.warning(
+            "Item inputted into update_players_cache_with_list is not a list."
+        )
         return
-    
+
     called = False
     for matchup in item:
         if not isinstance(matchup, dict):
@@ -65,4 +70,7 @@ def update_players_cache_with_list(item: List[Dict[str, Any]]):
             update_players_cache(player_id)
 
     if not called:
-        print("WARNING: Item inputted into update_players_cache_with_list did not have a matchup dict with players.")
+        logger.warning(
+            "Item inputted into update_players_cache_with_list"
+            "did not have a matchup dict with players."
+        )

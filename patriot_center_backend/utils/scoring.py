@@ -1,33 +1,30 @@
-"""
-This module provides utility functions for calculating player scores based on
-raw stats and scoring settings.
-"""
+"""This module provides utility functions for calculating player scores."""
 
-from typing import Dict
+from collections.abc import Mapping
 
 
-def calculate_player_score(player_data: Dict[str, (int | float)], scoring_settings: Dict[str, (int | float)]) -> float:
-    """
-    Calculate player score based on raw stats and scoring settings.
+def calculate_player_score(
+    player_data: Mapping[str, int | float],
+    scoring_settings: Mapping[str, int | float],
+) -> float:
+    """Calculate player score based on raw stats and scoring settings.
 
-    This function takes in a dictionary of raw stats for a player and a dictionary
-    of scoring settings for a league, and calculates the player's score based on
-    the scoring settings.
+    This function takes in a dictionary of raw stats for a player and a
+    dictionary of scoring settings for a league, and calculates the
+    player's score based on the scoring settings.
 
     Args:
-        player_data (dict): Raw stats for a player. The dictionary should contain
-            keys for each stat type (e.g. 'passing_yards', 'rushing_yards', etc.)
-            and values for the number of units of each stat type.
-        scoring_settings (dict): Scoring settings for a league. The dictionary should
-            contain keys for each stat type and values for the points per unit for each
-            stat type.
+        player_data: Raw stats for a player. The dictionary should
+            contain keys for each stat type and values for the number of
+            units of each stat type. This dictionary should contain raw stats
+            for each stat type.
+        scoring_settings: Scoring settings for a league. The dictionary
+            should contain keys for each stat type and values for the points
+            per unit for each stat type. This dictionary should contain points
+            per unit for each stat type.
 
     Returns:
-        float: Calculated player score. The score is rounded to 2 decimal places.
-
-    Notes:
-        - The scoring settings dictionary should contain points per unit for each stat type.
-        - The player data dictionary should contain raw stats for each stat type.
+        Calculated player score rounded to 2 decimal places.
     """
     total_score = 0.0
     for stat_key, stat_value in player_data.items():

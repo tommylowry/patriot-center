@@ -1,0 +1,23 @@
+[flake8]
+max-line-length = 80
+select = E1,E2,E501,DAR
+# E1xx rules are indentation errors including:
+# E101 indentation contains mixed spaces and tabs
+# E111 indentation is not a multiple of 4
+# E112 expected an indented block
+# E113 unexpected indentation
+# E114 indentation is not a multiple of 4 (comment)
+# E115 expected an indented block (comment)
+# E116 unexpected indentation (comment)
+# E117 over-indented
+# E2xx rules are whitespace errors including:
+# E201 whitespace after '('
+# E202 whitespace before ')'
+# E203 whitespace before ':'
+# E211 whitespace before '('
+# E221 multiple spaces before operator
+# E222 multiple spaces after operator
+# E225 missing whitespace around operator
+# E231 missing whitespace after ','
+# E241 multiple spaces after ','
+# etc.

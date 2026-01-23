@@ -1,7 +1,5 @@
 """Functions for finding valid filtering options based on selected criteria."""
 
-from typing import Dict, List
-
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.dynamic_filtering.find_valid_options import (
     find_valid_managers,
@@ -10,7 +8,9 @@ from patriot_center_backend.dynamic_filtering.find_valid_options import (
     find_valid_years,
 )
 from patriot_center_backend.dynamic_filtering.formatter import format_output
-from patriot_center_backend.dynamic_filtering.validator import validate_dynamic_filter_args
+from patriot_center_backend.dynamic_filtering.validator import (
+    validate_dynamic_filter_args,
+)
 
 
 def filter(
@@ -19,7 +19,7 @@ def filter(
     manager: str | None = None,
     position: str | None = None,
     player: str | None = None,
-) -> Dict[str, List[str]]:
+) -> dict[str, list[str]]:
     """Returns valid filter options given current selections.
 
     Args:
@@ -33,7 +33,6 @@ def filter(
         Dictionary with keys "years", "weeks", "managers", and "positions",
             each containing a list of valid string options.
     """
-
     validate_dynamic_filter_args(year, week, manager, position, player)
 
     players_cache = CACHE_MANAGER.get_players_cache()
@@ -42,7 +41,7 @@ def filter(
     positions = set()
     if player:
         position = players_cache[player]["position"]
-        positions = set([position])
+        positions.add(position)
 
     # Each function returns a set of valid options for the given criteria
     years = find_valid_years(manager, position, player)

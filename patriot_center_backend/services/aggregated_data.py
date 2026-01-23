@@ -1,5 +1,4 @@
-"""
-Aggregation utilities over starters data.
+"""Aggregation utilities over starters data.
 
 Exposes helpers to:
 - Aggregate totals across weeks/seasons for a manager by player.
@@ -15,39 +14,49 @@ Notes:
 - Results are simple dicts suitable for JSON responses.
 - Totals are rounded to two decimals via Decimal normalization (ffWAR to 3).
 """
+
+import logging
 from decimal import Decimal
 from functools import lru_cache
+from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.services.managers import fetch_starters
-from patriot_center_backend.utils import helpers
+from patriot_center_backend.utils.helpers import get_player_id
+from patriot_center_backend.utils.image_providers import get_image_url
+
+logger = logging.getLogger(__name__)
 
 
-def fetch_player_manager_aggregation(player, manager, season=None, week=None):
-    """
-    Aggregate metrics for a specific player-manager pairing.
+def fetch_player_manager_aggregation(
+    player: str,
+    manager: str,
+    season: str | None = None,
+    week: str | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Aggregate metrics for a specific player-manager pairing.
 
     Args:
-        player (str): Player name key.
-        manager (str): Manager username key.
-        season (int | None): Optional season restriction.
-        week (int | None): Optional week restriction.
+        player: Player name key.
+        manager: Manager username key.
+        season: Optional season restriction.
+        week: Optional week restriction.
 
     Returns:
-        dict: {total_points, num_games_started, ffWAR, position}
-              Empty if no appearances found in filtered slice.
+        A dictionary containing the player-manager aggregation.
     """
-    player_data = fetch_aggregated_managers(player=player, season=season, week=week)
+    player_data = fetch_aggregated_managers(player, season=season, week=week)
     if manager not in player_data:
         return {}
-    
-    return {
-        manager: player_data[manager]
-    }
 
-def fetch_aggregated_players(manager=None, season=None, week=None):
-    """
-    Aggregate player metrics for a given manager.
+    return {manager: player_data[manager]}
+
+def fetch_aggregated_players(
+    manager: str | None = None,
+    season: str | None = None,
+    week: int | None = None,
+) -> dict[str, dict[str, Any]]:
+    """Aggregate player metrics for a given manager.
 
     Traverses nested structure and collates:
     - total_points (rounded per update)
@@ -56,12 +65,13 @@ def fetch_aggregated_players(manager=None, season=None, week=None):
     - position (taken from first occurrence)
 
     Args:
-        manager (str | None): Target manager. Required for meaningful output.
-        season (int | None): Optional season restriction.
-        week (int | None): Optional week restriction.
+        manager: Target manager. Required for meaningful output.
+        season: Optional season restriction.
+        week: Optional week restriction.
 
     Returns:
-        dict: {player: {total_points, num_games_started, ffWAR, position}}
+        A dictionary containing player metrics for the given manager or all
+        managers if no manager provided.
     """
     raw_dict = fetch_starters(manager=manager, season=season, week=week)
     players_dict_to_return = {}
@@ -70,38 +80,52 @@ def fetch_aggregated_players(manager=None, season=None, week=None):
         return players_dict_to_return
 
     for year, weeks in raw_dict.items():
-        for week, managers in weeks.items():
-            for manager, manager_data in managers.items():
+        for wk, managers in weeks.items():
+            for mgr, manager_data in managers.items():
                 for player, player_data in manager_data.items():
                     if player == "Total_Points":
                         # Skip aggregate row inside source structure
                         continue
-                    ffWAR_score = fetch_ffWAR_for_player(player, season=year, week=week)
-                    player_data['ffWAR'] = ffWAR_score
+                    ffwar_score = fetch_ffwar_for_player(
+                        player, season=year, week=wk
+                    )
+                    player_data['ffWAR'] = ffwar_score
 
                     if player in players_dict_to_return:
-                        _update_player_data(players_dict_to_return, player, player_data, manager, year)
+                        _update_player_data(
+                            players_dict_to_return,
+                            player,
+                            player_data,
+                            mgr,
+                            year
+                        )
                     else:
-                        _initialize_player_data(players_dict_to_return, player, player_data, manager, year)
+                        _initialize_player_data(
+                            players_dict_to_return,
+                            player,
+                            player_data,
+                            mgr,
+                            year
+                        )
 
     return players_dict_to_return
 
-def fetch_aggregated_managers(player, season=None, week=None):
-    """
-    Aggregate manager metrics for appearances of a given player.
+def fetch_aggregated_managers(
+    player: str, season: str | None = None, week: str | None = None
+) -> dict[str, dict[str, Any]]:
+    """Aggregate manager metrics for appearances of a given player.
 
     Args:
-        player (str): Player name key.
-        season (int | None): Optional season restriction.
-        week (int | None): Optional week restriction.
+        player: Player name key.
+        season: Optional season restriction.
+        week: Optional week restriction.
 
     Returns:
-        dict: {manager: {total_points, num_games_started, ffWAR, position}}
-              Empty if player not present in filtered slice.
+        A dictionary containing manager metrics for the given player.
     """
     raw_dict = fetch_starters(season=season, week=week)
     managers_dict_to_return = {}
-    
+
     if not raw_dict:
         return managers_dict_to_return
 
@@ -110,61 +134,79 @@ def fetch_aggregated_managers(player, season=None, week=None):
             for manager, manager_data in managers.items():
                 if player in manager_data:
                     raw_item = manager_data[player]
-                    ffWAR_score = fetch_ffWAR_for_player(player, season=year, week=week)
-                    raw_item['ffWAR'] = ffWAR_score
+                    ffwar_score = fetch_ffwar_for_player(
+                        player, season=year, week=week
+                    )
+                    raw_item['ffWAR'] = ffwar_score
 
                     if manager in managers_dict_to_return:
-                        _update_manager_data(managers_dict_to_return, manager, raw_item, player, year)
+                        _update_manager_data(
+                            managers_dict_to_return,
+                            manager,
+                            raw_item,
+                            player,
+                            year,
+                        )
                     else:
-                        _initialize_manager_data(managers_dict_to_return, manager, raw_item, player, year)
+                        _initialize_manager_data(
+                            managers_dict_to_return,
+                            manager,
+                            raw_item,
+                            player,
+                            year
+                        )
 
     return managers_dict_to_return
 
+
 @lru_cache(maxsize=10000)
-def fetch_ffWAR_for_player(player, season=None, week=None):
-    """
-    Lookup ffWAR for a player at a specific season/week granularity.
+def fetch_ffwar_for_player(
+    player: str, season: str | None = None, week: str | None = None
+) -> float:
+    """Lookup ffWAR for a player at a specific season/week granularity.
 
     Returns zero if season/week not provided or absent from cache.
 
     Args:
-        player (str): Player identifier.
-        season (int | None): Season for lookup.
-        week (int | None): Week for lookup.
+        player: Player identifier.
+        season: Season for lookup.
+        week: Week for lookup.
 
     Returns:
-        float: ffWAR value (0.0 if unavailable).
+        ffWAR value (0.0 if unavailable).
     """
     if season is None or week is None:
         return 0.0
-    
+
     player_data_cache = CACHE_MANAGER.get_player_data_cache()
 
-    season_str = str(season)
-    week_str = str(week)
+    if week in player_data_cache.get(season, {}):
+        week_data = player_data_cache[season][week]
+        player_id = get_player_id(player)
 
-    if season_str in player_data_cache and week_str in player_data_cache[season_str]:
-        week_data = player_data_cache[season_str][week_str]
-        player_id = helpers.get_player_id(player)
-        
         if player_id in week_data:
             return week_data[player_id]["ffWAR"]
 
     return 0.0
 
-def _update_player_data(players_dict, player, player_data, manager, year):
-    """
-    Increment aggregation totals for an existing player entry.
+def _update_player_data(
+    players_dict: dict[str, dict[str, Any]],
+    player: str,
+    player_data: dict[str, Any],
+    manager: str, year: str,
+) -> None:
+    """Update aggregated player data.
 
-    Updates:
-        - total_points: cumulative fantasy points scored
-        - ffWAR: cumulative wins above replacement
-        - num_games_started: count of games started
-        - playoff_placement: nested dict tracking playoff finishes by manager/year
+    Args:
+        players_dict: Dictionary of aggregated player data.
+        player: Player identifier.
+        player_data: Dictionary of player data.
+        manager: Manager identifier.
+        year: Season year.
 
-    Rounds:
-        total_points -> 2 decimals
-        ffWAR -> 3 decimals
+    Updates the aggregated player data by adding the player data.
+    Rounds total_points, ffWAR, and ffWAR_per_game to appropriate precision
+    using Decimal. Tracks playoff placements for players/managers.
     """
     player_dict_item = players_dict[player]
 
@@ -172,46 +214,57 @@ def _update_player_data(players_dict, player, player_data, manager, year):
     player_dict_item['total_points'] += player_data['points']
     player_dict_item['ffWAR'] += player_data['ffWAR']
     player_dict_item['num_games_started'] += 1
-    player_dict_item['ffWAR_per_game'] = player_dict_item['ffWAR'] / player_dict_item['num_games_started']
+    player_dict_item['ffWAR_per_game'] = (
+        player_dict_item['ffWAR'] / player_dict_item['num_games_started']
+    )
 
     # Round to appropriate precision using Decimal for exact rounding
     player_dict_item["total_points"] = float(
-        Decimal(player_dict_item["total_points"]).quantize(Decimal('0.01')).normalize()
+        Decimal(player_dict_item["total_points"])
+        .quantize(Decimal('0.01'))
+        .normalize()
     )
     player_dict_item["ffWAR"] = float(
-        Decimal(player_dict_item["ffWAR"]).quantize(Decimal('0.001')).normalize()
+        Decimal(player_dict_item["ffWAR"])
+        .quantize(Decimal('0.001'))
+        .normalize()
     )
     player_dict_item["ffWAR_per_game"] = float(
-        Decimal(player_dict_item["ffWAR_per_game"]).quantize(Decimal('0.001')).normalize()
+        Decimal(player_dict_item["ffWAR_per_game"])
+        .quantize(Decimal('0.001'))
+        .normalize()
     )
     players_dict[player] = player_dict_item
 
     # Track playoff finishes (1st, 2nd, 3rd place) by manager and year
     if "placement" in player_data:
-        players_dict = _handle_playoff_placement(players_dict, player, manager, year, player_data["placement"])
+        players_dict = _handle_playoff_placement(
+            players_dict, player, manager, year, player_data["placement"]
+        )
 
-    return players_dict
+    return
 
-def _initialize_player_data(players_dict, player, player_data, manager, year):
-    """
-    Create initial aggregation record for a player.
+def _initialize_player_data(
+    players_dict: dict[str, dict[str, Any]],
+    player: str,
+    player_data: dict[str, Any],
+    manager: str,
+    year: str,
+) -> None:
+    """Initialize aggregated player data.
 
-    Sets up initial totals and metadata including:
-        - Points, games started, and ffWAR from first appearance
-        - Player image URL (different format for players vs team defenses)
-        - Team affiliation from player cache
-        - Playoff placements if applicable
+    Args:
+        players_dict: Dictionary of aggregated player data.
+        player: Player identifier.
+        player_data: Dictionary of player data.
+        manager: Manager identifier.
+        year: Season year.
+
+    Initializes the aggregated player data by creating a new entry.
+    Rounds total_points, ffWAR, and ffWAR_per_game to appropriate precision
+    using Decimal. Tracks playoff placements for players/managers.
     """
     players_cache = CACHE_MANAGER.get_players_cache()
-
-    # Determine image URL based on player type
-    # Numeric IDs = individual players (use player headshot)
-    # String IDs = team defenses (use team logo)
-    player_id = players_cache.get(player, {}).get("player_id", None)
-    if player_id.isnumeric():
-        player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
-    else:
-        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
 
     players_dict[player] = {
         "total_points": player_data['points'],
@@ -219,61 +272,96 @@ def _initialize_player_data(players_dict, player, player_data, manager, year):
         'ffWAR': player_data['ffWAR'],
         'ffWAR_per_game': player_data['ffWAR'],
         "position": player_data['position'],
-        "player_image_endpoint": player_image_endpoint,
+        "player_image_endpoint": get_image_url(player, {}),
         "slug": players_cache[player],
         "team": players_cache.get(player, {}).get("team", None)
     }
 
-    # Track playoff finishes (1st, 2nd, 3rd place) if this is the last playoff week
+    # Track playoff finishes if this is the last playoff week
     if "placement" in player_data:
-        players_dict = _handle_playoff_placement(players_dict, player, manager, year, player_data["placement"])
+        players_dict = _handle_playoff_placement(
+            players_dict, player, manager, year, player_data["placement"]
+        )
 
-    return players_dict
+    return
 
-def _update_manager_data(managers_dict, manager, raw_item, player, year):
-    """
-    Increment aggregation totals for an existing manager entry.
 
-    Rounds:
-        total_points -> 2 decimals
-        ffWAR -> 3 decimals
+def _update_manager_data(
+    managers_dict: dict[str, dict[str, Any]],
+    manager: str,
+    raw_item: dict[str, Any],
+    player: str,
+    year: str,
+) -> None:
+    """Update aggregated manager data.
+
+    Args:
+        managers_dict: Dictionary of aggregated manager data.
+        manager: Manager identifier.
+        raw_item: Dictionary of raw manager data.
+        player: Player identifier.
+        year: Season year.
+
+    Updates the aggregated manager data by adding the raw manager data.
+    Rounds total_points, ffWAR, and ffWAR_per_game to appropriate precision
+    using Decimal. Tracks playoff placements for managers/players.
     """
     manager_dict_item = managers_dict[manager]
     manager_dict_item['total_points'] += raw_item['points']
     manager_dict_item['ffWAR'] += raw_item['ffWAR']
     manager_dict_item['num_games_started'] += 1
 
-    manager_dict_item['ffWAR_per_game'] = manager_dict_item['ffWAR'] / manager_dict_item['num_games_started']
+    manager_dict_item['ffWAR_per_game'] = (
+        manager_dict_item['ffWAR'] / manager_dict_item['num_games_started']
+    )
 
     manager_dict_item["total_points"] = float(
-        Decimal(manager_dict_item["total_points"]).quantize(Decimal('0.01')).normalize()
+        Decimal(manager_dict_item["total_points"])
+        .quantize(Decimal('0.01'))
+        .normalize()
     )
     manager_dict_item["ffWAR"] = float(
-        Decimal(manager_dict_item["ffWAR"]).quantize(Decimal('0.001')).normalize()
+        Decimal(manager_dict_item["ffWAR"])
+        .quantize(Decimal('0.001'))
+        .normalize()
     )
     manager_dict_item["ffWAR_per_game"] = float(
-        Decimal(manager_dict_item["ffWAR_per_game"]).quantize(Decimal('0.001')).normalize()
+        Decimal(manager_dict_item["ffWAR_per_game"])
+        .quantize(Decimal('0.001'))
+        .normalize()
     )
 
     managers_dict[manager] = manager_dict_item
 
     # Handle playoff placement if present
     if "placement" in raw_item:
-        managers_dict = _handle_playoff_placement(managers_dict, manager, player, year, raw_item["placement"])
-    
-    return managers_dict
+        managers_dict = _handle_playoff_placement(
+            managers_dict, manager, player, year, raw_item["placement"]
+        )
 
-def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
-    """
-    Create initial aggregation record for a manager with a single player appearance.
+    return
+
+def _initialize_manager_data(
+    managers_dict: dict[str, dict[str, Any]],
+    manager: str,
+    raw_item: dict[str, Any],
+    player: str,
+    year: str,
+) -> None:
+    """Initialize aggregated manager data for a given player.
+
+    Args:
+        managers_dict: Dictionary of aggregated manager data.
+        manager: Manager identifier.
+        raw_item: Dictionary of raw data for a player.
+        player: Player identifier.
+        year: Season year.
+
+    Initializes the aggregated manager data by creating a new entry.
+    Rounds total_points, ffWAR, and ffWAR_per_game to appropriate precision
+    using Decimal. Tracks playoff placements for players/managers.
     """
     players_cache = CACHE_MANAGER.get_players_cache()
-
-    player_id = players_cache.get(player, {}).get("player_id", None)
-    if player_id.isnumeric():
-        player_image_endpoint = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
-    else:
-        player_image_endpoint = f"https://sleepercdn.com/images/team_logos/nfl/{player_id.lower()}.png"
 
     managers_dict[manager] = {
         "player": player,  # Include the player name
@@ -282,30 +370,50 @@ def _initialize_manager_data(managers_dict, manager, raw_item, player, year):
         'ffWAR': raw_item['ffWAR'],
         'ffWAR_per_game': raw_item['ffWAR'],
         "position": raw_item['position'],
-        "player_image_endpoint": player_image_endpoint,
+        "player_image_endpoint": get_image_url(player, {}),
         "slug": players_cache[player],
         "team": players_cache.get(player, {}).get("team", None)
     }
 
     # Handle playoff placement if present
     if "placement" in raw_item:
-        managers_dict = _handle_playoff_placement(managers_dict, manager, player, year, raw_item["placement"])
-    
-    return managers_dict
+        managers_dict = _handle_playoff_placement(
+            managers_dict, manager, player, year, raw_item["placement"]
+        )
 
-def _handle_playoff_placement(aggregation_dict, primary_item, secondary_item, year, placement):
+    return
+
+def _handle_playoff_placement(
+    aggregation_dict: dict[str, dict[str, Any]],
+    primary_item: str,
+    secondary_item: str,
+    year: str,
+    placement: int,
+) -> dict[str, dict[str, Any]]:
+    """Handles updating the playoff placement for a manager/player pair.
+
+    Args:
+        aggregation_dict: Dictionary of aggregated data.
+        primary_item: Primary item identifier (e.g., manager name).
+        secondary_item: Secondary item identifier (e.g., player name).
+        year: Season year as string.
+        placement: Placement integer (1st, 2nd, 3rd).
+
+    Returns:
+        Updated aggregation dictionary.
     """
-    Update playoff placement info in aggregation dict.
-    """
-    if "playoff_placement" not in aggregation_dict[primary_item]:
+    playoff_placement = aggregation_dict[primary_item].get(
+        "playoff_placement", {}
+    )
+    if not playoff_placement:
         aggregation_dict[primary_item]["playoff_placement"] = {
             secondary_item: {
                 year: placement
             }
         }
-    elif secondary_item not in aggregation_dict[primary_item]["playoff_placement"]:
-        aggregation_dict[primary_item]["playoff_placement"][secondary_item] = {year: placement}
-    elif year not in aggregation_dict[primary_item]["playoff_placement"][secondary_item]:
-        aggregation_dict[primary_item]["playoff_placement"][secondary_item][year] = placement
-    
+    elif not playoff_placement.get(secondary_item):
+        playoff_placement[secondary_item] = {year: placement}
+    elif not playoff_placement[secondary_item].get(year):
+        playoff_placement[secondary_item][year] = placement
+
     return aggregation_dict

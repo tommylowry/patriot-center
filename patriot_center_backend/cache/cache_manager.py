@@ -25,6 +25,9 @@ _VALID_OPTIONS_CACHE_FILE = os.path.join(
 _PLAYERS_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "players_cache.json"
 )
+_IMAGE_URLS_CACHE_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "image_urls_cache.json"
+)
 _MANAGER_METADATA_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "manager_metadata_cache.json"
 )
@@ -78,6 +81,7 @@ class CacheManager:
         self._player_data_cache: dict | None = None
         self._replacement_score_cache: dict | None = None
         self._valid_options_cache: dict | None = None
+        self._image_urls_cache: dict | None = None
 
     # ===== LOADER AND SAVER =====
     def _load_cache(self, file_path: str) -> dict[str, Any]:
@@ -496,6 +500,41 @@ class CacheManager:
         self._save_cache(_VALID_OPTIONS_CACHE_FILE, data_to_save)
         self._valid_options_cache = data_to_save
 
+    def get_image_urls_cache(
+            self, force_reload: bool = False
+    ) -> dict[str, dict[str, str | float]]:
+        """Get image urls cache.
+
+        Args:
+            force_reload: If True, reload from disk
+
+        Returns:
+            Image urls cache dictionary
+        """
+        if self._image_urls_cache is None or force_reload:
+            self._image_urls_cache = self._load_cache(_IMAGE_URLS_CACHE_FILE)
+
+        return self._image_urls_cache
+
+    def save_image_urls_cache(
+            self, cache: dict[str, dict[str, str | float]] | None = None
+    ) -> None:
+        """Save image urls cache to disk.
+
+        Args:
+            cache: Cache to save (uses in-memory cache if not provided)
+
+        Raises:
+            ValueError: If no image urls cache to save
+        """
+        data_to_save = cache if cache is not None else self._image_urls_cache
+
+        if data_to_save is None:
+            raise ValueError("No image urls cache to save")
+
+        self._save_cache(_IMAGE_URLS_CACHE_FILE, data_to_save)
+        self._image_urls_cache = data_to_save
+
     # ===== UTILITY METHODS =====
     def reload_all_caches(self) -> None:
         """Clear all in-memory caches.
@@ -510,6 +549,7 @@ class CacheManager:
         self._player_data_cache = None
         self._replacement_score_cache = None
         self._valid_options_cache = None
+        self._image_urls_cache = None
 
     def save_all_caches(self) -> None:
         """Save all loaded caches to disk."""
@@ -529,6 +569,8 @@ class CacheManager:
             self.save_replacement_score_cache()
         if self._valid_options_cache is not None:
             self.save_valid_options_cache()
+        if self._image_urls_cache is not None:
+            self.save_image_urls_cache()
 
 
 # ===== SINGLETON INSTANCE =====

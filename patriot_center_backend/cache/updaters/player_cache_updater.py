@@ -17,9 +17,6 @@ def update_players_cache(player_id: str) -> None:
 
     Args:
         player_id: The ID of the player to add to the cache.
-
-    Returns:
-        None
     """
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
     players_cache = CACHE_MANAGER.get_players_cache()

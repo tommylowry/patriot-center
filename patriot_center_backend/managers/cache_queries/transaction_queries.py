@@ -11,7 +11,7 @@ from patriot_center_backend.managers.formatters import (
 
 
 def get_transaction_details_from_cache(
-    manager: str, image_urls: dict[str, str], year: str | None = None
+    manager: str, year: str | None = None
 ) -> dict[str, dict[str, Any]]:
     """Get comprehensive transaction summary with formatted data and image URLs.
 
@@ -25,7 +25,6 @@ def get_transaction_details_from_cache(
     Args:
         year: Season year (optional - defaults to all-time stats)
         manager: Manager name
-        image_urls: Dict of image URLs
 
     Returns:
         Dictionary with trades, adds, drops, and faab summaries
@@ -50,7 +49,7 @@ def get_transaction_details_from_cache(
     trades = {
         "total": trans_cache["trades"]["total"],
         "top_trade_partners": extract_dict_data(
-            deepcopy(trans_cache["trades"]["trade_partners"]), image_urls
+            deepcopy(trans_cache["trades"]["trade_partners"])
         ),
     }
 
@@ -58,13 +57,12 @@ def get_transaction_details_from_cache(
     # Most Aquired Players
     trade_players_acquired = trans_cache["trades"]["trade_players_acquired"]
     most_acquired_players = extract_dict_data(
-        deepcopy(trade_players_acquired), image_urls
+        deepcopy(trade_players_acquired)
     )
     for player in most_acquired_players:
         player_details = deepcopy(trade_players_acquired[player["name"]])
         player["from"] = extract_dict_data(
             deepcopy(player_details.get("trade_partners", {})),
-            image_urls,
             cutoff=0,
         )
     trades["most_acquired_players"] = most_acquired_players
@@ -72,12 +70,12 @@ def get_transaction_details_from_cache(
     # Most Sent Players
     trade_players_sent = trans_cache["trades"]["trade_players_sent"]
     most_sent_players = extract_dict_data(
-        deepcopy(trade_players_sent), image_urls
+        deepcopy(trade_players_sent)
     )
     for player in most_sent_players:
         player_details = deepcopy(trade_players_sent.get(player["name"], {}))
         player["to"] = extract_dict_data(
-            player_details.get("trade_partners", {}), image_urls, cutoff=0
+            player_details.get("trade_partners", {}), cutoff=0
         )
     trades["most_sent_players"] = most_sent_players
 
@@ -87,7 +85,7 @@ def get_transaction_details_from_cache(
     adds = {
         "total": trans_cache["adds"]["total"],
         "top_players_added": extract_dict_data(
-            deepcopy(trans_cache["adds"]["players"]), image_urls
+            deepcopy(trans_cache["adds"]["players"])
         ),
     }
     transaction_summary["adds"] = adds
@@ -96,7 +94,7 @@ def get_transaction_details_from_cache(
     drops = {
         "total": trans_cache["drops"]["total"],
         "top_players_dropped": extract_dict_data(
-            deepcopy(trans_cache["drops"]["players"]), image_urls
+            deepcopy(trans_cache["drops"]["players"])
         ),
     }
     transaction_summary["drops"] = drops
@@ -109,7 +107,6 @@ def get_transaction_details_from_cache(
             "total_spent": abs(trans_cache["faab"]["total_lost_or_gained"]),
             "biggest_acquisitions": extract_dict_data(
                 deepcopy(trans_cache["faab"]["players"]),
-                image_urls,
                 value_name="amount",
             ),
         }
@@ -135,7 +132,6 @@ def get_transaction_details_from_cache(
 def get_trade_history_between_two_managers(
     manager1: str,
     manager2: str,
-    image_urls: dict[str, str],
     year: str | None = None,
 ) -> list[dict[str, Any]]:
     """Get complete trade history between two managers.
@@ -145,7 +141,6 @@ def get_trade_history_between_two_managers(
     Args:
         manager1: First manager name
         manager2: Second manager name
-        image_urls: Dict of image URLs
         year: Season year (optional - defaults to all-time if None)
 
     Returns:
@@ -182,7 +177,7 @@ def get_trade_history_between_two_managers(
     trades_between = []
 
     for t in transaction_ids:
-        trades_between.append(get_trade_card(t, image_urls))
+        trades_between.append(get_trade_card(t))
 
     trades_between.reverse()
     return trades_between

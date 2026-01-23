@@ -59,8 +59,7 @@ class ManagerMetadataManager:
         """Initializes the ManagerMetadataManager singleton.
 
         Sets configuration state, initializes templates, and sets session state.
-        Also initializes sub-processors (data_exporter, transaction_processor,
-            matchup_processor) and caches (image_urls_cache).
+        Also initializes sub-processors transaction_processor matchup_processor
         """
         # Configuration state
         self._use_faab: bool
@@ -74,9 +73,6 @@ class ManagerMetadataManager:
         self._week: str | None = None
         self._weekly_roster_ids: dict[int, str] = {}
         self._playoff_roster_ids: list[int] = []
-
-        # Image URL cache
-        self._image_urls_cache: dict[str, str] = {}
 
         # Initialize sub-processors (will be created when needed)
         self._transaction_processor = TransactionProcessor()

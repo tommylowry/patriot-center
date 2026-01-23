@@ -5,8 +5,10 @@ from copy import deepcopy
 from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters.image_url_updater import (
+    get_image_url,
+)
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.image_providers import get_image_url
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 logger = logging.getLogger(__name__)
@@ -62,7 +64,6 @@ def get_top_3_scorers_from_matchup_data(
     matchup_data: dict[str, Any],
     manager_1: str,
     manager_2: str,
-    image_urls: dict[str, str],
 ) -> None:
     """Extract top 3 and lowest scorers from matchup data for both managers.
 
@@ -73,7 +74,6 @@ def get_top_3_scorers_from_matchup_data(
         matchup_data: Matchup data dictionary (modified in-place)
         manager_1: First manager name
         manager_2: Second manager name
-        image_urls: Dict of image URLs
 
     Raises:
         ValueError: If get_image_url fails to retrieve output in dict form
@@ -120,7 +120,7 @@ def get_top_3_scorers_from_matchup_data(
         # Iterate over starters
         top_scorers = []
         for player in manager_starters:
-            player_dict = get_image_url(player, image_urls, dictionary=True)
+            player_dict = get_image_url(player, dictionary=True)
 
             if not isinstance(player_dict, dict):
                 raise ValueError(
@@ -189,7 +189,6 @@ def get_matchup_card(
     manager_2: str,
     year: str,
     week: str,
-    image_urls: dict[str, str],
 ) -> dict[str, Any]:
     """Generate complete matchup card with scores, winner, and top performers.
 
@@ -201,7 +200,6 @@ def get_matchup_card(
         manager_2: Second manager name
         year: Season year as string
         week: Week number as string
-        image_urls: Image URL cache
 
     Returns:
         Dictionary containing matchup details, scores, winner, and top
@@ -236,11 +234,11 @@ def get_matchup_card(
         "week": week,
         "manager_1": {
             "name": manager_1,
-            "image_url": get_image_url(manager_1, image_urls),
+            "image_url": get_image_url(manager_1),
         },
         "manager_2": {
             "name": manager_2,
-            "image_url": get_image_url(manager_2, image_urls),
+            "image_url": get_image_url(manager_2),
         },
         "manager_1_score": manager_1_score,
         "manager_2_score": manager_2_score,
@@ -248,15 +246,13 @@ def get_matchup_card(
     }
 
     get_top_3_scorers_from_matchup_data(
-        matchup, manager_1, manager_2, image_urls
+        matchup, manager_1, manager_2
     )
 
     return deepcopy(matchup)
 
 
-def get_trade_card(
-    transaction_id: str, image_urls: dict[str, str]
-) -> dict[str, Any]:
+def get_trade_card(transaction_id: str) -> dict[str, Any]:
     """Generate formatted trade card showing all players/assets exchanged.
 
     Creates a structured trade summary with managers involved and
@@ -264,7 +260,6 @@ def get_trade_card(
 
     Args:
         transaction_id: Transaction ID to look up
-        image_urls: Dict of mapped image URLs
 
     Returns:
         Trade card dictionary with year, week, managers, and items exchanged
@@ -305,7 +300,7 @@ def get_trade_card(
         trade_item[f"{m.lower().replace(' ', '_')}_received"] = []
         trade_item[f"{m.lower().replace(' ', '_')}_sent"] = []
         trade_item["managers_involved"].append(
-            get_image_url(m, image_urls, dictionary=True)
+            get_image_url(m, dictionary=True)
         )
 
     # Populate sent/received arrays with players/assets
@@ -323,7 +318,7 @@ def get_trade_card(
         old_manager = old_manager.lower().replace(" ", "_")
         new_manager = new_manager.lower().replace(" ", "_")
 
-        player_dict = get_image_url(player, image_urls, dictionary=True)
+        player_dict = get_image_url(player, dictionary=True)
 
         trade_item[f"{old_manager}_sent"].append(deepcopy(player_dict))
         trade_item[f"{new_manager}_received"].append(deepcopy(player_dict))
@@ -335,7 +330,6 @@ def get_trade_card(
 
 def extract_dict_data(
     data: dict[str, Any],
-    image_urls: dict[str, str],
     key_name: str = "name",
     value_name: str = "count",
     cutoff: int = 3,
@@ -348,7 +342,6 @@ def extract_dict_data(
 
     Args:
         data: Raw data dictionary (may contain nested dicts with "total" keys)
-        image_urls: Dict of image URLs
         key_name: Name of the key field in output (default: "name")
         value_name: Name of the value field in output (default: "count")
         cutoff: Number of top items to include (0 means all items)
@@ -386,7 +379,7 @@ def extract_dict_data(
         long_dict = {}
         long_dict[key_name] = item
         long_dict[value_name] = top_three[item]
-        long_dict["image_url"] = get_image_url(item, image_urls)
+        long_dict["image_url"] = get_image_url(item)
         items.append(deepcopy(long_dict))
 
     return deepcopy(items)

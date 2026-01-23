@@ -19,8 +19,10 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters.image_url_updater import (
+    get_image_url,
+)
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.image_providers import get_image_url
 from patriot_center_backend.utils.scoring import calculate_player_score
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
@@ -29,8 +31,6 @@ from patriot_center_backend.utils.sleeper_helpers import (
 )
 
 logger = logging.getLogger(__name__)
-
-IMAGE_URLS = {}
 
 
 def update_player_data_cache() -> None:
@@ -317,7 +317,7 @@ def _calculate_ffwar_position(
     ffwar_position = {}
 
     for player_id in all_player_scores:
-        image_url = get_image_url(player_id, IMAGE_URLS)
+        image_url = get_image_url(player_id)
 
         # Player's Full Name
         player = all_player_scores[player_id]["name"]

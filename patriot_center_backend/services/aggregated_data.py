@@ -51,6 +51,7 @@ def fetch_player_manager_aggregation(
 
     return {manager: player_data[manager]}
 
+
 def fetch_aggregated_players(
     manager: str | None = None,
     season: str | None = None,
@@ -89,7 +90,7 @@ def fetch_aggregated_players(
                     ffwar_score = fetch_ffwar_for_player(
                         player, season=year, week=wk
                     )
-                    player_data['ffWAR'] = ffwar_score
+                    player_data["ffWAR"] = ffwar_score
 
                     if player in players_dict_to_return:
                         _update_player_data(
@@ -97,7 +98,7 @@ def fetch_aggregated_players(
                             player,
                             player_data,
                             mgr,
-                            year
+                            year,
                         )
                     else:
                         _initialize_player_data(
@@ -105,10 +106,11 @@ def fetch_aggregated_players(
                             player,
                             player_data,
                             mgr,
-                            year
+                            year,
                         )
 
     return players_dict_to_return
+
 
 def fetch_aggregated_managers(
     player: str, season: str | None = None, week: str | None = None
@@ -137,7 +139,7 @@ def fetch_aggregated_managers(
                     ffwar_score = fetch_ffwar_for_player(
                         player, season=year, week=week
                     )
-                    raw_item['ffWAR'] = ffwar_score
+                    raw_item["ffWAR"] = ffwar_score
 
                     if manager in managers_dict_to_return:
                         _update_manager_data(
@@ -153,7 +155,7 @@ def fetch_aggregated_managers(
                             manager,
                             raw_item,
                             player,
-                            year
+                            year,
                         )
 
     return managers_dict_to_return
@@ -189,11 +191,13 @@ def fetch_ffwar_for_player(
 
     return 0.0
 
+
 def _update_player_data(
     players_dict: dict[str, dict[str, Any]],
     player: str,
     player_data: dict[str, Any],
-    manager: str, year: str,
+    manager: str,
+    year: str,
 ) -> None:
     """Update aggregated player data.
 
@@ -211,27 +215,27 @@ def _update_player_data(
     player_dict_item = players_dict[player]
 
     # Accumulate totals
-    player_dict_item['total_points'] += player_data['points']
-    player_dict_item['ffWAR'] += player_data['ffWAR']
-    player_dict_item['num_games_started'] += 1
-    player_dict_item['ffWAR_per_game'] = (
-        player_dict_item['ffWAR'] / player_dict_item['num_games_started']
+    player_dict_item["total_points"] += player_data["points"]
+    player_dict_item["ffWAR"] += player_data["ffWAR"]
+    player_dict_item["num_games_started"] += 1
+    player_dict_item["ffWAR_per_game"] = (
+        player_dict_item["ffWAR"] / player_dict_item["num_games_started"]
     )
 
     # Round to appropriate precision using Decimal for exact rounding
     player_dict_item["total_points"] = float(
         Decimal(player_dict_item["total_points"])
-        .quantize(Decimal('0.01'))
+        .quantize(Decimal("0.01"))
         .normalize()
     )
     player_dict_item["ffWAR"] = float(
         Decimal(player_dict_item["ffWAR"])
-        .quantize(Decimal('0.001'))
+        .quantize(Decimal("0.001"))
         .normalize()
     )
     player_dict_item["ffWAR_per_game"] = float(
         Decimal(player_dict_item["ffWAR_per_game"])
-        .quantize(Decimal('0.001'))
+        .quantize(Decimal("0.001"))
         .normalize()
     )
     players_dict[player] = player_dict_item
@@ -243,6 +247,7 @@ def _update_player_data(
         )
 
     return
+
 
 def _initialize_player_data(
     players_dict: dict[str, dict[str, Any]],
@@ -267,14 +272,14 @@ def _initialize_player_data(
     players_cache = CACHE_MANAGER.get_players_cache()
 
     players_dict[player] = {
-        "total_points": player_data['points'],
+        "total_points": player_data["points"],
         "num_games_started": 1,
-        'ffWAR': player_data['ffWAR'],
-        'ffWAR_per_game': player_data['ffWAR'],
-        "position": player_data['position'],
+        "ffWAR": player_data["ffWAR"],
+        "ffWAR_per_game": player_data["ffWAR"],
+        "position": player_data["position"],
         "player_image_endpoint": get_image_url(player, {}),
         "slug": players_cache[player],
-        "team": players_cache.get(player, {}).get("team", None)
+        "team": players_cache.get(player, {}).get("team"),
     }
 
     # Track playoff finishes if this is the last playoff week
@@ -307,27 +312,27 @@ def _update_manager_data(
     using Decimal. Tracks playoff placements for managers/players.
     """
     manager_dict_item = managers_dict[manager]
-    manager_dict_item['total_points'] += raw_item['points']
-    manager_dict_item['ffWAR'] += raw_item['ffWAR']
-    manager_dict_item['num_games_started'] += 1
+    manager_dict_item["total_points"] += raw_item["points"]
+    manager_dict_item["ffWAR"] += raw_item["ffWAR"]
+    manager_dict_item["num_games_started"] += 1
 
-    manager_dict_item['ffWAR_per_game'] = (
-        manager_dict_item['ffWAR'] / manager_dict_item['num_games_started']
+    manager_dict_item["ffWAR_per_game"] = (
+        manager_dict_item["ffWAR"] / manager_dict_item["num_games_started"]
     )
 
     manager_dict_item["total_points"] = float(
         Decimal(manager_dict_item["total_points"])
-        .quantize(Decimal('0.01'))
+        .quantize(Decimal("0.01"))
         .normalize()
     )
     manager_dict_item["ffWAR"] = float(
         Decimal(manager_dict_item["ffWAR"])
-        .quantize(Decimal('0.001'))
+        .quantize(Decimal("0.001"))
         .normalize()
     )
     manager_dict_item["ffWAR_per_game"] = float(
         Decimal(manager_dict_item["ffWAR_per_game"])
-        .quantize(Decimal('0.001'))
+        .quantize(Decimal("0.001"))
         .normalize()
     )
 
@@ -340,6 +345,7 @@ def _update_manager_data(
         )
 
     return
+
 
 def _initialize_manager_data(
     managers_dict: dict[str, dict[str, Any]],
@@ -365,14 +371,14 @@ def _initialize_manager_data(
 
     managers_dict[manager] = {
         "player": player,  # Include the player name
-        "total_points": raw_item['points'],
+        "total_points": raw_item["points"],
         "num_games_started": 1,
-        'ffWAR': raw_item['ffWAR'],
-        'ffWAR_per_game': raw_item['ffWAR'],
-        "position": raw_item['position'],
+        "ffWAR": raw_item["ffWAR"],
+        "ffWAR_per_game": raw_item["ffWAR"],
+        "position": raw_item["position"],
         "player_image_endpoint": get_image_url(player, {}),
         "slug": players_cache[player],
-        "team": players_cache.get(player, {}).get("team", None)
+        "team": players_cache.get(player, {}).get("team"),
     }
 
     # Handle playoff placement if present
@@ -382,6 +388,7 @@ def _initialize_manager_data(
         )
 
     return
+
 
 def _handle_playoff_placement(
     aggregation_dict: dict[str, dict[str, Any]],
@@ -407,9 +414,7 @@ def _handle_playoff_placement(
     )
     if not playoff_placement:
         aggregation_dict[primary_item]["playoff_placement"] = {
-            secondary_item: {
-                year: placement
-            }
+            secondary_item: {year: placement}
         }
     elif not playoff_placement.get(secondary_item):
         playoff_placement[secondary_item] = {year: placement}

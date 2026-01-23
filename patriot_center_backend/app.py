@@ -219,7 +219,7 @@ def get_aggregated_players(
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    data = fetch_aggregated_players(season=year, manager=manager, week=week)
+    data = fetch_aggregated_players(manager=manager, season=year, week=week)
     if request.args.get("format") == "json":
         response = jsonify(data)
 

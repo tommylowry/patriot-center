@@ -45,7 +45,15 @@ def fetch_player_manager_aggregation(
     Returns:
         A dictionary containing the player-manager aggregation.
     """
-    player_data = fetch_aggregated_managers(player, season=season, week=week)
+    season_int = None
+    week_int = None
+    if season and season.isnumeric():
+        season_int = int(season)
+    if week and week.isnumeric():
+        week_int = int(week)
+    player_data = fetch_aggregated_managers(
+        player, season=season_int, week=week_int
+    )
     if manager not in player_data:
         return {}
 
@@ -54,7 +62,7 @@ def fetch_player_manager_aggregation(
 
 def fetch_aggregated_players(
     manager: str | None = None,
-    season: str | None = None,
+    season: int | None = None,
     week: int | None = None,
 ) -> dict[str, dict[str, Any]]:
     """Aggregate player metrics for a given manager.
@@ -113,7 +121,7 @@ def fetch_aggregated_players(
 
 
 def fetch_aggregated_managers(
-    player: str, season: str | None = None, week: str | None = None
+    player: str, season: int | None = None, week: int | None = None
 ) -> dict[str, dict[str, Any]]:
     """Aggregate manager metrics for appearances of a given player.
 
@@ -132,12 +140,12 @@ def fetch_aggregated_managers(
         return managers_dict_to_return
 
     for year, weeks in raw_dict.items():
-        for week, managers in weeks.items():
+        for wk, managers in weeks.items():
             for manager, manager_data in managers.items():
                 if player in manager_data:
                     raw_item = manager_data[player]
                     ffwar_score = fetch_ffwar_for_player(
-                        player, season=year, week=week
+                        player, season=year, week=wk
                     )
                     raw_item["ffWAR"] = ffwar_score
 

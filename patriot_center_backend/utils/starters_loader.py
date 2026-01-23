@@ -391,7 +391,7 @@ def fetch_starters_for_week(
         # During playoff weeks, only include rosters actively competing in that
         #   round.
         # This filters out teams eliminated or in consolation bracket.
-        if playoff_roster_ids != {} and roster_id not in playoff_roster_ids:
+        if playoff_roster_ids != [] and roster_id not in playoff_roster_ids:
             continue  # Skip non-playoff rosters in playoff weeks
 
         (

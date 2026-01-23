@@ -87,7 +87,7 @@ def get_image_url(
     # player_id is ether the item or the player's player_id
     player_id = item if not player else player.get("player_id")
 
-    if player_id:
+    if player_id and player_id in player_ids_cache:
 
         first_name = player_ids_cache[player_id]["first_name"]
         last_name = player_ids_cache[player_id]["last_name"]

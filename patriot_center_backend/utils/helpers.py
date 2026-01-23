@@ -18,16 +18,10 @@ def _get_player_name_to_id() -> dict[str, str]:
     """
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
-    output = {}
-    for pid, player_info in player_ids_cache.items():
-        if not isinstance(pid, str):
-            continue
-        full_name = player_info.get("full_name")
-        if not full_name or not isinstance(full_name, str):
-            continue
-        player_info["id"] = pid
-
-    return output
+    return {
+        player_info["full_name"]: pid
+        for pid, player_info in player_ids_cache.items()
+    }
 
 
 def get_player_id(player_name: str) -> str | None:

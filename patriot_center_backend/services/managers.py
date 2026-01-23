@@ -16,7 +16,7 @@ from patriot_center_backend.cache import CACHE_MANAGER
 def fetch_starters(
     manager: str | None = None,
     season: int | None = None,
-    week: int | None = None
+    week: int | None = None,
 ) -> dict[str, dict[str, dict[str, dict[str, Any]]]]:
     """Public entry point for retrieving starters slices.
 
@@ -41,6 +41,7 @@ def fetch_starters(
     # Full cache passthrough for unfiltered requests
     return starters_cache
 
+
 def _filter_by_season_and_week(
     season: int, week: int | None = None
 ) -> dict[str, dict[str, dict[str, dict[str, Any]]]]:
@@ -63,13 +64,10 @@ def _filter_by_season_and_week(
         week_str = str(week)
         if week_str not in starters_cache[season_str]:
             return {}
-        return {
-            season_str: {
-                week_str: starters_cache[season_str][week_str]
-            }
-        }
+        return {season_str: {week_str: starters_cache[season_str][week_str]}}
 
     return {season_str: starters_cache[season_str]}
+
 
 def _filter_by_manager(
     manager: str, season: int | None = None, week: int | None = None
@@ -102,9 +100,7 @@ def _filter_by_manager(
                 continue
             if manager in starters:
                 # Initialize nested containers only when needed
-                filtered_data.setdefault(
-                    season_key, {}
-                ).setdefault(
+                filtered_data.setdefault(season_key, {}).setdefault(
                     week_key, {}
                 )
                 filtered_data[season_key][week_key][manager] = starters[manager]

@@ -480,7 +480,7 @@ def get_starters_data(
 
                 update_players_cache(player_id)
 
-                player_score = matchup["players_points"].get(player_id, 0)
+                player_score = matchup["players_points"].get(player_id, 0.0)
 
                 manager_data[player_name] = {
                     "points": player_score,

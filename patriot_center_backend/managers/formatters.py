@@ -153,7 +153,7 @@ def get_top_3_scorers_from_matchup_data(
             # Track lowest scorer
             if not isinstance(player_score, float):
                 logger.warning(
-                    f"WARNING: Player score not float for player {player}. "
+                    f"Player score not float for player {player}. "
                     f"For {year}, week {week}."
                 )
                 continue

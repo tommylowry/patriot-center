@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.validators import (
+from patriot_center_backend.cache.updaters._validators import (
     ValidationError,
     validate_caching_preconditions,
     validate_matchup_data,

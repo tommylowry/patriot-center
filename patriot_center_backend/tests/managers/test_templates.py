@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.templates import (
+from patriot_center_backend.cache.updaters._templates import (
     faab_template,
     initialize_faab_template,
     initialize_summary_templates,

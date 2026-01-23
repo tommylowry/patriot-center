@@ -31,7 +31,7 @@ FIELDS_TO_KEEP = [
 ]
 
 
-def update_player_ids() -> None:
+def update_player_ids_cache() -> None:
     """Updates the player IDs cache by fetching fresh data from Sleeper API.
 
     If the cache is stale (older than 1 week), refreshes the data by fetching

@@ -5,13 +5,13 @@ from copy import deepcopy
 from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.managers.transaction_processing.faab_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.faab_processor import (  # noqa: E501
     add_faab_details_to_cache,
 )
-from patriot_center_backend.managers.transaction_processing.transaction_id_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
 )
-from patriot_center_backend.utils.player_cache_updater import (
+from patriot_center_backend.cache.updaters.player_cache_updater import (
     update_players_cache,
 )
 
@@ -66,10 +66,8 @@ def process_add_or_drop_transaction(
                     f"Could not find manager for roster ID: {roster_id}"
                 )
 
-            player_name = (
-                player_ids_cache
-                .get(player_id, {})
-                .get("full_name", "unknown_player")
+            player_name = player_ids_cache.get(player_id, {}).get(
+                "full_name", "unknown_player"
             )
             if player_name == "unknown_player":
                 logger.warning(
@@ -105,8 +103,8 @@ def process_add_or_drop_transaction(
 
             # add FAAB details to the cache
             if use_faab and transaction.get("settings"):
-                faab_amount = (
-                    transaction.get("settings", {}).get("waiver_bid", 0)
+                faab_amount = transaction.get("settings", {}).get(
+                    "waiver_bid", 0
                 )
                 transaction_type = transaction.get("type", "")
                 add_faab_details_to_cache(
@@ -129,10 +127,8 @@ def process_add_or_drop_transaction(
                     f"Could not find manager for roster ID: {roster_id}"
                 )
 
-            player_name = (
-                player_ids_cache
-                .get(player_id, {})
-                .get("full_name", "unknown_player")
+            player_name = player_ids_cache.get(player_id, {}).get(
+                "full_name", "unknown_player"
             )
             if player_name == "unknown_player":
                 logger.warning(
@@ -192,8 +188,7 @@ def add_add_or_drop_details_to_cache(
     manager_cache = CACHE_MANAGER.get_manager_cache()
 
     if transaction_id in (
-        manager_cache
-        .get(manager, {})
+        manager_cache.get(manager, {})
         .get("years", {})
         .get(year, {})
         .get("weeks", {})

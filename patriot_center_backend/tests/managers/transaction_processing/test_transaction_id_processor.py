@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.transaction_processing.transaction_id_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
 )
 
@@ -25,7 +25,7 @@ class TestAddToTransactionIds:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".transaction_id_processor"
                 ".CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_id,

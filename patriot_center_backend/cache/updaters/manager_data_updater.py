@@ -4,26 +4,27 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters._templates import (
+    initialize_faab_template,
+    initialize_summary_templates,
+)
+from patriot_center_backend.cache.updaters._validators import (
+    validate_caching_preconditions,
+)
+from patriot_center_backend.cache.updaters.player_cache_updater import (
+    update_players_cache_with_list,
+)
+from patriot_center_backend.cache.updaters.processors.matchup_processor import (
+    MatchupProcessor,
+)
+from patriot_center_backend.cache.updaters.processors.transactions.base_processor import (  # noqa: E501
+    TransactionProcessor,
+)
 from patriot_center_backend.constants import (
     LEAGUE_IDS,
     NAME_TO_MANAGER_USERNAME,
 )
-from patriot_center_backend.managers.data_exporter import DataExporter
 from patriot_center_backend.managers.formatters import get_season_state
-from patriot_center_backend.managers.matchup_processor import MatchupProcessor
-from patriot_center_backend.managers.templates import (
-    initialize_faab_template,
-    initialize_summary_templates,
-)
-from patriot_center_backend.managers.transaction_processing.base_processor import (  # noqa: E501
-    TransactionProcessor,
-)
-from patriot_center_backend.managers.validators import (
-    validate_caching_preconditions,
-)
-from patriot_center_backend.utils.player_cache_updater import (
-    update_players_cache_with_list,
-)
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 
@@ -43,7 +44,6 @@ class ManagerMetadataManager:
     - TransactionProcessor: Handles trades, adds, drops, FAAB, reversal
         detection
     - MatchupProcessor: Handles matchups, win/loss records, playoff tracking
-    - DataExporter: Provides public read-only API
     - CacheManager: Handles cache loading/saving
 
     Workflow:
@@ -74,9 +74,6 @@ class ManagerMetadataManager:
         self._week: str | None = None
         self._weekly_roster_ids: dict[int, str] = {}
         self._playoff_roster_ids: list[int] = []
-
-        # Initialize data_exporter subprocesser
-        self._data_exporter = DataExporter()
 
         # Image URL cache
         self._image_urls_cache: dict[str, str] = {}
@@ -264,81 +261,6 @@ class ManagerMetadataManager:
             if year not in cache_placements:
                 cache_placements[year] = placement_dict[manager]
 
-    # ===== API Export Functions =====
-    def get_managers_list(self, active_only: bool) -> dict[str, Any]:
-        """Get list of all managers.
-
-        Args:
-            active_only: Whether to return only active managers
-
-        Returns:
-            Ouptut of _data_exporter.get_managers_list
-        """
-        return self._data_exporter.get_managers_list(active_only=active_only)
-
-    def get_manager_summary(
-        self, manager: str, year: str | None = None
-    ) -> dict[str, Any]:
-        """Get manager summary.
-
-        Args:
-            manager: Manager name
-            year: Season year (optional - defaults to all-time)
-
-        Returns:
-            Output of _data_exporter.get_manager_summary
-        """
-        return self._data_exporter.get_manager_summary(manager, year=year)
-
-    def get_head_to_head(
-        self, manager1: str, manager2: str, year: str | None = None
-    ) -> dict[str, Any]:
-        """Get head-to-head data.
-
-        Args:
-            manager1: First manager name
-            manager2: Second manager name
-            year: Season year (optional - defaults to all-time)
-
-        Returns:
-            Output of _data_exporter.get_head_to_head
-        """
-        return self._data_exporter.get_head_to_head(
-            manager1, manager2, year=year
-        )
-
-    def get_manager_transactions(
-        self, manager_name: str, year: str | None = None
-    ) -> dict[str, Any]:
-        """Get manager transactions.
-
-        Args:
-            manager_name: Manager name
-            year: Season year (optional - defaults to all-time)
-
-        Returns:
-            Output of _data_exporter.get_manager_transactions
-        """
-        return self._data_exporter.get_manager_transactions(
-            manager_name, year=year
-        )
-
-    def get_manager_awards(self, manager: str) -> dict[str, Any]:
-        """Get manager awards.
-
-        Args:
-            manager: Manager name
-
-        Returns:
-            Output of _data_exporter.get_manager_awards
-        """
-        return self._data_exporter.get_manager_awards(manager)
-
-    # ===== SAVE TO DISK =====
-    def save(self) -> None:
-        """Save all caches to disk."""
-        CACHE_MANAGER.save_all_caches()
-
     # ========== PRIVATE HELPER METHODS ==========
     def _set_defaults_if_missing(self, roster_id: int) -> None:
         """Initialize cache structure for manager/year/week if not present.
@@ -428,19 +350,3 @@ class ManagerMetadataManager:
             self._transaction_processor.clear_session_state()
         if self._matchup_processor:
             self._matchup_processor.clear_session_state()
-
-
-# ===== SINGLETON INSTANCE =====
-_manager_metadata_instance = None
-
-
-def get_manager_metadata_manager() -> ManagerMetadataManager:
-    """Get the singleton ManagerMetadataManager instance.
-
-    Returns:
-        ManagerMetadataManager instance
-    """
-    global _manager_metadata_instance
-    if _manager_metadata_instance is None:
-        _manager_metadata_instance = ManagerMetadataManager()
-    return _manager_metadata_instance

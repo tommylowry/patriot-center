@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.transaction_processing.transaction_reverter import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.transaction_reverter import (  # noqa: E501
     check_for_reverse_transactions,
 )
 
@@ -27,15 +27,15 @@ class TestCheckForReverseTransactions:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".transaction_reverter.CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_ids,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".transaction_reverter.revert_trade_transaction"
             ) as mock_revert_trade,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".transaction_reverter.revert_add_drop_transaction"
             ) as mock_revert_add_drop,
         ):

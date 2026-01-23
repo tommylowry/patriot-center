@@ -10,40 +10,37 @@ from patriot_center_backend.constants import LEAGUE_IDS
 
 _CACHE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ===== WEEKLY DATA =====
-_PLAYERS_CACHE_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "players_cache.json"
+# ===== STEP 1: PLAYER IDS =====
+_PLAYER_IDS_CACHE_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "player_ids.json"
 )
 
-_REPLACEMENT_SCORE_CACHE_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "replacement_score_cache.json"
-)
-
+# ===== STEP 2: WEEKLY DATA =====
 _STARTERS_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "starters_cache.json"
 )
-
-_PLAYERS_DATA_CACHE_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "player_data_cache.json"
-)
-
 _VALID_OPTIONS_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "valid_options_cache.json"
 )
-
-# ===== MANAGER METADATA =====
+_PLAYERS_CACHE_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "players_cache.json"
+)
 _MANAGER_METADATA_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "manager_metadata_cache.json"
 )
-
 _TRANSACTION_IDS_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "transaction_ids.json"
 )
 
-# ===== SLEEPER PLAYER IDS =====
-_PLAYER_IDS_CACHE_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "player_ids.json"
+# ===== STEP 3-4: SCORING DATA =====
+_REPLACEMENT_SCORE_CACHE_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "replacement_score_cache.json"
 )
+_PLAYERS_DATA_CACHE_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "player_data_cache.json"
+)
+
+
 
 
 class CacheManager:

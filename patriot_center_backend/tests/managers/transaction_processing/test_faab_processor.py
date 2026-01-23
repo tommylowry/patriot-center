@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.transaction_processing.faab_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.faab_processor import (  # noqa: E501
     add_faab_details_to_cache,
 )
 
@@ -29,7 +29,7 @@ class TestAddFaabDetailsToCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".faab_processor.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
         ):

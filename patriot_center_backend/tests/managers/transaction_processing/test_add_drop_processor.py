@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.transaction_processing.add_drop_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.add_drop_processor import (  # noqa: E501
     add_add_or_drop_details_to_cache,
     process_add_or_drop_transaction,
     revert_add_drop_transaction,
@@ -32,11 +32,11 @@ class TestAddAddOrDropDetailsToCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".add_drop_processor.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".add_drop_processor.add_to_transaction_ids"
             ),
         ):
@@ -127,11 +127,11 @@ class TestRevertAddDropTransaction:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".add_drop_processor.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".add_drop_processor.CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_transaction_ids,
         ):
@@ -381,19 +381,19 @@ class TestProcessAddOrDropTransaction:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".add_drop_processor.update_players_cache"
             ),
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".add_drop_processor.add_add_or_drop_details_to_cache"
             ) as mock_add_details,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".add_drop_processor.add_faab_details_to_cache"
             ) as mock_add_faab,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".add_drop_processor.CACHE_MANAGER.get_player_ids_cache"
             ) as mock_get_player_ids,
         ):

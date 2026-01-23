@@ -21,11 +21,13 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
-from patriot_center_backend.managers import MANAGER_METADATA_MANAGER
-from patriot_center_backend.utils.player_cache_updater import (
+from patriot_center_backend.cache.updaters.manager_data_updater import (
+    ManagerMetadataManager,
+)
+from patriot_center_backend.cache.updaters.player_cache_updater import (
     update_players_cache,
 )
+from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
     get_current_season_and_week,
@@ -35,7 +37,7 @@ from patriot_center_backend.utils.sleeper_helpers import (
 logger = logging.getLogger(__name__)
 
 
-def update_starters_cache() -> None:
+def update_weekly_data_caches() -> None:
     """Incrementally load/update starters cache and persist changes.
 
     Logic:
@@ -46,6 +48,8 @@ def update_starters_cache() -> None:
     """
     starters_cache = CACHE_MANAGER.get_starters_cache(for_update=True)
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
+
+    manager_updater = ManagerMetadataManager()
 
     current_season, current_week = get_current_season_and_week()
     if current_week > 17:
@@ -71,7 +75,9 @@ def update_starters_cache() -> None:
                 # Week 17 is the final playoff week; assign final placements if
                 # reached.
                 if current_week == 17:
-                    retroactively_assign_team_placement_for_player(year)
+                    retroactively_assign_team_placement_for_player(
+                        year, manager_updater
+                    )
 
                 break
 
@@ -79,7 +85,9 @@ def update_starters_cache() -> None:
         #   done.
         # Skip the first season in LEAGUE_IDS since it may not have prior data.
         elif year != min(LEAGUE_IDS.keys()):
-            retroactively_assign_team_placement_for_player(year - 1)
+            retroactively_assign_team_placement_for_player(
+                year - 1, manager_updater
+            )
 
         year = int(year)
         max_weeks = _get_max_weeks(year, current_season, current_week)
@@ -101,7 +109,9 @@ def update_starters_cache() -> None:
         for week in weeks_to_update:
             # Final week; assign final placements if reached.
             if week == max_weeks:
-                retroactively_assign_team_placement_for_player(year)
+                retroactively_assign_team_placement_for_player(
+                    year, manager_updater
+                )
 
             starters_cache.setdefault(str(year), {})
             valid_options_cache.setdefault(str(year), {})
@@ -120,7 +130,7 @@ def update_starters_cache() -> None:
                 weekly_players_summary_array,
                 weekly_positions_summary_array,
                 week_valid_data,
-            ) = fetch_starters_for_week(year, week)
+            ) = fetch_starters_for_week(year, week, manager_updater)
 
             for weekly_manager in weekly_managers_summary_array:
                 if weekly_manager not in managers:
@@ -142,7 +152,7 @@ def update_starters_cache() -> None:
 
             starters_cache[str(year)][str(week)] = week_data
 
-            MANAGER_METADATA_MANAGER.cache_week_data(str(year), str(week))
+            manager_updater.cache_week_data(str(year), str(week))
 
             # Advance progress markers (enables resumable incremental updates).
             starters_cache["Last_Updated_Season"] = str(year)
@@ -300,7 +310,7 @@ def _get_playoff_placement(season: int) -> dict[str, int]:
 
 
 def fetch_starters_for_week(
-    season: int, week: int
+    season: int, week: int, manager_updater: ManagerMetadataManager
 ) -> tuple[
     dict[str, Any], list[str], list[str], list[str], dict[str, list[str]]
 ]:
@@ -309,6 +319,7 @@ def fetch_starters_for_week(
     Args:
         season: The NFL season year (e.g., 2024).
         week: The week number (1-17).
+        manager_updater: ManagerMetadataManager instance
 
     Returns:
         tuple:
@@ -374,9 +385,9 @@ def fetch_starters_for_week(
         if not roster_id:
             continue
 
-        # Initialize manager metadata for this season/week before skipping
-        # playoff filtering.
-        MANAGER_METADATA_MANAGER.set_roster_id(
+        # Initialize manager data cache updater for this season/week before
+        # skipping playoff filtering.
+        manager_updater.set_roster_id(
             real_name,
             str(season),
             str(week),
@@ -502,11 +513,14 @@ def get_starters_data(
     return {}, players_summary_array, positions_summary_array
 
 
-def retroactively_assign_team_placement_for_player(season: int) -> None:
+def retroactively_assign_team_placement_for_player(
+    season: int, manager_updater: ManagerMetadataManager
+) -> None:
     """Retroactively assign team placement for a given season.
 
     Args:
         season: Season year (e.g., 2024)
+        manager_updater: ManagerMetadataManager instance
 
     Notes:
         - Fetches placements from _get_playoff_placement
@@ -520,7 +534,7 @@ def retroactively_assign_team_placement_for_player(season: int) -> None:
     if not placements:
         return
 
-    MANAGER_METADATA_MANAGER.set_playoff_placements(placements, str(season))
+    manager_updater.set_playoff_placements(placements, str(season))
 
     weeks = ["15", "16", "17"]
     if season <= 2020:

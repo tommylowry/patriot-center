@@ -3,17 +3,19 @@
 import logging
 from typing import Any
 
-from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.managers.transaction_processing import (
-    transaction_reverter,
+from patriot_center_backend.cache.updaters._validators import (
+    validate_transaction,
 )
-from patriot_center_backend.managers.transaction_processing.add_drop_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.add_drop_processor import (  # noqa: E501
     process_add_or_drop_transaction,
 )
-from patriot_center_backend.managers.transaction_processing.trade_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.trade_processor import (  # noqa: E501
     process_trade_transaction,
 )
-from patriot_center_backend.managers.validators import validate_transaction
+from patriot_center_backend.cache.updaters.processors.transactions.transaction_reverter import (  # noqa: E501
+    check_for_reverse_transactions,
+)
+from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 logger = logging.getLogger(__name__)
@@ -80,12 +82,8 @@ class TransactionProcessor:
         self._weekly_transaction_ids = []
 
     def check_for_reverse_transactions(self) -> None:
-        """Checks for reverse transactions.
-
-        Calls check_for_reverse_transactions from the
-        transaction_reverter module.
-        """
-        transaction_reverter.check_for_reverse_transactions(
+        """Checks for reverse transactions."""
+        check_for_reverse_transactions(
             self._weekly_transaction_ids
         )
 

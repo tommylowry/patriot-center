@@ -5,7 +5,7 @@ from unittest.mock import call, patch
 
 import pytest
 
-from patriot_center_backend.utils.player_cache_updater import (
+from patriot_center_backend.cache.updaters.player_cache_updater import (
     update_players_cache,
     update_players_cache_with_list,
 )
@@ -28,11 +28,11 @@ class TestUpdatePlayersCache:
         """
         with (
             patch(
-                "patriot_center_backend.utils.player_cache_updater"
+                "patriot_center_backend.cache.updaters.player_cache_updater"
                 ".CACHE_MANAGER.get_player_ids_cache"
             ) as mock_get_player_ids_cache,
             patch(
-                "patriot_center_backend.utils.player_cache_updater"
+                "patriot_center_backend.cache.updaters.player_cache_updater"
                 ".CACHE_MANAGER.get_players_cache"
             ) as mock_get_players_cache,
         ):
@@ -170,7 +170,7 @@ class TestUpdatePlayersCacheWithList:
         """
         with (
             patch(
-                "patriot_center_backend.utils.player_cache_updater"
+                "patriot_center_backend.cache.updaters.player_cache_updater"
                 ".update_players_cache"
             ) as mock_update_players,
         ):

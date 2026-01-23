@@ -5,7 +5,7 @@ from unittest.mock import call, patch
 
 import pytest
 
-from patriot_center_backend.managers.transaction_processing.trade_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.trade_processor import (  # noqa: E501
     add_trade_details_to_cache,
     process_trade_transaction,
     revert_trade_transaction,
@@ -32,11 +32,11 @@ class TestAddTradeDetailsToCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.add_to_transaction_ids"
             ) as mock_add_to_transaction_ids,
         ):
@@ -317,11 +317,11 @@ class TestRevertTradeTransaction:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_ids,
         ):
@@ -436,9 +436,9 @@ class TestRevertTradeTransaction:
 
         mgr = self.mock_manager_cache["Tommy"]
         # Fixture has Jayden Daniels with total=1, decremented to 0 = deleted
-        acquired = (
-            mgr["summary"]["transactions"]["trades"]["trade_players_acquired"]
-        )
+        acquired = mgr["summary"]["transactions"]["trades"][
+            "trade_players_acquired"
+        ]
         assert "Jayden Daniels" not in acquired
 
     def test_decrements_faab_traded_away(
@@ -497,23 +497,23 @@ class TestProcessTradeTransaction:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.CACHE_MANAGER.get_player_ids_cache"
             ) as mock_get_player_ids,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.update_players_cache"
             ) as mock_update_players_cache,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.draft_pick_decipher"
             ) as mock_draft_pick_decipher,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.add_trade_details_to_cache"
             ) as mock_add_trade_details,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".trade_processor.add_faab_details_to_cache"
             ) as mock_add_faab_details,
         ):

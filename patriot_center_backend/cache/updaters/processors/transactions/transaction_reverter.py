@@ -3,10 +3,10 @@
 from copy import deepcopy
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.managers.transaction_processing.add_drop_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.add_drop_processor import (  # noqa: E501
     revert_add_drop_transaction,
 )
-from patriot_center_backend.managers.transaction_processing.trade_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.trade_processor import (  # noqa: E501
     revert_trade_transaction,
 )
 
@@ -41,9 +41,8 @@ def check_for_reverse_transactions(transaction_ids: list[str]) -> None:
             transaction2 = transaction_ids_cache[transaction_id2]
 
             # Skip if different managers involved
-            if (
-                sorted(transaction1['managers_involved'])
-                != sorted(transaction2['managers_involved'])
+            if sorted(transaction1["managers_involved"]) != sorted(
+                transaction2["managers_involved"]
             ):
                 continue
 
@@ -51,11 +50,9 @@ def check_for_reverse_transactions(transaction_ids: list[str]) -> None:
             # If commissioner adds/drops a player, then opposite action occurs,
             # this was likely an accident - revert both transactions
             if transaction1["commish_action"]:
-
-                if (
-                    transaction1.get("add")
-                    and transaction1["add"] == transaction2.get("drop")
-                ):
+                if transaction1.get("add") and transaction1[
+                    "add"
+                ] == transaction2.get("drop"):
                     trans_1_removed = revert_add_drop_transaction(
                         transaction_id1, "add", transaction_ids
                     )
@@ -73,10 +70,9 @@ def check_for_reverse_transactions(transaction_ids: list[str]) -> None:
                     if trans_2_removed:
                         continue
 
-                if (
-                    transaction1.get("drop")
-                    and transaction1["drop"] == transaction2.get("add")
-                ):
+                if transaction1.get("drop") and transaction1[
+                    "drop"
+                ] == transaction2.get("add"):
                     trans_1_removed = revert_add_drop_transaction(
                         transaction_id1, "drop", transaction_ids
                     )
@@ -90,10 +86,9 @@ def check_for_reverse_transactions(transaction_ids: list[str]) -> None:
                         continue
 
             if transaction2["commish_action"]:
-                if (
-                    transaction2.get("add")
-                    and transaction2["add"] == transaction1.get("drop")
-                ):
+                if transaction2.get("add") and transaction2[
+                    "add"
+                ] == transaction1.get("drop"):
                     trans_1_removed = revert_add_drop_transaction(
                         transaction_id1, "drop", transaction_ids
                     )
@@ -106,10 +101,9 @@ def check_for_reverse_transactions(transaction_ids: list[str]) -> None:
                     if trans_2_removed:
                         continue
 
-                if (
-                    transaction2.get("drop")
-                    and transaction2["drop"] == transaction1.get("add")
-                ):
+                if transaction2.get("drop") and transaction2[
+                    "drop"
+                ] == transaction1.get("add"):
                     trans_1_removed = revert_add_drop_transaction(
                         transaction_id1, "add", transaction_ids
                     )
@@ -130,17 +124,15 @@ def check_for_reverse_transactions(transaction_ids: list[str]) -> None:
             ):
                 continue
 
-            if (
-                sorted(transaction1['players_involved'])
-                != sorted(transaction2['players_involved'])
+            if sorted(transaction1["players_involved"]) != sorted(
+                transaction2["players_involved"]
             ):
                 continue
 
             # If same players and trade details match
             # (opposite directions), it's a reversal
-            if (
-                sorted(transaction1['trade_details'].keys())
-                == sorted(transaction2['trade_details'].keys())
+            if sorted(transaction1["trade_details"].keys()) == sorted(
+                transaction2["trade_details"].keys()
             ):
                 invalid_transaction = True
                 for plyr in transaction1["trade_details"]:

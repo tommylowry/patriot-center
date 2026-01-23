@@ -5,14 +5,14 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.managers.formatters import draft_pick_decipher
-from patriot_center_backend.managers.transaction_processing.faab_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.faab_processor import (  # noqa: E501
     add_faab_details_to_cache,
 )
-from patriot_center_backend.managers.transaction_processing.transaction_id_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
 )
-from patriot_center_backend.utils.player_cache_updater import (
+from patriot_center_backend.managers.formatters import draft_pick_decipher
+from patriot_center_backend.cache.updaters.player_cache_updater import (
     update_players_cache,
 )
 
@@ -70,10 +70,8 @@ def process_trade_transaction(
         if transaction.get("adds"):
             for player_id in transaction.get("adds", {}):
                 if transaction["adds"][player_id] == roster_id:
-                    player_name = (
-                        player_ids_cache
-                        .get(player_id, {})
-                        .get("full_name", "unknown_player")
+                    player_name = player_ids_cache.get(player_id, {}).get(
+                        "full_name", "unknown_player"
                     )
 
                     acquired[player_name] = roster_ids.get(
@@ -85,10 +83,8 @@ def process_trade_transaction(
         if transaction.get("drops"):
             for player_id in transaction.get("drops", {}):
                 if transaction["drops"][player_id] == roster_id:
-                    player_name = (
-                        player_ids_cache
-                        .get(player_id, {})
-                        .get("full_name", "unknown_player")
+                    player_name = player_ids_cache.get(player_id, {}).get(
+                        "full_name", "unknown_player"
                     )
 
                     sent[player_name] = roster_ids.get(
@@ -170,7 +166,6 @@ def process_trade_transaction(
 
             # add faab trade details to the cache
             for mgr in [sender, receiver]:
-
                 if mgr == sender:
                     opposite_manager = receiver
                     faab = -faab_amount
@@ -374,8 +369,8 @@ def revert_trade_transaction(
                 new_mgr = transaction["trade_details"][player].get(
                     "new_manager"
                 )
-                old_mgr = (
-                    transaction['trade_details'][player].get('old_manager')
+                old_mgr = transaction["trade_details"][player].get(
+                    "old_manager"
                 )
 
                 if not new_mgr or not old_mgr:

@@ -27,49 +27,15 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: (1/4) Update Starters Cache
-        run: |
-          python3 -c "
-          from patriot_center_backend.utils.starters_loader import update_starters_cache
-
-          print('Updating Starters Cache...')
-          update_starters_cache()
-
-          print('Starters Cache Update Complete!')
-          "
-      
-      - name: (2/4) Update Replacement Score Cache
-        run: |
-          python3 -c "
-          from patriot_center_backend.utils.replacement_score_loader import update_replacement_score_cache
-
-          print('Updating Replacement Score Cache...')
-          update_replacement_score_cache()
-
-          print('Replacement Score Cache Update Complete!')
-          "
-      
-      - name: (3/4) Update Player Data Cache
-        run: |
-          python3 -c "
-          from patriot_center_backend.utils.player_data_loader import update_player_data_cache
-
-          print('Updating Player Data Cache...')
-          update_player_data_cache()
-
-          print('Player Data Cache Update Complete!')
-          "
-      
-      - name: (4/4) Update Player IDs Cache
-        run: |
-          python3 -c "
-          from patriot_center_backend.utils.player_ids_loader import update_player_ids
-
-          print('Updating Player IDs Cache...')
-          update_player_ids()
-
-          print('Player IDs Cache Update Complete!')
-          "
+          - name: Update All Caches
+          run: |
+            python3 -c "
+            from patriot_center_backend.cache.updaters import update_all_caches
+            
+            print('Updating all caches...')
+            update_all_caches()
+            print('All caches updated!')
+            "
       
       - name: Commit and push if changes
         id: commit

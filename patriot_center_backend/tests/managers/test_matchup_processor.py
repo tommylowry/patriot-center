@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.matchup_processor import MatchupProcessor
+from patriot_center_backend.cache.updaters.processors.matchup_processor import MatchupProcessor
 
 
 @pytest.fixture(autouse=True)

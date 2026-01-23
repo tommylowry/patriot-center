@@ -7,13 +7,13 @@ import pytest
 
 from patriot_center_backend.cache.cache_manager import CacheManager
 from patriot_center_backend.managers.data_exporter import DataExporter
-from patriot_center_backend.managers.manager_metadata_manager import (
+from patriot_center_backend.cache.updaters.manager_data_updater import (
     ManagerMetadataManager,
 )
-from patriot_center_backend.managers.matchup_processor import (
+from patriot_center_backend.cache.updaters.processors.matchup_processor import (
     MatchupProcessor,
 )
-from patriot_center_backend.managers.transaction_processing.base_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.base_processor import (  # noqa: E501
     TransactionProcessor,
 )
 
@@ -93,7 +93,7 @@ class TestManagerMetadataManagerInit:
 
     def test_init_creates_necessary_instances(self):
         """Test that __init__ creates all necessary instances."""
-        from patriot_center_backend.managers.manager_metadata_manager import (
+        from patriot_center_backend.cache.updaters.manager_data_updater import (
             ManagerMetadataManager,
         )
 
@@ -106,7 +106,7 @@ class TestManagerMetadataManagerInit:
     def test_singleton_pattern(self):
         """Test that get_manager_metadata_manager returns singleton."""
         from patriot_center_backend.managers import MANAGER_METADATA_MANAGER
-        from patriot_center_backend.managers.manager_metadata_manager import (
+        from patriot_center_backend.cache.updaters.manager_data_updater import (
             _manager_metadata_instance,
         )
 

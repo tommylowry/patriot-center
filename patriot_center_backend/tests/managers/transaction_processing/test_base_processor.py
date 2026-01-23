@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.transaction_processing.base_processor import (  # noqa: E501
+from patriot_center_backend.cache.updaters.processors.transactions.base_processor import (  # noqa: E501
     TransactionProcessor,
 )
 
@@ -24,7 +24,7 @@ class TestTransactionProcessorInit:
 
     def test_init_sets_default_session_state(self):
         """Test that __init__ initializes empty session state."""
-        from patriot_center_backend.managers.transaction_processing.base_processor import (  # noqa: E501
+        from patriot_center_backend.cache.updaters.processors.transactions.base_processor import (  # noqa: E501
             TransactionProcessor,
         )
 
@@ -104,11 +104,11 @@ class TestScrubTransactionData:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".base_processor.fetch_sleeper_data"
             ) as mock_fetch_sleeper_data,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".base_processor.TransactionProcessor._process_transaction"
             ) as mock_process_transaction,
         ):
@@ -193,15 +193,15 @@ class TestProcessTransaction:
         """
         with (
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".base_processor.validate_transaction"
             ) as mock_validate_transaction,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".base_processor.process_add_or_drop_transaction"
             ) as mock_proc_add_drop,
             patch(
-                "patriot_center_backend.managers.transaction_processing"
+                "patriot_center_backend.cache.updaters.processors.transactions"
                 ".base_processor.process_trade_transaction"
             ) as mock_proc_trade,
         ):

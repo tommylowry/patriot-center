@@ -116,7 +116,7 @@ class TestGetManagersList:
         - `CACHE_MANAGER.get_valid_options_cache`:
             `mock_get_valid_options_cache`
         - `get_ranking_details_from_cache`: `mock_get_ranking_details`
-        - `get_current_manager_image_url`: `mock_get_current_mgr_url`
+        - `get_image_url`: `mock_get_image_url`
 
         Args:
             mock_manager_cache: Sample manager cache
@@ -140,8 +140,8 @@ class TestGetManagersList:
             ) as mock_get_ranking_details,
             patch(
                 "patriot_center_backend.managers.data_exporter"
-                ".get_current_manager_image_url"
-            ) as mock_get_current_mgr_url,
+                ".get_image_url"
+            ) as mock_get_image_url,
             patch(
                 "patriot_center_backend.managers.data_exporter"
                 ".LEAGUE_IDS",
@@ -161,8 +161,8 @@ class TestGetManagersList:
             self.mock_get_ranking_details = mock_get_ranking_details
             self.mock_get_ranking_details.return_value = {}
 
-            self.mock_get_current_mgr_url = mock_get_current_mgr_url
-            self.mock_get_current_mgr_url.return_value = (
+            self.mock_get_image_url = mock_get_image_url
+            self.mock_get_image_url.return_value = (
                 "http://example.com/manager.jpg"
             )
 
@@ -342,8 +342,8 @@ class TestGetManagerSummary:
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.managers.data_exporter"
-                ".get_current_manager_image_url"
-            ) as mock_get_current_mgr_url,
+                ".get_image_url"
+            ) as mock_get_image_url,
             patch(
                 "patriot_center_backend.managers.data_exporter"
                 ".get_matchup_details_from_cache"
@@ -369,8 +369,8 @@ class TestGetManagerSummary:
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
 
-            self.mock_get_current_mgr_url = mock_get_current_mgr_url
-            self.mock_get_current_mgr_url.return_value = (
+            self.mock_get_image_url = mock_get_image_url
+            self.mock_get_image_url.return_value = (
                 "http://example.com/manager.jpg"
             )
 
@@ -393,7 +393,7 @@ class TestGetManagerSummary:
 
     def test_get_manager_summary_all_time(self):
         """Test getting manager summary for all-time stats."""
-        self.mock_get_current_mgr_url.return_value = (
+        self.mock_get_image_url.return_value = (
             "http://example.com/manager.jpg"
         )
         self.mock_get_matchup.return_value = {"overall": {"wins": 10}}
@@ -417,7 +417,7 @@ class TestGetManagerSummary:
 
     def test_get_manager_summary_single_year(self):
         """Test getting manager summary for specific year."""
-        self.mock_get_current_mgr_url.return_value = (
+        self.mock_get_image_url.return_value = (
             "http://example.com/manager.jpg"
         )
         self.mock_get_matchup.return_value = {"overall": {"wins": 6}}
@@ -496,7 +496,11 @@ class TestGetHeadToHead:
     def test_get_h2h_all_time(self):
         """Test getting H2H stats for all-time."""
         self.mock_get_image_url.side_effect = (
-            lambda m, *args: f"http://example.com/{m}.jpg"
+            lambda m, dictionary=False: (
+                {"name": m, "image_url": f"http://example.com/{m}.jpg"}
+                if dictionary
+                else f"http://example.com/{m}.jpg"
+            )
         )
 
         self.mock_get_h2h.side_effect = (
@@ -520,7 +524,11 @@ class TestGetHeadToHead:
     def test_get_h2h_single_year(self):
         """Test getting H2H stats for specific year."""
         self.mock_get_image_url.side_effect = (
-            lambda m, *args: f"http://example.com/{m}.jpg"
+            lambda m, dictionary=False: (
+                {"name": m, "image_url": f"http://example.com/{m}.jpg"}
+                if dictionary
+                else f"http://example.com/{m}.jpg"
+            )
         )
 
         self.mock_get_h2h.side_effect = (
@@ -706,22 +714,31 @@ class TestGetManagerTransactions:
             "faab_spent": 30,
         }
 
-        def image_url_side_effect(player, *args, **kwargs):
+        def image_url_side_effect(player, dictionary=False, *args, **kwargs):
             if player == "Player A":
-                return {
-                    "name": "Player A",
-                    "image_url": "http://example.com/playerA.jpg",
-                }
+                if dictionary:
+                    return {
+                        "name": "Player A",
+                        "image_url": "http://example.com/playerA.jpg",
+                    }
+                else:
+                    return "http://example.com/playerA.jpg"
             elif player == "Player B":
-                return {
-                    "name": "Player B",
-                    "image_url": "http://example.com/playerB.jpg",
-                }
-            else:
-                return {
-                    "name": "Manager 1",
-                    "image_url": "http://example.com/manager1.jpg",
-                }
+                if dictionary:
+                    return {
+                        "name": "Player B",
+                        "image_url": "http://example.com/playerB.jpg",
+                    }
+                else:
+                    return "http://example.com/playerB.jpg"
+            elif player == "Manager 1":
+                if dictionary:
+                    return {
+                        "name": "Manager 1",
+                        "image_url": "http://example.com/manager1.jpg",
+                    }
+                else:
+                    return "http://example.com/manager1.jpg"
 
         self.mock_get_image_url.side_effect = image_url_side_effect
 
@@ -768,10 +785,6 @@ class TestGetManagerAwards:
             ) as mock_get_image_url,
             patch(
                 "patriot_center_backend.managers.data_exporter"
-                ".get_current_manager_image_url"
-            ) as mock_get_current_mgr_url,
-            patch(
-                "patriot_center_backend.managers.data_exporter"
                 ".get_manager_awards_from_cache"
             ) as mock_get_manager_awards,
             patch(
@@ -788,11 +801,6 @@ class TestGetManagerAwards:
                 "https://sleepercdn.com/avatars/acb123"
             )
 
-            self.mock_get_current_mgr_url = mock_get_current_mgr_url
-            self.mock_get_current_mgr_url.return_value = (
-                "https://sleepercdn.com/avatars/acb123"
-            )
-
             self.mock_get_manager_awards = mock_get_manager_awards
             self.mock_get_manager_awards.return_value = {}
 
@@ -803,13 +811,19 @@ class TestGetManagerAwards:
 
     def test_get_awards(self):
         """Test getting manager awards."""
-        self.mock_get_image_url.return_value = (
-            "https://sleepercdn.com/avatars/acb123"
+        self.mock_get_image_url.side_effect = (
+            lambda m, dictionary=False: (
+                {
+                    "name": m,
+                    "image_url": "https://sleepercdn.com/avatars/acb123"
+                }
+                if dictionary
+                else "https://sleepercdn.com/avatars/acb123"
+            )
         )
-        self.mock_get_current_mgr_url.return_value = {
-            "image_url": "https://sleepercdn.com/avatars/abc123",
-            "name": "Manager 1",
-        }
+
+
+
         self.mock_get_manager_awards.return_value = {
             "first_place": 1,
             "second_place": 0,

@@ -5,7 +5,9 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.cache.updaters.processors.matchup_processor import MatchupProcessor
+from patriot_center_backend.cache.updaters.processors.matchup_processor import (
+    MatchupProcessor,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -20,7 +22,8 @@ def globals_setup():
         None
     """
     with patch(
-        "patriot_center_backend.managers.matchup_processor.LEAGUE_IDS",
+        "patriot_center_backend.cache.updaters.processors.matchup_processor"
+        ".LEAGUE_IDS",
         {2023: "mock_league_id"},
     ):
         yield
@@ -288,20 +291,21 @@ class TestScrubMatchupData:
         """
         with (
             patch(
-                "patriot_center_backend.managers.matchup_processor"
-                ".CACHE_MANAGER.get_manager_cache"
+                "patriot_center_backend.cache.updaters.processors"
+                ".matchup_processor.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.matchup_processor"
-                ".fetch_sleeper_data"
+                "patriot_center_backend.cache.updaters.processors"
+                ".matchup_processor.fetch_sleeper_data"
             ) as mock_fetch_sleeper_data,
             patch(
-                "patriot_center_backend.managers.matchup_processor"
-                ".get_season_state"
+                "patriot_center_backend.cache.updaters.processors"
+                ".matchup_processor.get_season_state"
             ) as mock_get_season_state,
             patch(
-                "patriot_center_backend.managers.matchup_processor"
-                ".MatchupProcessor._add_matchup_details_to_cache"
+                "patriot_center_backend.cache.updaters.processors"
+                ".matchup_processor.MatchupProcessor"
+                "._add_matchup_details_to_cache"
             ) as mock_add_matchup_to_cache,
         ):
             self.mock_manager_cache = mock_manager_cache
@@ -463,12 +467,12 @@ class TestAddMatchupDetailsToCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.matchup_processor"
-                ".CACHE_MANAGER.get_manager_cache"
+                "patriot_center_backend.cache.updaters.processors"
+                ".matchup_processor.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.matchup_processor"
-                ".get_season_state"
+                "patriot_center_backend.cache.updaters.processors"
+                ".matchup_processor.get_season_state"
             ) as mock_get_season_state,
         ):
             self.mock_manager_cache = mock_manager_cache
@@ -503,9 +507,9 @@ class TestAddMatchupDetailsToCache:
         mock_matchup_processor._add_matchup_details_to_cache(matchup_data)
 
         # Assert weekly cache was updated
-        weekly_data = (
-            self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["1"]
-        )
+        weekly_data = self.mock_manager_cache["Manager 1"]["years"]["2023"][
+            "weeks"
+        ]["1"]
         assert weekly_data["matchup_data"]["opponent_manager"] == "Manager 2"
         assert weekly_data["matchup_data"]["points_for"] == 120.5
         assert weekly_data["matchup_data"]["points_against"] == 100.0
@@ -727,8 +731,8 @@ class TestScrubPlayoffData:
         """
         with (
             patch(
-                "patriot_center_backend.managers.matchup_processor"
-                ".CACHE_MANAGER.get_manager_cache"
+                "patriot_center_backend.cache.updaters.processors"
+                ".matchup_processor.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
         ):
             self.mock_manager_cache = mock_manager_cache
@@ -756,12 +760,12 @@ class TestScrubPlayoffData:
         mock_matchup_processor.scrub_playoff_data()
 
         # Check that playoff appearances were added
-        mgr1_overall = (
-            self.mock_manager_cache["Manager 1"]["summary"]["overall_data"]
-        )
-        mgr2_overall = (
-            self.mock_manager_cache["Manager 2"]["summary"]["overall_data"]
-        )
+        mgr1_overall = self.mock_manager_cache["Manager 1"]["summary"][
+            "overall_data"
+        ]
+        mgr2_overall = self.mock_manager_cache["Manager 2"]["summary"][
+            "overall_data"
+        ]
 
         assert "2023" in mgr1_overall["playoff_appearances"]
         assert "2023" in mgr2_overall["playoff_appearances"]
@@ -775,9 +779,9 @@ class TestScrubPlayoffData:
             mock_matchup_processor: A MatchupProcessor interface.
         """
         # Pre-populate with existing playoff appearance
-        mgr1_overall = (
-            self.mock_manager_cache["Manager 1"]["summary"]["overall_data"]
-        )
+        mgr1_overall = self.mock_manager_cache["Manager 1"]["summary"][
+            "overall_data"
+        ]
         mgr1_overall["playoff_appearances"].append("2023")
 
         mock_matchup_processor.set_session_state(

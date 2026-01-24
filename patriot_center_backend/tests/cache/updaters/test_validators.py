@@ -118,7 +118,7 @@ class TestValidateMatchupData:
         """
         with (
             patch(
-                "patriot_center_backend.managers.validators"
+                "patriot_center_backend.cache.updaters._validators"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
         ):

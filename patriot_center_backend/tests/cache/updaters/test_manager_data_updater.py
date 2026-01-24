@@ -5,7 +5,6 @@ from unittest.mock import MagicMock, call, patch
 
 import pytest
 
-from patriot_center_backend.cache.cache_manager import CacheManager
 from patriot_center_backend.cache.updaters.manager_data_updater import (
     ManagerMetadataManager,
 )
@@ -29,17 +28,10 @@ def globals_setup():
     Yields:
         None
     """
-    with (
-        patch(
-            "patriot_center_backend.managers.manager_metadata_manager"
-            ".CACHE_MANAGER",
-            MagicMock(spec=CacheManager),
-        ),
-        patch(
-            "patriot_center_backend.managers.manager_metadata_manager"
-            ".NAME_TO_MANAGER_USERNAME",
-            {"Manager 1": "manager1_user"},
-        ),
+    with patch(
+        "patriot_center_backend.cache.updaters.manager_data_updater"
+        ".NAME_TO_MANAGER_USERNAME",
+        {"Manager 1": "manager1_user"},
     ):
         yield
 
@@ -77,16 +69,6 @@ def mock_matchup_processor() -> MatchupProcessor:
     return MagicMock(spec=MatchupProcessor)
 
 
-@pytest.fixture
-def mock_data_exporter() -> DataExporter:
-    """Create MagicMock for DataExporter.
-
-    Returns:
-        A MagicMock with DataExporter's interface.
-    """
-    return MagicMock(spec=DataExporter)
-
-
 class TestManagerMetadataManagerInit:
     """Test ManagerMetadataManager initialization."""
 
@@ -98,24 +80,8 @@ class TestManagerMetadataManagerInit:
 
         metadata_manager = ManagerMetadataManager()
 
-        assert metadata_manager._data_exporter is not None
         assert metadata_manager._transaction_processor is not None
         assert metadata_manager._matchup_processor is not None
-
-    def test_singleton_pattern(self):
-        """Test that get_manager_metadata_manager returns singleton."""
-        from patriot_center_backend.managers import MANAGER_METADATA_MANAGER
-        from patriot_center_backend.cache.updaters.manager_data_updater import (
-            _manager_metadata_instance,
-        )
-
-        _manager_metadata_instance = None  # noqa: F811
-
-        mgr1 = MANAGER_METADATA_MANAGER
-        mgr2 = MANAGER_METADATA_MANAGER
-
-        # Should be same instance
-        assert mgr1 is mgr2
 
 
 class TestSetRosterId:
@@ -137,19 +103,19 @@ class TestSetRosterId:
         """
         with (
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".update_players_cache_with_list"
             ) as mock_update_players,
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".fetch_sleeper_data"
             ) as mock_fetch_sleeper_data,
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".ManagerMetadataManager._set_defaults_if_missing"
             ) as mock_set_defaults,
         ):
@@ -315,11 +281,11 @@ class TestCacheWeekData:
         """
         with (
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".validate_caching_preconditions"
             ) as mock_validate,
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".get_season_state"
             ) as mock_get_season_state,
         ):
@@ -450,7 +416,7 @@ class TestSetPlayoffPlacements:
         """
         with (
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager,
         ):
@@ -496,171 +462,6 @@ class TestSetPlayoffPlacements:
         metadata_manager.set_playoff_placements(placements, "2023")
 
 
-class TestGetManagersList:
-    """Test get_managers_list method."""
-
-    def test_get_managers_list_delegates_to_exporter(
-        self,
-        metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter,
-    ):
-        """Test that get_managers_list delegates to data exporter.
-
-        Args:
-            metadata_manager: ManagerMetadataManager instance
-            mock_data_exporter: Mock DataExporter instance
-        """
-        metadata_manager._data_exporter = mock_data_exporter
-        metadata_manager._data_exporter.get_managers_list.return_value = {
-            "managers": []
-        }
-
-        result = metadata_manager.get_managers_list(active_only=True)
-
-        data_exporter = metadata_manager._data_exporter
-        data_exporter.get_managers_list.assert_called_once_with(
-            active_only=True
-        )
-        assert result == {"managers": []}
-
-
-class TestGetManagerSummary:
-    """Test get_manager_summary method."""
-
-    def test_get_manager_summary_delegates_to_exporter(
-        self,
-        metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter,
-    ):
-        """Test that get_manager_summary delegates to data exporter.
-
-        Args:
-            metadata_manager: ManagerMetadataManager instance
-            mock_data_exporter: Mock DataExporter instance
-        """
-        mock_data_exporter.get_manager_summary.return_value = {
-            "manager_name": "Manager 1"
-        }
-        metadata_manager._data_exporter = mock_data_exporter
-
-        metadata_manager.get_manager_summary("Manager 1", year="2023")
-
-        data_exporter = metadata_manager._data_exporter
-        data_exporter.get_manager_summary.assert_called_once_with(
-            "Manager 1", year="2023"
-        )
-
-
-class TestGetHeadToHead:
-    """Test get_head_to_head method."""
-
-    def test_get_head_to_head_delegates_to_exporter(
-        self,
-        metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter,
-    ):
-        """Test that get_head_to_head delegates to data exporter.
-
-        Args:
-            metadata_manager: ManagerMetadataManager instance
-            mock_data_exporter: Mock DataExporter instance
-        """
-        mock_data_exporter.get_head_to_head.return_value = {}
-        metadata_manager._data_exporter = mock_data_exporter
-
-        metadata_manager.get_head_to_head("Manager 1", "Manager 2", year="2023")
-
-        data_exporter = metadata_manager._data_exporter
-        data_exporter.get_head_to_head.assert_called_once_with(
-            "Manager 1", "Manager 2", year="2023"
-        )
-
-
-class TestGetManagerTransactions:
-    """Test get_manager_transactions method."""
-
-    def test_get_manager_transactions_delegates_to_exporter(
-        self,
-        metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter,
-    ):
-        """Test that get_manager_transactions delegates to data exporter.
-
-        Args:
-            metadata_manager: ManagerMetadataManager instance
-            mock_data_exporter: Mock DataExporter instance
-        """
-        mock_data_exporter.get_manager_transactions.return_value = {}
-        metadata_manager._data_exporter = mock_data_exporter
-
-        metadata_manager.get_manager_transactions("Manager 1", year="2023")
-
-        data_exporter = metadata_manager._data_exporter
-        data_exporter.get_manager_transactions.assert_called_once_with(
-            "Manager 1", year="2023"
-        )
-
-
-class TestGetManagerAwards:
-    """Test get_manager_awards method."""
-
-    def test_get_manager_awards_delegates_to_exporter(
-        self,
-        metadata_manager: ManagerMetadataManager,
-        mock_data_exporter: DataExporter,
-    ):
-        """Test that get_manager_awards delegates to data exporter.
-
-        Args:
-            metadata_manager: ManagerMetadataManager instance
-            mock_data_exporter: Mock DataExporter instance
-        """
-        metadata_manager._data_exporter = mock_data_exporter
-        metadata_manager._data_exporter.get_manager_awards.return_value = {}
-
-        metadata_manager.get_manager_awards("Manager 1")
-
-        data_exporter = metadata_manager._data_exporter
-        data_exporter.get_manager_awards.assert_called_once_with("Manager 1")
-
-
-class TestSave:
-    """Test save method."""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup common mocks for all tests.
-
-        The mocks are set up to return a pre-defined
-        set of values when accessed.
-        - `CACHE_MANAGER.save_all_caches`: `mock_save_caches`
-
-        Yields:
-            None
-        """
-        with (
-            patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
-                ".CACHE_MANAGER.save_all_caches"
-            ) as mock_save_caches,
-        ):
-            self.mock_save_caches = mock_save_caches
-
-            yield
-
-    def test_save_writes_all_caches(
-        self, metadata_manager: ManagerMetadataManager
-    ):
-        """Test that save writes all caches to disk.
-
-        Args:
-            metadata_manager: ManagerMetadataManager instance
-        """
-        metadata_manager.save()
-
-        assert self.mock_save_caches.called
-
-
 class TestSetDefaultsIfMissing:
     """Test _set_defaults_if_missing method tests calling function directly."""
 
@@ -680,19 +481,19 @@ class TestSetDefaultsIfMissing:
         """
         with (
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".initialize_summary_templates"
             ) as mock_init_templates,
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".get_season_state"
             ) as mock_get_season_state,
             patch(
-                "patriot_center_backend.managers.manager_metadata_manager"
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".initialize_faab_template"
             ) as mock_init_faab,
         ):

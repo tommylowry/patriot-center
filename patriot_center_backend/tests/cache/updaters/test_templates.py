@@ -53,7 +53,7 @@ class TestInitializeFaabTemplate:
         """
         with (
             patch(
-                "patriot_center_backend.managers.templates"
+                "patriot_center_backend.cache.updaters._templates"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
         ):

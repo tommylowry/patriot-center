@@ -15,6 +15,7 @@ The API supports two response formats:
 - format=json: Nested hierarchical structure preserving original cache shape
 """
 
+import logging
 from copy import deepcopy
 from typing import Any, Literal
 
@@ -39,6 +40,12 @@ from patriot_center_backend.services.aggregated_data import (
     fetch_player_manager_aggregation,
 )
 from patriot_center_backend.utils.slug_utils import slug_to_name
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 app = Flask(__name__)
 

@@ -120,6 +120,7 @@ def _update_new_names(old_ids: dict[str, dict[str, Any]]) -> None:
         transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
         players_cache = CACHE_MANAGER.get_players_cache()
+        image_urls_cache = CACHE_MANAGER.get_image_urls_cache()
 
         manager_metadata_cache = _recursive_replace(
             manager_metadata_cache,
@@ -149,6 +150,10 @@ def _update_new_names(old_ids: dict[str, dict[str, Any]]) -> None:
 
         players_cache = _recursive_replace(
             players_cache, old_player["full_name"], new_player["full_name"]
+        )
+
+        image_urls_cache = _recursive_replace(
+            image_urls_cache, old_player["full_name"], new_player["full_name"]
         )
 
 

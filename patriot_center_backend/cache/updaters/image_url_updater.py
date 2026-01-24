@@ -3,6 +3,7 @@
 import logging
 from copy import deepcopy
 from time import time
+from typing import cast
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
@@ -11,43 +12,14 @@ from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 logger = logging.getLogger(__name__)
 
 
-def update_image_urls_cache(
-    item: str, item_dict: dict[str, str | float], immediate_update: bool = False
-) -> None:
-    """Updates the image URLs cache with the given item and item_dict.
+def update_image_urls_cache(item: str) -> dict[str, str]:
+    """Update the image URLs cache.
 
     Args:
-        item: The item to update in the cache (e.g. manager name).
-        item_dict: A dictionary containing the item's information (e.g. image
-            URL and timestamp).
-        immediate_update: If True, saves the updated cache to disk immediately.
-    """
-    image_urls_cache = CACHE_MANAGER.get_image_urls_cache()
-
-    image_urls_cache[item] = item_dict
-
-    if immediate_update:
-        CACHE_MANAGER.save_image_urls_cache(image_urls_cache)
-
-
-def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
-    """Get the image URL for a given item.
-
-    This function checks if the item is a manager, draft pick, FAAB, or
-    player. If it is a manager, it fetches the manager's image URL
-    from the Sleeper API. If it is a draft pick, FAAB, or player, it
-    returns the corresponding image URL.
-
-    Args:
-        item: The item to get the image URL for.
-        dictionary: If True, return a dictionary containing the item's
-            information. If False, return the item's image URL as a string.
+        item: Item to update
 
     Returns:
-        The item's image URL if found, otherwise an empty
-            string. If dictionary is True, it returns a dictionary containing
-            the item's information. If dictionary is False, it returns the
-            item's image URL as a string.
+        Updated image URLs cache
     """
     image_urls_cache = CACHE_MANAGER.get_image_urls_cache()
     item_dict = {}
@@ -65,20 +37,18 @@ def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
 
         if update_item:
             item_dict["name"] = item
-            item_dict["image_url"] = get_current_manager_image_url(item)
+            item_dict["image_url"] = _get_current_manager_image_url(item)
             item_dict["timestamp"] = time()
 
-            update_image_urls_cache(
-                item, deepcopy(item_dict), immediate_update=True
-            )
+            image_urls_cache[item] = item_dict
+            CACHE_MANAGER.save_image_urls_cache(image_urls_cache)
 
         # Return dict if dictionary=True and remove timestamp
         returning_dict = deepcopy(item_dict)
-        returning_dict.pop("timestamp")
-        return (
-            deepcopy(returning_dict) if dictionary
-            else returning_dict["image_url"]
-        )
+        if "timestamp" in returning_dict:
+            returning_dict.pop("timestamp")
+
+        return deepcopy(returning_dict)
 
 
     # Draft Pick: identified by "Draft Pick" in name
@@ -96,8 +66,8 @@ def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
         item_dict["first_name"] = first_name
         item_dict["last_name"] = last_name
 
-        update_image_urls_cache(item, deepcopy(item_dict))
-        return deepcopy(item_dict) if dictionary else item_dict["image_url"]
+        image_urls_cache[item] = item_dict
+        return deepcopy(item_dict)
 
     # FAAB: identified by "$" in name
     if "$" in item:
@@ -111,8 +81,8 @@ def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
         item_dict["first_name"] = first_name
         item_dict["last_name"] = last_name
 
-        update_image_urls_cache(item, deepcopy(item_dict))
-        return deepcopy(item_dict) if dictionary else item_dict["image_url"]
+        image_urls_cache[item] = item_dict
+        return deepcopy(item_dict)
 
     players_cache = CACHE_MANAGER.get_players_cache()
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
@@ -144,15 +114,69 @@ def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
         item_dict["first_name"] = player_ids_cache[player_id]["first_name"]
         item_dict["last_name"] = player_ids_cache[player_id]["last_name"]
 
-        update_image_urls_cache(item, deepcopy(item_dict))
-        return deepcopy(item_dict) if dictionary else item_dict["image_url"]
+        image_urls_cache[item] = item_dict
+        return deepcopy(item_dict)
 
     # If no match, return empty string
     logger.warning(f"Could not find image URL for item: {item}")
-    return ""
+    return {}
 
 
-def get_current_manager_image_url(manager: str) -> str:
+
+def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
+    """Get image URL for item.
+
+    Args:
+        item: Item to get image URL for
+        dictionary: If True, return dictionary with other values, otherwise
+            return string
+
+    Returns:
+        Image URL for item
+            or dictionary of image URL, name, first name, and last name
+    """
+    image_urls_cache = CACHE_MANAGER.get_image_urls_cache()
+
+    if item in NAME_TO_MANAGER_USERNAME:
+        manager_result = update_image_urls_cache(item)
+
+        return (
+            deepcopy(manager_result)
+            if dictionary
+            else manager_result["image_url"]
+        )
+
+    if item in image_urls_cache:
+        image_url = image_urls_cache[item].get("image_url")
+
+        if not isinstance(image_url, str):
+            logger.warning(
+                f"Image URL for {item} is not a string: {image_url}"
+            )
+
+            del image_urls_cache[item]
+            return get_image_url(item, dictionary=dictionary)
+
+        if dictionary:
+            returning_dict = deepcopy(image_urls_cache[item])
+
+            # Remove timestamp before returning so only string values
+            # are returned
+            returning_dict.pop("timestamp", None)
+            return cast(dict[str, str], returning_dict)
+        else:
+            return image_url
+
+    url_result = update_image_urls_cache(item)
+
+    return (
+        deepcopy(url_result)
+        if dictionary
+        else url_result["image_url"]
+    )
+
+
+def _get_current_manager_image_url(manager: str) -> str:
     """Get the current manager's image URL from the Sleeper API.
 
     Args:

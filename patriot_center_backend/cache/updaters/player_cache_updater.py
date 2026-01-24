@@ -4,6 +4,9 @@ import logging
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters.image_url_updater import (
+    update_image_urls_cache,
+)
 from patriot_center_backend.utils.slug_utils import slugify
 
 logger = logging.getLogger(__name__)
@@ -39,6 +42,9 @@ def update_players_cache(player_id: str) -> None:
             "slug": slugify(player_meta.get("full_name", "")),
             "player_id": player_id,
         }
+
+        update_image_urls_cache(player_meta["full_name"])
+        update_image_urls_cache(player_id)
 
 
 def update_players_cache_with_list(item: list[dict[str, Any]]) -> None:

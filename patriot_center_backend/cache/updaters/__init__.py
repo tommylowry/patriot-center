@@ -7,6 +7,8 @@ Single entry point for all cache updates. Runs updates in dependency order:
 4. player_data - ffWAR calculations
 """
 
+import logging
+
 from patriot_center_backend.cache.updaters.player_data_updater import (
     update_player_data_cache,
 )
@@ -18,6 +20,12 @@ from patriot_center_backend.cache.updaters.replacement_score_updater import (
 )
 from patriot_center_backend.cache.updaters.weekly_data_updater import (
     update_weekly_data_caches,
+)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 

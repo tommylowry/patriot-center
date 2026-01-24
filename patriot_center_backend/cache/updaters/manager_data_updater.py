@@ -11,6 +11,9 @@ from patriot_center_backend.cache.updaters._templates import (
 from patriot_center_backend.cache.updaters._validators import (
     validate_caching_preconditions,
 )
+from patriot_center_backend.cache.updaters.image_url_updater import (
+    update_image_urls_cache,
+)
 from patriot_center_backend.cache.updaters.player_cache_updater import (
     update_players_cache_with_list,
 )
@@ -175,6 +178,9 @@ class ManagerMetadataManager:
             manager_cache[manager]["summary"]["user_id"] = (
                 user_payload["user_id"]
             )
+
+        update_image_urls_cache(manager)
+
 
     def cache_week_data(self, year: str, week: str) -> None:
         """Process and cache all data for a specific week.

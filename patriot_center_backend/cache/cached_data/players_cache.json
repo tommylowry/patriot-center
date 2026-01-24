@@ -310,7 +310,7 @@
         "first_name": "Adam",
         "last_name": "Thielen",
         "position": "WR",
-        "team": "PIT",
+        "team": null,
         "slug": "adam%20thielen",
         "player_id": "1689"
     },
@@ -580,7 +580,7 @@
         "first_name": "Robbie",
         "last_name": "Chosen",
         "position": "WR",
-        "team": "WAS",
+        "team": null,
         "slug": "robbie%20chosen",
         "player_id": "3423"
     },
@@ -1489,7 +1489,7 @@
         "first_name": "Royce",
         "last_name": "Freeman",
         "position": "RB",
-        "team": "LAC",
+        "team": null,
         "slug": "royce%20freeman",
         "player_id": "5046"
     },
@@ -1633,7 +1633,7 @@
         "first_name": "Hunter",
         "last_name": "Renfrow",
         "position": "WR",
-        "team": "CAR",
+        "team": null,
         "slug": "hunter%20renfrow",
         "player_id": "5955"
     },
@@ -2731,7 +2731,7 @@
         "first_name": "Nyheim",
         "last_name": "Miller-Hines",
         "position": "RB",
-        "team": "NO",
+        "team": null,
         "slug": "nyheim%20miller-hines",
         "player_id": "5347"
     },
@@ -2794,7 +2794,7 @@
         "first_name": "Ross",
         "last_name": "Dwelley",
         "position": "TE",
-        "team": "CAR",
+        "team": null,
         "slug": "ross%20dwelley",
         "player_id": "5285"
     },
@@ -3082,7 +3082,7 @@
         "first_name": "Clyde",
         "last_name": "Edwards-Helaire",
         "position": "RB",
-        "team": "KC",
+        "team": null,
         "slug": "clyde%20edwards-helaire",
         "player_id": "6820"
     },
@@ -3325,7 +3325,7 @@
         "first_name": "Jordan",
         "last_name": "Akins",
         "position": "TE",
-        "team": "JAX",
+        "team": null,
         "slug": "jordan%20akins",
         "player_id": "5032"
     },
@@ -3406,7 +3406,7 @@
         "first_name": "Jeff",
         "last_name": "Wilson",
         "position": "RB",
-        "team": "MIA",
+        "team": null,
         "slug": "jeff%20wilson",
         "player_id": "5284"
     },
@@ -3604,7 +3604,7 @@
         "first_name": "JaMycal",
         "last_name": "Hasty",
         "position": "RB",
-        "team": "MIA",
+        "team": null,
         "slug": "jamycal%20hasty",
         "player_id": "6996"
     },
@@ -4108,7 +4108,7 @@
         "first_name": "Terrace",
         "last_name": "Marshall",
         "position": "WR",
-        "team": "PHI",
+        "team": null,
         "slug": "terrace%20marshall",
         "player_id": "7565"
     },
@@ -4117,7 +4117,7 @@
         "first_name": "Trey",
         "last_name": "Sermon",
         "position": "RB",
-        "team": "PIT",
+        "team": null,
         "slug": "trey%20sermon",
         "player_id": "7593"
     },
@@ -4180,7 +4180,7 @@
         "first_name": "Elijah",
         "last_name": "Mitchell",
         "position": "RB",
-        "team": "NE",
+        "team": null,
         "slug": "elijah%20mitchell",
         "player_id": "7561"
     },
@@ -4189,7 +4189,7 @@
         "first_name": "K.J.",
         "last_name": "Osborn",
         "position": "WR",
-        "team": "ATL",
+        "team": null,
         "slug": "k.j.%20osborn",
         "player_id": "7066"
     },
@@ -4423,7 +4423,7 @@
         "first_name": "Mike",
         "last_name": "White",
         "position": "QB",
-        "team": "CAR",
+        "team": null,
         "slug": "mike%20white",
         "player_id": "5089"
     },
@@ -4513,7 +4513,7 @@
         "first_name": "Jermar",
         "last_name": "Jefferson",
         "position": "RB",
-        "team": "ARI",
+        "team": null,
         "slug": "jermar%20jefferson",
         "player_id": "7599"
     },
@@ -4558,7 +4558,7 @@
         "first_name": "Jonathan",
         "last_name": "Ward",
         "position": "RB",
-        "team": "BAL",
+        "team": null,
         "slug": "jonathan%20ward",
         "player_id": "7087"
     },
@@ -5872,7 +5872,7 @@
         "first_name": "Brandon",
         "last_name": "Johnson",
         "position": "WR",
-        "team": "PIT",
+        "team": "DEN",
         "slug": "brandon%20johnson",
         "player_id": "8756"
     },
@@ -6133,7 +6133,7 @@
         "first_name": "Carson",
         "last_name": "Steele",
         "position": "RB",
-        "team": "KC",
+        "team": "PHI",
         "slug": "carson%20steele",
         "player_id": "11582"
     },
@@ -6439,7 +6439,7 @@
         "first_name": "Sincere",
         "last_name": "McCormick",
         "position": "RB",
-        "team": "MIN",
+        "team": null,
         "slug": "sincere%20mccormick",
         "player_id": "8220"
     },
@@ -6448,7 +6448,7 @@
         "first_name": "Matthew",
         "last_name": "Wright",
         "position": "K",
-        "team": null,
+        "team": "BUF",
         "slug": "matthew%20wright",
         "player_id": "6268"
     },
@@ -6493,7 +6493,7 @@
         "first_name": "Raheem",
         "last_name": "Blackshear",
         "position": "RB",
-        "team": "NYJ",
+        "team": null,
         "slug": "raheem%20blackshear",
         "player_id": "8255"
     },

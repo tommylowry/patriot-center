@@ -68,10 +68,14 @@ def update_player_ids_cache() -> None:
                 }
                 continue
 
+            if not player_ids_cache.get(player_id):
+                player_ids_cache[player_id] = {}
+
             # Select only desired fields (presence-checked)
             for key in FIELDS_TO_KEEP:
                 if key not in player_info:
                     continue
+
                 player_ids_cache[player_id][key] = player_info[key]
 
         # Fill in missing defenses that don't exist anymore (OAK, etc.)

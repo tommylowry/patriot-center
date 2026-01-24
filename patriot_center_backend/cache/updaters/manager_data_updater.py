@@ -69,7 +69,10 @@ class ManagerMetadataManager:
         self._playoff_week_start: int
 
         # Initialize templates
-        self._templates = {}  # Will be set when use_faab is known
+        self._templates: dict[str, dict[str, Any]] = {}
+
+        # Initialize data_exporter subprocesser
+        self._needs_faab_image_urls_update = True
 
         # Session state
         self._year: str | None = None
@@ -288,6 +291,7 @@ class ManagerMetadataManager:
             )
 
         manager_cache = CACHE_MANAGER.get_manager_cache()
+        image_urls_cache = CACHE_MANAGER.get_image_urls_cache()
 
         if not self._templates:
             self._templates = initialize_summary_templates(
@@ -333,6 +337,16 @@ class ManagerMetadataManager:
                 weeks_level[self._week] = deepcopy(
                     self._templates["weekly_summary_template"]
                 )
+
+        # Update FAAB image urls cache if needed
+        if (
+            self._needs_faab_image_urls_update
+            and not image_urls_cache.get("$1 FAAB")
+        ):
+            for i in range(1, 101):
+                update_image_urls_cache(f"${i} FAAB")
+            self._needs_faab_image_urls_update = False
+
 
         if self._use_faab:
             initialize_faab_template(manager, self._year, self._week)

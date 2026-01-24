@@ -46,6 +46,7 @@ def metadata_manager() -> ManagerMetadataManager:
     metadata_manager = ManagerMetadataManager()
     metadata_manager._use_faab = True
     metadata_manager._playoff_week_start = 15
+    metadata_manager._needs_faab_image_urls_update = False
     return metadata_manager
 
 
@@ -82,6 +83,8 @@ class TestManagerMetadataManagerInit:
 
         assert metadata_manager._transaction_processor is not None
         assert metadata_manager._matchup_processor is not None
+
+        assert metadata_manager._needs_faab_image_urls_update
 
 
 class TestSetRosterId:
@@ -479,8 +482,10 @@ class TestSetDefaultsIfMissing:
         The mocks are set up to return a pre-defined
         set of values when accessed.
         - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_image_urls_cache`: `mock_get_image_urls_cache`
         - `initialize_summary_templates`: `mock_init_templates`
         - `get_season_state`: `mock_get_season_state`
+        - `update_image_urls_cache`: `mock_update_image_urls`
         - `initialize_faab_template`: `mock_init_faab`
 
         Yields:
@@ -493,12 +498,20 @@ class TestSetDefaultsIfMissing:
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.updaters.manager_data_updater"
+                ".CACHE_MANAGER.get_image_urls_cache"
+            ) as mock_get_image_urls_cache,
+            patch(
+                "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".initialize_summary_templates"
             ) as mock_init_templates,
             patch(
                 "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".get_season_state"
             ) as mock_get_season_state,
+            patch(
+                "patriot_center_backend.cache.updaters.manager_data_updater"
+                ".update_image_urls_cache"
+            ) as mock_update_image_urls,
             patch(
                 "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".initialize_faab_template"
@@ -508,10 +521,15 @@ class TestSetDefaultsIfMissing:
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
 
+            self.mock_get_image_urls_cache = mock_get_image_urls_cache
+            self.mock_get_image_urls_cache.return_value = {"$1 FAAB": "$1 FAAB"}
+
             self.mock_init_templates = mock_init_templates
 
             self.mock_get_season_state = mock_get_season_state
             self.mock_get_season_state.return_value = "regular_season"
+
+            self.mock_update_image_urls = mock_update_image_urls
 
             self.mock_init_faab = mock_init_faab
 

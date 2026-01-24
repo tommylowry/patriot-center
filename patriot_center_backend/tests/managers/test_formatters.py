@@ -1011,6 +1011,27 @@ class TestExtractDictData:
 class TestDraftPickDecipher:
     """Test draft_pick_decipher function."""
 
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `update_image_urls_cache`: `mock_update_image_urls_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.managers.formatters"
+                ".update_image_urls_cache"
+            ) as mock_update_image_urls_cache
+        ):
+            self.mock_update_image_urls_cache = mock_update_image_urls_cache
+
+            yield
+
     def test_valid_draft_pick(self):
         """Test with valid draft pick dictionary."""
         draft_pick_dict = {

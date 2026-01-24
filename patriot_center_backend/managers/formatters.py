@@ -7,6 +7,7 @@ from typing import Any, Literal
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters.image_url_updater import (
     get_image_url,
+    update_image_urls_cache,
 )
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
@@ -413,4 +414,7 @@ def draft_pick_decipher(
     origin_team = draft_pick_dict.get("roster_id", "unknown_team")
     origin_manager = weekly_roster_ids.get(origin_team, "unknown_manager")
 
-    return f"{origin_manager}'s {season} Round {round_num} Draft Pick"
+    draft_pick = f"{origin_manager}'s {season} Round {round_num} Draft Pick"
+    update_image_urls_cache(draft_pick)
+
+    return draft_pick

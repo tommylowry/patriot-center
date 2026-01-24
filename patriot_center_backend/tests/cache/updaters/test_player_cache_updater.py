@@ -22,6 +22,7 @@ class TestUpdatePlayersCache:
         set of values when accessed.
         - `CACHE_MANAGER.get_player_ids_cache`: `mock_get_player_ids_cache`
         - `CACHE_MANAGER.get_players_cache`: `mock_get_players_cache`
+        - `update_image_urls_cache`: `mock_update_image_urls_cache`
 
         Yields:
             None
@@ -35,12 +36,18 @@ class TestUpdatePlayersCache:
                 "patriot_center_backend.cache.updaters.player_cache_updater"
                 ".CACHE_MANAGER.get_players_cache"
             ) as mock_get_players_cache,
+            patch(
+                "patriot_center_backend.cache.updaters.player_cache_updater"
+                ".update_image_urls_cache"
+            ) as mock_update_image_urls_cache,
         ):
             self.mock_player_ids_cache = {}
             self.mock_players_cache = {}
 
             mock_get_player_ids_cache.return_value = self.mock_player_ids_cache
             mock_get_players_cache.return_value = self.mock_players_cache
+
+            self.mock_update_image_urls_cache = mock_update_image_urls_cache
 
             yield
 

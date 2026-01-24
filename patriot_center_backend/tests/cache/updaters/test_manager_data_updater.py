@@ -97,6 +97,7 @@ class TestSetRosterId:
         - `update_players_cache_with_list`: `mock_update_players`
         - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
         - `ManagerMetadataManager._set_defaults_if_missing`: `mock_set_defaults`
+        - `update_image_urls_cache`: `mock_update_image_urls`
 
         Yields:
             None
@@ -118,6 +119,10 @@ class TestSetRosterId:
                 "patriot_center_backend.cache.updaters.manager_data_updater"
                 ".ManagerMetadataManager._set_defaults_if_missing"
             ) as mock_set_defaults,
+            patch(
+                "patriot_center_backend.cache.updaters.manager_data_updater"
+                ".update_image_urls_cache"
+            ) as mock_update_image_urls,
         ):
             self.mock_manager_cache = {}
             self.mock_get_manager_cache = mock_get_manager_cache
@@ -129,6 +134,8 @@ class TestSetRosterId:
             self.mock_fetch_sleeper_data.return_value = {}
 
             self.mock_set_defaults = mock_set_defaults
+
+            self.mock_update_image_urls = mock_update_image_urls
 
             yield
 

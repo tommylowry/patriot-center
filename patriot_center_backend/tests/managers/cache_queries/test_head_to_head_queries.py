@@ -52,7 +52,7 @@ class TestGetHeadToHeadDetailsFromCache:
     def test_get_h2h_details(self):
         """Test getting head-to-head details."""
         result = get_head_to_head_details_from_cache(
-            "Manager 1", {}, year=None, opponent="Manager 2"
+            "Manager 1", year=None, opponent="Manager 2"
         )
 
         # Should return single opponent dict
@@ -127,9 +127,7 @@ class TestGetHeadToHeadOverallFromCache:
         Args:
             caplog: pytest caplog
         """
-        result = get_head_to_head_overall_from_cache(
-            "Manager 1", "Manager 2", {}
-        )
+        result = get_head_to_head_overall_from_cache("Manager 1", "Manager 2")
 
         # Verify warning was printed out for no victories for Manager 2
         assert "No victories found for Manager 2" in caplog.text
@@ -149,9 +147,7 @@ class TestGetHeadToHeadOverallFromCache:
         Args:
             caplog: pytest caplog
         """
-        result = get_head_to_head_overall_from_cache(
-            "Manager 1", "Manager 3", {}
-        )
+        result = get_head_to_head_overall_from_cache("Manager 1", "Manager 3")
 
         assert "No victories found for Manager 1" in caplog.text
         assert "No victories found for Manager 3" in caplog.text
@@ -189,7 +185,7 @@ class TestGetHeadToHeadOverallFromCache:
         }
 
         result = get_head_to_head_overall_from_cache(
-            "Manager 1", "Manager 2", {}, list_all_matchups=True
+            "Manager 1", "Manager 2", list_all_matchups=True
         )
 
         # Should return a list of matchup cards
@@ -248,7 +244,7 @@ class TestGetHeadToHeadOverallFromCache:
         self.mock_h2h_details_value = {"wins": 1, "losses": 0, "ties": 0}
 
         result = get_head_to_head_overall_from_cache(
-            "Manager 1", "Manager 2", {}, year="2023"
+            "Manager 1", "Manager 2", year="2023"
         )
 
         assert "No victories found for Manager 2 against " in caplog.text
@@ -299,9 +295,7 @@ class TestGetHeadToHeadOverallFromCache:
             "margin": 20.0,
         }
 
-        result = get_head_to_head_overall_from_cache(
-            "Manager 1", "Manager 2", {}
-        )
+        result = get_head_to_head_overall_from_cache("Manager 1", "Manager 2")
 
         assert "No victories found for Manager 1 against " in caplog.text
         assert "Cannot compute average margin of victory" in caplog.text

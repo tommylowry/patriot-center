@@ -46,7 +46,7 @@ class TestGetManagerAwardsFromCache:
 
     def test_manager_awards(self):
         """Test getting manager awards."""
-        result = get_manager_awards_from_cache("Manager 1", {})
+        result = get_manager_awards_from_cache("Manager 1")
 
         # Should include various award categories
         assert "first_place" in result
@@ -100,7 +100,7 @@ class TestGetManagerScoreAwardsFromCache:
 
     def test_score_awards(self):
         """Test getting scoring-related awards."""
-        result = get_manager_score_awards_from_cache("Manager 1", {})
+        result = get_manager_score_awards_from_cache("Manager 1")
 
         # Should include score-based awards
         assert isinstance(result, dict)

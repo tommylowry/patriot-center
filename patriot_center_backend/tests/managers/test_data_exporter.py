@@ -6,7 +6,13 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.data_exporter import DataExporter
+from patriot_center_backend.managers.data_exporter import (
+    get_head_to_head,
+    get_manager_awards,
+    get_manager_summary,
+    get_manager_transactions,
+    get_managers_list,
+)
 
 
 @pytest.fixture
@@ -93,26 +99,6 @@ def mock_valid_options_cache() -> dict[str, Any]:
     return {"2025": {"managers": ["Manager 1", "Manager 2"]}}
 
 
-@pytest.fixture
-def mock_data_exporter() -> DataExporter:
-    """Create a mock data_exporter object.
-
-    Returns:
-        Mock DataExporter object
-    """
-    return DataExporter()
-
-
-class TestDataExporterInit:
-    """Test DataExporter initialization."""
-
-    def test_init_creates_empty_image_cache(self):
-        """Test that __init__ creates empty image URL cache."""
-        exporter = DataExporter()
-
-        assert exporter._image_urls == {}
-
-
 class TestGetManagersList:
     """Test get_managers_list method."""
 
@@ -182,12 +168,8 @@ class TestGetManagersList:
 
             yield
 
-    def test_get_active_managers_only(self, mock_data_exporter: DataExporter):
-        """Test getting only active managers.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_active_managers_only(self):
+        """Test getting only active managers."""
         self.mock_get_ranking_details.return_value = {
             "values": {
                 "win_percentage": 60.0,
@@ -209,19 +191,15 @@ class TestGetManagersList:
             },
         }
 
-        result = mock_data_exporter.get_managers_list(active_only=True)
+        result = get_managers_list(active_only=True)
 
         assert "managers" in result
         assert len(result["managers"]) == 2
         assert all("name" in m for m in result["managers"])
         assert all("image_url" in m for m in result["managers"])
 
-    def test_get_all_managers(self, mock_data_exporter: DataExporter):
-        """Test getting all managers including inactive.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_all_managers(self):
+        """Test getting all managers including inactive."""
         self.mock_get_ranking_details.return_value = {
             "values": {
                 "win_percentage": 60.0,
@@ -243,20 +221,14 @@ class TestGetManagersList:
             },
         }
 
-        result = mock_data_exporter.get_managers_list(active_only=False)
+        result = get_managers_list(active_only=False)
 
         assert "managers" in result
         # Should get all managers from cache keys
         assert len(result["managers"]) == 2
 
-    def test_get_managers_list_immutable(
-        self, mock_data_exporter: DataExporter
-    ):
-        """Test that get_managers_list doesn't modify cache.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_managers_list_immutable(self,):
+        """Test that get_managers_list doesn't modify cache."""
         self.mock_get_ranking_details.return_value = {
             "values": {
                 "win_percentage": 60.0,
@@ -280,18 +252,12 @@ class TestGetManagersList:
 
         original = deepcopy(self.mock_manager_cache)
 
-        mock_data_exporter.get_managers_list(active_only=True)
+        get_managers_list(active_only=True)
 
         assert self.mock_manager_cache == original
 
-    def test_managers_list_sorted_by_weight(
-        self, mock_data_exporter: DataExporter
-    ):
-        """Test that managers are sorted by weight (best first).
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_managers_list_sorted_by_weight(self):
+        """Test that managers are sorted by weight (best first)."""
 
         def ranking_side_effect(manager, manager_summary_usage, active_only):
             # Manager 1 should have better stats
@@ -340,7 +306,7 @@ class TestGetManagersList:
 
         self.mock_get_ranking_details.side_effect = ranking_side_effect
 
-        result = mock_data_exporter.get_managers_list(active_only=True)
+        result = get_managers_list(active_only=True)
 
         # Manager 1 should be first (better record)
         assert result["managers"][0]["name"] == "Manager 1"
@@ -425,14 +391,8 @@ class TestGetManagerSummary:
 
             yield
 
-    def test_get_manager_summary_all_time(
-        self, mock_data_exporter: DataExporter
-    ):
-        """Test getting manager summary for all-time stats.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_manager_summary_all_time(self):
+        """Test getting manager summary for all-time stats."""
         self.mock_get_current_mgr_url.return_value = (
             "http://example.com/manager.jpg"
         )
@@ -445,7 +405,7 @@ class TestGetManagerSummary:
         self.mock_ranking.return_value = {"ranks": {}, "values": {}}
         self.mock_get_h2h.return_value = {}
 
-        result = mock_data_exporter.get_manager_summary("Manager 1")
+        result = get_manager_summary("Manager 1")
 
         assert result["manager_name"] == "Manager 1"
         assert "image_url" in result
@@ -455,14 +415,8 @@ class TestGetManagerSummary:
         assert "rankings" in result
         assert "head_to_head" in result
 
-    def test_get_manager_summary_single_year(
-        self, mock_data_exporter: DataExporter
-    ):
-        """Test getting manager summary for specific year.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_manager_summary_single_year(self):
+        """Test getting manager summary for specific year."""
         self.mock_get_current_mgr_url.return_value = (
             "http://example.com/manager.jpg"
         )
@@ -475,9 +429,7 @@ class TestGetManagerSummary:
         self.mock_ranking.return_value = {"ranks": {}, "values": {}}
         self.mock_get_h2h.return_value = {}
 
-        result = mock_data_exporter.get_manager_summary(
-            "Manager 1", year="2023"
-        )
+        result = get_manager_summary("Manager 1", year="2023")
 
         assert result["manager_name"] == "Manager 1"
 
@@ -496,7 +448,7 @@ class TestGetHeadToHead:
         The mocks are set up to return a pre-defined
         set of values when accessed.
         - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
-        - `get_current_manager_image_url`: `mock_get_current_mgr_url`
+        - `get_image_url`: `mock_get_image_url`
         - `get_head_to_head_overall_from_cache`: `mock_get_h2h`
         - `get_trade_history_between_two_managers`: `mock_get_trade_history`
 
@@ -513,8 +465,8 @@ class TestGetHeadToHead:
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.managers.data_exporter"
-                ".get_current_manager_image_url"
-            ) as mock_get_current_mgr_url,
+                ".get_image_url"
+            ) as mock_get_image_url,
             patch(
                 "patriot_center_backend.managers.data_exporter"
                 ".get_head_to_head_overall_from_cache"
@@ -528,8 +480,8 @@ class TestGetHeadToHead:
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = self.mock_manager_cache
 
-            self.mock_get_current_mgr_url = mock_get_current_mgr_url
-            self.mock_get_current_mgr_url.return_value = (
+            self.mock_get_image_url = mock_get_image_url
+            self.mock_get_image_url.return_value = (
                 "http://example.com/manager.jpg"
             )
 
@@ -541,13 +493,9 @@ class TestGetHeadToHead:
 
             yield
 
-    def test_get_h2h_all_time(self, mock_data_exporter: DataExporter):
-        """Test getting H2H stats for all-time.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
-        self.mock_get_current_mgr_url.side_effect = (
+    def test_get_h2h_all_time(self):
+        """Test getting H2H stats for all-time."""
+        self.mock_get_image_url.side_effect = (
             lambda m, *args: f"http://example.com/{m}.jpg"
         )
 
@@ -561,7 +509,7 @@ class TestGetHeadToHead:
             )
         )
 
-        result = mock_data_exporter.get_head_to_head("Manager 1", "Manager 2")
+        result = get_head_to_head("Manager 1", "Manager 2")
 
         assert result["manager_1"]["name"] == "Manager 1"
         assert result["manager_2"]["name"] == "Manager 2"
@@ -569,13 +517,9 @@ class TestGetHeadToHead:
         assert "matchup_history" in result
         assert "trades_between" in result
 
-    def test_get_h2h_single_year(self, mock_data_exporter: DataExporter):
-        """Test getting H2H stats for specific year.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
-        self.mock_get_current_mgr_url.side_effect = (
+    def test_get_h2h_single_year(self):
+        """Test getting H2H stats for specific year."""
+        self.mock_get_image_url.side_effect = (
             lambda m, *args: f"http://example.com/{m}.jpg"
         )
 
@@ -587,9 +531,7 @@ class TestGetHeadToHead:
             )
         )
 
-        mock_data_exporter.get_head_to_head(
-            "Manager 1", "Manager 2", year="2023"
-        )
+        get_head_to_head("Manager 1", "Manager 2", year="2023")
 
         # Verify year was passed
         assert self.mock_get_h2h.call_args[1]["year"] == "2023"
@@ -652,53 +594,35 @@ class TestGetManagerTransactions:
 
             yield
 
-    def test_get_transactions_all_time(self, mock_data_exporter: DataExporter):
-        """Test getting all-time transaction details.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_transactions_all_time(self):
+        """Test getting all-time transaction details."""
         self.mock_get_image_url.return_value = {
             "name": "Manager 1",
             "image_url": "http://example.com/manager1.jpg",
         }
 
-        result = mock_data_exporter.get_manager_transactions("Manager 1")
+        result = get_manager_transactions("Manager 1")
 
         assert "name" in result
         assert "total_count" in result
         assert "transactions" in result
         assert isinstance(result["transactions"], list)
 
-    def test_get_transactions_single_year(
-        self, mock_data_exporter: DataExporter
-    ):
-        """Test getting transaction details for specific year.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_transactions_single_year(self):
+        """Test getting transaction details for specific year."""
         self.mock_get_image_url.return_value = {
             "name": "Manager 1",
             "image_url": "http://example.com/manager1.jpg",
         }
 
-        result = mock_data_exporter.get_manager_transactions(
-            "Manager 1", year="2023"
-        )
+        result = get_manager_transactions("Manager 1", year="2023")
 
         assert "name" in result
         assert "total_count" in result
         assert "transactions" in result
 
-    def test_get_transactions_with_trades(
-        self, mock_data_exporter: DataExporter
-    ):
-        """Test get_manager_transactions processes trade transactions.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_transactions_with_trades(self,):
+        """Test get_manager_transactions processes trade transactions."""
         # Setup cache with trade transaction IDs
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {
@@ -717,21 +641,15 @@ class TestGetManagerTransactions:
             "managers_involved": ["Manager 1", "Manager 2"],
         }
 
-        result = mock_data_exporter.get_manager_transactions(
-            "Manager 1", year="2023"
-        )
+        result = get_manager_transactions("Manager 1", year="2023")
 
         # Should have processed 2 trades
         assert result["total_count"] == 2
         trades = [t for t in result["transactions"] if t["type"] == "trade"]
         assert len(trades) == 2
 
-    def test_get_transactions_with_adds(self, mock_data_exporter: DataExporter):
-        """Test get_manager_transactions processes add transactions.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_transactions_with_adds(self):
+        """Test get_manager_transactions processes add transactions."""
         # Setup cache with add transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {"transactions": {"adds": {"transaction_ids": ["add1"]}}}
@@ -746,23 +664,15 @@ class TestGetManagerTransactions:
             "image_url": "http://example.com/player.jpg",
         }
 
-        result = mock_data_exporter.get_manager_transactions(
-            "Manager 1", year="2023"
-        )
+        result = get_manager_transactions("Manager 1", year="2023")
 
         # Should have 1 add transaction
         adds = [t for t in result["transactions"] if t["type"] == "add"]
         assert len(adds) == 1
         assert adds[0]["faab_spent"] == 50
 
-    def test_get_transactions_with_drops(
-        self, mock_data_exporter: DataExporter
-    ):
-        """Test get_manager_transactions processes drop transactions.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_transactions_with_drops(self):
+        """Test get_manager_transactions processes drop transactions."""
         # Setup cache with drop transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {"transactions": {"drops": {"transaction_ids": ["drop1"]}}}
@@ -776,23 +686,15 @@ class TestGetManagerTransactions:
             "image_url": "http://example.com/player.jpg",
         }
 
-        result = mock_data_exporter.get_manager_transactions(
-            "Manager 1", year="2023"
-        )
+        result = get_manager_transactions("Manager 1", year="2023")
 
         # Should have 1 drop transaction
         drops = [t for t in result["transactions"] if t["type"] == "drop"]
         assert len(drops) == 1
         assert drops[0]["player"]["name"] == "Player B"
 
-    def test_get_transactions_with_add_and_drop(
-        self, mock_data_exporter: DataExporter
-    ):
-        """Test get_manager_transactions processes add_and_drop transactions.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_transactions_with_add_and_drop(self):
+        """Test get_manager_transactions processes add_and_drop transactions."""
         # Setup cache with add_and_drop transaction
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"] = {
             "1": {"transactions": {"adds": {"transaction_ids": ["add_drop1"]}}}
@@ -823,9 +725,7 @@ class TestGetManagerTransactions:
 
         self.mock_get_image_url.side_effect = image_url_side_effect
 
-        result = mock_data_exporter.get_manager_transactions(
-            "Manager 1", year="2023"
-        )
+        result = get_manager_transactions("Manager 1", year="2023")
 
         # Should have 1 add_and_drop transaction
         add_drops = [
@@ -901,12 +801,8 @@ class TestGetManagerAwards:
 
             yield
 
-    def test_get_awards(self, mock_data_exporter: DataExporter):
-        """Test getting manager awards.
-
-        Args:
-            mock_data_exporter: Mock DataExporter object
-        """
+    def test_get_awards(self):
+        """Test getting manager awards."""
         self.mock_get_image_url.return_value = (
             "https://sleepercdn.com/avatars/acb123"
         )
@@ -927,7 +823,7 @@ class TestGetManagerAwards:
             "biggest_blowout_loss": {},
         }
 
-        result = mock_data_exporter.get_manager_awards("Manager 1")
+        result = get_manager_awards("Manager 1")
 
         # Should have the correct structure
         assert "manager" in result

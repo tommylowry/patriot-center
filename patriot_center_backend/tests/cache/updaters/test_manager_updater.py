@@ -6,7 +6,6 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 
 from patriot_center_backend.cache.cache_manager import CacheManager
-from patriot_center_backend.managers.data_exporter import DataExporter
 from patriot_center_backend.cache.updaters.manager_data_updater import (
     ManagerMetadataManager,
 )

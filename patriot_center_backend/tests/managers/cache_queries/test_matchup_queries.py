@@ -144,7 +144,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1")
 
         assert isinstance(result["placements"], list)
         assert len(result["placements"]) == 2
@@ -171,7 +171,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1")
 
         assert isinstance(result["placements"], list)
         assert len(result["placements"]) == 2  # Still returns all-time data
@@ -183,7 +183,7 @@ class TestGetOverallDataDetailsFromCache:
 
     def test_manager_with_no_playoff_appearances(self):
         """Test manager with no playoff appearances."""
-        result = get_overall_data_details_from_cache("Manager 3", {})
+        result = get_overall_data_details_from_cache("Manager 3")
 
         assert result["playoff_appearances"] == 0
         assert result["placements"] == []
@@ -207,7 +207,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1")
 
         # Find the call for 2020 - should use week '16'
         calls = self.mock_get_matchup_card.call_args_list
@@ -226,7 +226,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1")
 
         # All calls should use week '17' since both years are after 2020
         for call in self.mock_get_matchup_card.call_args_list:
@@ -248,7 +248,7 @@ class TestGetOverallDataDetailsFromCache:
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
 
-        result = get_overall_data_details_from_cache("Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1")
 
         # Verify warning was printed for missing opponent
         assert "Unable to retreive opponent" in caplog.text
@@ -281,7 +281,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1")
 
         assert isinstance(result["placements"], list)
         for placement in result["placements"]:
@@ -291,8 +291,6 @@ class TestGetOverallDataDetailsFromCache:
         """Test that all parameters are passed to get_matchup_card."""
         self.mock_get_matchup_card.return_value = {"mock": "matchup_card"}
 
-        image_urls = {"url": "http://example.com"}
-
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
@@ -300,15 +298,14 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("Manager 1", image_urls)
+        get_overall_data_details_from_cache("Manager 1")
 
         # Verify get_matchup_card was called with the correct parameters
         call_args = self.mock_get_matchup_card.call_args_list[0][0]
         assert call_args[0] == "Manager 1"
         # call_args[1] is opponent
         # call_args[2] is year
-        # call_args[3] is week
-        assert call_args[4] == image_urls
+        assert call_args[3] == "17"
 
     def test_get_overall_data_immutable(self, caplog: pytest.LogCaptureFixture):
         """Test that function doesn't modify cache.
@@ -318,7 +315,7 @@ class TestGetOverallDataDetailsFromCache:
         """
         original = deepcopy(self.mock_manager_cache)
 
-        get_overall_data_details_from_cache("Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1")
 
         # Verify warning was printed for missing opponent
         assert "Unable to retreive opponent" in caplog.text

@@ -244,7 +244,6 @@ class TestGetTop3ScorersFromMatchupData:
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
-            image_urls={},
         )
 
         assert len(matchup_data) == 6  # original data and the 4 new lists
@@ -271,7 +270,6 @@ class TestGetTop3ScorersFromMatchupData:
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
-            image_urls={},
         )
 
         # Verify warning was printed for missing data
@@ -298,7 +296,6 @@ class TestGetTop3ScorersFromMatchupData:
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
-            image_urls={},
         )
 
         # Verify warning was printed for missing data
@@ -332,7 +329,6 @@ class TestGetTop3ScorersFromMatchupData:
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
-            image_urls={},
         )
 
         # Verify warning was printed for missing data
@@ -368,7 +364,6 @@ class TestGetTop3ScorersFromMatchupData:
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
-            image_urls={},
         )
 
         # Verify warning was printed for missing data
@@ -417,7 +412,6 @@ class TestGetTop3ScorersFromMatchupData:
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
-            image_urls={},
         )
 
         # Should return only 2 players for manager_1
@@ -472,7 +466,6 @@ class TestGetTop3ScorersFromMatchupData:
             matchup_data=matchup_data,
             manager_1=manager_1,
             manager_2=manager_2,
-            image_urls={},
         )
 
         # Verify top 3 are in descending order
@@ -556,7 +549,6 @@ class TestGetMatchupCard:
             manager_2="Manager 2",
             year="2023",
             week="1",
-            image_urls={},
         )
 
         assert result["year"] == "2023"
@@ -596,7 +588,6 @@ class TestGetMatchupCard:
             manager_2="Manager 2",
             year="2023",
             week="1",
-            image_urls={},
         )
 
         assert result["winner"] == "Manager 2"
@@ -632,7 +623,6 @@ class TestGetMatchupCard:
             manager_2="Manager 2",
             year="2023",
             week="1",
-            image_urls={},
         )
 
         assert result["winner"] == "Tie"
@@ -652,7 +642,6 @@ class TestGetMatchupCard:
             manager_2="Manager 2",
             year="2023",
             week="1",
-            image_urls={},
         )
 
         # Verify warning was printed for missing data
@@ -690,7 +679,6 @@ class TestGetMatchupCard:
             manager_2="Manager 2",
             year="2023",
             week="1",
-            image_urls={},
         )
 
         # Verify warning was printed for missing data
@@ -728,7 +716,6 @@ class TestGetMatchupCard:
             manager_2="Manager 2",
             year="2023",
             week="1",
-            image_urls={},
         )
 
         # Verify warning was printed for missing data
@@ -797,9 +784,8 @@ class TestGetTradeCard:
         }
 
         transaction_id = "trade123"
-        image_urls = {}
 
-        result = get_trade_card(transaction_id, image_urls)
+        result = get_trade_card(transaction_id)
 
         assert result["year"] == "2023"
         assert result["week"] == "5"
@@ -839,9 +825,8 @@ class TestGetTradeCard:
         }
 
         transaction_id = "trade456"
-        image_urls = {}
 
-        result = get_trade_card(transaction_id, image_urls)
+        result = get_trade_card(transaction_id)
 
         assert len(result["managers_involved"]) == 3
         # Each manager sent and received one player
@@ -881,9 +866,8 @@ class TestGetTradeCard:
         }
 
         transaction_id = "trade789"
-        image_urls = {}
 
-        result = get_trade_card(transaction_id, image_urls)
+        result = get_trade_card(transaction_id)
 
         # Manager 1 sent 2, received 1
         assert len(result["manager_1_sent"]) == 2
@@ -913,9 +897,8 @@ class TestGetTradeCard:
         }
 
         transaction_id = "trade999"
-        image_urls = {}
 
-        result = get_trade_card(transaction_id, image_urls)
+        result = get_trade_card(transaction_id)
 
         # Should convert spaces to underscores and lowercase
         assert "john_smith_sent" in result
@@ -953,9 +936,8 @@ class TestExtractDictData:
     def test_top_3_simple_dict(self):
         """Test with simple dictionary (no nested totals)."""
         data = {"Player A": 10, "Player B": 8, "Player C": 6, "Player D": 4}
-        image_urls = {}
 
-        result = extract_dict_data(data, image_urls)
+        result = extract_dict_data(data)
 
         assert len(result) == 3
         assert result[0]["name"] == "Player A"
@@ -973,9 +955,8 @@ class TestExtractDictData:
             "Player C": {"total": 6, "other": "data"},
             "Player D": {"total": 4, "other": "data"},
         }
-        image_urls = {}
 
-        result = extract_dict_data(data, image_urls)
+        result = extract_dict_data(data)
 
         assert len(result) == 3
         assert result[0]["name"] == "Player A"
@@ -984,9 +965,8 @@ class TestExtractDictData:
     def test_no_cutoff(self):
         """Test with cutoff=0 to include all items."""
         data = {"Player A": 10, "Player B": 8, "Player C": 6, "Player D": 4}
-        image_urls = {}
 
-        result = extract_dict_data(data, image_urls, cutoff=0)
+        result = extract_dict_data(data, cutoff=0)
 
         assert len(result) == 4
 
@@ -1000,9 +980,8 @@ class TestExtractDictData:
             "Player E": 6,  # Tied with Player C and D
             "Player F": 4,
         }
-        image_urls = {}
 
-        result = extract_dict_data(data, image_urls, cutoff=3)
+        result = extract_dict_data(data, cutoff=3)
 
         # Should include all tied items at position 3
         assert len(result) == 5  # A, B, C, D, E all included
@@ -1010,10 +989,9 @@ class TestExtractDictData:
     def test_custom_key_value_names(self):
         """Test with custom key_name and value_name."""
         data = {"Player A": 10, "Player B": 8}
-        image_urls = {}
 
         result = extract_dict_data(
-            data, image_urls, key_name="player_name", value_name="score"
+            data, key_name="player_name", value_name="score"
         )
 
         assert result[0]["player_name"] == "Player A"
@@ -1024,9 +1002,8 @@ class TestExtractDictData:
     def test_fewer_than_cutoff_items(self):
         """Test with fewer items than cutoff."""
         data = {"Player A": 10, "Player B": 8}
-        image_urls = {}
 
-        result = extract_dict_data(data, image_urls, cutoff=5)
+        result = extract_dict_data(data, cutoff=5)
 
         assert len(result) == 2
 

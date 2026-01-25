@@ -337,13 +337,12 @@ class CacheManager:
 
     # ===== PLAYER DATA CACHE (ffWAR) =====
     def get_player_data_cache(
-        self, force_reload: bool = False, for_update: bool = False
+        self, force_reload: bool = False
     ) -> dict[str, Any]:
         """Get player data cache (ffWAR data).
 
         Args:
             force_reload: If True, reload from disk
-            for_update: If True, include metadata fields
 
         Returns:
             Player data cache dictionary
@@ -352,24 +351,6 @@ class CacheManager:
             self._player_data_cache = self._load_cache(
                 _PLAYERS_DATA_CACHE_FILE
             )
-
-        if for_update:
-            if self._player_data_cache == {}:
-
-                # Initialize the cache with all years
-                self._player_data_cache = {
-                    "Last_Updated_Season": "0",
-                    "Last_Updated_Week": 0
-                }
-
-                # Initialize an empty dict for each season
-                for year in list(LEAGUE_IDS.keys()):
-                    self._player_data_cache[str(year)] = {}
-
-        # Remove metadata fields if we're not using this data to update
-        else:
-            self._player_data_cache.pop("Last_Updated_Season", None)
-            self._player_data_cache.pop("Last_Updated_Week", None)
 
         return self._player_data_cache
 
@@ -394,14 +375,12 @@ class CacheManager:
 
     # ===== REPLACEMENT SCORE CACHE =====
     def get_replacement_score_cache(
-        self, force_reload: bool = False, for_update: bool = False
+        self, force_reload: bool = False
     ) -> dict[str, Any]:
         """Get replacement score cache.
 
         Args:
             force_reload: If True, reload from disk
-            for_update: If True, initialize cache with all years
-                (plus historical years for replacement score caches)
 
         Returns:
             Replacement score cache dictionary
@@ -410,34 +389,6 @@ class CacheManager:
             self._replacement_score_cache = self._load_cache(
                 _REPLACEMENT_SCORE_CACHE_FILE
             )
-
-        if for_update:
-            if self._replacement_score_cache == {}:
-                # If the cache is empty then initialize it with all years
-                #   (plus historical years for replacement score caches)
-                self._replacement_score_cache = {
-                    "Last_Updated_Season": "0",
-                    "Last_Updated_Week": 0
-                }
-
-                years = list(LEAGUE_IDS.keys())
-
-                # For replacement score caches, backfill extra seasons
-                #   to compute multi-year averages
-                # Extend years list with prior 3 years
-                #   (supports 3yr average calc)
-                first_year = min(years)
-                years.extend([first_year - 3, first_year - 2, first_year - 1])
-                years = sorted(years)
-
-                # Initialize an empty dict for each season
-                for year in years:
-                    self._replacement_score_cache[str(year)] = {}
-
-        # Remove metadata fields if we're not using this data to update
-        else:
-            self._replacement_score_cache.pop("Last_Updated_Season", None)
-            self._replacement_score_cache.pop("Last_Updated_Week", None)
 
         return self._replacement_score_cache
 

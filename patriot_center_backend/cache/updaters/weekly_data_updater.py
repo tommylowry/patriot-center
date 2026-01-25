@@ -20,17 +20,24 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters._base import get_max_weeks
 from patriot_center_backend.cache.updaters.manager_data_updater import (
     ManagerMetadataManager,
 )
 from patriot_center_backend.cache.updaters.player_cache_updater import (
     update_players_cache,
 )
+from patriot_center_backend.cache.updaters.player_data_updater import (
+    update_player_data_cache,
+)
+from patriot_center_backend.cache.updaters.replacement_score_updater import (
+    update_replacement_score_cache,
+)
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
     get_current_season_and_week,
-    get_roster_id,
+    get_roster_ids,
 )
 
 logger = logging.getLogger(__name__)
@@ -47,12 +54,22 @@ def update_weekly_data_caches() -> None:
     """
     starters_cache = CACHE_MANAGER.get_starters_cache(for_update=True)
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
+    replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
 
     manager_updater = ManagerMetadataManager()
 
     current_season, current_week = get_current_season_and_week()
     if current_week > 17:
         current_week = 17  # Regular season cap
+
+        # Update replacement scores for next week if needed
+        current_season_dict = replacement_score_cache.get(str(current_season))
+        if (
+            current_season_dict
+            and str(current_week) in current_season_dict
+            and str(current_week + 1) not in current_season_dict
+        ):
+            update_replacement_score_cache(current_season, current_week + 1)
 
     for year in LEAGUE_IDS:
         last_updated_season = int(
@@ -89,7 +106,11 @@ def update_weekly_data_caches() -> None:
             )
 
         year = int(year)
-        max_weeks = _get_max_weeks(year, current_season, current_week)
+        max_weeks = get_max_weeks(
+            year,
+            current_season=current_season,
+            current_week=current_week
+        )
 
         if year in (current_season, last_updated_season):
             last_updated_week = starters_cache.get("Last_Updated_Week", 0)
@@ -99,6 +120,8 @@ def update_weekly_data_caches() -> None:
 
         if not weeks_to_update:
             continue
+
+        roster_ids = get_roster_ids(year)
 
         logger.info(
             f"Updating starters cache for season "
@@ -125,45 +148,23 @@ def update_weekly_data_caches() -> None:
                 "managers": [], "players": [], "positions": []
             }
 
-            # Update players cache and managers cache
-            _cache_week(year, week, manager_updater)
-            manager_updater.cache_week_data(str(year), str(week))
+            # Update all weekly caches
+            _cache_week(year, week, manager_updater, roster_ids)
 
             # Advance progress markers (enables resumable incremental updates).
             starters_cache["Last_Updated_Season"] = str(year)
             starters_cache["Last_Updated_Week"] = week
             logger.info(
-                f"\tStarters cache updated internally "
-                f"for season {year}, week {week}"
+                f"\tSeason {year}, Week {week}: Starters Cache Updated."
             )
+
+            if week == max_weeks:
+                update_replacement_score_cache(year, week + 1)
 
     CACHE_MANAGER.save_all_caches()
 
     # Reload to remove the metadata fields
     CACHE_MANAGER.get_starters_cache(force_reload=True)
-
-
-def _get_max_weeks(season: int, current_season: int, current_week: int) -> int:
-    """Determine maximum playable weeks for a season.
-
-    Rules:
-    - Live season -> current_week.
-    - 2019/2020 -> 16 (legacy rule set).
-    - Other seasons -> 17 (regular season boundary).
-
-    Args:
-        season: The season to determine the max weeks for.
-        current_season: The current season.
-        current_week: The current week.
-
-    Returns:
-        Max week to process for season.
-    """
-    if season == current_season:
-        return current_week
-    elif season in [2019, 2020]:
-        return 16
-    return 17
 
 
 def _get_relevant_playoff_roster_ids(
@@ -285,7 +286,10 @@ def _get_playoff_placement(season: int) -> dict[str, int]:
 
 
 def _cache_week(
-    season: int, week: int, manager_updater: ManagerMetadataManager
+    season: int,
+    week: int,
+    manager_updater: ManagerMetadataManager,
+    roster_ids: dict[int, str]
 ) -> None:
     """Fetch starters data for a given week.
 
@@ -293,22 +297,16 @@ def _cache_week(
         season: The NFL season year (e.g., 2024).
         week: The week number (1-17).
         manager_updater: ManagerMetadataManager instance
+        roster_ids: Dict of {roster_id: manager_name}
 
     Raises:
         ValueError: If the data for the given week is not valid.
     """
     league_id = LEAGUE_IDS[season]
 
-    sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
-    sleeper_response_rosters = fetch_sleeper_data(f"league/{league_id}/rosters")
     sleeper_response_matchups = fetch_sleeper_data(
         f"league/{league_id}/matchups/{week}"
     )
-
-    if not isinstance(sleeper_response_users, list):
-        raise ValueError("Sleeper Users return not in list form")
-    if not isinstance(sleeper_response_rosters, list):
-        raise ValueError("Sleeper Rosters return not in list form")
     if not isinstance(sleeper_response_matchups, list):
         raise ValueError("Sleeper Matchups return not in list form")
 
@@ -318,28 +316,23 @@ def _cache_week(
 
     roster_id_to_matchup = {}
     for matchup in sleeper_response_matchups:
-        roster_id_to_matchup[matchup["roster_id"]] = matchup
-
-    for manager in sleeper_response_users:
-        if manager["display_name"] not in USERNAME_TO_REAL_NAME:
-            raise ValueError(
-                f"{manager['display_name']} not "
-                f"in {USERNAME_TO_REAL_NAME.keys()}"
+        if matchup["roster_id"] in roster_ids:
+            roster_id_to_matchup[matchup["roster_id"]] = matchup
+        else:
+            logger.warning(
+                f"Roster ID {matchup['roster_id']} in "
+                f"matchup not found in inputted roster IDs"
             )
 
-        real_name = USERNAME_TO_REAL_NAME[manager["display_name"]]
+    for roster_id in roster_ids:
+
+        manager_name = roster_ids[roster_id]
 
         # Historical correction: In 2019 weeks 1-3, Tommy played then
         #   Cody took over
         # Reassign those weeks from Cody to Tommy for accurate records.
-        if season == 2019 and week < 4 and real_name == "Cody":
-            real_name = "Tommy"
-
-        roster_id = get_roster_id(
-            manager["user_id"],
-            season,
-            sleeper_rosters_response=sleeper_response_rosters,
-        )
+        if season == 2019 and week < 4 and manager_name == "Cody":
+            manager_name = "Tommy"
 
         if not roster_id:
             continue
@@ -347,7 +340,7 @@ def _cache_week(
         # Initialize manager data cache updater for this season/week before
         # skipping playoff filtering.
         manager_updater.set_roster_id(
-            real_name,
+            manager_name,
             str(season),
             str(week),
             roster_id,
@@ -369,8 +362,12 @@ def _cache_week(
             str(season),
             str(week),
             roster_id_to_matchup[roster_id],
-            real_name,
+            manager_name,
         )
+
+    manager_updater.cache_week_data(str(season), str(week))
+    update_replacement_score_cache(season, week)
+    update_player_data_cache(season, week, roster_ids)
 
 
 def _cache_matchup_data(

@@ -54,12 +54,9 @@ def get_matchup_details_from_cache(
         .get("playoff_appearances", [])
     )
 
-    if (  # Manager has playoff appearances
-        len(playoff_appearances) > 0
-        and year
-        and year in manager_cache[manager]["years"]
-    ):
-        season_states.append("playoffs")
+    if len(playoff_appearances) > 0:
+        if not year or year in playoff_appearances:
+            season_states.append("playoffs")
 
     else:  # Manager has no playoff appearances
         matchup_data["playoffs"] = {

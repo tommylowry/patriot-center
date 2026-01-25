@@ -30,25 +30,25 @@ def update_image_urls_cache(item: str) -> dict[str, str]:
         # Check to see if manager image URL is already in cache
         # if it is, and its less than one hour old, return it,
         # otherwise fetch it
-        item_entry = image_urls_cache.get(item)
+        item_entry = image_urls_cache.get(item, {})
         update_item = (
             not item_entry or float(item_entry["timestamp"]) + 3600 < time()
         )
 
         if update_item:
-            item_dict["name"] = item
-            item_dict["image_url"] = _get_current_manager_image_url(item)
-            item_dict["timestamp"] = time()
+            item_entry["name"] = item
+            item_entry["image_url"] = _get_current_manager_image_url(item)
+            item_entry["timestamp"] = time()
 
-            image_urls_cache[item] = item_dict
+            image_urls_cache[item] = item_entry
             CACHE_MANAGER.save_image_urls_cache(image_urls_cache)
 
         # Return dict if dictionary=True and remove timestamp
-        returning_dict = deepcopy(item_dict)
+        returning_dict = deepcopy(item_entry)
         if "timestamp" in returning_dict:
             returning_dict.pop("timestamp")
 
-        return deepcopy(returning_dict)
+        return cast(dict[str, str], deepcopy(returning_dict))
 
 
     # Draft Pick: identified by "Draft Pick" in name

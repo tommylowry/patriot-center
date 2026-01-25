@@ -23,14 +23,16 @@ from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.scoring import calculate_player_score
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
-    get_current_season_and_week,
-    get_roster_ids,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def update_player_data_cache() -> None:
+def update_player_data_cache(
+    year: int,
+    week: int,
+    roster_ids: dict[int, str]
+) -> None:
     """Incrementally updates the ffWAR cache JSON file by year/week.
 
     - Dynamically determines the current season and week
@@ -47,114 +49,25 @@ def update_player_data_cache() -> None:
     - Fetches and updates only the missing weeks for the year.
     - Saves the updated cache to the file.
     - Reloads to remove the metadata fields.
-    """
-    player_data_cache = CACHE_MANAGER.get_player_data_cache(for_update=True)
-
-    # Dynamically determine the current season and week
-    # according to Sleeper API/util logic.
-    current_season, current_week = get_current_season_and_week()
-    if current_week > 17:
-        current_week = 17  # Cap the current week at 17
-
-    # Process all years configured for leagues; this drives
-    # which seasons we consider for updates.
-    years = list(LEAGUE_IDS.keys())
-
-    for year in years:
-        # Read progress markers from the cache to support
-        #   incremental updates and resumability.
-        # Cast Last_Updated_Season to int to allow numeric
-        #   comparison with `year`.
-        last_updated_season = int(
-            player_data_cache.get("Last_Updated_Season", 0)
-        )
-        last_updated_week = player_data_cache.get("Last_Updated_Week", 0)
-
-        # Skip years that are already fully processed
-        # based on the last recorded season.
-        if last_updated_season != 0:
-            if year < last_updated_season:
-                continue
-            if last_updated_season < year:
-                # Reset the week if moving to a new year
-                player_data_cache["Last_Updated_Week"] = 0
-
-        # If the cache is already up-to-date for the
-        # current season and week, stop processing.
-        if (
-            last_updated_season == current_season
-            and last_updated_week == current_week
-        ):
-            return
-
-        year = int(year)  # Ensure year is an integer
-        max_weeks = _get_max_weeks(year, current_season, current_week)
-
-        # Determine the range of weeks to update.
-        if year in (current_season, last_updated_season):
-            last_updated_week = player_data_cache.get("Last_Updated_Week", 0)
-            weeks_to_update = range(last_updated_week + 1, max_weeks + 1)
-        else:
-            weeks_to_update = range(1, max_weeks + 1)
-
-        if list(weeks_to_update) == []:
-            continue
-
-        logger.info(
-            f"Updating Player Data cache for "
-            f"season {year}, weeks: {list(weeks_to_update)}"
-        )
-
-        roster_ids = get_roster_ids(year)
-
-        # Fetch and update only the missing weeks for the year.
-        for week in weeks_to_update:
-            if str(year) not in player_data_cache:
-                player_data_cache[str(year)] = {}
-
-            # Fetch ffWAR for the week.
-            player_data_cache[str(year)][str(week)] = _fetch_ffwar(
-                year, week, roster_ids
-            )
-
-            # Update the metadata for the last updated season and week.
-            player_data_cache["Last_Updated_Season"] = str(year)
-            player_data_cache["Last_Updated_Week"] = week
-
-            logger.info(
-                f"    Player Data cache updated "
-                f"internally for season {year}, week {week}"
-            )
-
-    # Save the updated cache to the file.
-    CACHE_MANAGER.save_player_data_cache()
-
-    # Reload to remove the metadata fields
-    CACHE_MANAGER.get_player_data_cache(force_reload=True)
-
-
-def _get_max_weeks(season: int, current_season: int, current_week: int) -> int:
-    """Determine maximum playable weeks for a season.
-
-    Rules:
-    - Live season -> current_week.
-    - 2019/2020 -> 16 (legacy rule set).
-    - Other seasons -> 17 (regular season boundary).
 
     Args:
-        season: The season to determine the max weeks for.
-        current_season: The current season.
-        current_week: The current week.
-
-    Returns:
-        int: Max week to process for season.
+        year: The current season
+        week: The current week
+        roster_ids: The roster IDs for the current week
     """
-    if season == current_season:
-        return current_week  # Use the current week for the current season
-    elif season in [2019, 2020]:
-        return 16  # Cap at 16 weeks for 2019 and 2020
-    else:
-        return 17  # Cap at 17 weeks for other seasons
+    player_data_cache = CACHE_MANAGER.get_player_data_cache()
+
+    if str(year) not in player_data_cache:
+        player_data_cache[str(year)] = {}
+
+    # Fetch ffWAR for the week.
+    player_data_cache[str(year)][str(week)] = _fetch_ffwar(
+        year, week, roster_ids
+    )
+
+    logger.info(
+        f"\tSeason {year}, Week {week}: Player Data Cache Updated."
+    )
 
 
 def _fetch_ffwar(

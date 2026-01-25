@@ -30,7 +30,7 @@ jobs:
           - name: Update All Caches
           run: |
             python3 -c "
-            from patriot_center_backend.cache.updaters import update_all_caches
+            from patriot_center_backend.cache.cache_updater import update_all_caches
             
             print('Updating all caches...')
             update_all_caches()

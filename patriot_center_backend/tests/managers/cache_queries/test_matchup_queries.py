@@ -94,6 +94,89 @@ class TestGetMatchupDetailsFromCache:
 
         assert self.mock_manager_cache == original
 
+    def test_all_time_stats_includes_playoff_data_when_manager_has_appearances(
+        self,
+    ):
+        """Test all-time stats includes playoff matchup data.
+
+        When year=None (all-time) and manager has playoff appearances,
+        the playoffs key should contain actual playoff stats, not zeros.
+        """
+        result = get_matchup_details_from_cache("Manager 1")
+
+        # Manager 1 has playoff appearances, so playoff data should be populated
+        assert result["playoffs"]["wins"] == 2
+        assert result["playoffs"]["losses"] == 1
+        assert result["playoffs"]["ties"] == 0
+
+        # Win percentage: 2/(2+1+0) * 100 = 66.7%
+        assert result["playoffs"]["win_percentage"] == 66.7
+
+    def test_year_specific_stats_includes_playoff_data_when_year_in_appearances(
+        self,
+    ):
+        """Test year-specific stats includes playoff data for playoff year.
+
+        When year is specified and that year is in playoff_appearances,
+        the playoffs key should contain actual playoff stats for that year.
+        """
+        # Manager 1 made playoffs in 2023
+        result = get_matchup_details_from_cache("Manager 1", year="2023")
+
+        # 2023 playoff data should be populated
+        assert result["playoffs"]["wins"] == 1
+        assert result["playoffs"]["losses"] == 0
+        assert result["playoffs"]["ties"] == 0
+
+        # Win percentage: 1/(1+0+0) * 100 = 100%
+        assert result["playoffs"]["win_percentage"] == 100.0
+
+    def test_year_specific_stats_no_playoff_data_when_year_not_in_appearances(
+        self,
+    ):
+        """Test year-specific stats excludes playoff data for non-playoff year.
+
+        When year is specified but that year is NOT in playoff_appearances,
+        the playoffs key should contain zeros.
+        """
+        # Add a year where Manager 1 did NOT make playoffs
+        self.mock_manager_cache["Manager 1"]["years"]["2021"] = {
+            "summary": {
+                "matchup_data": {
+                    "overall": {
+                        "wins": {"total": 4, "opponents": {}},
+                        "losses": {"total": 10, "opponents": {}},
+                        "ties": {"total": 0, "opponents": {}},
+                        "points_for": {"total": 600.00, "opponents": {}},
+                        "points_against": {"total": 800.00, "opponents": {}},
+                    },
+                    "regular_season": {
+                        "wins": {"total": 4, "opponents": {}},
+                        "losses": {"total": 10, "opponents": {}},
+                        "ties": {"total": 0, "opponents": {}},
+                        "points_for": {"total": 600.00, "opponents": {}},
+                        "points_against": {"total": 800.00, "opponents": {}},
+                    },
+                    "playoffs": {
+                        "wins": {"total": 0, "opponents": {}},
+                        "losses": {"total": 0, "opponents": {}},
+                        "ties": {"total": 0, "opponents": {}},
+                        "points_for": {"total": 0.0, "opponents": {}},
+                        "points_against": {"total": 0.0, "opponents": {}},
+                    },
+                },
+            },
+            "weeks": {},
+        }
+        # 2021 is NOT in playoff_appearances (only 2023, 2022 are)
+
+        result = get_matchup_details_from_cache("Manager 1", year="2021")
+
+        # Playoff data should be zeros since 2021 not in playoff_appearances
+        assert result["playoffs"]["wins"] == 0
+        assert result["playoffs"]["losses"] == 0
+        assert result["playoffs"]["win_percentage"] == 0.0
+
 
 class TestGetOverallDataDetailsFromCache:
     """Test get_overall_data_details_from_cache function."""

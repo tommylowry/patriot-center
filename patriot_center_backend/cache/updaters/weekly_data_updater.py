@@ -16,7 +16,6 @@ Notes:
 """
 
 import logging
-from copy import deepcopy
 from decimal import Decimal
 from typing import Any
 
@@ -114,44 +113,20 @@ def update_weekly_data_caches() -> None:
                 )
 
             starters_cache.setdefault(str(year), {})
-            valid_options_cache.setdefault(str(year), {})
+            valid_options_cache.setdefault(
+                str(year),
+                {"managers": [], "players": [], "weeks": [], "positions": []}
+            )
 
-            managers = valid_options_cache[str(year)].get("managers", [])
-            players = valid_options_cache[str(year)].get("players", [])
-            weeks = list(valid_options_cache[str(year)].keys())
-            for key in deepcopy(weeks):
-                if not key.isdigit():
-                    weeks.remove(key)
-            positions = valid_options_cache[str(year)].get("positions", [])
+            # Initialize new weeks
+            starters_cache[str(year)][str(week)] = {}
+            valid_options_cache[str(year)]["weeks"].append(str(week))
+            valid_options_cache[str(year)][str(week)] = {
+                "managers": [], "players": [], "positions": []
+            }
 
-            (
-                week_data,
-                weekly_managers_summary_array,
-                weekly_players_summary_array,
-                weekly_positions_summary_array,
-                week_valid_data,
-            ) = fetch_starters_for_week(year, week, manager_updater)
-
-            for weekly_manager in weekly_managers_summary_array:
-                if weekly_manager not in managers:
-                    managers.append(weekly_manager)
-            for weekly_player in weekly_players_summary_array:
-                if weekly_player not in players:
-                    players.append(weekly_player)
-            for weekly_position in weekly_positions_summary_array:
-                if weekly_position not in positions:
-                    positions.append(weekly_position)
-
-            weeks.append(str(week))
-
-            valid_options_cache[str(year)]["managers"] = managers
-            valid_options_cache[str(year)]["players"] = players
-            valid_options_cache[str(year)]["weeks"] = weeks
-            valid_options_cache[str(year)]["positions"] = positions
-            valid_options_cache[str(year)][str(week)] = week_valid_data
-
-            starters_cache[str(year)][str(week)] = week_data
-
+            # Update players cache and managers cache
+            _cache_week(year, week, manager_updater)
             manager_updater.cache_week_data(str(year), str(week))
 
             # Advance progress markers (enables resumable incremental updates).
@@ -309,25 +284,15 @@ def _get_playoff_placement(season: int) -> dict[str, int]:
     return placement
 
 
-def fetch_starters_for_week(
+def _cache_week(
     season: int, week: int, manager_updater: ManagerMetadataManager
-) -> tuple[
-    dict[str, Any], list[str], list[str], list[str], dict[str, list[str]]
-]:
+) -> None:
     """Fetch starters data for a given week.
 
     Args:
         season: The NFL season year (e.g., 2024).
         week: The week number (1-17).
         manager_updater: ManagerMetadataManager instance
-
-    Returns:
-        tuple:
-            - A dictionary containing the starters data for the given week.
-            - A list of manager names that have valid data for the given week.
-            - A list of player names that are valid for the given week.
-            - A list of position names that are valid for the given week.
-            - A dictionary containing the valid data for the given week.
 
     Raises:
         ValueError: If the data for the given week is not valid.
@@ -351,17 +316,11 @@ def fetch_starters_for_week(
         season, week, league_id
     )
 
-    managers_summary_array = []
-    players_summary_array = []
-    positions_summary_array = []
-    week_valid_data = {}
+    roster_id_to_matchup = {}
+    for matchup in sleeper_response_matchups:
+        roster_id_to_matchup[matchup["roster_id"]] = matchup
 
-    managers = sleeper_response_users
-    week_data = {}
-    for manager in managers:
-        players_summary_array_per_manager = []
-        positions_summary_array_per_manager = []
-
+    for manager in sleeper_response_users:
         if manager["display_name"] not in USERNAME_TO_REAL_NAME:
             raise ValueError(
                 f"{manager['display_name']} not "
@@ -396,121 +355,117 @@ def fetch_starters_for_week(
             sleeper_response_matchups,
         )
 
-        if not roster_id:
-            continue  # Skip unresolved roster
-
         # During playoff weeks, only include rosters actively competing in that
         #   round.
         # This filters out teams eliminated or in consolation bracket.
         if playoff_roster_ids != [] and roster_id not in playoff_roster_ids:
             continue  # Skip non-playoff rosters in playoff weeks
 
-        (
-            starters_data,
-            players_summary_array_per_manager,
-            positions_summary_array_per_manager,
-        ) = get_starters_data(
-            sleeper_response_matchups,
-            roster_id,
-            players_summary_array_per_manager,
-            positions_summary_array_per_manager,
+        if not matchup:
+            continue
+
+        # Add matchup data to cache
+        _cache_matchup_data(
+            str(season),
+            str(week),
+            roster_id_to_matchup[roster_id],
+            real_name,
         )
-        if starters_data:
-            week_data[real_name] = starters_data
-            week_valid_data[real_name] = {
-                "players": players_summary_array_per_manager,
-                "positions": positions_summary_array_per_manager,
-            }
-
-            managers_summary_array.append(real_name)
-            for player in players_summary_array_per_manager:
-                if player not in players_summary_array:
-                    players_summary_array.append(player)
-            for position in positions_summary_array_per_manager:
-                if position not in positions_summary_array:
-                    positions_summary_array.append(position)
-
-    week_valid_data["managers"] = managers_summary_array
-    week_valid_data["players"] = players_summary_array
-    week_valid_data["positions"] = positions_summary_array
-
-    return (
-        week_data,
-        managers_summary_array,
-        players_summary_array,
-        positions_summary_array,
-        week_valid_data,
-    )
 
 
-def get_starters_data(
-    matchups: list[dict[str, Any]],
-    roster_id: int,
-    players_summary_array: list[str],
-    positions_summary_array: list[str],
-) -> tuple[dict[str, float | dict[str, str | float]], list[str], list[str]]:
-    """Get starters data for a given manager and week.
+def _cache_matchup_data(
+    year: str, week: str, matchup: dict[str, Any], manager: str
+) -> None:
+    """Update cache with matchup data.
 
     Args:
-        matchups: List of matchup data from Sleeper API.
-        roster_id: The roster ID of the manager.
-        players_summary_array: List of player names.
-        positions_summary_array: List of position names.
-
-    Returns:
-        tuple:
-            - A dictionary containing the starters data for the given manager
-                and week.
-            - A list of player names that are valid for the given week.
-            - A list of position names that are valid for the given week.
+        year: The NFL season year (e.g., 2024).
+        week: The week number (1-17).
+        matchup: Matchup data from Sleeper API.
+        manager: Manager name
 
     Raises:
-        Exception: If total points somehow isn't a float.
+        Exception: If the total points for the given week is not valid.
     """
+    starters_cache = CACHE_MANAGER.get_starters_cache()
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
-    for matchup in matchups:
-        if matchup["roster_id"] == roster_id:
-            manager_data: dict[str, float | dict[str, str | float]] = {
-                "Total_Points": 0.0,
-            }
-            for player_id in matchup["starters"]:
-                player_meta = player_ids_cache.get(player_id, {})
 
-                player_name = player_meta.get("full_name")
-                if not player_name:
-                    continue  # Skip unknown player
-                player_position = player_meta.get("position")
-                if not player_position:
-                    continue  # Skip if no position resolved
+    manager_data: dict[str, float | dict[str, str | float]] = {
+        "Total_Points": 0.0,
+    }
+    for player_id in matchup["starters"]:
+        player_meta = player_ids_cache.get(player_id, {})
 
-                if player_name not in players_summary_array:
-                    players_summary_array.append(player_name)
-                if player_position not in positions_summary_array:
-                    positions_summary_array.append(player_position)
+        player_name = player_meta.get("full_name")
+        if not player_name:
+            continue  # Skip unknown player
+        player_position = player_meta.get("position")
+        if not player_position:
+            continue  # Skip if no position resolved
 
-                update_players_cache(player_id)
+        _cache_valid_data(
+            year, week, manager, player_name, player_position
+        )
 
-                player_score = matchup["players_points"].get(player_id, 0.0)
+        update_players_cache(player_id)
 
-                manager_data[player_name] = {
-                    "points": player_score,
-                    "position": player_position,
-                    "player_id": player_id,
-                }
+        player_score = matchup["players_points"].get(player_id, 0.0)
 
-                manager_data["Total_Points"] += player_score
+        manager_data[player_name] = {
+            "points": player_score,
+            "position": player_position,
+            "player_id": player_id,
+        }
 
-            if not isinstance(manager_data["Total_Points"], float):
-                raise Exception("Non-float found in Total_Points")
+        manager_data["Total_Points"] += player_score
 
-            manager_data["Total_Points"] = float(
-                Decimal(manager_data["Total_Points"])
-                .quantize(Decimal("0.01"))
-                .normalize()
-            )
-            return manager_data, players_summary_array, positions_summary_array
-    return {}, players_summary_array, positions_summary_array
+    if not isinstance(manager_data["Total_Points"], float):
+        raise Exception("Non-float found in Total_Points")
+
+    manager_data["Total_Points"] = float(
+        Decimal(manager_data["Total_Points"])
+        .quantize(Decimal("0.01"))
+        .normalize()
+    )
+
+    starters_cache[year][week][manager] = manager_data
+
+def _cache_valid_data(
+    year: str, week: str, manager: str, player: str, position: str
+) -> None:
+    """Update cache with valid data.
+
+    Args:
+        year: The NFL season year (e.g., 2024).
+        week: The week number (1-17).
+        manager: Manager name
+        player: Player name
+        position: Player position
+    """
+    valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
+
+
+    year_lvl = valid_options_cache[year]
+    if manager not in year_lvl.get("managers", []):
+        year_lvl["managers"].append(manager)
+
+    week_lvl = year_lvl[week]
+    if manager not in week_lvl.get("managers", []):
+        week_lvl["managers"].append(manager)
+
+    mgr_lvl = week_lvl.get(manager, {})
+    if not mgr_lvl:
+        mgr_lvl = {"players": [], "positions": []}
+        week_lvl[manager] = mgr_lvl
+
+
+    # Add the player and position to the appropriate level
+    for lvl in [mgr_lvl, week_lvl, year_lvl]:
+        if player not in lvl.get("players", []):
+            lvl["players"].append(player)
+        if position not in lvl.get("positions", []):
+            lvl["positions"].append(position)
 
 
 def retroactively_assign_team_placement_for_player(

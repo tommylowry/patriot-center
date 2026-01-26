@@ -19,8 +19,10 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters._base import (
+    get_player_info_and_score,
+)
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.scoring import calculate_player_score
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
 )
@@ -382,49 +384,13 @@ def _get_all_player_scores(
         if "TEAM_" in player_id:
             continue
 
-        # Zach Ertz traded from PHI to ARI causes his player ID to be weird
-        # sometimes
-        if player_id not in player_ids_cache:
-            only_numeric = "".join(c for c in player_id if c.isnumeric())
-            if only_numeric in player_ids_cache:
-                if only_numeric in week_data:
-                    # skipping this player since his actual id is in player_ids
-                    # as to not double count
-                    continue
-
-                player_name = player_ids_cache[only_numeric]["full_name"]
-                logger.info(
-                    f"Encountered player id with numeric and non numeric chars "
-                    f"for season {year} week {week} in sleeper's output of "
-                    f"player data, removing the non-numeric chars and using "
-                    f"{player_name}, player-id {only_numeric} instead of "
-                    f"{player_id}"
-                )
-                player_info = player_ids_cache[only_numeric]
-                player_data = week_data[player_id]
-                player_id = only_numeric
-            else:
-                logger.warning(
-                    f"Unknown numeric player id encountered: {player_id}"
-                )
-                continue
-        else:
-            # Get player information from PLAYER_IDS
-            player_info = player_ids_cache[player_id]
-            player_data = week_data[player_id]
-
-        # If the player ID is numeric and the position is DEF, skip processing
-        if player_id.isnumeric() and player_info["position"] == "DEF":
-            continue
-
-        if player_info["position"] in list(final_week_scores.keys()):
-            if player_data.get("gp", 0.0) == 0.0:
-                continue
-
-            player_score = calculate_player_score(player_data, scoring_settings)
+        apply, player_info, score, player_id_used = get_player_info_and_score(
+            player_id, week_data, final_week_scores, scoring_settings
+        )
+        if apply:
             # Add the player's points to the appropriate position list
-            final_week_scores[player_info["position"]][player_id] = {
-                "score": player_score,
+            final_week_scores[player_info["position"]][player_id_used] = {
+                "score": score,
                 "name": player_info["full_name"],
             }
 

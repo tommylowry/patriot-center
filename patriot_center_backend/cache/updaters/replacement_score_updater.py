@@ -16,9 +16,11 @@ import logging
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters._base import get_max_weeks
+from patriot_center_backend.cache.updaters._base import (
+    get_max_weeks,
+    get_player_info_and_score,
+)
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.scoring import calculate_player_score
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
 )
@@ -134,8 +136,6 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
         ValueError: If the Sleeper API call fails to retrieve the necessary
             data.
     """
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-
     # Fetch data from the Sleeper API for the given season and week
     week_data = fetch_sleeper_data(f"stats/nfl/regular/{season}/{week}")
     if not isinstance(week_data, dict):
@@ -182,44 +182,15 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
                     final_week_scores["byes"] -= 1
                 continue
 
-            # Zach Ertz traded from PHI to ARI causes his player ID to be weird
-            # sometimes
-            if player_id not in player_ids_cache:
-                only_numeric = "".join(c for c in player_id if c.isnumeric())
-                if only_numeric in player_ids_cache:
-                    player_name = player_ids_cache[only_numeric]["full_name"]
-                    logger.info(
-                        f"Encountered player id with numeric and non numeric "
-                        f"chars for season {yr} week {week} in sleeper's "
-                        f"output of player data, removing the non-numeric "
-                        f"chars and using {player_name}, player-id"
-                        f"{only_numeric} instead of {player_id}"
-                    )
-                    player_id = only_numeric
-                else:
-                    logger.warning(
-                        f"Unknown numeric player id encountered: {player_id}"
-                    )
-                    continue
-
-            # Get player information from PLAYER_IDS
-            player_info = player_ids_cache[player_id]
-
-            # Check if player id is numeric
-            if player_id.isnumeric() and player_info["position"] == "DEF":
-                continue
-
-            if player_info["position"] in week_scores:
-                player_data = week_data[player_id]
-
-                if "gp" not in player_data or player_data["gp"] == 0.0:
-                    continue
-
-                player_score = calculate_player_score(
-                    player_data, yearly_scoring_settings[yr]
-                )
+            apply, player_info, score, _ = get_player_info_and_score(
+                player_id,
+                week_data,
+                final_week_scores,
+                yearly_scoring_settings[yr]
+            )
+            if apply:
                 # Add the player's points to the appropriate position list
-                week_scores[player_info["position"]].append(player_score)
+                week_scores[player_info["position"]].append(score)
 
         # Set first to false after first iteration
         # since we have the number of byes

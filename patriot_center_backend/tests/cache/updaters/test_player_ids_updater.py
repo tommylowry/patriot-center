@@ -362,9 +362,7 @@ class TestRecursiveReplace:
     def test_replaces_in_nested_structures(self):
         """Test replaces in deeply nested structures."""
         data = {
-            "players": [
-                {"name": "Pat Mahomes", "stats": {"nickname": "Pat"}}
-            ]
+            "players": [{"name": "Pat Mahomes", "stats": {"nickname": "Pat"}}]
         }
 
         result = _recursive_replace(data, "Pat", "Patrick")

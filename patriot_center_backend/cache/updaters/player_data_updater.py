@@ -392,6 +392,12 @@ def _get_all_player_scores(
         if player_id not in player_ids_cache:
             only_numeric = "".join(c for c in player_id if c.isnumeric())
             if only_numeric in player_ids_cache:
+
+                if only_numeric in week_data:
+                    # skipping this player since his actual id is in player_ids
+                    # as to not double count
+                    continue
+
                 player_name = player_ids_cache[only_numeric]["full_name"]
                 logger.info(
                     f"Encountered player id with numeric and non numeric chars "
@@ -400,22 +406,24 @@ def _get_all_player_scores(
                     f"{player_name}, player-id {only_numeric} instead of "
                     f"{player_id}"
                 )
+                player_info = player_ids_cache[only_numeric]
+                player_data = week_data[player_id]
                 player_id = only_numeric
             else:
                 logger.warning(
                     f"Unknown numeric player id encountered: {player_id}"
                 )
                 continue
-
-        # Get player information from PLAYER_IDS
-        player_info = player_ids_cache[player_id]
+        else:
+            # Get player information from PLAYER_IDS
+            player_info = player_ids_cache[player_id]
+            player_data = week_data[player_id]
 
         # If the player ID is numeric and the position is DEF, skip processing
         if player_id.isnumeric() and player_info["position"] == "DEF":
             continue
 
         if player_info["position"] in list(final_week_scores.keys()):
-            player_data = week_data[player_id]
 
             if player_data.get("gp", 0.0) == 0.0:
                 continue

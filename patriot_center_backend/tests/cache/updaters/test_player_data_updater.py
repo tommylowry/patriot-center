@@ -153,7 +153,8 @@ class TestFetchFfwar:
                         "Tommy": {
                             "Total_Points": 120.5,
                             "Patrick Mahomes": {
-                                "position": "QB", "points": 25.0
+                                "position": "QB",
+                                "points": 25.0,
                             },
                         },
                         "Mike": {
@@ -185,7 +186,9 @@ class TestFetchFfwar:
             self.mock_calculate_ffwar_position = mock_calculate_ffwar_position
             self.mock_calculate_ffwar_position.return_value = {
                 "4046": {
-                    "name": "Patrick Mahomes", "ffWAR": 0.5, "position": "QB"
+                    "name": "Patrick Mahomes",
+                    "ffWAR": 0.5,
+                    "position": "QB",
                 }
             }
 
@@ -196,7 +199,9 @@ class TestFetchFfwar:
         self.mock_calculate_ffwar_position.side_effect = [
             {
                 "4046": {
-                    "name": "Patrick Mahomes", "ffWAR": 0.3, "position": "QB"
+                    "name": "Patrick Mahomes",
+                    "ffWAR": 0.3,
+                    "position": "QB",
                 },
                 "6744": {"name": "Josh Allen", "ffWAR": 0.5, "position": "QB"},
             },
@@ -226,9 +231,13 @@ class TestFetchFfwar:
     def test_skips_empty_ffwar_results(self):
         """Test skips positions with empty ffWAR results."""
         self.mock_calculate_ffwar_position.side_effect = [
-            {"4046": {
-                "name": "Patrick Mahomes", "ffWAR": 0.5, "position": "QB"
-            }},
+            {
+                "4046": {
+                    "name": "Patrick Mahomes",
+                    "ffWAR": 0.5,
+                    "position": "QB",
+                }
+            },
             {},
             {},
             {},

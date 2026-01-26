@@ -29,9 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 def update_player_data_cache(
-    year: int,
-    week: int,
-    roster_ids: dict[int, str]
+    year: int, week: int, roster_ids: dict[int, str]
 ) -> None:
     """Incrementally updates the ffWAR cache JSON file by year/week.
 
@@ -65,9 +63,7 @@ def update_player_data_cache(
         year, week, roster_ids
     )
 
-    logger.info(
-        f"\tSeason {year}, Week {week}: Player Data Cache Updated."
-    )
+    logger.info(f"\tSeason {year}, Week {week}: Player Data Cache Updated.")
 
 
 def _fetch_ffwar(
@@ -203,8 +199,8 @@ def _calculate_ffwar_position(
         if len(scores[manager]["players"]) == 0:
             player_average_for_manager = 0
         else:
-            player_average_for_manager = (
-                player_total_for_manager / len(scores[manager]['players'])
+            player_average_for_manager = player_total_for_manager / len(
+                scores[manager]["players"]
             )
 
         # Store manager's total points minus their positional contribution
@@ -227,7 +223,6 @@ def _calculate_ffwar_position(
     ffwar_position = {}
 
     for player_id in all_player_scores:
-
         # Player's Full Name
         player = all_player_scores[player_id]["name"]
 
@@ -392,7 +387,6 @@ def _get_all_player_scores(
         if player_id not in player_ids_cache:
             only_numeric = "".join(c for c in player_id if c.isnumeric())
             if only_numeric in player_ids_cache:
-
                 if only_numeric in week_data:
                     # skipping this player since his actual id is in player_ids
                     # as to not double count
@@ -424,7 +418,6 @@ def _get_all_player_scores(
             continue
 
         if player_info["position"] in list(final_week_scores.keys()):
-
             if player_data.get("gp", 0.0) == 0.0:
                 continue
 

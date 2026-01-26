@@ -26,7 +26,6 @@ def update_image_urls_cache(item: str) -> dict[str, str]:
 
     # Manager: identified by presence in manager username mapping
     if item in NAME_TO_MANAGER_USERNAME:
-
         # Check to see if manager image URL is already in cache
         # if it is, and its less than one hour old, return it,
         # otherwise fetch it
@@ -49,7 +48,6 @@ def update_image_urls_cache(item: str) -> dict[str, str]:
             returning_dict.pop("timestamp")
 
         return cast(dict[str, str], deepcopy(returning_dict))
-
 
     # Draft Pick: identified by "Draft Pick" in name
     if "Draft Pick" in item:
@@ -94,13 +92,9 @@ def update_image_urls_cache(item: str) -> dict[str, str]:
     player_id = item if not player else player.get("player_id")
 
     if player_id and player_id in player_ids_cache:
-
         # Numeric IDs are individual players (use player headshots)
         if player_id.isnumeric():
-            url = (
-                f"https://sleepercdn.com/content/"
-                f"nfl/players/{player_id}.jpg"
-            )
+            url = f"https://sleepercdn.com/content/nfl/players/{player_id}.jpg"
 
         # Non-numeric IDs are team defenses (use team logos)
         else:
@@ -120,7 +114,6 @@ def update_image_urls_cache(item: str) -> dict[str, str]:
     # If no match, return empty string
     logger.warning(f"Could not find image URL for item: {item}")
     return {}
-
 
 
 def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
@@ -150,9 +143,7 @@ def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
         image_url = image_urls_cache[item].get("image_url")
 
         if not isinstance(image_url, str):
-            logger.warning(
-                f"Image URL for {item} is not a string: {image_url}"
-            )
+            logger.warning(f"Image URL for {item} is not a string: {image_url}")
 
             del image_urls_cache[item]
             return get_image_url(item, dictionary=dictionary)
@@ -169,11 +160,7 @@ def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
 
     url_result = update_image_urls_cache(item)
 
-    return (
-        deepcopy(url_result)
-        if dictionary
-        else url_result["image_url"]
-    )
+    return deepcopy(url_result) if dictionary else url_result["image_url"]
 
 
 def _get_current_manager_image_url(manager: str) -> str:

@@ -151,8 +151,9 @@ class TestUpdateImageUrlsCache:
         result = update_image_urls_cache("Patrick Mahomes")
 
         assert result["name"] == "Patrick Mahomes"
-        assert "sleepercdn.com/content/nfl/players/4046.jpg" in (
-            result["image_url"]
+        assert (
+            "sleepercdn.com/content/nfl/players/4046.jpg"
+            in (result["image_url"])
         )
         assert result["first_name"] == "Patrick"
         assert result["last_name"] == "Mahomes"
@@ -170,8 +171,9 @@ class TestUpdateImageUrlsCache:
         result = update_image_urls_cache("Kansas City Chiefs")
 
         assert result["name"] == "Kansas City Chiefs"
-        assert "sleepercdn.com/images/team_logos/nfl/kc.png" in (
-            result["image_url"]
+        assert (
+            "sleepercdn.com/images/team_logos/nfl/kc.png"
+            in (result["image_url"])
         )
 
     def test_player_id_directly_in_player_ids_cache(self):
@@ -184,8 +186,9 @@ class TestUpdateImageUrlsCache:
         result = update_image_urls_cache("4046")
 
         assert result["name"] == "4046"
-        assert "sleepercdn.com/content/nfl/players/4046.jpg" in (
-            result["image_url"]
+        assert (
+            "sleepercdn.com/content/nfl/players/4046.jpg"
+            in (result["image_url"])
         )
 
     def test_unknown_item_returns_empty_dict(

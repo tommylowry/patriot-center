@@ -273,6 +273,129 @@ class TestSetRosterId:
         # Cache reference should not change
         assert self.mock_manager_cache is original_cache
 
+    def test_sets_playoff_roster_id(
+        self, metadata_manager: ManagerMetadataManager
+    ):
+        """Test that playoff roster ID is set.
+
+        Args:
+            metadata_manager: ManagerMetadataManager instance
+        """
+        self.mock_fetch_sleeper_data.side_effect = [
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            {"user_id": "user123"},
+        ]
+        self.mock_get_manager_cache.return_value = {
+            "Manager 1": {
+                "summary": {},
+                "years": {
+                    "2023": {"summary": {}, "roster_id": None, "weeks": {}}
+                },
+            }
+        }
+
+        metadata_manager.set_roster_id(
+            "Manager 1", "2023", "1", 1, playoff_roster_ids=[2]
+        )
+
+        assert metadata_manager._playoff_roster_ids == [2]
+
+    def test_league_dict_return_raises_error(
+        self, metadata_manager: ManagerMetadataManager
+    ):
+        """Test that error is raised if sleeper_league_dict is not dict type.
+
+        Args:
+            metadata_manager: ManagerMetadataManager instance
+        """
+        self.mock_fetch_sleeper_data.side_effect = [
+            "Not a dict",
+            {"user_id": "user123"},
+        ]
+        self.mock_get_manager_cache.return_value = {
+            "Manager 1": {
+                "summary": {},
+                "years": {
+                    "2023": {"summary": {}, "roster_id": None, "weeks": {}}
+                },
+            }
+        }
+
+        with pytest.raises(ValueError, match="failed to retrieve league info"):
+            metadata_manager.set_roster_id("Manager 1", "2023", "1", 1)
+
+    def test_update_players_cache_w_list_called(
+        self, metadata_manager: ManagerMetadataManager
+    ):
+        """Test that update_players_cache is called with a list.
+
+        Args:
+            metadata_manager: ManagerMetadataManager instance
+        """
+        self.mock_fetch_sleeper_data.return_value = {"user_id": "user123"}
+        self.mock_get_manager_cache.return_value = {
+            "Manager 1": {
+                "summary": {},
+                "years": {
+                    "2023": {"summary": {}, "roster_id": None, "weeks": {}}
+                },
+            }
+        }
+
+        metadata_manager.set_roster_id(
+            "Manager 1", "2023", "1", 1, matchups=[{"data": 1}]
+        )
+
+        self.mock_update_players.assert_called_once_with([{"data": 1}])
+
+    def test_error_raises_if_username_not_found(
+        self, metadata_manager: ManagerMetadataManager
+    ):
+        """Test that error is raised if username is not found.
+
+        Args:
+            metadata_manager: ManagerMetadataManager instance
+        """
+        self.mock_fetch_sleeper_data.return_value = {}
+        self.mock_get_manager_cache.return_value = {
+            "Manager 1": {
+                "summary": {},
+                "years": {
+                    "2023": {"summary": {}, "roster_id": None, "weeks": {}}
+                },
+            },
+            "Non_existent_manager": {"years": {"2023": {}}, "summary": {}},
+        }
+
+        with pytest.raises(ValueError, match="No username mapping"):
+            metadata_manager.set_roster_id(
+                "Non_existent_manager", "2023", "1", 1
+            )
+
+    def test_error_raises_if_user_payload_not_dict(
+        self, metadata_manager: ManagerMetadataManager
+    ):
+        """Test that error is raised if user payload is not dict type.
+
+        Args:
+            metadata_manager: ManagerMetadataManager instance
+        """
+        self.mock_fetch_sleeper_data.side_effect = [
+            {"settings": {"waiver_type": 2, "playoff_week_start": 15}},
+            "Not a dict",
+        ]
+        self.mock_get_manager_cache.return_value = {
+            "Manager 1": {
+                "summary": {},
+                "years": {
+                    "2023": {"summary": {}, "roster_id": None, "weeks": {}}
+                },
+            }
+        }
+
+        with pytest.raises(ValueError, match="Failed to fetch 'user_id'"):
+            metadata_manager.set_roster_id("Manager 1", "2023", "1", 1)
+
 
 class TestCacheWeekData:
     """Test cache_week_data method."""
@@ -716,6 +839,64 @@ class TestSetDefaultsIfMissing:
 
         # Should call initialize_faab_template
         self.mock_init_faab.assert_called_once_with("Manager 1", "2023", "1")
+
+    def test_raises_error_if_week_or_year_not_set(
+        self, metadata_manager: ManagerMetadataManager
+    ):
+        """Test function raises error if week or year is not set.
+
+        Args:
+            metadata_manager: ManagerMetadataManager instance
+        """
+        metadata_manager._year = None
+        metadata_manager._week = None
+
+        with pytest.raises(ValueError, match="Week and year must be set"):
+            metadata_manager._set_defaults_if_missing(1)
+
+    def test_raises_error_if_manager_not_found(
+        self, metadata_manager: ManagerMetadataManager
+    ):
+        """Test function raises error if manager is not found.
+
+        Args:
+            metadata_manager: ManagerMetadataManager instance
+        """
+        metadata_manager._year = "2023"
+        metadata_manager._week = "1"
+
+        with pytest.raises(ValueError, match="Manager not found"):
+            metadata_manager._set_defaults_if_missing(123)
+
+    def test_update_image_urls_called_for_faab(
+        self, metadata_manager: ManagerMetadataManager
+    ):
+        """Test function calls update_image_urls for FAAB.
+
+        Args:
+            metadata_manager: ManagerMetadataManager instance
+        """
+        self.mock_get_season_state.return_value = "regular_season"
+
+        metadata_manager._year = "2023"
+        metadata_manager._week = "1"
+        metadata_manager._use_faab = True
+        metadata_manager._playoff_week_start = 15
+        metadata_manager._playoff_roster_ids = []
+        metadata_manager._weekly_roster_ids[1] = "Manager 1"
+        metadata_manager._needs_faab_image_urls_update = True
+
+        self.mock_get_image_urls_cache.return_value = {}
+
+        metadata_manager._templates = MagicMock(spec=dict[str, Any])
+
+        metadata_manager._set_defaults_if_missing(1)
+
+        # Should call update_image_urls for FAAB 100 times
+        assert self.mock_update_image_urls.call_count == 100
+        assert call("$58 FAAB") in self.mock_update_image_urls.call_args_list
+
+        assert metadata_manager._needs_faab_image_urls_update is False
 
 
 class TestClearWeeklyMetadata:

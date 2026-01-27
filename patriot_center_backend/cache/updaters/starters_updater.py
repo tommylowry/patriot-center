@@ -11,6 +11,7 @@ from patriot_center_backend.utils.helpers import (
 
 logger = logging.getLogger(__name__)
 
+
 def update_starters_cache(
     year: str,
     week: str,

@@ -64,8 +64,8 @@ class TestUpdateStartersCache:
         assert "2024" in self.mock_starters_cache
         assert "1" in self.mock_starters_cache["2024"]
         assert "Tommy" in self.mock_starters_cache["2024"]["1"]
-        assert "Jayden Daniels" in (
-            self.mock_starters_cache["2024"]["1"]["Tommy"]
+        assert (
+            "Jayden Daniels" in (self.mock_starters_cache["2024"]["1"]["Tommy"])
         )
 
     def test_adds_player_to_existing_manager(self):

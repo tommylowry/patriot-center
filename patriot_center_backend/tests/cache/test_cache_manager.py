@@ -516,6 +516,55 @@ class TestGetTransactionIdsCache:
         self.mock_load_cache.assert_called_once()
         assert result == {"txn1": {"data": "value"}}
 
+class TestSaveTransactionIdsCache:
+    """Test save_transaction_ids_cache method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CacheManager._save_cache`: `mock_save_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch.object(CacheManager, "_save_cache") as mock_save_cache,
+        ):
+            self.mock_save_cache = mock_save_cache
+
+            yield
+
+    def test_saves_provided_cache(self):
+        """Test saves provided cache to disk."""
+        manager = CacheManager()
+        cache = {"123": {"types": []}}
+
+        manager.save_transaction_ids_cache(cache)
+
+        self.mock_save_cache.assert_called_once()
+        assert self.mock_save_cache.call_args[0][1] == cache
+
+    def test_saves_in_memory_cache_when_none_provided(self):
+        """Test saves in-memory cache when no cache provided."""
+        manager = CacheManager()
+        manager._transaction_ids_cache = {"123": {"types": []}}
+
+        manager.save_transaction_ids_cache()
+
+        self.mock_save_cache.assert_called_once()
+
+    def test_raises_error_when_no_cache_to_save(self):
+        """Test raises ValueError when no cache data to save."""
+        manager = CacheManager()
+
+        with pytest.raises(ValueError) as exc_info:
+            manager.save_transaction_ids_cache()
+
+        assert "No transaction IDs cache data" in str(exc_info.value)
+
 
 class TestGetPlayersCache:
     """Test get_players_cache method."""
@@ -545,6 +594,56 @@ class TestGetPlayersCache:
 
         self.mock_load_cache.assert_called_once()
         assert "Patrick Mahomes" in result
+
+
+class TestSavePlayerIdsCache:
+    """Test save_players_cache method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CacheManager._save_cache`: `mock_save_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch.object(CacheManager, "_save_cache") as mock_save_cache,
+        ):
+            self.mock_save_cache = mock_save_cache
+
+            yield
+
+    def test_saves_provided_cache(self):
+        """Test saves provided cache to disk."""
+        manager = CacheManager()
+        cache = {"123": {"first_name": "Peyton"}}
+
+        manager.save_player_ids_cache(cache)
+
+        self.mock_save_cache.assert_called_once()
+        assert self.mock_save_cache.call_args[0][1] == cache
+
+    def test_saves_in_memory_cache_when_none_provided(self):
+        """Test saves in-memory cache when no cache provided."""
+        manager = CacheManager()
+        manager._player_ids_cache = {"123": {"first_name": "Peyton"}}
+
+        manager.save_player_ids_cache()
+
+        self.mock_save_cache.assert_called_once()
+
+    def test_raises_error_when_no_cache_to_save(self):
+        """Test raises ValueError when no cache data to save."""
+        manager = CacheManager()
+
+        with pytest.raises(ValueError) as exc_info:
+            manager.save_player_ids_cache()
+
+        assert "No player IDs cache" in str(exc_info.value)
 
 
 class TestGetPlayerIdsCache:
@@ -577,6 +676,58 @@ class TestGetPlayerIdsCache:
         assert "4046" in result
 
 
+class TestSavePlayersCache:
+    """Test save_players_cache method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CacheManager._save_cache`: `mock_save_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch.object(CacheManager, "_save_cache") as mock_save_cache,
+        ):
+            self.mock_save_cache = mock_save_cache
+
+            yield
+
+    def test_saves_provided_cache(self):
+        """Test saves provided cache to disk."""
+        manager = CacheManager()
+        cache = {"Peyton Manning": {"first_name": "Peyton", "team": None}}
+
+        manager.save_players_cache(cache)
+
+        self.mock_save_cache.assert_called_once()
+        assert self.mock_save_cache.call_args[0][1] == cache
+
+    def test_saves_in_memory_cache_when_none_provided(self):
+        """Test saves in-memory cache when no cache provided."""
+        manager = CacheManager()
+        manager._players_cache = {
+            "Peyton Manning": {"first_name": "Peyton", "team": None}
+        }
+
+        manager.save_players_cache()
+
+        self.mock_save_cache.assert_called_once()
+
+    def test_raises_error_when_no_cache_to_save(self):
+        """Test raises ValueError when no cache data to save."""
+        manager = CacheManager()
+
+        with pytest.raises(ValueError) as exc_info:
+            manager.save_players_cache()
+
+        assert "No players cache data" in str(exc_info.value)
+
+
 class TestGetPlayerDataCache:
     """Test get_player_data_cache method."""
 
@@ -603,6 +754,55 @@ class TestGetPlayerDataCache:
 
         self.mock_load_cache.assert_called_once()
         assert "2024" in result
+
+class TestPlayerDataCache:
+    """Test save_players_cache method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CacheManager._save_cache`: `mock_save_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch.object(CacheManager, "_save_cache") as mock_save_cache,
+        ):
+            self.mock_save_cache = mock_save_cache
+
+            yield
+
+    def test_saves_provided_cache(self):
+        """Test saves provided cache to disk."""
+        manager = CacheManager()
+        cache = {"2019": {"1": {}}}
+
+        manager.save_player_data_cache(cache)
+
+        self.mock_save_cache.assert_called_once()
+        assert self.mock_save_cache.call_args[0][1] == cache
+
+    def test_saves_in_memory_cache_when_none_provided(self):
+        """Test saves in-memory cache when no cache provided."""
+        manager = CacheManager()
+        manager._player_data_cache = {"2019": {"1": {}}}
+
+        manager.save_player_data_cache()
+
+        self.mock_save_cache.assert_called_once()
+
+    def test_raises_error_when_no_cache_to_save(self):
+        """Test raises ValueError when no cache data to save."""
+        manager = CacheManager()
+
+        with pytest.raises(ValueError) as exc_info:
+            manager.save_player_data_cache()
+
+        assert "No player data cache" in str(exc_info.value)
 
 
 class TestGetReplacementScoreCache:

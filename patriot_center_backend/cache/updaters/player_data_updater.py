@@ -353,8 +353,6 @@ def _get_all_player_scores(
         - Defense players with numeric IDs are excluded.
         - Handles edge case of traded in real life players with modified IDs.
     """
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-
     # Fetch data from the Sleeper API for the given season and week
     week_data = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
     if not isinstance(week_data, dict):

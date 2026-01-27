@@ -412,9 +412,8 @@ class TestGetAllPlayerScores:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_player_ids_cache`: `mock_get_player_ids_cache`
         - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
-        - `calculate_player_score`: `mock_calculate_player_score`
+        - `get_player_info_and_score`: `mock_get_player_info_and_score`
         - `LEAGUE_IDS`: `mock_league_ids`
 
         Yields:
@@ -423,41 +422,31 @@ class TestGetAllPlayerScores:
         with (
             patch(
                 "patriot_center_backend.cache.updaters.player_data_updater"
-                ".CACHE_MANAGER.get_player_ids_cache"
-            ) as mock_get_player_ids_cache,
-            patch(
-                "patriot_center_backend.cache.updaters.player_data_updater"
                 ".fetch_sleeper_data"
             ) as mock_fetch_sleeper_data,
             patch(
                 "patriot_center_backend.cache.updaters.player_data_updater"
-                ".calculate_player_score"
-            ) as mock_calculate_player_score,
+                ".get_player_info_and_score"
+            ) as mock_get_player_info_and_score,
             patch(
                 "patriot_center_backend.cache.updaters.player_data_updater"
                 ".LEAGUE_IDS",
                 {2024: "league123"},
             ),
         ):
-            self.mock_player_ids_cache = {
-                "4046": {
-                    "full_name": "Patrick Mahomes",
-                    "position": "QB",
-                },
-            }
-            self.mock_get_player_ids_cache = mock_get_player_ids_cache
-            self.mock_get_player_ids_cache.return_value = (
-                self.mock_player_ids_cache
-            )
-
             self.mock_fetch_sleeper_data = mock_fetch_sleeper_data
             self.mock_fetch_sleeper_data.side_effect = [
                 {"4046": {"gp": 1.0, "pass_yd": 300}},
                 {"scoring_settings": {"pass_yd": 0.04}},
             ]
 
-            self.mock_calculate_player_score = mock_calculate_player_score
-            self.mock_calculate_player_score.return_value = 25.0
+            self.mock_get_player_info_and_score = mock_get_player_info_and_score
+            self.mock_get_player_info_and_score.return_value = (
+                True,
+                {"full_name": "Patrick Mahomes", "position": "QB"},
+                25.0,
+                "4046",
+            )
 
             yield
 
@@ -503,35 +492,44 @@ class TestGetAllPlayerScores:
         assert "QB" in result
         assert "4046" in result["QB"]
 
-    def test_skips_players_with_zero_games_played(self):
-        """Test skips players with gp = 0."""
+    def test_skips_players_when_get_player_info_returns_false(self):
+        """Test skips players when get_player_info_and_score returns False."""
         self.mock_fetch_sleeper_data.side_effect = [
             {"4046": {"gp": 0.0, "pass_yd": 300}},
             {"scoring_settings": {"pass_yd": 0.04}},
         ]
+        self.mock_get_player_info_and_score.return_value = (
+            False,
+            {},
+            0.0,
+            "4046",
+        )
 
         result = _get_all_player_scores(2024, 5)
 
         assert "4046" not in result["QB"]
 
-    def test_handles_numeric_player_id_with_suffix(
-        self, caplog: pytest.LogCaptureFixture
-    ):
-        """Test handles player IDs that have numeric and non-numeric chars.
+    def test_uses_returned_player_id_from_get_player_info(self):
+        """Test uses returned player_id from get_player_info_and_score.
 
-        Args:
-            caplog: pytest caplog fixture
+        This covers the case where player IDs have non-numeric suffixes
+        (like Zach Ertz's '1234ARI') and get_player_info_and_score
+        returns the corrected numeric ID.
         """
         self.mock_fetch_sleeper_data.side_effect = [
             {"4046ARI": {"gp": 1.0, "pass_yd": 300}},
             {"scoring_settings": {"pass_yd": 0.04}},
         ]
+        self.mock_get_player_info_and_score.return_value = (
+            True,
+            {"full_name": "Patrick Mahomes", "position": "QB"},
+            25.0,
+            "4046",
+        )
 
-        caplog.set_level(logging.INFO)
         result = _get_all_player_scores(2024, 5)
 
         assert "4046" in result["QB"]
-        assert "non-numeric chars" in caplog.text
 
 
 class TestGetAllRosteredPlayers:

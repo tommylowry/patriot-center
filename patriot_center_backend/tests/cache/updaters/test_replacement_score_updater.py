@@ -416,7 +416,10 @@ class TestGetThreeYrAvg:
                     "5": {
                         "byes": 4,
                         "2024_scoring": {
-                            "QB": 15.0, "RB": 10.0, "WR": 9.0, "TE": 8.0
+                            "QB": 15.0,
+                            "RB": 10.0,
+                            "WR": 9.0,
+                            "TE": 8.0,
                         },
                     }
                 },
@@ -424,7 +427,10 @@ class TestGetThreeYrAvg:
                     "5": {
                         "byes": 4,
                         "2024_scoring": {
-                            "QB": 14.0, "RB": 9.0, "WR": 8.0, "TE": 7.0
+                            "QB": 14.0,
+                            "RB": 9.0,
+                            "WR": 8.0,
+                            "TE": 7.0,
                         },
                     }
                 },
@@ -432,7 +438,10 @@ class TestGetThreeYrAvg:
                     "5": {
                         "byes": 4,
                         "2024_scoring": {
-                            "QB": 13.0, "RB": 8.0, "WR": 7.0, "TE": 6.0
+                            "QB": 13.0,
+                            "RB": 8.0,
+                            "WR": 7.0,
+                            "TE": 6.0,
                         },
                     }
                 },
@@ -440,7 +449,10 @@ class TestGetThreeYrAvg:
                     "5": {
                         "byes": 4,
                         "2024_scoring": {
-                            "QB": 12.0, "RB": 7.0, "WR": 6.0, "TE": 5.0
+                            "QB": 12.0,
+                            "RB": 7.0,
+                            "WR": 6.0,
+                            "TE": 5.0,
                         },
                     }
                 },

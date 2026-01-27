@@ -73,8 +73,8 @@ def update_replacement_score_cache(year: int, week: int) -> None:
     # Compute the 3-year average if data from three years ago exists
     if str(year - 3) in replacement_score_cache:
         # Augment with bye-aware 3-year rolling averages
-        replacement_score_cache[str(year)][str(week)] = (
-            _get_three_yr_avg(year, week)
+        replacement_score_cache[str(year)][str(week)] = _get_three_yr_avg(
+            year, week
         )
 
     logger.info(
@@ -95,7 +95,6 @@ def _backfill_three_years(year: int) -> None:
     )
 
     for backfill_year in range(year - 3, year):
-
         if str(backfill_year) not in replacement_score_cache:
             replacement_score_cache[str(backfill_year)] = {}
 
@@ -110,10 +109,8 @@ def _backfill_three_years(year: int) -> None:
         )
 
         for week in weeks_to_update:
-
             # Update the cache
             update_replacement_score_cache(backfill_year, week)
-
 
 
 def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
@@ -167,11 +164,11 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
     first = True
     for yr in yearly_scoring_settings:
         week_scores = {
-            "QB": [],   # List of QB scores for the week
-            "RB": [],   # List of RB scores for the week
-            "WR": [],   # List of WR scores for the week
-            "TE": [],   # List of TE scores for the week
-            "K": [],    # List of K scores for the week
+            "QB": [],  # List of QB scores for the week
+            "RB": [],  # List of RB scores for the week
+            "WR": [],  # List of WR scores for the week
+            "TE": [],  # List of TE scores for the week
+            "K": [],  # List of K scores for the week
             "DEF": [],  # List of DEF scores for the week
         }
 
@@ -186,7 +183,7 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
                 player_id,
                 week_data,
                 final_week_scores,
-                yearly_scoring_settings[yr]
+                yearly_scoring_settings[yr],
             )
             if apply:
                 # Add the player's points to the appropriate position list
@@ -202,12 +199,12 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
 
         # Determine the replacement scores for each position
         final_week_scores[f"{yr}_scoring"] = {
-            "QB": week_scores["QB"][12],   # 13th QB
-            "RB": week_scores["RB"][30],   # 31st RB
-            "WR": week_scores["WR"][30],   # 31st WR
-            "TE": week_scores["TE"][12],   # 13th TE
-            "K": week_scores["K"][12],     # 13th K
-            "DEF": week_scores["DEF"][12]  # 13th DEF
+            "QB": week_scores["QB"][12],  # 13th QB
+            "RB": week_scores["RB"][30],  # 31st RB
+            "WR": week_scores["WR"][30],  # 31st WR
+            "TE": week_scores["TE"][12],  # 13th TE
+            "K": week_scores["K"][12],  # 13th K
+            "DEF": week_scores["DEF"][12],  # 13th DEF
         }
 
     return final_week_scores
@@ -302,9 +299,8 @@ def _get_three_yr_avg(season: int, week: int) -> dict[str, Any]:
     for past_position in three_yr_season_scores:
         for past_byes in three_yr_season_scores[past_position]:
             # Calculate the average score for the position and bye count
-            avg = (
-                sum(three_yr_season_scores[past_position][past_byes])
-                / len(three_yr_season_scores[past_position][past_byes])
+            avg = sum(three_yr_season_scores[past_position][past_byes]) / len(
+                three_yr_season_scores[past_position][past_byes]
             )
             three_yr_season_average[past_position][past_byes] = avg
 

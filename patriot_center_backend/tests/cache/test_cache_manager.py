@@ -47,12 +47,11 @@ class TestLoadCache:
         """
         with (
             patch(
-                "patriot_center_backend.cache.cache_manager."
-                "os.path.exists"
+                "patriot_center_backend.cache.cache_manager.os.path.exists"
             ) as mock_exists,
             patch(
                 "patriot_center_backend.cache.cache_manager.open",
-                mock_open(read_data='{"key": "value"}')
+                mock_open(read_data='{"key": "value"}'),
             ),
         ):
             self.mock_exists = mock_exists
@@ -95,8 +94,7 @@ class TestSaveCache:
         """
         with (
             patch(
-                "patriot_center_backend.cache.cache_manager"
-                ".open", mock_open()
+                "patriot_center_backend.cache.cache_manager.open", mock_open()
             ) as mock_file_open,
             patch("pathlib.Path.mkdir") as mock_mkdir,
         ):

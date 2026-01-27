@@ -44,8 +44,6 @@ _PLAYERS_DATA_CACHE_FILE = os.path.join(
 )
 
 
-
-
 class CacheManager:
     """Centralized cache manager for all cache files.
 
@@ -127,9 +125,7 @@ class CacheManager:
             Manager metadata cache dictionary
         """
         if self._manager_cache is None or force_reload:
-            self._manager_cache = self._load_cache(
-                _MANAGER_METADATA_CACHE_FILE
-            )
+            self._manager_cache = self._load_cache(_MANAGER_METADATA_CACHE_FILE)
 
         return self._manager_cache
 
@@ -256,7 +252,6 @@ class CacheManager:
             file_age = datetime.now() - datetime.fromtimestamp(file_mtime)
 
         except FileNotFoundError:
-
             # If file doesn't exist then this needs to run
             return True
 
@@ -300,11 +295,10 @@ class CacheManager:
 
         if for_update:
             if self._starters_cache == {}:
-
                 # Initialize the cache with all years
                 self._starters_cache = {
                     "Last_Updated_Season": "0",
-                    "Last_Updated_Week": 0
+                    "Last_Updated_Week": 0,
                 }
 
                 # Initialize an empty dict for each season
@@ -348,9 +342,7 @@ class CacheManager:
             Player data cache dictionary
         """
         if self._player_data_cache is None or force_reload:
-            self._player_data_cache = self._load_cache(
-                _PLAYERS_DATA_CACHE_FILE
-            )
+            self._player_data_cache = self._load_cache(_PLAYERS_DATA_CACHE_FILE)
 
         return self._player_data_cache
 
@@ -452,7 +444,7 @@ class CacheManager:
         self._valid_options_cache = data_to_save
 
     def get_image_urls_cache(
-            self, force_reload: bool = False
+        self, force_reload: bool = False
     ) -> dict[str, dict[str, str | float]]:
         """Get image urls cache.
 
@@ -468,7 +460,7 @@ class CacheManager:
         return self._image_urls_cache
 
     def save_image_urls_cache(
-            self, cache: dict[str, dict[str, str | float]] | None = None
+        self, cache: dict[str, dict[str, str | float]] | None = None
     ) -> None:
         """Save image urls cache to disk.
 

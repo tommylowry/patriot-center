@@ -94,11 +94,17 @@ def get_roster_id(
     return None
 
 
-def get_roster_ids(year: int) -> dict[int, str]:
+def get_roster_ids(year: int, week: int) -> dict[int, str]:
     """Retrieves a mapping of roster IDs to real names for a given year.
+
+    Special Cases:
+    - Davey: In 2024, if there is only one user missing,
+        assign them the roster_id missing from the roster_ids
+    - Tommy: In 2019 weeks 1-3, replace Cody's roster ID with Tommy
 
     Args:
         year: The year for which to retrieve the roster IDs.
+        week: The week for which to retrieve the roster IDs.
 
     Returns:
         Mapping of roster IDs to real names.
@@ -153,6 +159,12 @@ def get_roster_ids(year: int) -> dict[int, str]:
         #   assign the roster_id to "Davey"
         if year == 2024 and user_id is None:
             roster_ids[roster_id] = "Davey"
+            continue
+
+        # In 2019 special case, Tommy started the year
+        #   and Cody took over in week 4
+        if year == 2019 and week <= 3 and user_ids[user_id] == "Cody":
+            roster_ids[roster_id] = "Tommy"
             continue
 
         # Store the roster ID and the real name of the user

@@ -233,7 +233,7 @@ class TestGetRosterIds:
         self.mock_get_roster_id.side_effect = [1, 2]
 
         year = 2023
-        result = get_roster_ids(year)
+        result = get_roster_ids(year, 1)
 
         assert result == {1: "Manager 1", 2: "Manager 2"}
 
@@ -252,7 +252,7 @@ class TestGetRosterIds:
         self.mock_get_roster_id.side_effect = [1, 2]
 
         year = 2023
-        get_roster_ids(year)
+        get_roster_ids(year, 1)
 
         self.mock_fetch_sleeper_data.assert_any_call(
             "league/leagueid2023/users"
@@ -277,7 +277,7 @@ class TestGetRosterIds:
         self.mock_get_roster_id.side_effect = [1, 2]
 
         year = 2023
-        get_roster_ids(year)
+        get_roster_ids(year, 1)
 
         calls = self.mock_get_roster_id.call_args_list
         assert (

@@ -726,7 +726,8 @@ class TestRetroactivelyAssignTeamPlacementForPlayer:
                         "Tommy": {
                             "Total_Points": 120.0,
                             "Patrick Mahomes": {
-                                "points": 25.0, "position": "QB"
+                                "points": 25.0,
+                                "position": "QB",
                             },
                         },
                     },
@@ -734,7 +735,8 @@ class TestRetroactivelyAssignTeamPlacementForPlayer:
                         "Tommy": {
                             "Total_Points": 115.0,
                             "Patrick Mahomes": {
-                                "points": 22.0, "position": "QB"
+                                "points": 22.0,
+                                "position": "QB",
                             },
                         },
                     },
@@ -742,7 +744,8 @@ class TestRetroactivelyAssignTeamPlacementForPlayer:
                         "Tommy": {
                             "Total_Points": 130.0,
                             "Patrick Mahomes": {
-                                "points": 28.0, "position": "QB"
+                                "points": 28.0,
+                                "position": "QB",
                             },
                         },
                     },

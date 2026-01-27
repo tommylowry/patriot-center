@@ -107,9 +107,7 @@ def update_weekly_data_caches() -> None:
 
         year = int(year)
         max_weeks = get_max_weeks(
-            year,
-            current_season=current_season,
-            current_week=current_week
+            year, current_season=current_season, current_week=current_week
         )
 
         if year in (current_season, last_updated_season):
@@ -138,14 +136,16 @@ def update_weekly_data_caches() -> None:
             starters_cache.setdefault(str(year), {})
             valid_options_cache.setdefault(
                 str(year),
-                {"managers": [], "players": [], "weeks": [], "positions": []}
+                {"managers": [], "players": [], "weeks": [], "positions": []},
             )
 
             # Initialize new weeks
             starters_cache[str(year)][str(week)] = {}
             valid_options_cache[str(year)]["weeks"].append(str(week))
             valid_options_cache[str(year)][str(week)] = {
-                "managers": [], "players": [], "positions": []
+                "managers": [],
+                "players": [],
+                "positions": [],
             }
 
             # Update all weekly caches
@@ -289,7 +289,7 @@ def _cache_week(
     season: int,
     week: int,
     manager_updater: ManagerMetadataManager,
-    roster_ids: dict[int, str]
+    roster_ids: dict[int, str],
 ) -> None:
     """Fetch starters data for a given week.
 
@@ -325,7 +325,6 @@ def _cache_week(
             )
 
     for roster_id in roster_ids:
-
         manager_name = roster_ids[roster_id]
 
         # Historical correction: In 2019 weeks 1-3, Tommy played then
@@ -387,7 +386,6 @@ def _cache_matchup_data(
     starters_cache = CACHE_MANAGER.get_starters_cache()
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
-
     manager_data: dict[str, float | dict[str, str | float]] = {
         "Total_Points": 0.0,
     }
@@ -401,9 +399,7 @@ def _cache_matchup_data(
         if not player_position:
             continue  # Skip if no position resolved
 
-        _cache_valid_data(
-            year, week, manager, player_name, player_position
-        )
+        _cache_valid_data(year, week, manager, player_name, player_position)
 
         update_players_cache(player_id)
 
@@ -428,6 +424,7 @@ def _cache_matchup_data(
 
     starters_cache[year][week][manager] = manager_data
 
+
 def _cache_valid_data(
     year: str, week: str, manager: str, player: str, position: str
 ) -> None:
@@ -442,7 +439,6 @@ def _cache_valid_data(
     """
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
-
     year_lvl = valid_options_cache[year]
     if manager not in year_lvl.get("managers", []):
         year_lvl["managers"].append(manager)
@@ -455,7 +451,6 @@ def _cache_valid_data(
     if not mgr_lvl:
         mgr_lvl = {"players": [], "positions": []}
         week_lvl[manager] = mgr_lvl
-
 
     # Add the player and position to the appropriate level
     for lvl in [mgr_lvl, week_lvl, year_lvl]:

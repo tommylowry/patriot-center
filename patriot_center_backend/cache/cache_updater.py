@@ -24,5 +24,5 @@ logging.basicConfig(
 
 def update_all_caches() -> None:
     """Run all cache updates in dependency order."""
-    update_player_ids_cache()         # Step 1
-    update_weekly_data_caches()       # Step 2
+    update_player_ids_cache()  # Step 1
+    update_weekly_data_caches()  # Step 2

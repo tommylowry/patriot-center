@@ -407,9 +407,7 @@ def _cache_matchup_data(
     total_points = cast(float, manager_data["Total_Points"])
 
     manager_data["Total_Points"] = float(
-        Decimal(total_points)
-        .quantize(Decimal("0.01"))
-        .normalize()
+        Decimal(total_points).quantize(Decimal("0.01")).normalize()
     )
 
     starters_cache[year][week][manager] = manager_data

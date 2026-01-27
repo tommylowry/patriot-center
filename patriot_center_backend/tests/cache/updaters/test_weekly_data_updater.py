@@ -757,6 +757,7 @@ class TestCacheWeek:
 
         self.mock_cache_matchup_data.assert_not_called()
 
+
 class TestCacheMatchupData:
     """Test _cache_matchup_data function."""
 
@@ -867,7 +868,7 @@ class TestCacheMatchupData:
 
         matchup = {  # Player 9999 has no position
             "starters": ["4046", "9999"],
-            "players_points": {"9999": 10.0, "4046": 25.0}
+            "players_points": {"9999": 10.0, "4046": 25.0},
         }
 
         _cache_matchup_data("2024", "5", matchup, "Tommy")

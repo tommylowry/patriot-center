@@ -383,6 +383,7 @@ class TestSaveStartersCache:
 
         assert "No starters cache" in str(exc_info.value)
 
+
 class TestReloadAllCaches:
     """Test reload_all_caches method."""
 
@@ -564,6 +565,7 @@ class TestGetTransactionIdsCache:
 
         self.mock_load_cache.assert_called_once()
         assert result == {"txn1": {"data": "value"}}
+
 
 class TestSaveTransactionIdsCache:
     """Test save_transaction_ids_cache method."""
@@ -804,6 +806,7 @@ class TestGetPlayerDataCache:
         self.mock_load_cache.assert_called_once()
         assert "2024" in result
 
+
 class TestSavePlayerDataCache:
     """Test save_players_cache method."""
 
@@ -931,6 +934,7 @@ class TestSaveReplacementScoreCache:
 
         assert "No replacement score cache" in str(exc_info.value)
 
+
 class TestGetValidOptionsCache:
     """Test get_valid_options_cache method."""
 
@@ -1010,6 +1014,7 @@ class TestSaveValidOptionsCache:
 
         assert "No valid options cache" in str(exc_info.value)
 
+
 class TestGetImageUrlsCache:
     """Test get_image_urls_cache method."""
 
@@ -1038,6 +1043,7 @@ class TestGetImageUrlsCache:
 
         self.mock_load_cache.assert_called_once()
         assert "Tommy" in result
+
 
 class TestSaveImageUrlsCache:
     """Test save_players_cache method."""

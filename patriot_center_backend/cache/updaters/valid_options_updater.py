@@ -1,0 +1,71 @@
+"""Update valid options cache."""
+
+import logging
+
+from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.utils.helpers import (
+    get_player_name,
+    get_player_position,
+)
+
+logger = logging.getLogger(__name__)
+
+
+def update_valid_options_cache(
+    year: str, week: str, manager: str, player_id: str
+) -> None:
+    """Update valid options cache.
+
+    This function updates the valid options cache with the provided data. It
+    also updates the parent data levels (year, week, and manager) if needed.
+
+    Args:
+        year: The NFL season year (e.g., 2024).
+        week: The week number (1-17).
+        manager: Manager name
+        player_id: Player ID
+    """
+    player = get_player_name(player_id)
+    position = get_player_position(player_id)
+    if not player or not position:
+        logger.warning(
+            f"Could not find player or position for player_id: {player_id}"
+        )
+        return
+
+    update_valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
+
+    # Year level
+    year_data = update_valid_options_cache.setdefault(
+        year, {"managers": [], "players": [], "weeks": [], "positions": []}
+    )
+    _update_list(year_data["managers"], manager)
+    _update_list(year_data["players"], player)
+    _update_list(year_data["weeks"], week)
+    _update_list(year_data["positions"], position)
+
+    # Week level
+    week_data = year_data.setdefault(
+        week, {"managers": [], "players": [], "positions": []}
+    )
+    _update_list(week_data["managers"], manager)
+    _update_list(week_data["players"], player)
+    _update_list(week_data["positions"], position)
+
+    # Manager level
+    manager_data = week_data.setdefault(
+        manager, {"players": [], "positions": []}
+    )
+    _update_list(manager_data["players"], player)
+    _update_list(manager_data["positions"], position)
+
+
+def _update_list(list_to_update: list[str], value: str) -> None:
+    """Update list if value not already in it.
+
+    Args:
+        list_to_update: List to update
+        value: Value to add
+    """
+    if value not in list_to_update:
+        list_to_update.append(value)

@@ -16,8 +16,7 @@ Notes:
 """
 
 import logging
-from decimal import Decimal
-from typing import Any, cast
+from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._base import get_max_weeks
@@ -32,6 +31,12 @@ from patriot_center_backend.cache.updaters.player_data_updater import (
 )
 from patriot_center_backend.cache.updaters.replacement_score_updater import (
     update_replacement_score_cache,
+)
+from patriot_center_backend.cache.updaters.starters_updater import (
+    update_starters_cache,
+)
+from patriot_center_backend.cache.updaters.valid_options_updater import (
+    update_valid_options_cache,
 )
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.playoffs.playoff_tracker import (
@@ -57,7 +62,6 @@ def update_weekly_data_caches() -> None:
     - Strip metadata before returning to callers.
     """
     starters_cache = CACHE_MANAGER.get_starters_cache(for_update=True)
-    valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
     replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
 
     manager_updater = ManagerMetadataManager()
@@ -116,8 +120,6 @@ def update_weekly_data_caches() -> None:
         if not weeks_to_update:
             continue
 
-        roster_ids = get_roster_ids(year)
-
         logger.info(
             f"Updating starters cache for season "
             f"{year}, weeks: {list(weeks_to_update)}"
@@ -129,22 +131,12 @@ def update_weekly_data_caches() -> None:
                 assign_placements_retroactively(year)
 
             starters_cache.setdefault(str(year), {})
-            valid_options_cache.setdefault(
-                str(year),
-                {"managers": [], "players": [], "weeks": [], "positions": []},
-            )
 
             # Initialize new weeks
             starters_cache[str(year)][str(week)] = {}
-            valid_options_cache[str(year)]["weeks"].append(str(week))
-            valid_options_cache[str(year)][str(week)] = {
-                "managers": [],
-                "players": [],
-                "positions": [],
-            }
 
             # Update all weekly caches
-            _cache_week(year, week, manager_updater, roster_ids)
+            _cache_week(year, week, manager_updater)
 
             # Advance progress markers (enables resumable incremental updates).
             starters_cache["Last_Updated_Season"] = str(year)
@@ -166,7 +158,6 @@ def _cache_week(
     season: int,
     week: int,
     manager_updater: ManagerMetadataManager,
-    roster_ids: dict[int, str],
 ) -> None:
     """Fetch starters data for a given week.
 
@@ -174,7 +165,6 @@ def _cache_week(
         season: The NFL season year (e.g., 2024).
         week: The week number (1-17).
         manager_updater: ManagerMetadataManager instance
-        roster_ids: Dict of {roster_id: manager_name}
 
     Raises:
         ValueError: If the data for the given week is not valid.
@@ -186,6 +176,8 @@ def _cache_week(
     )
     if not isinstance(sleeper_response_matchups, list):
         raise ValueError("Sleeper Matchups return not in list form")
+
+    roster_ids = get_roster_ids(season, week)
 
     playoff_roster_ids = get_playoff_roster_ids(
         season, week, league_id
@@ -203,12 +195,6 @@ def _cache_week(
 
     for roster_id in roster_ids:
         manager_name = roster_ids[roster_id]
-
-        # Historical correction: In 2019 weeks 1-3, Tommy played then
-        #   Cody took over
-        # Reassign those weeks from Cody to Tommy for accurate records.
-        if season == 2019 and week < 4 and manager_name == "Cody":
-            manager_name = "Tommy"
 
         # Initialize manager data cache updater for this season/week before
         # skipping playoff filtering.
@@ -254,75 +240,15 @@ def _cache_matchup_data(
         matchup: Matchup data from Sleeper API.
         manager: Manager name
     """
-    starters_cache = CACHE_MANAGER.get_starters_cache()
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-
-    manager_data: dict[str, float | dict[str, str | float]] = {
-        "Total_Points": 0.0,
-    }
     for player_id in matchup["starters"]:
-        player_meta = player_ids_cache.get(player_id, {})
-
-        player_name = player_meta.get("full_name")
-        if not player_name:
-            continue  # Skip unknown player
-        player_position = player_meta.get("position")
-        if not player_position:
-            continue  # Skip if no position resolved
-
-        _cache_valid_data(year, week, manager, player_name, player_position)
+        update_valid_options_cache(
+            year, week, manager, player_id
+        )
 
         update_players_cache(player_id)
 
         player_score = matchup["players_points"].get(player_id, 0.0)
 
-        manager_data[player_name] = {
-            "points": player_score,
-            "position": player_position,
-            "player_id": player_id,
-        }
-
-        manager_data["Total_Points"] += player_score
-
-    total_points = cast(float, manager_data["Total_Points"])
-
-    manager_data["Total_Points"] = float(
-        Decimal(total_points).quantize(Decimal("0.01")).normalize()
-    )
-
-    starters_cache[year][week][manager] = manager_data
-
-
-def _cache_valid_data(
-    year: str, week: str, manager: str, player: str, position: str
-) -> None:
-    """Update cache with valid data.
-
-    Args:
-        year: The NFL season year (e.g., 2024).
-        week: The week number (1-17).
-        manager: Manager name
-        player: Player name
-        position: Player position
-    """
-    valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
-
-    year_lvl = valid_options_cache[year]
-    if manager not in year_lvl.get("managers", []):
-        year_lvl["managers"].append(manager)
-
-    week_lvl = year_lvl[week]
-    if manager not in week_lvl.get("managers", []):
-        week_lvl["managers"].append(manager)
-
-    mgr_lvl = week_lvl.get(manager, {})
-    if not mgr_lvl:
-        mgr_lvl = {"players": [], "positions": []}
-        week_lvl[manager] = mgr_lvl
-
-    # Add the player and position to the appropriate level
-    for lvl in [mgr_lvl, week_lvl, year_lvl]:
-        if player not in lvl.get("players", []):
-            lvl["players"].append(player)
-        if position not in lvl.get("positions", []):
-            lvl["positions"].append(position)
+        update_starters_cache(
+            year, week, manager, player_id, player_score
+        )

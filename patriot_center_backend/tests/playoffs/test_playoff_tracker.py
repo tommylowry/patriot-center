@@ -163,8 +163,7 @@ class TestGetPlayoffPlacements:
                 ".fetch_sleeper_data"
             ) as mock_fetch_sleeper_data,
             patch(
-                "patriot_center_backend.playoffs.playoff_tracker"
-                ".LEAGUE_IDS",
+                "patriot_center_backend.playoffs.playoff_tracker.LEAGUE_IDS",
                 {2024: "league2024"},
             ),
             patch(
@@ -258,6 +257,7 @@ class TestGetPlayoffPlacements:
 
         assert result == {}
         assert "Users return not in list form" in caplog.text
+
 
 class TestRetroactivelyAssignTeamPlacementForPlayer:
     """Test retroactively_assign_team_placement_for_player function."""

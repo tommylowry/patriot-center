@@ -12,9 +12,7 @@ from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 logger = logging.getLogger(__name__)
 
 
-def get_playoff_roster_ids(
-    year: int, week: int, league_id: str
-) -> list[int]:
+def get_playoff_roster_ids(year: int, week: int, league_id: str) -> list[int]:
     """Determine which rosters are participating in playoffs for a given week.
 
     Filters out regular year weeks and consolation bracket teams,

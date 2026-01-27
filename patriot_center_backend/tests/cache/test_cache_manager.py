@@ -334,6 +334,55 @@ class TestGetStartersCache:
         assert "2024" in result
 
 
+class TestSaveStartersCache:
+    """Test save_starters_cache method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CacheManager._save_cache`: `mock_save_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch.object(CacheManager, "_save_cache") as mock_save_cache,
+        ):
+            self.mock_save_cache = mock_save_cache
+
+            yield
+
+    def test_saves_provided_cache(self):
+        """Test saves provided cache to disk."""
+        manager = CacheManager()
+        cache = {"2019": {"1": {}}}
+
+        manager.save_starters_cache(cache)
+
+        self.mock_save_cache.assert_called_once()
+        assert self.mock_save_cache.call_args[0][1] == cache
+
+    def test_saves_in_memory_cache_when_none_provided(self):
+        """Test saves in-memory cache when no cache provided."""
+        manager = CacheManager()
+        manager._starters_cache = {"2019": {"1": {}}}
+
+        manager.save_starters_cache()
+
+        self.mock_save_cache.assert_called_once()
+
+    def test_raises_error_when_no_cache_to_save(self):
+        """Test raises ValueError when no cache data to save."""
+        manager = CacheManager()
+
+        with pytest.raises(ValueError) as exc_info:
+            manager.save_starters_cache()
+
+        assert "No starters cache" in str(exc_info.value)
+
 class TestReloadAllCaches:
     """Test reload_all_caches method."""
 
@@ -755,7 +804,7 @@ class TestGetPlayerDataCache:
         self.mock_load_cache.assert_called_once()
         assert "2024" in result
 
-class TestPlayerDataCache:
+class TestSavePlayerDataCache:
     """Test save_players_cache method."""
 
     @pytest.fixture(autouse=True)
@@ -833,6 +882,55 @@ class TestGetReplacementScoreCache:
         assert "2024" in result
 
 
+class TestSaveReplacementScoreCache:
+    """Test save_replacement_score_cache method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CacheManager._save_cache`: `mock_save_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch.object(CacheManager, "_save_cache") as mock_save_cache,
+        ):
+            self.mock_save_cache = mock_save_cache
+
+            yield
+
+    def test_saves_provided_cache(self):
+        """Test saves provided cache to disk."""
+        manager = CacheManager()
+        cache = {"2019": {"1": {}}}
+
+        manager.save_replacement_score_cache(cache)
+
+        self.mock_save_cache.assert_called_once()
+        assert self.mock_save_cache.call_args[0][1] == cache
+
+    def test_saves_in_memory_cache_when_none_provided(self):
+        """Test saves in-memory cache when no cache provided."""
+        manager = CacheManager()
+        manager._replacement_score_cache = {"2019": {"1": {}}}
+
+        manager.save_replacement_score_cache()
+
+        self.mock_save_cache.assert_called_once()
+
+    def test_raises_error_when_no_cache_to_save(self):
+        """Test raises ValueError when no cache data to save."""
+        manager = CacheManager()
+
+        with pytest.raises(ValueError) as exc_info:
+            manager.save_replacement_score_cache()
+
+        assert "No replacement score cache" in str(exc_info.value)
+
 class TestGetValidOptionsCache:
     """Test get_valid_options_cache method."""
 
@@ -863,6 +961,55 @@ class TestGetValidOptionsCache:
         assert "2024" in result
 
 
+class TestSaveValidOptionsCache:
+    """Test save_players_cache method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CacheManager._save_cache`: `mock_save_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch.object(CacheManager, "_save_cache") as mock_save_cache,
+        ):
+            self.mock_save_cache = mock_save_cache
+
+            yield
+
+    def test_saves_provided_cache(self):
+        """Test saves provided cache to disk."""
+        manager = CacheManager()
+        cache = {"2019": {"1": {}}}
+
+        manager.save_valid_options_cache(cache)
+
+        self.mock_save_cache.assert_called_once()
+        assert self.mock_save_cache.call_args[0][1] == cache
+
+    def test_saves_in_memory_cache_when_none_provided(self):
+        """Test saves in-memory cache when no cache provided."""
+        manager = CacheManager()
+        manager._valid_options_cache = {"2019": {"1": {}}}
+
+        manager.save_valid_options_cache()
+
+        self.mock_save_cache.assert_called_once()
+
+    def test_raises_error_when_no_cache_to_save(self):
+        """Test raises ValueError when no cache data to save."""
+        manager = CacheManager()
+
+        with pytest.raises(ValueError) as exc_info:
+            manager.save_valid_options_cache()
+
+        assert "No valid options cache" in str(exc_info.value)
+
 class TestGetImageUrlsCache:
     """Test get_image_urls_cache method."""
 
@@ -891,3 +1038,54 @@ class TestGetImageUrlsCache:
 
         self.mock_load_cache.assert_called_once()
         assert "Tommy" in result
+
+class TestSaveImageUrlsCache:
+    """Test save_players_cache method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CacheManager._save_cache`: `mock_save_cache`
+
+        Yields:
+            None
+        """
+        with (
+            patch.object(CacheManager, "_save_cache") as mock_save_cache,
+        ):
+            self.mock_save_cache = mock_save_cache
+
+            yield
+
+    def test_saves_provided_cache(self):
+        """Test saves provided cache to disk."""
+        manager = CacheManager()
+        cache = {"Tommy": {"Name": "Tommy", "Timestamp": 1234567890.123456}}
+
+        manager.save_image_urls_cache(cache)
+
+        self.mock_save_cache.assert_called_once()
+        assert self.mock_save_cache.call_args[0][1] == cache
+
+    def test_saves_in_memory_cache_when_none_provided(self):
+        """Test saves in-memory cache when no cache provided."""
+        manager = CacheManager()
+        manager._image_urls_cache = {
+            "Tommy": {"Name": "Tommy", "Timestamp": 1234567890.123456}
+        }
+
+        manager.save_image_urls_cache()
+
+        self.mock_save_cache.assert_called_once()
+
+    def test_raises_error_when_no_cache_to_save(self):
+        """Test raises ValueError when no cache data to save."""
+        manager = CacheManager()
+
+        with pytest.raises(ValueError) as exc_info:
+            manager.save_image_urls_cache()
+
+        assert "No image urls cache" in str(exc_info.value)

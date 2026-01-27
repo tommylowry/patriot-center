@@ -2,9 +2,8 @@
 
 Single entry point for all cache updates. Runs updates in dependency order:
 1. player_ids - Sleeper player metadata (external API)
-2. weekly_data - starters, valid_options, players, manager_data, transaction_ids
-3. replacement_score - position replacement scores
-4. player_data - ffWAR calculations
+2. weekly_data - starters, valid_options, players, manager_data,
+    transaction_ids, position replacement scores, ffWAR calculations
 """
 
 import logging

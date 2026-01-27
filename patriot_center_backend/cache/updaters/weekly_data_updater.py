@@ -17,7 +17,7 @@ Notes:
 
 import logging
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._base import get_max_weeks
@@ -79,11 +79,8 @@ def update_weekly_data_caches() -> None:
 
         # Skip previously finished seasons; reset week marker when advancing
         # season.
-        if last_updated_season != 0:
-            if year < last_updated_season:
-                continue
-            if last_updated_season < year:
-                starters_cache["Last_Updated_Week"] = 0  # Reset for new season
+        if last_updated_season != 0 and last_updated_season < year:
+            starters_cache["Last_Updated_Week"] = 0  # Reset for new season
 
         # Early exit if fully up to date (prevents unnecessary API calls).
         if last_updated_season == current_season:
@@ -333,9 +330,6 @@ def _cache_week(
         if season == 2019 and week < 4 and manager_name == "Cody":
             manager_name = "Tommy"
 
-        if not roster_id:
-            continue
-
         # Initialize manager data cache updater for this season/week before
         # skipping playoff filtering.
         manager_updater.set_roster_id(
@@ -353,7 +347,7 @@ def _cache_week(
         if playoff_roster_ids != [] and roster_id not in playoff_roster_ids:
             continue  # Skip non-playoff rosters in playoff weeks
 
-        if not matchup:
+        if not roster_id_to_matchup.get(roster_id):
             continue
 
         # Add matchup data to cache
@@ -379,9 +373,6 @@ def _cache_matchup_data(
         week: The week number (1-17).
         matchup: Matchup data from Sleeper API.
         manager: Manager name
-
-    Raises:
-        Exception: If the total points for the given week is not valid.
     """
     starters_cache = CACHE_MANAGER.get_starters_cache()
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
@@ -413,11 +404,10 @@ def _cache_matchup_data(
 
         manager_data["Total_Points"] += player_score
 
-    if not isinstance(manager_data["Total_Points"], float):
-        raise Exception("Non-float found in Total_Points")
+    total_points = cast(float, manager_data["Total_Points"])
 
     manager_data["Total_Points"] = float(
-        Decimal(manager_data["Total_Points"])
+        Decimal(total_points)
         .quantize(Decimal("0.01"))
         .normalize()
     )

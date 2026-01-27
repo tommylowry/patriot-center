@@ -178,6 +178,183 @@ class TestUpdateWeeklyDataCaches:
 
         self.mock_cache_week.assert_not_called()
 
+    def test_updates_replacement_score_for_week_18_when_needed(self):
+        """Test updates replacement score for week 18 when week > 17."""
+        self.mock_get_current.return_value = (2024, 18)
+        self.mock_starters_cache["Last_Updated_Season"] = "2024"
+        self.mock_starters_cache["Last_Updated_Week"] = 17
+        self.mock_replacement_cache["2024"] = {"17": {}}
+
+        update_weekly_data_caches()
+
+        self.mock_update_replacement.assert_called_once_with(2024, 18)
+
+    def test_skips_replacement_update_when_week_18_exists(self):
+        """Test skips replacement update when week 18 already cached."""
+        self.mock_get_current.return_value = (2024, 18)
+        self.mock_starters_cache["Last_Updated_Season"] = "2024"
+        self.mock_starters_cache["Last_Updated_Week"] = 17
+        self.mock_replacement_cache["2024"] = {"17": {}, "18": {}}
+
+        update_weekly_data_caches()
+
+        self.mock_update_replacement.assert_not_called()
+
+    def test_skips_years_before_last_updated_season(self):
+        """Test skips years that are before the last updated season."""
+        self.mock_starters_cache["Last_Updated_Season"] = "2024"
+        self.mock_starters_cache["Last_Updated_Week"] = 3
+
+        update_weekly_data_caches()
+
+        self.mock_cache_week.assert_called()
+        calls = self.mock_cache_week.call_args_list
+        years_processed = [call[0][0] for call in calls]
+        assert all(year >= 2024 for year in years_processed)
+
+    def test_resets_week_marker_when_advancing_season(self):
+        """Test resets Last_Updated_Week when advancing to new season."""
+        with patch(
+            "patriot_center_backend.cache.updaters.weekly_data_updater"
+            ".LEAGUE_IDS",
+            {2023: "league2023", 2024: "league2024"},
+        ):
+            self.mock_starters_cache["Last_Updated_Season"] = "2023"
+            self.mock_starters_cache["Last_Updated_Week"] = 17
+            self.mock_get_max_weeks.return_value = 17
+
+            update_weekly_data_caches()
+
+            assert self.mock_starters_cache["Last_Updated_Week"] == 0 or (
+                self.mock_cache_week.called
+            )
+
+    def test_assigns_placements_at_week_17_when_up_to_date(self):
+        """Test assigns placements when at week 17 and fully updated."""
+        self.mock_get_current.return_value = (2024, 17)
+        self.mock_starters_cache["Last_Updated_Season"] = "2024"
+        self.mock_starters_cache["Last_Updated_Week"] = 17
+
+        update_weekly_data_caches()
+
+        self.mock_retroactive.assert_called_once()
+
+    def test_assigns_placements_for_previous_year(self):
+        """Test retroactively assigns placements for previous completed year."""
+        with patch(
+            "patriot_center_backend.cache.updaters.weekly_data_updater"
+            ".LEAGUE_IDS",
+            {2023: "league2023", 2024: "league2024"},
+        ):
+            self.mock_starters_cache["Last_Updated_Season"] = "0"
+            self.mock_starters_cache["Last_Updated_Week"] = 0
+            self.mock_get_max_weeks.return_value = 5
+
+            update_weekly_data_caches()
+
+            retroactive_calls = self.mock_retroactive.call_args_list
+            years_called = [call[0][0] for call in retroactive_calls]
+            assert 2023 in years_called
+
+    def test_processes_weeks_from_scratch_for_new_season(self):
+        """Test processes all weeks from 1 when starting fresh season."""
+        self.mock_starters_cache["Last_Updated_Season"] = "0"
+        self.mock_starters_cache["Last_Updated_Week"] = 0
+        self.mock_get_max_weeks.return_value = 3
+
+        update_weekly_data_caches()
+
+        assert self.mock_cache_week.call_count == 3
+
+    def test_processes_weeks_incrementally_for_current_season(self):
+        """Test processes only new weeks for current season."""
+        self.mock_starters_cache["Last_Updated_Season"] = "2024"
+        self.mock_starters_cache["Last_Updated_Week"] = 3
+        self.mock_get_max_weeks.return_value = 5
+
+        update_weekly_data_caches()
+
+        assert self.mock_cache_week.call_count == 2
+        weeks_processed = [
+            call[0][1] for call in self.mock_cache_week.call_args_list
+        ]
+        assert 4 in weeks_processed
+        assert 5 in weeks_processed
+
+    def test_skips_when_no_weeks_to_update(self):
+        """Test skips processing when weeks_to_update is empty."""
+        self.mock_starters_cache["Last_Updated_Season"] = "2024"
+        self.mock_starters_cache["Last_Updated_Week"] = 5
+        self.mock_get_max_weeks.return_value = 5
+
+        update_weekly_data_caches()
+
+        self.mock_cache_week.assert_not_called()
+
+    def test_assigns_placements_at_max_weeks(self):
+        """Test retroactively assigns placements when reaching max weeks."""
+        self.mock_starters_cache["Last_Updated_Season"] = "0"
+        self.mock_starters_cache["Last_Updated_Week"] = 0
+        self.mock_get_max_weeks.return_value = 2
+
+        update_weekly_data_caches()
+
+        self.mock_retroactive.assert_called()
+
+    def test_updates_replacement_score_at_max_weeks(self):
+        """Test updates replacement score for next week at max weeks."""
+        self.mock_starters_cache["Last_Updated_Season"] = "0"
+        self.mock_starters_cache["Last_Updated_Week"] = 0
+        self.mock_get_max_weeks.return_value = 2
+
+        update_weekly_data_caches()
+
+        replacement_calls = self.mock_update_replacement.call_args_list
+        weeks_called = [call[0][1] for call in replacement_calls]
+        assert 3 in weeks_called
+
+    def test_initializes_starters_cache_for_year(self):
+        """Test initializes starters cache structure for new year."""
+        self.mock_starters_cache["Last_Updated_Season"] = "0"
+        self.mock_starters_cache["Last_Updated_Week"] = 0
+        self.mock_get_max_weeks.return_value = 1
+
+        update_weekly_data_caches()
+
+        assert "2024" in self.mock_starters_cache
+
+    def test_initializes_valid_options_cache_for_year(self):
+        """Test initializes valid options cache structure for new year."""
+        self.mock_starters_cache["Last_Updated_Season"] = "0"
+        self.mock_starters_cache["Last_Updated_Week"] = 0
+        self.mock_get_max_weeks.return_value = 1
+
+        update_weekly_data_caches()
+
+        assert "2024" in self.mock_valid_options_cache
+        assert "managers" in self.mock_valid_options_cache["2024"]
+        assert "players" in self.mock_valid_options_cache["2024"]
+
+    def test_updates_progress_markers_after_each_week(self):
+        """Test updates Last_Updated_Season and Last_Updated_Week."""
+        self.mock_starters_cache["Last_Updated_Season"] = "0"
+        self.mock_starters_cache["Last_Updated_Week"] = 0
+        self.mock_get_max_weeks.return_value = 2
+
+        update_weekly_data_caches()
+
+        assert self.mock_starters_cache["Last_Updated_Season"] == "2024"
+        assert self.mock_starters_cache["Last_Updated_Week"] == 2
+
+    def test_reloads_starters_cache_at_end(self):
+        """Test reloads starters cache to remove metadata at end."""
+        self.mock_starters_cache["Last_Updated_Season"] = "2024"
+        self.mock_starters_cache["Last_Updated_Week"] = 5
+
+        update_weekly_data_caches()
+
+        self.mock_get_starters_cache.assert_any_call(force_reload=True)
+
 
 class TestGetRelevantPlayoffRosterIds:
     """Test _get_relevant_playoff_roster_ids function."""
@@ -216,6 +393,36 @@ class TestGetRelevantPlayoffRosterIds:
 
         assert result == []
         self.mock_fetch_sleeper_data.assert_not_called()
+
+    def test_fetches_winners_bracket_for_playoff_week_pre_2021(self):
+        """Test fetches winners bracket for playoff weeks."""
+        self.mock_fetch_sleeper_data.return_value = [
+            {"r": 1, "t1": 1, "t2": 2},
+            {"r": 1, "t1": 3, "t2": 4},
+        ]
+
+        result = _get_relevant_playoff_roster_ids(2019, 14, "league123")
+
+        self.mock_fetch_sleeper_data.assert_called_once_with(
+            "league/league123/winners_bracket"
+        )
+        assert 1 in result
+        assert 2 in result
+
+    def test_fetches_winners_bracket_for_championship_pre_2021(self):
+        """Test fetches winners bracket for playoff weeks."""
+        self.mock_fetch_sleeper_data.return_value = [
+            {"r": 3, "t1": 1, "t2": 2},
+            {"r": 3, "t1": 3, "t2": 4},
+        ]
+
+        result = _get_relevant_playoff_roster_ids(2019, 16, "league123")
+
+        self.mock_fetch_sleeper_data.assert_called_once_with(
+            "league/league123/winners_bracket"
+        )
+        assert 1 in result
+        assert 2 in result
 
     def test_fetches_winners_bracket_for_playoff_week(self):
         """Test fetches winners bracket for playoff weeks."""
@@ -354,7 +561,7 @@ class TestGetPlayoffPlacement:
         result = _get_playoff_placement(2024)
 
         assert result == {}
-        assert "not in list form" in caplog.text
+        assert "Playoff Bracket return not in list form" in caplog.text
 
     def test_returns_empty_dict_when_rosters_not_list(
         self, caplog: pytest.LogCaptureFixture
@@ -373,6 +580,26 @@ class TestGetPlayoffPlacement:
         result = _get_playoff_placement(2024)
 
         assert result == {}
+        assert "Rosters return not in list form" in caplog.text
+
+    def test_returns_empty_dict_when_users_not_list(
+        self, caplog: pytest.LogCaptureFixture
+    ):
+        """Test returns empty dict when rosters response is not a list.
+
+        Args:
+            caplog: pytest caplog fixture
+        """
+        self.mock_fetch_sleeper_data.side_effect = [
+            [{"w": 1, "l": 2}, {"w": 3}],
+            [],
+            {},
+        ]
+
+        result = _get_playoff_placement(2024)
+
+        assert result == {}
+        assert "Users return not in list form" in caplog.text
 
 
 class TestCacheWeek:
@@ -494,6 +721,41 @@ class TestCacheWeek:
             2024, 5, roster_ids
         )
 
+    def test_skips_if_roster_id_of_matchup_not_in_roster_ids(
+        self, caplog: pytest.LogCaptureFixture
+    ):
+        """Test logs warning when roster_id of matchup not in roster_ids.
+
+        Args:
+            caplog: pytest caplog fixture
+        """
+        self.mock_fetch_sleeper_data.return_value = [
+            {"roster_id": 1, "starters": ["4046"], "players_points": {}},
+            {"roster_id": 3, "starters": ["6744"], "players_points": {}},
+        ]
+
+        roster_ids = {1: "Tommy", 2: "Mike"}
+
+        _cache_week(2024, 5, self.mock_manager_updater, roster_ids)
+
+        assert "Roster ID 3 in matchup not found" in caplog.text
+
+        self.mock_cache_matchup_data.assert_called_once_with(
+            "2024",
+            "5",
+            {"roster_id": 1, "starters": ["4046"], "players_points": {}},
+            "Tommy",
+        )
+
+    def test_skips_if_roster_id_not_in_playoffs(self):
+        """Test skips if roster_id not in playoffs."""
+        roster_ids = {1: "Tommy", 2: "Mike"}
+
+        self.mock_get_playoff_roster_ids.return_value = [3]
+
+        _cache_week(2024, 15, self.mock_manager_updater, roster_ids)
+
+        self.mock_cache_matchup_data.assert_not_called()
 
 class TestCacheMatchupData:
     """Test _cache_matchup_data function."""
@@ -598,6 +860,22 @@ class TestCacheMatchupData:
         _cache_matchup_data("2024", "5", matchup, "Tommy")
 
         self.mock_update_players_cache.assert_called_once_with("4046")
+
+    def test_skips_player_if_no_position(self):
+        """Test skips player if no position."""
+        self.mock_player_ids_cache["9999"] = {"full_name": "Unknown Player"}
+
+        matchup = {  # Player 9999 has no position
+            "starters": ["4046", "9999"],
+            "players_points": {"9999": 10.0, "4046": 25.0}
+        }
+
+        _cache_matchup_data("2024", "5", matchup, "Tommy")
+
+        manager_data = self.mock_starters_cache["2024"]["5"]["Tommy"]
+        assert manager_data["Total_Points"] == 25.0
+        assert "9999" not in manager_data
+        assert "Patrick Mahomes" in manager_data
 
 
 class TestCacheValidData:

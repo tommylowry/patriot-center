@@ -182,7 +182,7 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
             apply, player_info, score, _ = get_player_info_and_score(
                 player_id,
                 week_data,
-                final_week_scores,
+                week_scores,
                 yearly_scoring_settings[yr],
             )
             if apply:

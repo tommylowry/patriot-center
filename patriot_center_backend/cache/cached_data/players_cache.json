@@ -3298,7 +3298,7 @@
         "first_name": "Quintez",
         "last_name": "Cephus",
         "position": "WR",
-        "team": "HOU",
+        "team": null,
         "slug": "quintez%20cephus",
         "player_id": "6895"
     },
@@ -6448,7 +6448,7 @@
         "first_name": "Matthew",
         "last_name": "Wright",
         "position": "K",
-        "team": "BUF",
+        "team": null,
         "slug": "matthew%20wright",
         "player_id": "6268"
     },

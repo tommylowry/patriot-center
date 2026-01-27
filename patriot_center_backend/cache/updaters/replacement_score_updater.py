@@ -221,12 +221,12 @@ def _get_three_yr_avg(season: int, week: int) -> dict[str, Any]:
     - Ensures monotonicity: more byes should not lead to lower replacement
     scores
 
-    Parameters:
-        season: The current season
-        week: The current week
+    Args:
+        season: The current season.
+        week: The current week.
 
     Returns:
-        The updated current week's scores with three-year averages added
+        The updated current week's scores with three-year averages added.
     """
     replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
 

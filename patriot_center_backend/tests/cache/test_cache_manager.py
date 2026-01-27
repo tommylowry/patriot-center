@@ -648,7 +648,7 @@ class TestGetPlayersCache:
 
 
 class TestSavePlayerIdsCache:
-    """Test save_players_cache method."""
+    """Test save_player_ids_cache method."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -808,7 +808,7 @@ class TestGetPlayerDataCache:
 
 
 class TestSavePlayerDataCache:
-    """Test save_players_cache method."""
+    """Test save_player_data_cache method."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -966,7 +966,7 @@ class TestGetValidOptionsCache:
 
 
 class TestSaveValidOptionsCache:
-    """Test save_players_cache method."""
+    """Test save_valid_options_cache method."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -1046,7 +1046,7 @@ class TestGetImageUrlsCache:
 
 
 class TestSaveImageUrlsCache:
-    """Test save_players_cache method."""
+    """Test save_image_urls_cache method."""
 
     @pytest.fixture(autouse=True)
     def setup(self):

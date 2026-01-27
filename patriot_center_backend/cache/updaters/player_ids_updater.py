@@ -98,6 +98,16 @@ def update_player_ids_cache() -> None:
 
 
 def _update_new_names(old_ids: dict[str, dict[str, Any]]) -> None:
+    """Update player names across all caches when a player changes their name.
+
+    Compares old player IDs cache with the current one to detect name changes.
+    When a name change is detected, recursively updates the name in all
+    relevant caches (manager metadata, player data, starters, transactions,
+    valid options, players, and image URLs).
+
+    Args:
+        old_ids: The previous player IDs cache before the update.
+    """
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
     for id in player_ids_cache:

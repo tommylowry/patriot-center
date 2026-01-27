@@ -217,7 +217,12 @@ class TestGetPlayerInfoAndScore:
         """
         week_data = {"9999": {"gp": 1.0, "pass_yd": 300}}
         final_week_scores = {
-            "QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}
+            "QB": {},
+            "RB": {},
+            "WR": {},
+            "TE": {},
+            "K": {},
+            "DEF": {},
         }
         scoring_settings = {"pass_yd": 0.04}
 
@@ -234,7 +239,12 @@ class TestGetPlayerInfoAndScore:
         """Test returns False when player has gp = 0."""
         week_data = {"4046": {"gp": 0.0, "pass_yd": 300}}
         final_week_scores = {
-            "QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}
+            "QB": {},
+            "RB": {},
+            "WR": {},
+            "TE": {},
+            "K": {},
+            "DEF": {},
         }
         scoring_settings = {"pass_yd": 0.04}
 
@@ -253,7 +263,12 @@ class TestGetPlayerInfoAndScore:
         }
         week_data = {"1111": {"gp": 1.0}}
         final_week_scores = {
-            "QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}
+            "QB": {},
+            "RB": {},
+            "WR": {},
+            "TE": {},
+            "K": {},
+            "DEF": {},
         }
         scoring_settings = {}
 
@@ -268,7 +283,12 @@ class TestGetPlayerInfoAndScore:
         """Test returns True with correct info for valid player."""
         week_data = {"4046": {"gp": 1.0, "pass_yd": 300}}
         final_week_scores = {
-            "QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}
+            "QB": {},
+            "RB": {},
+            "WR": {},
+            "TE": {},
+            "K": {},
+            "DEF": {},
         }
         scoring_settings = {"pass_yd": 0.04}
 
@@ -292,7 +312,12 @@ class TestGetPlayerInfoAndScore:
         """
         week_data = {"1234ARI": {"gp": 1.0, "rec_yd": 50}}
         final_week_scores = {
-            "QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}
+            "QB": {},
+            "RB": {},
+            "WR": {},
+            "TE": {},
+            "K": {},
+            "DEF": {},
         }
         scoring_settings = {"rec_yd": 0.1}
 
@@ -311,7 +336,12 @@ class TestGetPlayerInfoAndScore:
             "1234": {"gp": 1.0, "rec_yd": 60},
         }
         final_week_scores = {
-            "QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}
+            "QB": {},
+            "RB": {},
+            "WR": {},
+            "TE": {},
+            "K": {},
+            "DEF": {},
         }
         scoring_settings = {"rec_yd": 0.1}
 
@@ -330,7 +360,12 @@ class TestGetPlayerInfoAndScore:
         }
         week_data = {"9999": {"gp": 1.0}}
         final_week_scores = {
-            "QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}
+            "QB": {},
+            "RB": {},
+            "WR": {},
+            "TE": {},
+            "K": {},
+            "DEF": {},
         }
         scoring_settings = {}
 
@@ -344,7 +379,12 @@ class TestGetPlayerInfoAndScore:
         """Test returns True for DEF with non-numeric ID (like 'KC')."""
         week_data = {"KC": {"gp": 1.0, "pts_allow": 14}}
         final_week_scores = {
-            "QB": {}, "RB": {}, "WR": {}, "TE": {}, "K": {}, "DEF": {}
+            "QB": {},
+            "RB": {},
+            "WR": {},
+            "TE": {},
+            "K": {},
+            "DEF": {},
         }
         scoring_settings = {"pts_allow_0_6": 7.0}
 

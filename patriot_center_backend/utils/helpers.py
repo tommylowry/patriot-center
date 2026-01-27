@@ -48,3 +48,16 @@ def get_player_name(player_id: str) -> str | None:
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
     return player_ids_cache.get(player_id, {}).get("full_name")
+
+def get_player_position(player_id: str) -> str | None:
+    """Retrieve the player position for a given player ID from the IDs cache.
+
+    Args:
+        player_id: The ID of the player.
+
+    Returns:
+        The player position if found, otherwise None.
+    """
+    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+
+    return player_ids_cache.get(player_id, {}).get("position")

@@ -240,8 +240,6 @@ def _get_three_yr_avg(season: int, week: int) -> dict[str, Any]:
 
     # Prepare structures for each position (QB, RB, WR, TE)
     for current_week_position in current_week_scores[f"{season}_scoring"]:
-        if current_week_position == "byes":
-            continue  # Skip the "byes" field
         three_yr_season_scores[current_week_position] = {}
         three_yr_season_average[current_week_position] = {}
 

@@ -57,12 +57,7 @@ class TestUpdateValidOptionsCache:
 
     def test_creates_all_levels_for_new_entry(self):
         """Creates year, week, and manager levels when cache is empty."""
-        update_valid_options_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-        )
+        update_valid_options_cache(2024, 1, "Tommy", "12345")
 
         # Year level
         assert "2024" in self.mock_valid_options_cache
@@ -106,12 +101,7 @@ class TestUpdateValidOptionsCache:
         self.mock_get_player_name.return_value = "Saquon Barkley"
         self.mock_get_player_position.return_value = "RB"
 
-        update_valid_options_cache(
-            year="2024",
-            week="2",
-            manager="Tommy",
-            player_id="5678",
-        )
+        update_valid_options_cache(2024, 2, "Tommy", "5678")
 
         year_data = self.mock_valid_options_cache["2024"]
         assert "Tommy" in year_data["managers"]
@@ -138,12 +128,7 @@ class TestUpdateValidOptionsCache:
             },
         }
 
-        update_valid_options_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-        )
+        update_valid_options_cache(2024, 1, "Tommy", "12345")
 
         week_data = self.mock_valid_options_cache["2024"]["1"]
         assert "Tommy" in week_data["managers"]
@@ -168,12 +153,7 @@ class TestUpdateValidOptionsCache:
             },
         }
 
-        update_valid_options_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-        )
+        update_valid_options_cache(2024, 1, "Tommy", "12345")
 
         manager_data = self.mock_valid_options_cache["2024"]["1"]["Tommy"]
         assert "Jayden Daniels" in manager_data["players"]
@@ -189,12 +169,7 @@ class TestUpdateValidOptionsCache:
         """
         self.mock_get_player_name.return_value = None
 
-        update_valid_options_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="99999",
-        )
+        update_valid_options_cache(2024, 1, "Tommy", "99999")
 
         assert (
             "Could not find player or position for player_id: 99999"
@@ -212,12 +187,7 @@ class TestUpdateValidOptionsCache:
         """
         self.mock_get_player_position.return_value = None
 
-        update_valid_options_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="99999",
-        )
+        update_valid_options_cache(2024, 1, "Tommy", "99999")
 
         assert (
             "Could not find player or position for player_id: 99999"
@@ -243,12 +213,7 @@ class TestUpdateValidOptionsCache:
             },
         }
 
-        update_valid_options_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-        )
+        update_valid_options_cache(2024, 1, "Tommy", "12345")
 
         year_data = self.mock_valid_options_cache["2024"]
         assert year_data["managers"].count("Tommy") == 1
@@ -274,12 +239,7 @@ class TestUpdateValidOptionsCache:
             },
         }
 
-        update_valid_options_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-        )
+        update_valid_options_cache(2024, 1, "Tommy", "12345")
 
         week_data = self.mock_valid_options_cache["2024"]["1"]
         assert week_data["managers"].count("Tommy") == 1
@@ -304,12 +264,7 @@ class TestUpdateValidOptionsCache:
             },
         }
 
-        update_valid_options_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-        )
+        update_valid_options_cache(2024, 1, "Tommy", "12345")
 
         manager_data = self.mock_valid_options_cache["2024"]["1"]["Tommy"]
         assert manager_data["players"].count("Jayden Daniels") == 1

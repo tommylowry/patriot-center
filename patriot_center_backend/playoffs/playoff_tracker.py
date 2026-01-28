@@ -3,16 +3,13 @@
 import logging
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.manager_data_updater import (
-    ManagerMetadataManager,
-)
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 logger = logging.getLogger(__name__)
 
 
-def get_playoff_roster_ids(year: int, week: int, league_id: str) -> list[int]:
+def get_playoff_roster_ids(year: int, week: int) -> list[int]:
     """Determine which rosters are participating in playoffs for a given week.
 
     Filters out regular year weeks and consolation bracket teams,
@@ -27,7 +24,6 @@ def get_playoff_roster_ids(year: int, week: int, league_id: str) -> list[int]:
     Args:
         year (int): Target year year.
         week (int): Target week number.
-        league_id (str): Sleeper league identifier.
 
     Returns:
         [int] or [] if regular year week.
@@ -36,13 +32,13 @@ def get_playoff_roster_ids(year: int, week: int, league_id: str) -> list[int]:
     Raises:
         ValueError: If week 17 in 2019/2020 or no rosters found for the round.
     """
-    if int(year) <= 2020 and week <= 13:
+    if year <= 2020 and week <= 13:
         return []
-    if int(year) >= 2021 and week <= 14:
+    if year >= 2021 and week <= 14:
         return []
 
     sleeper_response_playoff_bracket = fetch_sleeper_data(
-        f"league/{league_id}/winners_bracket"
+        f"league/{LEAGUE_IDS[year]}/winners_bracket"
     )
 
     if week == 14:
@@ -91,13 +87,15 @@ def get_playoff_placements(year: int) -> dict[str, int]:
         Dict of keys (manager names) and values (placement) or empty dict if
         year is not completed.
     """
-    league_id = LEAGUE_IDS[int(year)]
-
     sleeper_response_playoff_bracket = fetch_sleeper_data(
-        f"league/{league_id}/winners_bracket"
+        f"league/{LEAGUE_IDS[year]}/winners_bracket"
     )
-    sleeper_response_rosters = fetch_sleeper_data(f"league/{league_id}/rosters")
-    sleeper_response_users = fetch_sleeper_data(f"league/{league_id}/users")
+    sleeper_response_rosters = fetch_sleeper_data(
+        f"league/{LEAGUE_IDS[year]}/rosters"
+    )
+    sleeper_response_users = fetch_sleeper_data(
+        f"league/{LEAGUE_IDS[year]}/users"
+    )
 
     if not isinstance(sleeper_response_playoff_bracket, list):
         logger.warning("Sleeper Playoff Bracket return not in list form")
@@ -146,8 +144,7 @@ def assign_placements_retroactively(year: int) -> None:
     if not placements:
         return
 
-    manager_updater = ManagerMetadataManager()
-    manager_updater.set_playoff_placements(placements, str(year))
+    _manager_cache_set_playoff_placements(placements, year)
 
     weeks = ["15", "16", "17"]
     if year <= 2020:
@@ -173,3 +170,30 @@ def assign_placements_retroactively(year: int) -> None:
                             need_to_log = False
 
                         manager_lvl[player]["placement"] = placements[manager]
+
+
+def _manager_cache_set_playoff_placements(
+    placement_dict: dict[str, int], year: int
+) -> None:
+    """Record final season placements for all managers.
+
+    Should be called after season completion to record final standings.
+    Only sets placement if not already set for the year (prevents
+    overwrites).
+
+    Args:
+        placement_dict: Dict mapping manager names to placement
+            {"Tommy: 1, "Mike": 2, "Bob": 3}
+        year: Season year
+    """
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
+    for manager in placement_dict:
+        if manager not in manager_cache:
+            continue
+
+        cache_placements = (
+            manager_cache[manager]["summary"]["overall_data"]["placement"]
+        )
+        if str(year) not in cache_placements:
+            cache_placements[str(year)] = placement_dict[manager]

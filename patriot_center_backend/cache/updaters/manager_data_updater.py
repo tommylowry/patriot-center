@@ -14,9 +14,6 @@ from patriot_center_backend.cache.updaters._validators import (
 from patriot_center_backend.cache.updaters.image_url_updater import (
     update_image_urls_cache,
 )
-from patriot_center_backend.cache.updaters.player_cache_updater import (
-    update_players_cache_with_list,
-)
 from patriot_center_backend.cache.updaters.processors.matchup_processor import (
     MatchupProcessor,
 )
@@ -24,11 +21,17 @@ from patriot_center_backend.cache.updaters.processors.transactions.base_processo
     TransactionProcessor,
 )
 from patriot_center_backend.constants import (
-    LEAGUE_IDS,
     NAME_TO_MANAGER_USERNAME,
 )
 from patriot_center_backend.managers.formatters import get_season_state
-from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
+from patriot_center_backend.playoffs.playoff_tracker import (
+    get_playoff_roster_ids,
+)
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_sleeper_data,
+    get_league_info,
+    get_roster_ids,
+)
 
 
 class ManagerMetadataManager:
@@ -85,106 +88,6 @@ class ManagerMetadataManager:
         self._matchup_processor = MatchupProcessor()
 
     # ========== Update Cache Functions ==========
-
-    def set_roster_id(
-        self,
-        manager: str,
-        year: str,
-        week: str,
-        roster_id: int,
-        playoff_roster_ids: list[int] | None = None,
-        matchups: list[dict[str, Any]] | None = None,
-    ) -> None:
-        """Establish roster ID mapping and initialize manager data structures.
-
-        Must be called for each manager before cache_week_data().
-        On first call (week 1), fetches league settings to determine FAAB usage
-        and playoff configuration.
-
-        Args:
-            manager: Manager name
-            year: Season year as string
-            week: Week number as string
-            roster_id: Sleeper roster ID for this manager (None for co-managers)
-            playoff_roster_ids: List with playoff bracket roster IDs (only
-                relevant if season state is playoff)
-            matchups: Matchup data for updating players cache (optional)
-
-        Raises:
-            ValueError: If one of the following:
-                - User data fetch fails
-                - No username mapping found
-        """
-        manager_cache = CACHE_MANAGER.get_manager_cache()
-
-        if not roster_id:
-            # Co-manager scenario; skip
-            return
-
-        if matchups:
-            update_players_cache_with_list(matchups)
-
-        self._year = year
-        self._week = week
-        self._playoff_roster_ids = []
-        if playoff_roster_ids:
-            self._playoff_roster_ids = playoff_roster_ids
-
-        if (
-            week == "1"
-            or self._use_faab is None
-            or self._playoff_week_start is None
-        ):
-            # Fetch league settings to determine FAAB usage at start of season
-            sleeper_league_dict = fetch_sleeper_data(
-                f"league/{LEAGUE_IDS.get(int(year))}"
-            )
-            if not isinstance(sleeper_league_dict, dict):
-                raise ValueError(
-                    f"Sleeper API call failed to retrieve "
-                    f"league info for year {year}"
-                )
-            league_settings = sleeper_league_dict.get("settings", {})
-
-            # Set use_faab to True if waiver_type == 2
-            waiver_type = league_settings.get("waiver_type", 1)
-            self._use_faab = waiver_type == 2
-
-            # Set playoff_week_start
-            self._playoff_week_start = league_settings.get("playoff_week_start")
-
-        if not self._weekly_roster_ids:
-            self._weekly_roster_ids = {}
-
-        self._weekly_roster_ids[roster_id] = manager
-        self._set_defaults_if_missing(roster_id)
-        manager_cache[manager]["years"][year]["roster_id"] = roster_id
-
-        if "user_id" not in manager_cache[manager]["summary"]:
-            username = NAME_TO_MANAGER_USERNAME.get(manager, "")
-            if not username:  # No username mapping
-                raise ValueError(
-                    f"No username mapping found for manager {manager}."
-                )
-
-            user_payload = fetch_sleeper_data(f"user/{username}")
-            if (
-                not isinstance(user_payload, dict)
-                or "user_id" not in user_payload
-            ):
-                raise ValueError(  # User data fetch failed
-                    f"Failed to fetch 'user_id' for manager "
-                    f"{manager} with username {username}."
-                )
-
-            # Add user_id to manager cache
-            manager_cache[manager]["summary"]["user_id"] = (
-                user_payload["user_id"]
-            )
-
-        update_image_urls_cache(manager)
-
-
     def cache_week_data(self, year: str, week: str) -> None:
         """Process and cache all data for a specific week.
 
@@ -201,7 +104,22 @@ class ManagerMetadataManager:
             year: Season year as string
             week: Week number as string
         """
+        self._weekly_roster_ids = get_roster_ids(int(year), int(week))
+
         validate_caching_preconditions(self._weekly_roster_ids, year, week)
+
+        self._year = year
+        self._week = week
+
+        self._playoff_roster_ids = get_playoff_roster_ids(
+            int(self._year), int(self._week)
+        )
+
+        if self._week == "1":
+            self._setup_league_settings()
+
+        # Initialize weekly metadata
+        self._set_defaults_if_missing()
 
         # Set session state in processors BEFORE processing
         self._transaction_processor.set_session_state(
@@ -240,34 +158,9 @@ class ManagerMetadataManager:
         self._transaction_processor.clear_session_state()
         self._matchup_processor.clear_session_state()
 
-    def set_playoff_placements(
-        self, placement_dict: dict[str, int], year: str
-    ) -> None:
-        """Record final season placements for all managers.
-
-        Should be called after season completion to record final standings.
-        Only sets placement if not already set for the year (prevents
-        overwrites).
-
-        Args:
-            placement_dict: Dict mapping manager names to placement
-                {"Tommy: 1, "Mike": 2, "Bob": 3}
-            year: Season year as string
-        """
-        manager_cache = CACHE_MANAGER.get_manager_cache()
-
-        for manager in placement_dict:
-            if manager not in manager_cache:
-                continue
-
-            cache_placements = (
-                manager_cache[manager]["summary"]["overall_data"]["placement"]
-            )
-            if year not in cache_placements:
-                cache_placements[year] = placement_dict[manager]
 
     # ========== PRIVATE HELPER METHODS ==========
-    def _set_defaults_if_missing(self, roster_id: int) -> None:
+    def _set_defaults_if_missing(self) -> None:
         """Initialize cache structure for manager/year/week if not present.
 
         Creates:
@@ -277,9 +170,6 @@ class ManagerMetadataManager:
         - FAAB template (if league uses FAAB)
 
         Uses deep copies of templates to prevent reference sharing.
-
-        Args:
-            roster_id: Roster ID to map to manager name
 
         Raises:
             ValueError: If week or year is not set
@@ -298,58 +188,115 @@ class ManagerMetadataManager:
                 use_faab=self._use_faab
             )
 
-        manager = self._weekly_roster_ids.get(roster_id, None)
-        if not manager:
-            raise ValueError(f"Manager not found for roster ID {roster_id}.")
+        for roster_id in self._weekly_roster_ids:
+            manager = self._weekly_roster_ids.get(roster_id, None)
+            if not manager:
+                raise ValueError(
+                    f"Manager not found for roster ID {roster_id}."
+                )
 
-        if manager not in manager_cache:
-            manager_cache[manager] = {
-                "summary": deepcopy(
-                    self._templates["top_level_summary_template"]
-                ),
-                "years": {},
-            }
+            if manager not in manager_cache:
+                manager_cache[manager] = {
+                    "summary": deepcopy(
+                        self._templates["top_level_summary_template"]
+                    ),
+                    "years": {},
+                }
 
-        if self._year not in manager_cache[manager]["years"]:
-            manager_cache[manager]["years"][self._year] = {
-                "summary": deepcopy(self._templates["yearly_summary_template"]),
-                "roster_id": None,
-                "weeks": {},
-            }
+            if self._year not in manager_cache[manager]["years"]:
+                manager_cache[manager]["years"][self._year] = {
+                    "summary": deepcopy(
+                        self._templates["yearly_summary_template"]
+                    ),
+                    "roster_id": None,
+                    "weeks": {},
+                }
 
-        # Initialize week template if missing
-        weeks_level = manager_cache[manager]["years"][self._year]["weeks"]
-        if self._week not in weeks_level:
-            # Differentiate between playoff and non-playoff weeks
-            season_state = get_season_state(
-                self._week, self._year, self._playoff_week_start
+            # Initialize week template if missing
+            weeks_level = manager_cache[manager]["years"][self._year]["weeks"]
+            if self._week not in weeks_level:
+                # Differentiate between playoff and non-playoff weeks
+                season_state = get_season_state(
+                    self._week, self._year, self._playoff_week_start
+                )
+
+                if (
+                    season_state == "playoffs"
+                    and roster_id not in self._playoff_roster_ids
+                ):
+                    weeks_level[self._week] = deepcopy(
+                        self._templates[
+                            "weekly_summary_not_in_playoffs_template"
+                        ]
+                    )
+
+                else:  # season_state == "regular_season"
+                    weeks_level[self._week] = deepcopy(
+                        self._templates["weekly_summary_template"]
+                    )
+
+            # Update FAAB image urls cache if needed
+            if (
+                self._needs_faab_image_urls_update
+                and not image_urls_cache.get("$1 FAAB")
+            ):
+                for i in range(1, 101):
+                    update_image_urls_cache(f"${i} FAAB")
+                self._needs_faab_image_urls_update = False
+
+
+            if self._use_faab:
+                initialize_faab_template(manager, self._year, self._week)
+
+            manager_cache[manager]["years"][self._year]["roster_id"] = roster_id
+
+            if "user_id" not in manager_cache[manager]["summary"]:
+                self._update_user_id(manager)
+
+    def _update_user_id(self, manager: str) -> None:
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+        username = NAME_TO_MANAGER_USERNAME.get(manager, "")
+        if not username:  # No username mapping
+            raise ValueError(
+                f"No username mapping found for manager {manager}."
             )
 
-            if (
-                season_state == "playoffs"
-                and roster_id not in self._playoff_roster_ids
-            ):
-                weeks_level[self._week] = deepcopy(
-                    self._templates["weekly_summary_not_in_playoffs_template"]
-                )
-
-            else:  # season_state == "regular_season"
-                weeks_level[self._week] = deepcopy(
-                    self._templates["weekly_summary_template"]
-                )
-
-        # Update FAAB image urls cache if needed
+        user_payload = fetch_sleeper_data(f"user/{username}")
         if (
-            self._needs_faab_image_urls_update
-            and not image_urls_cache.get("$1 FAAB")
+            not isinstance(user_payload, dict)
+            or "user_id" not in user_payload
         ):
-            for i in range(1, 101):
-                update_image_urls_cache(f"${i} FAAB")
-            self._needs_faab_image_urls_update = False
+            raise ValueError(  # User data fetch failed
+                f"Failed to fetch 'user_id' for manager "
+                f"{manager} with username {username}."
+            )
 
+        # Add user_id to manager cache
+        manager_cache[manager]["summary"]["user_id"] = (
+            user_payload["user_id"]
+        )
 
-        if self._use_faab:
-            initialize_faab_template(manager, self._year, self._week)
+        update_image_urls_cache(manager)
+
+    def _setup_league_settings(self) -> None:
+        # Fetch league settings to determine FAAB usage at start of
+        # season
+        if not self._year:
+            raise ValueError(
+                "Year must be set before setting up league settings."
+            )
+
+        league_info = get_league_info(int(self._year))
+        league_settings = league_info.get("settings", {})
+
+        # Set use_faab to True if waiver_type == 2
+        waiver_type = league_settings.get("waiver_type", 1)
+        self._use_faab = waiver_type == 2
+
+        # Set playoff_week_start
+        self._playoff_week_start = league_settings.get(
+            "playoff_week_start"
+        )
 
     def _clear_weekly_metadata(self) -> None:
         """Clear weekly session state after processing.

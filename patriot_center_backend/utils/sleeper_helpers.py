@@ -176,53 +176,28 @@ def get_roster_ids(year: int, week: int) -> dict[int, str]:
     return roster_ids
 
 
-def get_current_season_and_week() -> tuple[int, int]:
-    """Retrieves the current season and week number from the Sleeper API.
+def get_league_info(year: int) -> dict[str, Any]:
+    """Retrieves the league metadata for a given year.
 
-    - The current season is determined by the current year and the latest
-    season available in LEAGUE_IDS.
-
-    - The current week is determined by querying the Sleeper API for the
-    latest scored fantasy week. If the league is in the preseason,
-    the current week is 0.
+    Args:
+        year: The year for which to retrieve the league metadata.
 
     Returns:
-        The current season and week number.
+        The league metadata.
 
     Raises:
-        ValueError: If the Sleeper API call fails to retrieve
-            the current season or week.
+        ValueError: If no league ID is found for the given year.
     """
-    current_year = max(LEAGUE_IDS.keys())
-
-    league_id = LEAGUE_IDS.get(int(current_year))
-
-    # # OFFLINE DEBUGGING
-    # return "2025", 10
+    league_id = LEAGUE_IDS.get(year)
+    if not league_id:
+        raise ValueError(f"No league ID found for year {year}.")
 
     # Query Sleeper API for league metadata
     league_info = fetch_sleeper_data(f"league/{league_id}")
     if not isinstance(league_info, dict):
         raise ValueError(
             f"Sleeper API call failed to retrieve "
-            f"league info for year {current_year}"
+            f"league info for year {year}"
         )
 
-    # current_season is the current season
-    current_season = league_info.get("season")
-    if not current_season:
-        raise ValueError(
-            f"Sleeper API call failed to retrieve "
-            f"current season in sleeper's league/<league_id>"
-            f"call for year {current_year}"
-        )
-
-    current_season = int(current_season)
-
-    # last_scored_leg is the latest completed/scored fantasy week
-    # (0 if preseason)
-    current_week = int(
-        league_info.get("settings", {}).get("last_scored_leg", 0)
-    )
-
-    return current_season, current_week
+    return league_info

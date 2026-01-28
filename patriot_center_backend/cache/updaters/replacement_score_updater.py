@@ -17,8 +17,8 @@ from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._base import (
-    get_max_weeks,
     get_player_info_and_score,
+    log_cache_update,
 )
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.sleeper_helpers import (
@@ -28,7 +28,7 @@ from patriot_center_backend.utils.sleeper_helpers import (
 logger = logging.getLogger(__name__)
 
 
-def update_replacement_score_cache(year: int, week: int) -> None:
+def update_replacement_score_cache(year: int) -> None:
     """Incrementally update the replacement score cache.
 
     Algorithm summary:
@@ -50,36 +50,37 @@ def update_replacement_score_cache(year: int, week: int) -> None:
 
     Args:
         year: The current season.
-        week: The current week.
     """
     replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
 
     if not replacement_score_cache:
         _backfill_three_years(year)
 
-    if str(year) not in replacement_score_cache:
-        replacement_score_cache[str(year)] = {}
+    # If the year is in the cache, get the last week
+    if len(replacement_score_cache.get(str(year), {})) > 0:
+        week = int(replacement_score_cache[str(year)].keys()[-1]) + 1
+    else:
+        week = 1
 
-    # Fetch replacement scores for the week
     replacement_data = _fetch_replacement_score_for_week(year, week)
-    if not replacement_data:
-        return
+    while replacement_data:
+        if str(year) not in replacement_score_cache:
+            replacement_score_cache[str(year)] = {}
 
-    # Update the cache
-    replacement_score_cache[str(year)][str(week)] = (
-        _fetch_replacement_score_for_week(year, week)
-    )
+        # Update the cache
+        replacement_score_cache[str(year)][str(week)] = replacement_data
+        log_cache_update(year, week, "Replacement Score")
 
-    # Compute the 3-year average if data from three years ago exists
-    if str(year - 3) in replacement_score_cache:
-        # Augment with bye-aware 3-year rolling averages
-        replacement_score_cache[str(year)][str(week)] = _get_three_yr_avg(
-            year, week
-        )
+        # Compute the 3-year average if data from three years ago exists
+        if str(year - 3) in replacement_score_cache:
+            # Augment with bye-aware 3-year rolling averages
+            replacement_score_cache[str(year)][str(week)] = _get_three_yr_avg(
+                year, week
+            )
 
-    logger.info(
-        f"\tSeason {year}, Week {week}: Replacement Score Cache Updated."
-    )
+        week += 1
+
+        replacement_data = _fetch_replacement_score_for_week(year, week)
 
 
 def _backfill_three_years(year: int) -> None:
@@ -91,26 +92,15 @@ def _backfill_three_years(year: int) -> None:
     replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
 
     logger.info(
-        f"Starting backfill of replacement score cache for season {year}"
+        f"Starting backfill of Replacement Score Cache for season {year}"
     )
 
     for backfill_year in range(year - 3, year):
         if str(backfill_year) not in replacement_score_cache:
             replacement_score_cache[str(backfill_year)] = {}
 
-        max_weeks = get_max_weeks(backfill_year, true_max=True)
-
-        # Determine the range of weeks to update
-        weeks_to_update = range(1, max_weeks + 1)
-
-        logger.info(
-            f"Backfilling replacement score cache with "
-            f"season {backfill_year}, weeks: {list(weeks_to_update)}"
-        )
-
-        for week in weeks_to_update:
-            # Update the cache
-            update_replacement_score_cache(backfill_year, week)
+        # Update the cache
+        update_replacement_score_cache(backfill_year)
 
 
 def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
@@ -141,10 +131,6 @@ def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
         )
 
     if not week_data:
-        logger.warning(
-            f"No data found for season {season}, week {week}. "
-            "Returning empty replacement score."
-        )
         return {}
 
     yearly_scoring_settings = {}

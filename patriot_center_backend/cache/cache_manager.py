@@ -6,8 +6,6 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-from patriot_center_backend.constants import LEAGUE_IDS
-
 _CACHE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # ===== STEP 1: PLAYER IDS =====
@@ -33,6 +31,10 @@ _MANAGER_METADATA_CACHE_FILE = os.path.join(
 )
 _TRANSACTION_IDS_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "transaction_ids.json"
+)
+_WEEKLY_DATA_PROGRESS_TRACKER_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "progress_trackers",
+    "weekly_data_progress_tracker.json"
 )
 
 # ===== STEP 3-4: SCORING DATA =====
@@ -80,6 +82,7 @@ class CacheManager:
         self._replacement_score_cache: dict | None = None
         self._valid_options_cache: dict | None = None
         self._image_urls_cache: dict | None = None
+        self._weekly_data_progress_tracker: dict | None = None
 
     # ===== LOADER AND SAVER =====
     def _load_cache(self, file_path: str) -> dict[str, Any]:
@@ -278,37 +281,17 @@ class CacheManager:
         self._player_ids_cache = data_to_save
 
     # ===== STARTERS CACHE =====
-    def get_starters_cache(
-        self, force_reload: bool = False, for_update: bool = False
-    ) -> dict[str, Any]:
+    def get_starters_cache(self, force_reload: bool = False) -> dict[str, Any]:
         """Get starters cache.
 
         Args:
             force_reload: If True, reload from disk
-            for_update: If True, include metadata fields
 
         Returns:
             Starters cache dictionary
         """
         if self._starters_cache is None or force_reload:
             self._starters_cache = self._load_cache(_STARTERS_CACHE_FILE)
-
-        if for_update:
-            if self._starters_cache == {}:
-                # Initialize the cache with all years
-                self._starters_cache = {
-                    "Last_Updated_Season": "0",
-                    "Last_Updated_Week": 0,
-                }
-
-                # Initialize an empty dict for each season
-                for year in list(LEAGUE_IDS.keys()):
-                    self._starters_cache[str(year)] = {}
-
-        # Remove metadata fields if we're not using this data to update
-        else:
-            self._starters_cache.pop("Last_Updated_Season", None)
-            self._starters_cache.pop("Last_Updated_Week", None)
 
         return self._starters_cache
 
@@ -478,6 +461,45 @@ class CacheManager:
         self._save_cache(_IMAGE_URLS_CACHE_FILE, data_to_save)
         self._image_urls_cache = data_to_save
 
+    def get_weekly_data_progress_tracker(
+        self, force_reload: bool = False
+    ) -> dict[str, Any]:
+        """Get weekly data progress tracker.
+
+        Args:
+            force_reload: If True, reload from disk
+
+        Returns:
+            Weekly data progress tracker dictionary
+        """
+        if self._weekly_data_progress_tracker is None or force_reload:
+            self._weekly_data_progress_tracker = self._load_cache(
+                _WEEKLY_DATA_PROGRESS_TRACKER_FILE
+            )
+
+        return self._weekly_data_progress_tracker
+
+    def save_weekly_data_progress_tracker(
+        self, cache: dict[str, Any] | None = None
+    ) -> None:
+        """Save weekly data progress tracker to disk.
+
+        Args:
+            cache: Cache to save (uses in-memory cache if not provided)
+
+        Raises:
+            ValueError: If no weekly data progress tracker to save
+        """
+        data_to_save = (
+            cache if cache is not None else self._weekly_data_progress_tracker
+        )
+
+        if data_to_save is None:
+            raise ValueError("No weekly data progress tracker to save")
+
+        self._save_cache(_WEEKLY_DATA_PROGRESS_TRACKER_FILE, data_to_save)
+        self._weekly_data_progress_tracker = data_to_save
+
     # ===== UTILITY METHODS =====
     def reload_all_caches(self) -> None:
         """Clear all in-memory caches.
@@ -493,6 +515,7 @@ class CacheManager:
         self._replacement_score_cache = None
         self._valid_options_cache = None
         self._image_urls_cache = None
+        self._weekly_data_progress_tracker = None
 
     def save_all_caches(self) -> None:
         """Save all loaded caches to disk."""
@@ -514,6 +537,8 @@ class CacheManager:
             self.save_valid_options_cache()
         if self._image_urls_cache is not None:
             self.save_image_urls_cache()
+        if self._weekly_data_progress_tracker is not None:
+            self.save_weekly_data_progress_tracker()
 
 
 # ===== SINGLETON INSTANCE =====

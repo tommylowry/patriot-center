@@ -53,13 +53,7 @@ class TestUpdateStartersCache:
 
     def test_creates_all_levels_for_new_entry(self):
         """Creates year, week, and manager levels when cache is empty."""
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-            player_score=25.5,
-        )
+        update_starters_cache(2024, 1, "Tommy", "12345", 25.5)
 
         assert "2024" in self.mock_starters_cache
         assert "1" in self.mock_starters_cache["2024"]
@@ -86,13 +80,7 @@ class TestUpdateStartersCache:
         self.mock_get_player_name.return_value = "Saquon Barkley"
         self.mock_get_player_position.return_value = "RB"
 
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="5678",
-            player_score=15.5,
-        )
+        update_starters_cache(2024, 1, "Tommy", "5678", 15.5)
 
         manager_data = self.mock_starters_cache["2024"]["1"]["Tommy"]
         assert "Saquon Barkley" in manager_data
@@ -105,13 +93,7 @@ class TestUpdateStartersCache:
         """Creates week level when year already exists."""
         self.mock_starters_cache["2024"] = {}
 
-        update_starters_cache(
-            year="2024",
-            week="2",
-            manager="Tommy",
-            player_id="12345",
-            player_score=20.0,
-        )
+        update_starters_cache(2024, 2, "Tommy", "12345", 20.0)
 
         assert "2" in self.mock_starters_cache["2024"]
         assert "Tommy" in self.mock_starters_cache["2024"]["2"]
@@ -120,13 +102,7 @@ class TestUpdateStartersCache:
         """Creates manager level when year and week already exist."""
         self.mock_starters_cache["2024"] = {"1": {}}
 
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-            player_score=18.0,
-        )
+        update_starters_cache(2024, 1, "Tommy", "12345", 18.0)
 
         assert "Tommy" in self.mock_starters_cache["2024"]["1"]
 
@@ -140,13 +116,7 @@ class TestUpdateStartersCache:
         """
         self.mock_get_player_name.return_value = None
 
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="99999",
-            player_score=10.0,
-        )
+        update_starters_cache(2024, 1, "Tommy", "99999", 10.0)
 
         assert "Unknown player: 99999" in caplog.text
         # Manager data should have Total_Points but no player
@@ -163,13 +133,7 @@ class TestUpdateStartersCache:
         """
         self.mock_get_player_position.return_value = None
 
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="99999",
-            player_score=10.0,
-        )
+        update_starters_cache(2024, 1, "Tommy", "99999", 10.0)
 
         assert "Unknown player: 99999" in caplog.text
         manager_data = self.mock_starters_cache["2024"]["1"]["Tommy"]
@@ -196,13 +160,7 @@ class TestUpdateStartersCache:
             }
         }
 
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-            player_score=30.0,
-        )
+        update_starters_cache(2024, 1, "Tommy", "12345", 30.0)
 
         assert "Duplicate player: Jayden Daniels" in caplog.text
         # Total points should not change
@@ -221,13 +179,7 @@ class TestUpdateStartersCache:
             }
         }
 
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-            player_score=5.67,
-        )
+        update_starters_cache(2024, 1, "Tommy", "12345", 5.67)
 
         # 10.33 + 5.67 = 16.00, normalized to 16
         assert (
@@ -244,13 +196,7 @@ class TestUpdateStartersCache:
             }
         }
 
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-            player_score=5.222,
-        )
+        update_starters_cache(2024, 1, "Tommy", "12345", 5.222)
 
         # 10.111 + 5.222 = 15.333, rounded to 15.33
         assert (
@@ -260,13 +206,7 @@ class TestUpdateStartersCache:
 
     def test_player_data_structure(self):
         """Verifies correct player data structure is created."""
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="12345",
-            player_score=22.75,
-        )
+        update_starters_cache(2024, 1, "Tommy", "12345", 22.75)
 
         player_data = (
             self.mock_starters_cache["2024"]["1"]["Tommy"]["Jayden Daniels"]
@@ -281,13 +221,7 @@ class TestUpdateStartersCache:
         """Initializes Total_Points to 0.0 for new manager."""
         self.mock_get_player_name.return_value = None  # Force early return
 
-        update_starters_cache(
-            year="2024",
-            week="1",
-            manager="Tommy",
-            player_id="99999",
-            player_score=10.0,
-        )
+        update_starters_cache(2024, 1, "Tommy", "99999", 10.0)
 
         assert (
             self.mock_starters_cache["2024"]["1"]["Tommy"]["Total_Points"]

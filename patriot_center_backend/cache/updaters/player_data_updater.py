@@ -15,7 +15,6 @@ Algorithm summary:
 """
 
 import logging
-from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
@@ -25,13 +24,14 @@ from patriot_center_backend.cache.updaters._base import (
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
+    get_roster_ids,
 )
 
 logger = logging.getLogger(__name__)
 
 
 def update_player_data_cache(
-    year: int, week: int, roster_ids: dict[int, str]
+    year: int, week: int
 ) -> None:
     """Incrementally updates the ffWAR cache JSON file by year/week.
 
@@ -53,7 +53,6 @@ def update_player_data_cache(
     Args:
         year: The current season
         week: The current week
-        roster_ids: The roster IDs for the current week
     """
     player_data_cache = CACHE_MANAGER.get_player_data_cache()
 
@@ -62,14 +61,12 @@ def update_player_data_cache(
 
     # Fetch ffWAR for the week.
     player_data_cache[str(year)][str(week)] = _fetch_ffwar(
-        year, week, roster_ids
+        year, week
     )
-
-    logger.info(f"\tSeason {year}, Week {week}: Player Data Cache Updated.")
 
 
 def _fetch_ffwar(
-    season: int, week: int, roster_ids: dict[int, str]
+    season: int, week: int
 ) -> dict[str, dict[str, Any]]:
     """Fetch and process the ffWAR data for a given week.
 
@@ -78,7 +75,6 @@ def _fetch_ffwar(
     Args:
         season: The NFL season year (e.g., 2024).
         week: The week number (1-17).
-        roster_ids: A dictionary mapping team IDs to team names.
 
     Returns:
         dict[str, dict[str, Any]]: A dictionary containing the ffWAR data
@@ -110,7 +106,7 @@ def _fetch_ffwar(
 
     ffwar_results = {}
     all_player_scores = _get_all_player_scores(season, week)
-    all_rostered_players = _get_all_rostered_players(roster_ids, season, week)
+    all_rostered_players = _get_all_rostered_players(season, week)
 
     for position in players:
         calculated_ffwar = _calculate_ffwar_position(
@@ -396,7 +392,7 @@ def _get_all_player_scores(
 
 
 def _get_all_rostered_players(
-    roster_ids: dict[int, str], season: int, week: int
+    season: int, week: int
 ) -> dict[str, list[str]]:
     """Get all players rostered by each manager for a specific week's matchup.
 
@@ -408,7 +404,6 @@ def _get_all_rostered_players(
     - Player IDs are strings from the Sleeper API.
 
     Args:
-        roster_ids: Mapping of roster_id -> manager_name.
         season: The season year.
         week: The week number.
 
@@ -418,14 +413,14 @@ def _get_all_rostered_players(
     Raises:
         Exception: If the Sleeper API call fails.
     """
-    imported_roster_ids = deepcopy(roster_ids)
+    roster_ids = get_roster_ids(season, week)
 
     # Handle known issue with Tommy's roster ID in early 2019 weeks
     # In weeks 1-3 of 2019, Cody's roster should be attributed to Tommy
     if season == 2019 and week <= 3:
         for key in roster_ids:
             if roster_ids[key] == "Cody":
-                imported_roster_ids[key] = "Tommy"
+                roster_ids[key] = "Tommy"
                 break
 
     matchup_data_response = fetch_sleeper_data(
@@ -438,7 +433,7 @@ def _get_all_rostered_players(
 
     rostered_players = {}
     for matchup in matchup_data_response:
-        rostered_players[imported_roster_ids[matchup['roster_id']]] = (
+        rostered_players[roster_ids[matchup['roster_id']]] = (
             matchup['players']
         )
 

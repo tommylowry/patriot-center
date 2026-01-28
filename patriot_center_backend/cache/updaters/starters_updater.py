@@ -13,8 +13,8 @@ logger = logging.getLogger(__name__)
 
 
 def update_starters_cache(
-    year: str,
-    week: str,
+    year: int,
+    week: int,
     manager: str,
     player_id: str,
     player_score: float,
@@ -31,8 +31,8 @@ def update_starters_cache(
     starters_cache = CACHE_MANAGER.get_starters_cache()
 
     # Update the cache if needed
-    year_data = starters_cache.setdefault(year, {})
-    week_data = year_data.setdefault(week, {})
+    year_data = starters_cache.setdefault(str(year), {})
+    week_data = year_data.setdefault(str(week), {})
     manager_data = week_data.setdefault(manager, {})
 
     manager_data.setdefault("Total_Points", 0.0)

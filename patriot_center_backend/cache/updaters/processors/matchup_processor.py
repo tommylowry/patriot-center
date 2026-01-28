@@ -4,6 +4,15 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters.player_cache_updater import (
+    update_players_cache_with_list,
+)
+from patriot_center_backend.cache.updaters.starters_updater import (
+    update_starters_cache,
+)
+from patriot_center_backend.cache.updaters.valid_options_updater import (
+    update_valid_options_cache,
+)
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.managers.formatters import get_season_state
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
@@ -99,6 +108,8 @@ class MatchupProcessor:
         if isinstance(manager_matchup_data, dict):
             raise ValueError("No matchup data found for week.")
 
+        update_players_cache_with_list(manager_matchup_data)
+
         season_state = get_season_state(
             self._week, self._year, self._playoff_week_start
         )
@@ -135,6 +146,13 @@ class MatchupProcessor:
             manager_1_name = self._weekly_roster_ids.get(manager_1_roster_id)
             manager_2_name = self._weekly_roster_ids.get(manager_2_roster_id)
 
+            if not manager_1_name or not manager_2_name:
+                continue
+
+            # Cache matchup data
+            self._cache_matchup_data(manager_1_name, manager_1_data)
+            self._cache_matchup_data(manager_2_name, manager_2_data)
+
             # Construct manager matchup dicts
             manager_1 = {
                 "manager": manager_1_name,
@@ -162,6 +180,29 @@ class MatchupProcessor:
 
             self._add_matchup_details_to_cache(manager_1)
             self._add_matchup_details_to_cache(manager_2)
+
+    def scrub_playoff_data(self) -> None:
+        """Mark playoff appearances for all teams in the playoff bracket.
+
+        Adds the current year to each playoff team's playoff_appearances list
+        if not already present. This is used for awards and playoff streak
+        tracking.
+        """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
+        for roster_ids in self._playoff_roster_ids:
+            manager = self._weekly_roster_ids.get(roster_ids, None)
+            if not manager:
+                continue
+
+            manager_overall_data = (
+                manager_cache[manager]["summary"]["overall_data"]
+            )
+
+            # Mark week as playoff week in the weekly summary
+            if self._year not in manager_overall_data["playoff_appearances"]:
+                manager_overall_data["playoff_appearances"].append(self._year)
+
 
     def _add_matchup_details_to_cache(
         self, matchup_data: dict[str, Any]
@@ -316,24 +357,27 @@ class MatchupProcessor:
                 summary[result_key]["opponents"][opponent_manager] = 0
             summary[result_key]["opponents"][opponent_manager] += 1
 
-    def scrub_playoff_data(self) -> None:
-        """Mark playoff appearances for all teams in the playoff bracket.
-
-        Adds the current year to each playoff team's playoff_appearances list
-        if not already present. This is used for awards and playoff streak
-        tracking.
-        """
-        manager_cache = CACHE_MANAGER.get_manager_cache()
-
-        for roster_ids in self._playoff_roster_ids:
-            manager = self._weekly_roster_ids.get(roster_ids, None)
-            if not manager:
-                continue
-
-            manager_overall_data = (
-                manager_cache[manager]["summary"]["overall_data"]
+    def _cache_matchup_data(
+        self, manager: str, matchup: dict[str, Any]
+    ) -> None:
+        if not self._year or not self._week:
+            raise ValueError(
+                "Invalid year or week for caching:", self._year, self._week
             )
 
-            # Mark week as playoff week in the weekly summary
-            if self._year not in manager_overall_data["playoff_appearances"]:
-                manager_overall_data["playoff_appearances"].append(self._year)
+        for player_id in matchup["starters"]:
+            if player_id == "0":  # "0" means no player started
+                continue
+
+            update_valid_options_cache(
+                int(self._year), int(self._week), manager, player_id
+            )
+
+            player_score = matchup["players_points"].get(player_id, 0.0)
+            update_starters_cache(
+                int(self._year),
+                int(self._week),
+                manager,
+                player_id,
+                player_score
+            )

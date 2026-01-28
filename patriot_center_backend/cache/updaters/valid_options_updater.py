@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def update_valid_options_cache(
-    year: str, week: str, manager: str, player_id: str
+    year: int, week: int, manager: str, player_id: str
 ) -> None:
     """Update valid options cache.
 
@@ -37,16 +37,16 @@ def update_valid_options_cache(
 
     # Year level
     year_data = update_valid_options_cache.setdefault(
-        year, {"managers": [], "players": [], "weeks": [], "positions": []}
+        str(year), {"managers": [], "players": [], "weeks": [], "positions": []}
     )
     _update_list(year_data["managers"], manager)
     _update_list(year_data["players"], player)
-    _update_list(year_data["weeks"], week)
+    _update_list(year_data["weeks"], str(week))
     _update_list(year_data["positions"], position)
 
     # Week level
     week_data = year_data.setdefault(
-        week, {"managers": [], "players": [], "positions": []}
+        str(week), {"managers": [], "players": [], "positions": []}
     )
     _update_list(week_data["managers"], manager)
     _update_list(week_data["players"], player)

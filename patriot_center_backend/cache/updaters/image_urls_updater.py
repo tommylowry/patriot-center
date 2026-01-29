@@ -20,4 +20,7 @@ def update_image_urls_cache(item: str,) -> dict[str, str]:
     image_urls_cache = CACHE_MANAGER.get_image_urls_cache()
     image_urls_cache[item] = url_dict
 
+    if item_type == "manager":
+        CACHE_MANAGER.save_image_urls_cache()
+
     return url_dict

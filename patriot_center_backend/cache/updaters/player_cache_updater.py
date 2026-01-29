@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.image_url_updater import (
+from patriot_center_backend.cache.updaters.image_urls_updater import (
     update_image_urls_cache,
 )
 from patriot_center_backend.utils.slug_utils import slugify

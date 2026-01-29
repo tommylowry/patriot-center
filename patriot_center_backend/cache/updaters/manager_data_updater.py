@@ -11,7 +11,7 @@ from patriot_center_backend.cache.updaters._templates import (
 from patriot_center_backend.cache.updaters._validators import (
     validate_caching_preconditions,
 )
-from patriot_center_backend.cache.updaters.image_url_updater import (
+from patriot_center_backend.cache.updaters.image_urls_updater import (
     update_image_urls_cache,
 )
 from patriot_center_backend.cache.updaters.processors.matchup_processor import (

@@ -428,7 +428,7 @@ class CacheManager:
 
     def get_image_urls_cache(
         self, force_reload: bool = False
-    ) -> dict[str, dict[str, str | float]]:
+    ) -> dict[str, dict[str, Any]]:
         """Get image urls cache.
 
         Args:
@@ -443,7 +443,7 @@ class CacheManager:
         return self._image_urls_cache
 
     def save_image_urls_cache(
-        self, cache: dict[str, dict[str, str | float]] | None = None
+        self, cache: dict[str, dict[str, Any]] | None = None
     ) -> None:
         """Save image urls cache to disk.
 

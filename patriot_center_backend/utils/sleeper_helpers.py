@@ -9,6 +9,7 @@ from patriot_center_backend.constants import (
     LEAGUE_IDS,
     USERNAME_TO_REAL_NAME,
 )
+from patriot_center_backend.utils.helpers import get_user_id
 
 SLEEPER_API_URL = "https://api.sleeper.app/v1"
 
@@ -201,3 +202,30 @@ def get_league_info(year: int) -> dict[str, Any]:
         )
 
     return league_info
+
+
+def fetch_user_metadata(manager_name: str) -> dict[str, Any]:
+    """Retrieves the user metadata for a given manager name.
+
+    Args:
+        manager_name: The name of the manager.
+
+    Returns:
+        The user metadata.
+
+    Raises:
+        ValueError: If no user ID is found for the given manager name.
+    """
+    user_id = get_user_id(manager_name)
+    if not user_id:
+        raise ValueError(f"No user ID found for manager {manager_name}.")
+
+    # Query Sleeper API for user metadata
+    sleeper_response = fetch_sleeper_data(f"users/{user_id}")
+    if not sleeper_response or not isinstance(sleeper_response, dict):
+        raise ValueError(
+            f"Sleeper API call failed to retrieve user info "
+            f"for user ID {user_id}"
+        )
+
+    return sleeper_response

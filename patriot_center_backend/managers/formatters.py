@@ -5,11 +5,11 @@ from copy import deepcopy
 from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.image_url_updater import (
-    get_image_url,
+from patriot_center_backend.cache.updaters.image_urls_updater import (
     update_image_urls_cache,
 )
 from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.utils.image_url_handler import get_image_url
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 logger = logging.getLogger(__name__)

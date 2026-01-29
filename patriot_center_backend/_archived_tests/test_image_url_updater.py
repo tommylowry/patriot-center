@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.cache.updaters.image_url_updater import (
+from patriot_center_backend.cache.updaters.image_urls_updater import (
     _get_current_manager_image_url,
     get_image_url,
     update_image_urls_cache,

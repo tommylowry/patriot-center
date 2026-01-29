@@ -17,10 +17,12 @@ from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._base import (
-    get_player_info_and_score,
     log_cache_update,
 )
 from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.players.player_data import (
+    get_player_info_and_score,
+)
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
 )

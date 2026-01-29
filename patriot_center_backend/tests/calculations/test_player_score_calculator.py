@@ -1,9 +1,11 @@
-"""Unit tests for scoring module."""
+"""Unit tests for player_score_calculator module."""
 
-from patriot_center_backend.utils.scoring import calculate_player_score
+from patriot_center_backend.calculations.player_score_calculator import (
+    calculate_player_score,
+)
 
 
-class TestScoring:
+class TestCalculatePlayerScore:
     """Unit tests for the calculate_player_score function."""
 
     def test_simple_score(self):

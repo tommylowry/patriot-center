@@ -10,10 +10,11 @@ logger = logging.getLogger(__name__)
 
 class CacheSynchronizer:
     """This class provides utility functions for updating the cache."""
+
     def __init__(
         self,
         old_ids: dict[str, dict[str, Any]],
-        new_ids: dict[str, dict[str, Any]]
+        new_ids: dict[str, dict[str, Any]],
     ) -> None:
         """Initialize the cache synchronizer with the old and new player IDs.
 
@@ -25,8 +26,6 @@ class CacheSynchronizer:
         self.new_ids = new_ids
 
         self._check_for_name_changes()
-
-
 
     def _check_for_name_changes(self) -> None:
         """Check for name changes between the old and new player IDs."""
@@ -61,7 +60,6 @@ class CacheSynchronizer:
         self._update_players(old_name, new_name)
         self._update_image_urls(player_id)
 
-
     def _update_manager_metadata(self, old_name: str, new_name: str) -> None:
         """Update the manager metadata in the cache.
 
@@ -71,10 +69,8 @@ class CacheSynchronizer:
         """
         manager_metadata_cache = CACHE_MANAGER.get_manager_cache()
 
-        manager_metadata_cache = _recursive_replace(
-            manager_metadata_cache,
-            old_name,
-            new_name
+        manager_metadata_cache = self._recursive_replace(
+            manager_metadata_cache, old_name, new_name
         )
 
     def _update_player_data(self, old_name: str, new_name: str) -> None:
@@ -86,10 +82,8 @@ class CacheSynchronizer:
         """
         player_data_cache = CACHE_MANAGER.get_player_data_cache()
 
-        player_data_cache = _recursive_replace(
-            player_data_cache,
-            old_name,
-            new_name
+        player_data_cache = self._recursive_replace(
+            player_data_cache, old_name, new_name
         )
 
     def _update_starters(self, old_name: str, new_name: str) -> None:
@@ -101,10 +95,8 @@ class CacheSynchronizer:
         """
         starters_cache = CACHE_MANAGER.get_starters_cache()
 
-        starters_cache = _recursive_replace(
-            starters_cache,
-            old_name,
-            new_name
+        starters_cache = self._recursive_replace(
+            starters_cache, old_name, new_name
         )
 
     def _update_transaction_ids(self, old_name: str, new_name: str) -> None:
@@ -116,10 +108,8 @@ class CacheSynchronizer:
         """
         transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
 
-        transaction_ids_cache = _recursive_replace(
-            transaction_ids_cache,
-            old_name,
-            new_name
+        transaction_ids_cache = self._recursive_replace(
+            transaction_ids_cache, old_name, new_name
         )
 
     def _update_valid_options(self, old_name: str, new_name: str) -> None:
@@ -131,10 +121,8 @@ class CacheSynchronizer:
         """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
-        valid_options_cache = _recursive_replace(
-            valid_options_cache,
-            old_name,
-            new_name
+        valid_options_cache = self._recursive_replace(
+            valid_options_cache, old_name, new_name
         )
 
     def _update_players(self, old_name: str, new_name: str) -> None:
@@ -146,10 +134,8 @@ class CacheSynchronizer:
         """
         players_cache = CACHE_MANAGER.get_players_cache()
 
-        players_cache = _recursive_replace(
-            players_cache,
-            old_name,
-            new_name
+        players_cache = self._recursive_replace(
+            players_cache, old_name, new_name
         )
 
     def _update_image_urls(self, player_id: str) -> None:
@@ -184,34 +170,36 @@ class CacheSynchronizer:
             }
 
 
-def _recursive_replace(data: Any, old_str: str, new_str: str) -> Any:
-    """Recursively replaces all occurrences of `old_str` with `new_str` in data.
+    def _recursive_replace(self, data: Any, old_str: str, new_str: str) -> Any:
+        """Recursively replaces all occurrences of `old_str` with `new_str`.
 
-    Note:
-    - This function recursively searches through dictionaries, lists, and
-    strings to find and replace old_str with new_str.
+        Note:
+        - This function recursively searches through dictionaries, lists, and
+        strings to find and replace old_str with new_str.
 
-    Args:
-        data: The data structure to search and replace in.
-        old_str: The string to search for and replace.
-        new_str: The replacement string.
+        Args:
+            data: The data structure to search and replace in.
+            old_str: The string to search for and replace.
+            new_str: The replacement string.
 
-    Returns:
-        Any: The modified data structure.
-    """
-    if isinstance(data, str):
-        # Replace string in values/elements
-        return data.replace(old_str, new_str)
-    elif isinstance(data, dict):
-        new_dict = {}
-        for k, v in data.items():
-            # Replace string in keys, then recurse on values
-            new_key = k.replace(old_str, new_str)
-            new_dict[new_key] = _recursive_replace(v, old_str, new_str)
-        return new_dict
-    elif isinstance(data, list):
-        # Recurse on list elements
-        return [_recursive_replace(item, old_str, new_str) for item in data]
-    else:
-        # Return other types (int, float, bool, etc.) as is
-        return data
+        Returns:
+            Any: The modified data structure.
+        """
+        if isinstance(data, str):
+            # Replace string in values/elements
+            return data.replace(old_str, new_str)
+        elif isinstance(data, dict):
+            new_dict = {}
+            for k, v in data.items():
+                # Replace string in keys, then recurse on values
+                new_key = k.replace(old_str, new_str)
+                new_dict[new_key] = self._recursive_replace(v, old_str, new_str)
+            return new_dict
+        elif isinstance(data, list):
+            # Recurse on list elements
+            return [
+                self._recursive_replace(item, old_str, new_str) for item in data
+            ]
+        else:
+            # Return other types (int, float, bool, etc.) as is
+            return data

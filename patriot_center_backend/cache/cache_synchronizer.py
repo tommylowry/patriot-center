@@ -14,21 +14,17 @@ class CacheSynchronizer:
 
     def __init__(
         self,
-        old_ids: dict[str, dict[str, Any]],
         new_ids: dict[str, dict[str, Any]],
     ) -> None:
         """Initialize the cache synchronizer with the old and new player IDs.
 
         Args:
-            old_ids: The old player IDs
             new_ids: The new player IDs
         """
-        self.old_ids = old_ids
         self.new_ids = new_ids
+        self.old_ids = CACHE_MANAGER.get_player_ids_cache()
 
-        self._check_for_name_changes()
-
-    def _check_for_name_changes(self) -> None:
+    def synchronize(self) -> None:
         """Check for name changes between the old and new player IDs."""
         for id in self.new_ids:
             # New player entirely being added, continue
@@ -43,6 +39,8 @@ class CacheSynchronizer:
                 )
 
                 self._update_player_names(id)
+
+        CACHE_MANAGER.save_all_caches()
 
     def _update_player_names(self, player_id: str) -> None:
         """Update the player names in the cache.

@@ -6,12 +6,12 @@ This module:
 """
 
 import logging
-from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import TEAM_DEFENSE_NAMES
-from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
+from patriot_center_backend.cache.cache_synchronizer import CacheSynchronizer
+from patriot_center_backend.utils.defense_helper import get_defense_entries
+from patriot_center_backend.utils.sleeper_helpers import fetch_all_player_ids
 
 logger = logging.getLogger(__name__)
 
@@ -32,173 +32,80 @@ FIELDS_TO_KEEP = [
 
 
 def update_player_ids_cache() -> None:
-    """Updates the player IDs cache by fetching fresh data from Sleeper API.
+    """Updates the player IDs cache.
 
-    If the cache is stale (older than 1 week), refreshes the data by fetching
-    a list of NFL players from the Sleeper API and persisting it back to disk.
-
-    Also inserts synthetic team defense entries as players with position "DEF".
-
-    Notes:
-        - This function performs network requests to Sleeper.
-        - Cache freshness is determined by file modification time (not a
-        timestamp field).
-
-    Raises:
-        ValueError: If the Sleeper API response is not a dictionary.
+    This function:
+    - Checks if the player IDs cache is stale
+    - Fetches fresh data from Sleeper API
+    - Updates the player IDs cache
     """
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+    if not CACHE_MANAGER.is_player_ids_cache_stale():
+        return  # cache is fresh, nothing to do
 
-    if CACHE_MANAGER.is_player_ids_cache_stale():
-        response = fetch_sleeper_data("players/nfl")
-        if not isinstance(response, dict):
-            raise ValueError("Expected a dictionary from the Sleeper API.")
+    new_player_ids_cache = {}
 
-        old_data = deepcopy(player_ids_cache)
+    # fetch fresh data from Sleeper API and populate the cache
+    updated_sleeper_player_ids = fetch_all_player_ids()
+    for player_id, player_info in updated_sleeper_player_ids.items():
+        _add_player_id_entry(player_id, player_info, new_player_ids_cache)
 
-        for player_id, player_info in response.items():
-            # Insert synthetic team defense entries early; skip original payload
-            if player_id in TEAM_DEFENSE_NAMES:
-                player_ids_cache[player_id] = {
-                    "full_name": TEAM_DEFENSE_NAMES[player_id]["full_name"],
-                    "first_name": TEAM_DEFENSE_NAMES[player_id]["first_name"],
-                    "last_name": TEAM_DEFENSE_NAMES[player_id]["last_name"],
-                    "team": player_id,
-                    "position": "DEF",
-                }
-                continue
+    # Fill in historic team defense entries (OAK, SD, etc.)
+    _fill_missing_defenses(new_player_ids_cache)
 
-            if not player_ids_cache.get(player_id):
-                player_ids_cache[player_id] = {}
+    # If players change their names they need to be
+    # changed throughout every cache file.
+    CacheSynchronizer(new_player_ids_cache).synchronize()
 
-            # Select only desired fields (presence-checked)
-            for key in FIELDS_TO_KEEP:
-                if key not in player_info:
-                    continue
-
-                player_ids_cache[player_id][key] = player_info[key]
-
-        # Fill in missing defenses that don't exist anymore (OAK, etc.)
-        for player_id in TEAM_DEFENSE_NAMES:
-            if player_id not in player_ids_cache:
-                player_ids_cache[player_id] = {
-                    "full_name": TEAM_DEFENSE_NAMES[player_id]["full_name"],
-                    "first_name": TEAM_DEFENSE_NAMES[player_id]["first_name"],
-                    "last_name": TEAM_DEFENSE_NAMES[player_id]["last_name"],
-                    "team": player_id,
-                    "position": "DEF",
-                }
-
-        # If players change their names they need to be
-        # changed throughout every cache file.
-        _update_new_names(old_data)
-
-        # save all the cache
-        CACHE_MANAGER.save_all_caches()
+    # Save the new player IDs cache
+    CACHE_MANAGER.save_player_ids_cache(new_player_ids_cache)
 
 
-def _update_new_names(old_ids: dict[str, dict[str, Any]]) -> None:
-    """Update player names across all caches when a player changes their name.
-
-    Compares old player IDs cache with the current one to detect name changes.
-    When a name change is detected, recursively updates the name in all
-    relevant caches (manager metadata, player data, starters, transactions,
-    valid options, players, and image URLs).
+def _add_player_id_entry(
+    player_id: str,
+    player_info: dict[str, Any],
+    new_player_ids_cache: dict[str, dict[str, Any]]
+) -> None:
+    """Adds a player ID entry to the player IDs cache.
 
     Args:
-        old_ids: The previous player IDs cache before the update.
+        player_id: The player ID
+        player_info: The player info
+        new_player_ids_cache: The new player IDs cache
     """
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-
-    for id in player_ids_cache:
-        # New player entirely being added, continue
-        if id not in old_ids:
-            continue
-
-        # player did not change their name, continue
-        if old_ids[id]["full_name"] == player_ids_cache[id]["full_name"]:
-            continue
-
-        logger.info("New Player Name Found:")
-        logger.info(
-            f"\t'{old_ids[id]['full_name']}' has changed "
-            f"his name to '{player_ids_cache[id]['full_name']}'"
-        )
-
-        old_player = old_ids[id]
-        new_player = player_ids_cache[id]
-
-        manager_metadata_cache = CACHE_MANAGER.get_manager_cache()
-        player_data_cache = CACHE_MANAGER.get_player_data_cache()
-        starters_cache = CACHE_MANAGER.get_starters_cache()
-        transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
-        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
-        players_cache = CACHE_MANAGER.get_players_cache()
-        image_urls_cache = CACHE_MANAGER.get_image_urls_cache()
-
-        manager_metadata_cache = _recursive_replace(
-            manager_metadata_cache,
-            old_player["full_name"],
-            new_player["full_name"],
-        )
-
-        player_data_cache = _recursive_replace(
-            player_data_cache, old_player["full_name"], new_player["full_name"]
-        )
-
-        starters_cache = _recursive_replace(
-            starters_cache, old_player["full_name"], new_player["full_name"]
-        )
-
-        transaction_ids_cache = _recursive_replace(
-            transaction_ids_cache,
-            old_player["full_name"],
-            new_player["full_name"],
-        )
-
-        valid_options_cache = _recursive_replace(
-            valid_options_cache,
-            old_player["full_name"],
-            new_player["full_name"],
-        )
-
-        players_cache = _recursive_replace(
-            players_cache, old_player["full_name"], new_player["full_name"]
-        )
-
-        image_urls_cache = _recursive_replace(
-            image_urls_cache, old_player["full_name"], new_player["full_name"]
-        )
+    _apply_full_name(player_info)
+    new_player_ids_cache[player_id] = {
+        key: player_info.get(key) for key in FIELDS_TO_KEEP
+    }
 
 
-def _recursive_replace(data: Any, old_str: str, new_str: str) -> Any:
-    """Recursively replaces all occurrences of `old_str` with `new_str` in data.
+def _apply_full_name(player_info: dict[str, Any]) -> None:
+    """Applies a full name to the player info.
 
     Args:
-        data (Any): The data structure to search and replace in.
-        old_str (str): The string to search for and replace.
-        new_str (str): The replacement string.
-
-    Returns:
-        Any: The modified data structure.
-
-    Notes:
-        This function recursively searches through dictionaries, lists, and
-        strings to find and replace old_str with new_str.
+        player_info: The player info
     """
-    if isinstance(data, str):
-        # Replace string in values/elements
-        return data.replace(old_str, new_str)
-    elif isinstance(data, dict):
-        new_dict = {}
-        for k, v in data.items():
-            # Replace string in keys, then recurse on values
-            new_key = k.replace(old_str, new_str)
-            new_dict[new_key] = _recursive_replace(v, old_str, new_str)
-        return new_dict
-    elif isinstance(data, list):
-        # Recurse on list elements
-        return [_recursive_replace(item, old_str, new_str) for item in data]
-    else:
-        # Return other types (int, float, bool, etc.) as is
-        return data
+    if "full_name" not in player_info:
+        full_name = (
+            f"{player_info.get('first_name', '')} "
+            f"{player_info.get('last_name', '')}"
+        )
+
+        if full_name == " ":
+            full_name = None
+
+        player_info["full_name"] = full_name
+
+
+def _fill_missing_defenses(
+    new_player_ids_cache: dict[str, dict[str, Any]]
+) -> None:
+    """Fills in missing team defense entries (OAK, SD, etc.).
+
+    Args:
+        new_player_ids_cache: The new player IDs cache
+    """
+    defense_entries = get_defense_entries()
+
+    for player_id, player_info in defense_entries.items():
+        if player_id not in new_player_ids_cache:
+            _add_player_id_entry(player_id, player_info, new_player_ids_cache)

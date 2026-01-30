@@ -229,3 +229,20 @@ def fetch_user_metadata(manager_name: str) -> dict[str, Any]:
         )
 
     return sleeper_response
+
+def fetch_all_player_ids() -> dict[str, Any]:
+    """Retrieves the player metadata for a given manager name.
+
+    Returns:
+        The player metadata.
+
+    Raises:
+        ValueError: If Sleeper API call returns invalid data.
+    """
+    sleeper_response = fetch_sleeper_data("players/nfl")
+    if not sleeper_response or not isinstance(sleeper_response, dict):
+        raise ValueError(
+            "Sleeper API call failed to retrieve player info"
+        )
+
+    return sleeper_response

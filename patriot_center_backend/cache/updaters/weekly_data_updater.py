@@ -30,7 +30,7 @@ from patriot_center_backend.cache.updaters.player_data_updater import (
     update_player_data_cache,
 )
 from patriot_center_backend.cache.updaters.replacement_score_updater import (
-    update_replacement_score_cache,
+    ReplacementScoreCacheBuilder,
 )
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.playoffs.playoff_tracker import (
@@ -52,7 +52,7 @@ def update_weekly_data_caches() -> None:
     manager_updater = ManagerMetadataManager()
 
     for year in LEAGUE_IDS:
-        update_replacement_score_cache(year)
+        ReplacementScoreCacheBuilder(year).update()
 
         weeks_to_update, season_complete = get_league_status(year)
 

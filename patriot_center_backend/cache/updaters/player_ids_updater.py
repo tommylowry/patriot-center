@@ -39,7 +39,7 @@ def update_player_ids_cache() -> None:
     - Fetches fresh data from Sleeper API
     - Updates the player IDs cache
     """
-    if not CACHE_MANAGER.is_player_ids_cache_stale():
+    if not CACHE_MANAGER.is_cache_stale("player_ids"):
         return  # cache is fresh, nothing to do
 
     new_player_ids_cache = {}

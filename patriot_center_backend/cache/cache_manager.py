@@ -33,8 +33,10 @@ _TRANSACTION_IDS_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "transaction_ids.json"
 )
 _WEEKLY_DATA_PROGRESS_TRACKER_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "progress_trackers",
-    "weekly_data_progress_tracker.json"
+    _CACHE_DIR,
+    "cached_data",
+    "progress_trackers",
+    "weekly_data_progress_tracker.json",
 )
 
 # ===== STEP 3-4: SCORING DATA =====
@@ -243,23 +245,6 @@ class CacheManager:
             self._player_ids_cache = self._load_cache(_PLAYER_IDS_CACHE_FILE)
 
         return self._player_ids_cache
-
-    def is_player_ids_cache_stale(self) -> bool:
-        """Check file modification time to see if player IDs cache is stale.
-
-        Returns:
-            True if cache is stale and needs to be reloaded, False otherwise
-        """
-        try:
-            file_mtime = os.path.getmtime(_PLAYER_IDS_CACHE_FILE)
-            file_age = datetime.now() - datetime.fromtimestamp(file_mtime)
-
-        except FileNotFoundError:
-            # If file doesn't exist then this needs to run
-            return True
-
-        # If file was modified within the last week, reuse it
-        return file_age > timedelta(weeks=1)
 
     def save_player_ids_cache(
         self, cache: dict[str, dict[str, Any]] | None = None
@@ -501,6 +486,38 @@ class CacheManager:
         self._weekly_data_progress_tracker = data_to_save
 
     # ===== UTILITY METHODS =====
+    def is_cache_stale(
+        self, cache_name: str, max_age: timedelta = timedelta(weeks=1)
+    ) -> bool:
+        """Check if a cache is stale.
+
+        Args:
+            cache_name: Name of the cache
+            max_age: Maximum age of the cache
+
+        Returns:
+            True if the cache is stale, False otherwise
+
+        Raises:
+            ValueError: If the cache name is unknown
+        """
+        file_name = getattr(self, f"_{cache_name.upper()}_CACHE_FILE", None)
+
+        if file_name is None:
+            raise ValueError(f"Unknown cache name: {cache_name}")
+
+        # Get the age of the file
+        try:
+            file_mtime = os.path.getmtime(file_name)
+            file_age = datetime.now() - datetime.fromtimestamp(file_mtime)
+
+        except FileNotFoundError:
+            # If file doesn't exist then this needs to run
+            return True
+
+        # If file was modified within the last week, reuse it
+        return file_age > max_age
+
     def reload_all_caches(self) -> None:
         """Clear all in-memory caches.
 

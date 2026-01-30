@@ -197,8 +197,7 @@ def get_league_info(year: int) -> dict[str, Any]:
     league_info = fetch_sleeper_data(f"league/{league_id}")
     if not isinstance(league_info, dict):
         raise ValueError(
-            f"Sleeper API call failed to retrieve "
-            f"league info for year {year}"
+            f"Sleeper API call failed to retrieve league info for year {year}"
         )
 
     return league_info
@@ -230,6 +229,7 @@ def fetch_user_metadata(manager_name: str) -> dict[str, Any]:
 
     return sleeper_response
 
+
 def fetch_all_player_ids() -> dict[str, Any]:
     """Retrieves the player metadata for a given manager name.
 
@@ -241,8 +241,6 @@ def fetch_all_player_ids() -> dict[str, Any]:
     """
     sleeper_response = fetch_sleeper_data("players/nfl")
     if not sleeper_response or not isinstance(sleeper_response, dict):
-        raise ValueError(
-            "Sleeper API call failed to retrieve player info"
-        )
+        raise ValueError("Sleeper API call failed to retrieve player info")
 
     return sleeper_response

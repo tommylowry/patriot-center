@@ -63,7 +63,7 @@ def update_player_ids_cache() -> None:
 def _add_player_id_entry(
     player_id: str,
     player_info: dict[str, Any],
-    new_player_ids_cache: dict[str, dict[str, Any]]
+    new_player_ids_cache: dict[str, dict[str, Any]],
 ) -> None:
     """Adds a player ID entry to the player IDs cache.
 
@@ -97,7 +97,7 @@ def _apply_full_name(player_info: dict[str, Any]) -> None:
 
 
 def _fill_missing_defenses(
-    new_player_ids_cache: dict[str, dict[str, Any]]
+    new_player_ids_cache: dict[str, dict[str, Any]],
 ) -> None:
     """Fills in missing team defense entries (OAK, SD, etc.).
 

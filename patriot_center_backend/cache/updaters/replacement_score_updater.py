@@ -48,6 +48,7 @@ class ReplacementScoreCacheBuilder:
     - Current season/week is resolved at runtime and weeks are capped by era
         rules.
     """
+
     def __init__(self, year: int) -> None:
         """Initialize the ReplacementScoreCacheBuilder.
 
@@ -88,7 +89,6 @@ class ReplacementScoreCacheBuilder:
 
         self._proceed_to_next_week()
 
-
     def _initial_three_year_backfill(self) -> None:
         """Backfill the initial three years of replacement scores."""
         replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
@@ -127,7 +127,6 @@ class ReplacementScoreCacheBuilder:
             return int(replacement_score_cache[str(self.year)].keys()[-1]) + 1
         else:
             return 1
-
 
     def _set_week_data(self) -> None:
         """Fetch data for the current week from the Sleeper API.
@@ -172,7 +171,6 @@ class ReplacementScoreCacheBuilder:
         self.week += 1
         self._set_week_data()
         self.update()
-
 
     def _fetch_replacement_score_for_week(self) -> dict[str, Any]:
         """Fetch the replacement score for the current week.

@@ -4,6 +4,7 @@ import logging
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.utils.helpers import recursive_replace
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class CacheSynchronizer:
         """
         manager_metadata_cache = CACHE_MANAGER.get_manager_cache()
 
-        manager_metadata_cache = self._recursive_replace(
+        manager_metadata_cache = recursive_replace(
             manager_metadata_cache, old_name, new_name
         )
 
@@ -82,7 +83,7 @@ class CacheSynchronizer:
         """
         player_data_cache = CACHE_MANAGER.get_player_data_cache()
 
-        player_data_cache = self._recursive_replace(
+        player_data_cache = recursive_replace(
             player_data_cache, old_name, new_name
         )
 
@@ -95,9 +96,7 @@ class CacheSynchronizer:
         """
         starters_cache = CACHE_MANAGER.get_starters_cache()
 
-        starters_cache = self._recursive_replace(
-            starters_cache, old_name, new_name
-        )
+        starters_cache = recursive_replace(starters_cache, old_name, new_name)
 
     def _update_transaction_ids(self, old_name: str, new_name: str) -> None:
         """Update the transaction IDs in the cache.
@@ -108,7 +107,7 @@ class CacheSynchronizer:
         """
         transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
 
-        transaction_ids_cache = self._recursive_replace(
+        transaction_ids_cache = recursive_replace(
             transaction_ids_cache, old_name, new_name
         )
 
@@ -121,7 +120,7 @@ class CacheSynchronizer:
         """
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
-        valid_options_cache = self._recursive_replace(
+        valid_options_cache = recursive_replace(
             valid_options_cache, old_name, new_name
         )
 
@@ -134,9 +133,7 @@ class CacheSynchronizer:
         """
         players_cache = CACHE_MANAGER.get_players_cache()
 
-        players_cache = self._recursive_replace(
-            players_cache, old_name, new_name
-        )
+        players_cache = recursive_replace(players_cache, old_name, new_name)
 
     def _update_image_urls(self, player_id: str) -> None:
         """Update the image URLs in the cache.
@@ -168,38 +165,3 @@ class CacheSynchronizer:
                 "first_name": new_first,
                 "last_name": new_last,
             }
-
-
-    def _recursive_replace(self, data: Any, old_str: str, new_str: str) -> Any:
-        """Recursively replaces all occurrences of `old_str` with `new_str`.
-
-        Note:
-        - This function recursively searches through dictionaries, lists, and
-        strings to find and replace old_str with new_str.
-
-        Args:
-            data: The data structure to search and replace in.
-            old_str: The string to search for and replace.
-            new_str: The replacement string.
-
-        Returns:
-            Any: The modified data structure.
-        """
-        if isinstance(data, str):
-            # Replace string in values/elements
-            return data.replace(old_str, new_str)
-        elif isinstance(data, dict):
-            new_dict = {}
-            for k, v in data.items():
-                # Replace string in keys, then recurse on values
-                new_key = k.replace(old_str, new_str)
-                new_dict[new_key] = self._recursive_replace(v, old_str, new_str)
-            return new_dict
-        elif isinstance(data, list):
-            # Recurse on list elements
-            return [
-                self._recursive_replace(item, old_str, new_str) for item in data
-            ]
-        else:
-            # Return other types (int, float, bool, etc.) as is
-            return data

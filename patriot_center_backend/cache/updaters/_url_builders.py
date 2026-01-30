@@ -1,3 +1,4 @@
+"""This module provides utility functions for building URLs."""
 
 import logging
 from time import time
@@ -10,6 +11,14 @@ logger = logging.getLogger(__name__)
 
 
 def build_manager_url(manager_name: str) -> dict[str, str]:
+    """Builds a URL for a manager.
+
+    Args:
+        manager_name: The name of the manager.
+
+    Returns:
+        A dictionary containing the name, image URL, and timestamp.
+    """
     user_metadata = fetch_user_metadata(manager_name)
 
     avatar = user_metadata.get("avatar")
@@ -29,7 +38,16 @@ def build_manager_url(manager_name: str) -> dict[str, str]:
 
     return output
 
+
 def build_draft_pick_url(draft_pick_name: str) -> dict[str, str]:
+    """Builds a URL for a draft pick.
+
+    Args:
+        draft_pick_name: The name of the draft pick.
+
+    Returns:
+        A dictionary containing the name, image URL, first name, and last name.
+    """
     abridged_name = draft_pick_name.replace(" Draft Pick", "")
     abridged_name = abridged_name.replace("Round ", "R")
 
@@ -48,7 +66,16 @@ def build_draft_pick_url(draft_pick_name: str) -> dict[str, str]:
 
     return output
 
+
 def build_faab_url(item: str) -> dict[str, str]:
+    """Builds a URL for a FAAB player.
+
+    Args:
+        item: The name of the FAAB player.
+
+    Returns:
+        A dictionary containing the name, image URL, first name, and last name.
+    """
     first_name = item.split(" ")[0]
     last_name = item.split(" ")[1]
 
@@ -63,7 +90,16 @@ def build_faab_url(item: str) -> dict[str, str]:
 
     return output
 
+
 def build_player_id_url(player_id: str) -> dict[str, str]:
+    """Builds a URL for a player ID.
+
+    Args:
+        player_id: The ID of the player.
+
+    Returns:
+        A dictionary containing the name, image URL, first name, and last name.
+    """
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
     if player_id.isnumeric():
@@ -73,7 +109,6 @@ def build_player_id_url(player_id: str) -> dict[str, str]:
             f"https://sleepercdn.com/images/"
             f"team_logos/nfl/{player_id.lower()}.png"
         )
-
 
     full_name = get_player_name(player_id)
     if not full_name:
@@ -96,7 +131,14 @@ def build_player_id_url(player_id: str) -> dict[str, str]:
 
 
 def build_player_url(player_name: str) -> dict[str, str]:
+    """Builds a URL for a player.
 
+    Args:
+        player_name: The name of the player.
+
+    Returns:
+        A dictionary containing the name, image URL, first name, and last name.
+    """
     player_id = get_player_id(player_name)
     if not player_id:
         logger.warning(
@@ -108,7 +150,16 @@ def build_player_url(player_name: str) -> dict[str, str]:
     return build_player_id_url(player_id)
 
 
-def build_url(item: str, type: str) -> dict[str, str]:
+def build_url(item: str, item_type: str) -> dict[str, str]:
+    """Builds a URL based on the item type.
+
+    Args:
+        item: The item for which to build the URL.
+        item_type: The type of the item.
+
+    Returns:
+        A dictionary containing the name, image URL, first name, and last name.
+    """
     url_builders = {
         "manager": build_manager_url,
         "draft_pick": build_draft_pick_url,
@@ -117,4 +168,4 @@ def build_url(item: str, type: str) -> dict[str, str]:
         "player": build_player_url,
     }
 
-    return url_builders[type](item)
+    return url_builders[item_type](item)

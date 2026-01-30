@@ -32,7 +32,7 @@ def detect_item_type(
     players_cache = CACHE_MANAGER.get_players_cache()
     player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
 
-    # Player: identified by presence in players cach
+    # Player: identified by presence in players cache
     if item in players_cache:
         return "player"
 

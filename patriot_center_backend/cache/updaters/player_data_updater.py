@@ -42,11 +42,10 @@ def update_player_data_cache(year: int, week: int) -> None:
     """
     player_data_cache = CACHE_MANAGER.get_player_data_cache()
 
-    if str(year) not in player_data_cache:
-        player_data_cache[str(year)] = {}
-
     # Fetch ffWAR for the week.
     calculator = FFWARCalculator(year, week)
     result = calculator.calculate_ffwar()
 
+    # Update the cache
+    player_data_cache.setdefault(str(year), {})
     player_data_cache[str(year)][str(week)] = result

@@ -76,20 +76,21 @@ class ReplacementScoreCacheBuilder:
         replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
         replacement_score_cache.setdefault(str(self.year), {})
 
-        # Fetch and update the replacement score for the current week
-        replacement_score_cache[str(self.year)][str(self.week)] = (
-            self._fetch_replacement_score_for_week()
-        )
-        log_cache_update(self.year, self.week, "Replacement Score")
-
-        # Augment with bye-aware 3-year rolling averages
-        if self._has_three_year_averages():
+        while self.week_data:
+            # Fetch and update the replacement score for the current week
             replacement_score_cache[str(self.year)][str(self.week)] = (
-                calculate_three_year_averages(self.year, self.week)
+                self._fetch_replacement_score_for_week()
             )
+            log_cache_update(self.year, self.week, "Replacement Score")
 
-        # Move to the next week
-        self._proceed_to_next_week()
+            # Augment with bye-aware 3-year rolling averages
+            if self._has_three_year_averages():
+                replacement_score_cache[str(self.year)][str(self.week)] = (
+                    calculate_three_year_averages(self.year, self.week)
+                )
+
+            # Move to the next week
+            self._proceed_to_next_week()
 
     def _initial_three_year_backfill(self) -> None:
         """Backfill the initial three years of replacement scores."""
@@ -125,8 +126,12 @@ class ReplacementScoreCacheBuilder:
         """
         replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
 
+        # If cache is not empty, return the last week + 1
         if len(replacement_score_cache.get(str(self.year), {})) > 0:
-            return int(replacement_score_cache[str(self.year)].keys()[-1]) + 1
+            last_week = list(replacement_score_cache[str(self.year)].keys())[-1]
+            return int(last_week) + 1
+
+        # If cache is empty, start at week 1
         else:
             return 1
 
@@ -172,7 +177,6 @@ class ReplacementScoreCacheBuilder:
         """Move to the next week for the current season."""
         self.week += 1
         self._set_week_data()
-        self.update()
 
     def _fetch_replacement_score_for_week(self) -> dict[str, Any]:
         """Fetch the replacement score for the current week.

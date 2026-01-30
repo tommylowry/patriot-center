@@ -72,6 +72,7 @@ class ReplacementScoreCacheBuilder:
         if not self.week_data:
             return
 
+        # Initialize the replacement score cache
         replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
         replacement_score_cache.setdefault(str(self.year), {})
 
@@ -81,12 +82,13 @@ class ReplacementScoreCacheBuilder:
         )
         log_cache_update(self.year, self.week, "Replacement Score")
 
+        # Augment with bye-aware 3-year rolling averages
         if self._has_three_year_averages():
-            # Augment with bye-aware 3-year rolling averages
             replacement_score_cache[str(self.year)][str(self.week)] = (
                 calculate_three_year_averages(self.year, self.week)
             )
 
+        # Move to the next week
         self._proceed_to_next_week()
 
     def _initial_three_year_backfill(self) -> None:

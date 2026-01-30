@@ -2,9 +2,12 @@
 
 import json
 import os
+import sys
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+
+module = sys.modules[__name__]
 
 _CACHE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -501,7 +504,7 @@ class CacheManager:
         Raises:
             ValueError: If the cache name is unknown
         """
-        file_name = getattr(self, f"_{cache_name.upper()}_CACHE_FILE", None)
+        file_name = getattr(module, f"_{cache_name.upper()}_CACHE_FILE", None)
 
         if file_name is None:
             raise ValueError(f"Unknown cache name: {cache_name}")

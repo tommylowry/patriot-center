@@ -7,6 +7,7 @@ Single entry point for all cache updates. Runs updates in dependency order:
 """
 
 import logging
+import time
 
 from patriot_center_backend.cache.updaters.player_ids_updater import (
     update_player_ids_cache,
@@ -14,6 +15,8 @@ from patriot_center_backend.cache.updaters.player_ids_updater import (
 from patriot_center_backend.cache.updaters.weekly_data_updater import (
     update_weekly_data_caches,
 )
+
+logger = logging.getLogger(__name__)
 
 logging.basicConfig(
     level=logging.INFO,
@@ -23,6 +26,14 @@ logging.basicConfig(
 
 
 def update_all_caches() -> None:
-    """Run all cache updates in dependency order."""
+    """Update all caches in dependency order."""
+    start = time.perf_counter()
+
     update_player_ids_cache()  # Step 1
     update_weekly_data_caches()  # Step 2
+
+    elapsed = time.perf_counter() - start
+
+    logger.info(
+        f"Cache update completed in {int(elapsed // 60)}:{elapsed % 60:05.2f}"
+    )

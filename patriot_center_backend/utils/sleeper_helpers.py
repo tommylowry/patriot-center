@@ -220,7 +220,7 @@ def fetch_user_metadata(manager_name: str) -> dict[str, Any]:
         raise ValueError(f"No user ID found for manager {manager_name}.")
 
     # Query Sleeper API for user metadata
-    sleeper_response = fetch_sleeper_data(f"users/{user_id}")
+    sleeper_response = fetch_sleeper_data(f"user/{user_id}")
     if not sleeper_response or not isinstance(sleeper_response, dict):
         raise ValueError(
             f"Sleeper API call failed to retrieve user info "

@@ -99,7 +99,7 @@ class FFWARCalculator:
             num_wins = 0
             num_simulated_games = 0
 
-            for manager_playing in self.managers:
+            for manager_playing in self.baseline_scores[position]:
 
                 baseline = self.baseline_scores[position][manager_playing]
 
@@ -109,7 +109,7 @@ class FFWARCalculator:
                 # Manager's score with REPLACEMENT player at this position
                 simulated_replacement_score = baseline + replacement_score
 
-                for manager_opposing in self.managers:
+                for manager_opposing in self.weighted_scores[position]:
                     if manager_playing == manager_opposing:
                         continue  # Skip self-matchups
 
@@ -207,30 +207,36 @@ class FFWARCalculator:
 
                 manager_position_scores = managers_with_scores[manager]
 
-                # Calculate this manager's average score at this position
+                # The manager has no players at this position, so no
+                # baseline should be used and the weighted score is simply
+                # the manager's total points
                 if len(manager_position_scores["scores"]) == 0:
-                    mgr_average = 0.0
+                    self.weighted_scores[position][manager] = (
+                        manager_position_scores["total_points"] + pos_average
+                    )
+
                 else:
+                    # Calculate this manager's average score at this position
                     mgr_average = mean(
                         manager_position_scores["scores"]
                     )
 
-                # Store manager's total points minus their positional
-                #   contribution
-                # This represents the manager's "baseline" without this
-                #   position's impact
-                self.baseline_scores[position][manager] = (
-                    manager_position_scores["total_points"] - mgr_average
-                )
+                    # Store manager's total points minus their positional
+                    #   contribution
+                    # This represents the manager's "baseline" without this
+                    #   position's impact
+                    self.baseline_scores[position][manager] = (
+                        manager_position_scores["total_points"] - mgr_average
+                    )
 
-                # Store normalized weighted score (baseline + league average at
-                #   position)
-                # Used as opponent's score in simulations
-                self.weighted_scores[position][manager] = (
-                    manager_position_scores["total_points"]
-                    - mgr_average
-                    + pos_average
-                )
+                    # Store normalized weighted score (baseline + league
+                    #   average at position)
+                    # Used as opponent's score in simulations
+                    self.weighted_scores[position][manager] = (
+                        manager_position_scores["total_points"]
+                        - mgr_average
+                        + pos_average
+                    )
 
     def _apply_player_data(self) -> None:
         """Populate scores and roster information for each player.
@@ -259,7 +265,7 @@ class FFWARCalculator:
 
                 # Determine if this player is rostered and by whom
                 player_data_manager_value = None
-                for manager in self.starter_scores[position]["managers"]:
+                for manager in self.managers:
                     if player_id in rostered_players[manager]:
                         player_data_manager_value = manager
                         break

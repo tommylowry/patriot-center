@@ -163,22 +163,19 @@ def fetch_starters_by_position(
         }
 
     for manager in managers:
-        # Add players to scores
-        for player in weekly_starters[manager]:
-            if player == "Total_Points":
-                continue
-
-            position = weekly_starters[manager][player]["position"]
-
+        for position in positions:
             scores[position]["managers"][manager]["total_points"] = (
                 weekly_starters[manager]["Total_Points"]
             )
 
+        for player in weekly_starters[manager]:
+            if player == "Total_Points":
+                continue
+            position = weekly_starters[manager][player]["position"]
             scores[position]["players"].append(player)
             scores[position]["scores"].append(
                 weekly_starters[manager][player]["points"]
             )
-
             scores[position]["managers"][manager]["scores"].append(
                 weekly_starters[manager][player]["points"]
             )

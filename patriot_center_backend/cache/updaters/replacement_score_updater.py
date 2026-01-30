@@ -19,6 +19,9 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._base import (
     log_cache_update,
 )
+from patriot_center_backend.calculations.rolling_average_calculator import (
+    calculate_three_year_averages,
+)
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.players.player_data import (
     get_player_info_and_score,
@@ -30,290 +33,199 @@ from patriot_center_backend.utils.sleeper_helpers import (
 logger = logging.getLogger(__name__)
 
 
-def update_replacement_score_cache(year: int) -> None:
-    """Incrementally update the replacement score cache.
+class ReplacementScoreCacheBuilder:
+    """Replacement-score cache builder for Patriot Center.
 
-    Algorithm summary:
-    - Dynamically determine the current season and week.
-    - Process all years in LEAGUE_IDS with extra years for replacement score
-        backfill.
-    - Skip years that are already fully processed.
-    - Fetch and update only the missing weeks for each year.
-    - Compute the 3-year average if data from three years ago exists.
-    - Update the metadata for the last updated season and week.
-    - Save the updated cache to the file.
-    - Reload to remove the metadata fields.
+    Responsibilities:
+    - Maintain a JSON cache of per-week replacement-level scores by position.
+    - Backfill historical seasons and compute 3-year rolling averages keyed by
+        bye counts.
+    - Persist an incrementally updated cache to disk and expose it to callers.
 
     Notes:
     - Uses Sleeper API data (network I/O) via fetch_sleeper_data.
     - Seed player metadata via load_player_ids to filter and position players.
     - Current season/week is resolved at runtime and weeks are capped by era
         rules.
-
-    Args:
-        year: The current season.
     """
-    replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
+    def __init__(self, year: int) -> None:
+        """Initialize the ReplacementScoreCacheBuilder.
 
-    if not replacement_score_cache:
-        _backfill_three_years(year)
+        Args:
+            year: The NFL season year (e.g., 2024).
+        """
+        self.year = year
+        self.week = self._get_next_week_to_update()
 
-    # If the year is in the cache, get the last week
-    if len(replacement_score_cache.get(str(year), {})) > 0:
-        week = int(replacement_score_cache[str(year)].keys()[-1]) + 1
-    else:
-        week = 1
+        self._initial_three_year_backfill()
 
-    replacement_data = _fetch_replacement_score_for_week(year, week)
-    while replacement_data:
-        if str(year) not in replacement_score_cache:
-            replacement_score_cache[str(year)] = {}
+        self.week_data: dict[str, Any] = {}
+        self._set_week_data()
 
-        # Update the cache
-        replacement_score_cache[str(year)][str(week)] = replacement_data
-        log_cache_update(year, week, "Replacement Score")
+        self.yearly_score_settings: dict[int, dict[str, Any]] = {}
+        self._set_yearly_score_settings()
 
-        # Compute the 3-year average if data from three years ago exists
-        if str(year - 3) in replacement_score_cache:
+    def update(self) -> None:
+        """Update the replacement score cache for the current week."""
+        # If no data for the current week, there's nothing left to update
+        if not self.week_data:
+            return
+
+        replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
+        replacement_score_cache.setdefault(str(self.year), {})
+
+        # Fetch and update the replacement score for the current week
+        replacement_score_cache[str(self.year)][str(self.week)] = (
+            self._fetch_replacement_score_for_week()
+        )
+        log_cache_update(self.year, self.week, "Replacement Score")
+
+        if self._has_three_year_averages():
             # Augment with bye-aware 3-year rolling averages
-            replacement_score_cache[str(year)][str(week)] = _get_three_yr_avg(
-                year, week
+            replacement_score_cache[str(self.year)][str(self.week)] = (
+                calculate_three_year_averages(self.year, self.week)
             )
 
-        week += 1
-
-        replacement_data = _fetch_replacement_score_for_week(year, week)
+        self._proceed_to_next_week()
 
 
-def _backfill_three_years(year: int) -> None:
-    """Backfill the initial three years of replacement scores.
+    def _initial_three_year_backfill(self) -> None:
+        """Backfill the initial three years of replacement scores."""
+        replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
 
-    Args:
-        year: The year to backfill.
-    """
-    replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
+        if replacement_score_cache:
+            return
 
-    logger.info(
-        f"Starting backfill of Replacement Score Cache for season {year}"
-    )
+        logger.info(
+            f"Starting backfill of Replacement "
+            f"Score Cache for season {self.year}"
+        )
 
-    for backfill_year in range(year - 3, year):
-        if str(backfill_year) not in replacement_score_cache:
+        for backfill_year in range(self.year - 3, self.year):
             replacement_score_cache[str(backfill_year)] = {}
+            ReplacementScoreCacheBuilder(backfill_year).update()
 
-        # Update the cache
-        update_replacement_score_cache(backfill_year)
+    def _has_three_year_averages(self) -> bool:
+        """Check if there are 3-year averages for the current year.
+
+        Returns:
+            True if there are 3-year averages, False otherwise.
+        """
+        replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
+
+        return str(self.year - 3) in replacement_score_cache
+
+    def _get_next_week_to_update(self) -> int:
+        """Determine the next week to update.
+
+        Returns:
+            The next week to update.
+        """
+        replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
+
+        if len(replacement_score_cache.get(str(self.year), {})) > 0:
+            return int(replacement_score_cache[str(self.year)].keys()[-1]) + 1
+        else:
+            return 1
 
 
-def _fetch_replacement_score_for_week(season: int, week: int) -> dict[str, Any]:
-    """Fetches replacement scores for the given season and week.
+    def _set_week_data(self) -> None:
+        """Fetch data for the current week from the Sleeper API.
 
-    The replacement scores are determined by sorting the fantasy scores
-    for each position in descending order and taking the 13th score for
-    QB, TE, K, and DEF, and the 31st score for RB and WR.
-
-    Args:
-        season: The season to fetch replacement scores for.
-        week: The week to fetch replacement scores for.
-
-    Returns:
-        A dictionary with the replacement scores for each position given
-            each fantasy year's scoring settings along with the number of byes
-            in the week.
-
-    Raises:
-        ValueError: If the Sleeper API call fails to retrieve the necessary
-            data.
-    """
-    # Fetch data from the Sleeper API for the given season and week
-    week_data = fetch_sleeper_data(f"stats/nfl/regular/{season}/{week}")
-    if not isinstance(week_data, dict):
-        raise ValueError(
-            f"Sleeper API call failed for season {season}, week {week}"
+        Raises:
+            ValueError: If the request to the Sleeper API fails.
+        """
+        # Fetch data from the Sleeper API for the given season and week
+        week_data = fetch_sleeper_data(
+            f"stats/nfl/regular/{self.year}/{self.week}"
         )
-
-    if not week_data:
-        return {}
-
-    yearly_scoring_settings = {}
-    for yr in range(season, season + 4):
-        if yr not in LEAGUE_IDS:
-            continue
-        scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS[yr]}")
-        if not isinstance(scoring_settings, dict):
+        if not isinstance(week_data, dict):
             raise ValueError(
-                f"Sleeper API call failed to retrieve "
-                f"scoring settings for year {yr}"
+                f"Sleeper API call failed for "
+                f"year {self.year}, week {self.week}"
             )
-        yearly_scoring_settings[yr] = scoring_settings["scoring_settings"]
 
-    # Initialize the byes counter
-    final_week_scores: dict[str, Any] = {"byes": 32}
-    first = True
-    for yr in yearly_scoring_settings:
-        week_scores = {
-            "QB": [],  # List of QB scores for the week
-            "RB": [],  # List of RB scores for the week
-            "WR": [],  # List of WR scores for the week
-            "TE": [],  # List of TE scores for the week
-            "K": [],  # List of K scores for the week
-            "DEF": [],  # List of DEF scores for the week
-        }
+        self.week_data = week_data
 
-        for player_id in week_data:
-            if "TEAM_" in player_id:
-                if first:
-                    # TEAM_ entries represent real teams -> decrement byes
-                    final_week_scores["byes"] -= 1
+    def _set_yearly_score_settings(self) -> None:
+        """Fetch the scoring settings for each year from the Sleeper API.
+
+        Raises:
+            ValueError: If the request to the Sleeper API fails.
+        """
+        yearly_scoring_settings = {}
+        for yr in range(self.year, self.year + 4):
+            if yr not in LEAGUE_IDS:
                 continue
+            scoring_settings = fetch_sleeper_data(f"league/{LEAGUE_IDS[yr]}")
+            if not isinstance(scoring_settings, dict):
+                raise ValueError(
+                    f"Sleeper API call failed to retrieve "
+                    f"scoring settings for year {yr}"
+                )
+            yearly_scoring_settings[yr] = scoring_settings["scoring_settings"]
 
-            apply, player_info, score, _ = get_player_info_and_score(
-                player_id,
-                week_data,
-                week_scores,
-                yearly_scoring_settings[yr],
-            )
-            if apply:
-                # Add the player's points to the appropriate position list
-                week_scores[player_info["position"]].append(score)
+        self.yearly_score_settings = yearly_scoring_settings
 
-        # Set first to false after first iteration
-        # since we have the number of byes
-        first = False
-
-        # Sort scores for each position in descending order
-        for position in week_scores:
-            week_scores[position].sort(reverse=True)
-
-        # Determine the replacement scores for each position
-        final_week_scores[f"{yr}_scoring"] = {
-            "QB": week_scores["QB"][12],  # 13th QB
-            "RB": week_scores["RB"][30],  # 31st RB
-            "WR": week_scores["WR"][30],  # 31st WR
-            "TE": week_scores["TE"][12],  # 13th TE
-            "K": week_scores["K"][12],  # 13th K
-            "DEF": week_scores["DEF"][12],  # 13th DEF
-        }
-
-    return final_week_scores
+    def _proceed_to_next_week(self) -> None:
+        """Move to the next week for the current season."""
+        self.week += 1
+        self._set_week_data()
+        self.update()
 
 
-def _get_three_yr_avg(season: int, week: int) -> dict[str, Any]:
-    """Compute the three-year average replacement scores for each position.
+    def _fetch_replacement_score_for_week(self) -> dict[str, Any]:
+        """Fetch the replacement score for the current week.
 
-    - Iterates through the past three years (and the current year)
-    - Determines the weeks to consider for the past year
-    - Processes each week in the determined range
-    - Computes the average replacement scores for each position and bye
-    count
-    - Ensures monotonicity: more byes should not lead to lower replacement
-    scores
+        Returns:
+            The replacement score for the current week.
+        """
+        # Initialize the byes counter
+        final_week_scores: dict[str, Any] = {"byes": 32}
+        first = True
+        for yr in self.yearly_score_settings:
+            week_scores = {
+                "QB": [],  # List of QB scores for the week
+                "RB": [],  # List of RB scores for the week
+                "WR": [],  # List of WR scores for the week
+                "TE": [],  # List of TE scores for the week
+                "K": [],  # List of K scores for the week
+                "DEF": [],  # List of DEF scores for the week
+            }
 
-    Args:
-        season: The current season.
-        week: The current week.
+            for player_id in self.week_data:
+                if "TEAM_" in player_id:
+                    if first:
+                        # TEAM_ entries represent real teams -> decrement byes
+                        final_week_scores["byes"] -= 1
+                    continue
 
-    Returns:
-        The updated current week's scores with three-year averages added.
-    """
-    replacement_score_cache = CACHE_MANAGER.get_replacement_score_cache()
+                apply, player_info, score, _ = get_player_info_and_score(
+                    player_id,
+                    self.week_data,
+                    week_scores,
+                    self.yearly_score_settings[yr],
+                )
+                if apply:
+                    # Add the player's points to the appropriate position list
+                    week_scores[player_info["position"]].append(score)
 
-    # Get the current week's scores and the number of byes
-    current_week_scores = replacement_score_cache[str(season)][str(week)]
-    byes = current_week_scores["byes"]
+            # Set first to false after first iteration
+            # since we have the number of byes
+            first = False
 
-    # Initialize dictionaries to store scores and averages for each position
-    three_yr_season_scores = {}
-    three_yr_season_average = {}
+            # Sort scores for each position in descending order
+            for position in week_scores:
+                week_scores[position].sort(reverse=True)
 
-    # Prepare structures for each position (QB, RB, WR, TE)
-    for current_week_position in current_week_scores[f"{season}_scoring"]:
-        three_yr_season_scores[current_week_position] = {}
-        three_yr_season_average[current_week_position] = {}
+            # Determine the replacement scores for each position
+            final_week_scores[f"{yr}_scoring"] = {
+                "QB": week_scores["QB"][12],  # 13th QB
+                "RB": week_scores["RB"][30],  # 31st RB
+                "WR": week_scores["WR"][30],  # 31st WR
+                "TE": week_scores["TE"][12],  # 13th TE
+                "K": week_scores["K"][12],  # 13th K
+                "DEF": week_scores["DEF"][12],  # 13th DEF
+            }
 
-    # Iterate through the past three years (and the current year)
-    for past_year in [season, season - 1, season - 2, season - 3]:
-        if str(past_year) not in replacement_score_cache:
-            continue
-
-        # Determine the weeks to consider for the past year
-        weeks = range(1, 18 if past_year <= 2020 else 19)
-
-        # For the current season, only consider up to the current week
-        if past_year == season:
-            # Only include weeks completed this season
-            weeks = range(1, week + 1)
-
-        # For the season three years ago, only consider
-        # from the current week onward
-        if past_year == season - 3:
-            # Mirror future-season portion to balance
-            # sample across bye distributions
-            weeks = range(week, 18 if past_year <= 2020 else 19)
-
-        # Process each week in the determined range
-        for w in weeks:
-            # Skip if the data for the past year or week is missing
-            if str(w) not in replacement_score_cache[str(past_year)]:
-                continue
-
-            if w == week and past_year == season - 3:
-                # Skip the current week of the season three years
-                # ago as this week makes it 3 years
-                continue
-
-            week_data = replacement_score_cache[str(past_year)][str(w)]
-
-            # Get the number of byes for the past week
-            past_byes = week_data["byes"]
-
-            # Process scores for each position (QB, RB, WR, TE)
-            for past_position in three_yr_season_scores:
-                # Get the score for the position in the past week
-                past_score = week_data[f"{season}_scoring"][past_position]
-
-                past_position_scores = three_yr_season_scores[past_position]
-
-                # Initialize the list for the bye count if it doesn't exist
-                if past_byes not in past_position_scores:
-                    past_position_scores[past_byes] = []
-
-                # Append the score to the list for the corresponding bye count
-                past_position_scores[past_byes].append(past_score)
-
-    # Compute the average replacement scores for each position and bye count
-    for past_position in three_yr_season_scores:
-        for past_byes in three_yr_season_scores[past_position]:
-            # Calculate the average score for the position and bye count
-            avg = sum(three_yr_season_scores[past_position][past_byes]) / len(
-                three_yr_season_scores[past_position][past_byes]
-            )
-            three_yr_season_average[past_position][past_byes] = avg
-
-    # Ensure monotonicity: more byes should not lead to lower replacement scores
-    # This ensures that the replacement scores are non-decreasing as the
-    #   number of byes increases
-
-    # Use QB as a reference for bye counts
-    list_of_byes = sorted(three_yr_season_average["QB"].keys())
-    for past_position in three_yr_season_average:
-        position_dict = three_yr_season_average[past_position]
-        for i in range(len(list_of_byes) - 1, 0, -1):
-            more_byes = list_of_byes[i]
-            less_byes = list_of_byes[i - 1]
-
-            # If the score for a higher bye count is greater than the score for
-            # a lower bye count, adjust the lower bye count's score to ensure
-            # monotonicity
-            if position_dict[more_byes] > position_dict[less_byes]:
-                position_dict[less_byes] = position_dict[more_byes]
-
-    # Add the three-year averages to the current week's scores
-    for past_position in three_yr_season_average:
-        new_key = f"{past_position}_3yr_avg"
-        current_week_scores[new_key] = (
-            three_yr_season_average[past_position][byes]
-        )
-
-    # Return the updated current week's scores with three-year averages added
-    return current_week_scores
+        return final_week_scores

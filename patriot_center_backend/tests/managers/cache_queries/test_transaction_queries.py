@@ -94,7 +94,7 @@ class TestGetTradeHistoryBetweenTwoManagers:
         }
 
         result = get_trade_history_between_two_managers(
-            "Manager 1", "Manager 2", {}
+            "Manager 1", "Manager 2"
         )
 
         assert isinstance(result, list)
@@ -137,7 +137,7 @@ class TestGetTransactionDetailsFromCache:
 
     def test_all_time_transactions(self):
         """Test getting all-time transaction stats."""
-        result = get_transaction_details_from_cache("Manager 1", {})
+        result = get_transaction_details_from_cache("Manager 1")
 
         assert result["trades"]["total"] == 5
         assert result["adds"]["total"] == 10
@@ -146,7 +146,7 @@ class TestGetTransactionDetailsFromCache:
     def test_single_season_transactions(self):
         """Test getting stats for specific season."""
         result = get_transaction_details_from_cache(
-            "Manager 1", {}, year="2023"
+            "Manager 1", year="2023"
         )
 
         assert result["trades"]["total"] == 2
@@ -167,7 +167,7 @@ class TestGetTransactionDetailsFromCache:
             "acquired_from": {"total": 30, "trade_partners": {"Manager 2": 30}},
         }
 
-        result = get_transaction_details_from_cache("Manager 1", {})
+        result = get_transaction_details_from_cache("Manager 1")
 
         # Assert FAAB summary was created
         assert "faab" in result
@@ -180,6 +180,6 @@ class TestGetTransactionDetailsFromCache:
         """Test that function doesn't modify cache."""
         original = deepcopy(self.mock_manager_cache)
 
-        get_transaction_details_from_cache("Manager 1", {})
+        get_transaction_details_from_cache("Manager 1")
 
         assert self.mock_manager_cache == original

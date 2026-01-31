@@ -15,6 +15,7 @@ The API supports two response formats:
 - format=json: Nested hierarchical structure preserving original cache shape
 """
 
+import logging
 from copy import deepcopy
 from typing import Any, Literal
 
@@ -27,12 +28,24 @@ from patriot_center_backend.constants import (
     NAME_TO_MANAGER_USERNAME,
 )
 from patriot_center_backend.dynamic_filtering import dynamic_filter
-from patriot_center_backend.managers import MANAGER_METADATA_MANAGER
+from patriot_center_backend.managers.data_exporter import (
+    get_head_to_head,
+    get_manager_awards,
+    get_manager_summary,
+    get_manager_transactions,
+    get_managers_list,
+)
 from patriot_center_backend.services.aggregated_data import (
     fetch_aggregated_managers,
     fetch_player_manager_aggregation,
 )
 from patriot_center_backend.utils.slug_utils import slug_to_name
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s - %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
@@ -444,7 +457,7 @@ def list_managers(
         ), 400
 
     try:
-        data = MANAGER_METADATA_MANAGER.get_managers_list(bool_active_only)
+        data = get_managers_list(bool_active_only)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -478,7 +491,7 @@ def manager_summary(
         Flask Response: JSON payload (manager summary or error) and status code.
     """
     try:
-        data = MANAGER_METADATA_MANAGER.get_manager_summary(manager_name, year)
+        data = get_manager_summary(manager_name, year)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -517,7 +530,7 @@ def manager_head_to_head(
         and status code.
     """
     try:
-        data = MANAGER_METADATA_MANAGER.get_head_to_head(
+        data = get_head_to_head(
             manager_name, opponent_name, year
         )
     except ValueError as e:
@@ -559,7 +572,7 @@ def manager_transactions(
         year = None
 
     try:
-        data = MANAGER_METADATA_MANAGER.get_manager_transactions(
+        data = get_manager_transactions(
             manager_name, year
         )
     except ValueError as e:
@@ -585,7 +598,7 @@ def manager_awards(manager_name: str) -> tuple[Response, int]:
         Flask Response: JSON payload (manager awards or error) and status code.
     """
     try:
-        data = MANAGER_METADATA_MANAGER.get_manager_awards(manager_name)
+        data = get_manager_awards(manager_name)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

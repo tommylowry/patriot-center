@@ -1,54 +1,24 @@
 """Unit tests for sleeper_helpers module."""
 
-from unittest.mock import call, patch
+import logging
+from unittest.mock import patch
 
 import pytest
 
 from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_all_player_ids,
     fetch_sleeper_data,
-    get_current_season_and_week,
+    fetch_user_metadata,
+    get_league_info,
     get_roster_id,
     get_roster_ids,
 )
 
-
-@pytest.fixture(autouse=True)
-def globals_setup():
-    """Setup common mocks for all tests.
-
-    The mocks are set up to return a pre-defined
-    set of values when accessed.
-    - `LEAUGE_IDS`: `{2023: "leagueid2023", 2024: "leagueid2024"}`
-    - `USERNAME_TO_REAL_NAME`: `{username1: "Manager 1", username2:
-        "Manager 2", username3: "Manager 3"}`
-
-    Yields:
-        None
-    """
-    # Mock values
-    mock_username_to_real_name = {
-        "username1": "Manager 1",
-        "username2": "Manager 2",
-        "username3": "Manager 3",
-    }
-    mock_league_ids = {2023: "leagueid2023", 2024: "leagueid2024"}
-
-    with (
-        patch(
-            "patriot_center_backend.utils.sleeper_helpers.LEAGUE_IDS",
-            mock_league_ids,
-        ),
-        patch(
-            "patriot_center_backend.utils.sleeper_helpers"
-            ".USERNAME_TO_REAL_NAME",
-            mock_username_to_real_name,
-        ),
-    ):
-        yield
+MODULE_PATH = "patriot_center_backend.utils.sleeper_helpers"
 
 
 class TestFetchSleeperData:
-    """Unit tests for fetch_sleeper_data function."""
+    """Test fetch_sleeper_data function."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -56,46 +26,45 @@ class TestFetchSleeperData:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `requests.get`: `mock_get`
+        - `requests.get`: `mock_requests_get`
 
         Yields:
             None
         """
-        with (
-            patch(
-                "patriot_center_backend.utils.sleeper_helpers.requests.get"
-            ) as mock_get,
-        ):
-            self.mock_get = mock_get
+        with patch(f"{MODULE_PATH}.requests.get") as mock_requests_get:
+            self.mock_requests_get = mock_requests_get
+            self.mock_response = mock_requests_get.return_value
+            self.mock_response.status_code = 200
+            self.mock_response.json.return_value = {"data": "value"}
 
             yield
 
-    def test_fetch_sleeper_data(self):
-        """Test calls the correct URL and returns the expected JSON response."""
-        self.mock_get.return_value.json.return_value = {}
-        self.mock_get.return_value.status_code = 200
+    def test_returns_parsed_json(self):
+        """Test returns parsed JSON from API."""
+        result = fetch_sleeper_data("league/123")
 
-        fetch_sleeper_data("test_endpoint")
+        assert result == {"data": "value"}
 
-        self.mock_get.assert_called_once_with(
-            "https://api.sleeper.app/v1/test_endpoint"
+    def test_calls_correct_url(self):
+        """Test calls the correct Sleeper API URL."""
+        fetch_sleeper_data("league/123/rosters")
+
+        self.mock_requests_get.assert_called_once_with(
+            "https://api.sleeper.app/v1/league/123/rosters"
         )
 
-    def test_fetch_sleeper_data_connection_error(self):
-        """Test raises a ConnectionAbortedError when the request fails."""
-        self.mock_get.return_value.json.return_value = {}
-        self.mock_get.return_value.status_code = 500
+    def test_raises_on_non_200_status(self):
+        """Test raises ConnectionAbortedError on non-200 status."""
+        self.mock_response.status_code = 500
 
-        error_message = (
-            r"Failed to fetch data from Sleeper API with "
-            r"call to https://api.sleeper.app/v1/test_endpoint"
-        )
-        with pytest.raises(ConnectionAbortedError, match=error_message):
-            fetch_sleeper_data("test_endpoint")
+        with pytest.raises(ConnectionAbortedError) as exc_info:
+            fetch_sleeper_data("league/123")
+
+        assert "Failed to fetch data" in str(exc_info.value)
 
 
 class TestGetRosterId:
-    """Unit tests for get_roster_id function."""
+    """Test get_roster_id function."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -109,88 +78,86 @@ class TestGetRosterId:
             None
         """
         with (
+            patch(f"{MODULE_PATH}.fetch_sleeper_data") as mock_fetch,
             patch(
-                "patriot_center_backend.utils.sleeper_helpers"
-                ".fetch_sleeper_data"
-            ) as mock_fetch_sleeper_data,
+                f"{MODULE_PATH}.LEAGUE_IDS",
+                {2024: "league2024"},
+            ),
         ):
-            self.mock_fetch_sleeper_data = mock_fetch_sleeper_data
+            self.mock_fetch_sleeper_data = mock_fetch
 
             yield
 
-    def test_get_roster_id(self):
-        """Test returns the correct roster ID for a given user ID and year."""
-        sleeper_rosters_response = [
-            {"owner_id": "user1", "roster_id": 1},
-            {"owner_id": "user2", "roster_id": 2},
+    def test_returns_roster_id_for_matching_user(self):
+        """Test returns roster ID when user_id matches."""
+        rosters = [
+            {"owner_id": "user_1", "roster_id": 1},
+            {"owner_id": "user_2", "roster_id": 2},
         ]
-        user_id = "user1"
-        year = 2023
 
-        result = get_roster_id(user_id, year, sleeper_rosters_response)
+        result = get_roster_id("user_1", 2024, sleeper_rosters_response=rosters)
 
         assert result == 1
 
-    def test_2024_roster_id(self):
-        """Check correctly assigns the roster ID for a user in 2024 league."""
-        sleeper_rosters_response = [
-            {"owner_id": "user1", "roster_id": 1},
-            {"owner_id": "user2", "roster_id": 2},
-            {"owner_id": None, "roster_id": 3},
+    def test_returns_none_when_user_not_found(self, caplog):
+        """Test returns None when user ID not found in rosters.
+
+        Args:
+            caplog: pytest caplog fixture
+        """
+        rosters = [
+            {"owner_id": "user_1", "roster_id": 1},
         ]
-        user_id = "user3"
-        year = 2024
 
-        result = get_roster_id(user_id, year, sleeper_rosters_response)
-
-        assert result == 3
-
-    def test_sleeper_api_not_called(self):
-        """Test does not call API if sleeper_rosters_response is provided."""
-        sleeper_rosters_response = [
-            {"owner_id": "user1", "roster_id": 1},
-            {"owner_id": "user2", "roster_id": 2},
-        ]
-        user_id = "user1"
-        year = 2023
-
-        get_roster_id(user_id, year, sleeper_rosters_response)
-
-        self.mock_fetch_sleeper_data.assert_not_called()
-
-    def test_get_roster_id_not_found(self):
-        """Check returns None if user ID is not found in sleeper response."""
-        sleeper_rosters_response = [
-            {"owner_id": "user1", "roster_id": 1},
-            {"owner_id": "user2", "roster_id": 2},
-        ]
-        user_id = "user3"
-        year = 2023
-
-        result = get_roster_id(user_id, year, sleeper_rosters_response)
+        with caplog.at_level(logging.WARNING):
+            result = get_roster_id(
+                "user_999", 2024, sleeper_rosters_response=rosters
+            )
 
         assert result is None
+        assert "not found in rosters" in caplog.text
 
-    def test_no_sleeper_rosters_input(self):
-        """Test when sleeper_rosters_response not provided."""
+    def test_fetches_rosters_when_not_provided(self):
+        """Test fetches rosters from API when not provided."""
         self.mock_fetch_sleeper_data.return_value = [
-            {"owner_id": "user1", "roster_id": 1},
-            {"owner_id": "user2", "roster_id": 2},
+            {"owner_id": "user_1", "roster_id": 1},
         ]
 
-        user_id = "user1"
-        year = 2023
+        result = get_roster_id("user_1", 2024)
 
-        result = get_roster_id(user_id, year)
-
-        self.mock_fetch_sleeper_data.assert_called_once_with(
-            "league/leagueid2023/rosters"
-        )
         assert result == 1
+        self.mock_fetch_sleeper_data.assert_called_once()
+
+    def test_raises_when_api_returns_non_list(self):
+        """Test raises ValueError when API returns non-list."""
+        self.mock_fetch_sleeper_data.return_value = {"error": True}
+
+        with pytest.raises(ValueError) as exc_info:
+            get_roster_id("user_1", 2024)
+
+        assert "list form" in str(exc_info.value)
+
+    def test_2024_special_case_assigns_skipped_roster(self, caplog):
+        """Test 2024 special case assigns missing owner roster.
+
+        Args:
+            caplog: pytest caplog fixture
+        """
+        rosters = [
+            {"owner_id": "user_1", "roster_id": 1},
+            {"owner_id": None, "roster_id": 2},
+        ]
+
+        with caplog.at_level(logging.WARNING):
+            result = get_roster_id(
+                "user_999", 2024, sleeper_rosters_response=rosters
+            )
+
+        assert result == 2
 
 
 class TestGetRosterIds:
-    """Unit tests for get_roster_ids function."""
+    """Test get_roster_ids function."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -199,99 +166,234 @@ class TestGetRosterIds:
         The mocks are set up to return a pre-defined
         set of values when accessed.
         - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
-        - `get_roster_id`: `mock_get_roster_id`
+        - `LEAGUE_IDS`: mock league IDs
+        - `USERNAME_TO_REAL_NAME`: mock username mapping
 
         Yields:
             None
         """
         with (
+            patch(f"{MODULE_PATH}.fetch_sleeper_data") as mock_fetch,
             patch(
-                "patriot_center_backend.utils.sleeper_helpers"
-                ".fetch_sleeper_data"
-            ) as mock_fetch_sleeper_data,
+                f"{MODULE_PATH}.LEAGUE_IDS",
+                {2024: "league2024", 2019: "league2019"},
+            ),
             patch(
-                "patriot_center_backend.utils.sleeper_helpers.get_roster_id"
-            ) as mock_get_roster_id,
+                f"{MODULE_PATH}.USERNAME_TO_REAL_NAME",
+                {
+                    "tommylowry": "Tommy",
+                    "Jrazzam": "Jay",
+                    "codestoppable": "Cody",
+                },
+            ),
+            patch(f"{MODULE_PATH}.get_user_id") as mock_get_user_id,
         ):
-            self.mock_fetch_sleeper_data = mock_fetch_sleeper_data
-            self.mock_get_roster_id = mock_get_roster_id
+            self.mock_fetch_sleeper_data = mock_fetch
+            self.mock_get_user_id = mock_get_user_id
+
+            # Default: users call then rosters call
+            self.mock_fetch_sleeper_data.side_effect = [
+                # Users response
+                [
+                    {"user_id": "u1", "display_name": "tommylowry"},
+                    {"user_id": "u2", "display_name": "Jrazzam"},
+                ],
+                # Rosters response
+                [
+                    {"owner_id": "u1", "roster_id": 1},
+                    {"owner_id": "u2", "roster_id": 2},
+                ],
+            ]
 
             yield
 
-    def test_get_roster_ids(self):
-        """Test get_roster_ids function with valid data."""
+    def test_returns_roster_id_to_name_mapping(self):
+        """Test returns mapping of roster IDs to real names."""
+        result = get_roster_ids(2024, 1)
+
+        assert result == {1: "Tommy", 2: "Jay"}
+
+    def test_raises_when_users_api_returns_non_list(self):
+        """Test raises ValueError when users API returns non-list."""
+        self.mock_fetch_sleeper_data.side_effect = [
+            {"error": True},
+        ]
+
+        with pytest.raises(ValueError) as exc_info:
+            get_roster_ids(2024, 1)
+
+        assert "users in list form" in str(exc_info.value)
+
+    def test_raises_when_rosters_api_returns_non_list(self):
+        """Test raises ValueError when rosters API returns non-list."""
         self.mock_fetch_sleeper_data.side_effect = [
             [
-                {"user_id": "user1", "display_name": "username1"},
-                {"user_id": "user2", "display_name": "username2"},
+                {"user_id": "u1", "display_name": "tommylowry"},
             ],
-            [
-                {"owner_id": "user1", "roster_id": 1},
-                {"owner_id": "user2", "roster_id": 2},
-            ],
+            {"error": True},
         ]
-        self.mock_get_roster_id.side_effect = [1, 2]
 
-        year = 2023
-        result = get_roster_ids(year)
+        with pytest.raises(ValueError) as exc_info:
+            get_roster_ids(2024, 1)
 
-        assert result == {1: "Manager 1", 2: "Manager 2"}
+        assert "rosters in list form" in str(exc_info.value)
 
-    def test_calls_to_sleeper_correct(self):
-        """Test get_roster_ids function with calls to Sleeper API correct."""
+    def test_2024_assigns_davey_for_none_owner(self):
+        """Test 2024 special case assigns Davey for None owner_id."""
         self.mock_fetch_sleeper_data.side_effect = [
             [
-                {"user_id": "user1", "display_name": "username1"},
-                {"user_id": "user2", "display_name": "username2"},
+                {"user_id": "u1", "display_name": "tommylowry"},
+                {"user_id": "u2", "display_name": "Jrazzam"},
             ],
             [
-                {"owner_id": "user1", "roster_id": 1},
-                {"owner_id": "user2", "roster_id": 2},
+                {"owner_id": "u1", "roster_id": 1},
+                {"owner_id": None, "roster_id": 2},
             ],
         ]
-        self.mock_get_roster_id.side_effect = [1, 2]
 
-        year = 2023
-        get_roster_ids(year)
+        result = get_roster_ids(2024, 1)
 
-        self.mock_fetch_sleeper_data.assert_any_call(
-            "league/leagueid2023/users"
-        )
-        self.mock_fetch_sleeper_data.assert_any_call(
-            "league/leagueid2023/rosters"
-        )
+        assert result[2] == "Davey"
 
-    def test_calls_to_get_roster_id_correct(self):
-        """Test get_roster_ids function with calls to get_roster_id correct."""
-        sleeper_output_2 = [
-            {"owner_id": "user1", "roster_id": 1},
-            {"owner_id": "user2", "roster_id": 2},
-        ]
+    def test_2019_replaces_cody_with_tommy_weeks_1_3(self):
+        """Test 2019 special case replaces Cody with Tommy in weeks 1-3."""
         self.mock_fetch_sleeper_data.side_effect = [
             [
-                {"user_id": "user1", "display_name": "username1"},
-                {"user_id": "user2", "display_name": "username2"},
+                {"user_id": "u1", "display_name": "codestoppable"},
+                {"user_id": "u2", "display_name": "Jrazzam"},
             ],
-            sleeper_output_2,
+            [
+                {"owner_id": "u1", "roster_id": 1},
+                {"owner_id": "u2", "roster_id": 2},
+            ],
         ]
-        self.mock_get_roster_id.side_effect = [1, 2]
 
-        year = 2023
-        get_roster_ids(year)
+        result = get_roster_ids(2019, 2)
 
-        calls = self.mock_get_roster_id.call_args_list
-        assert (
-            call("user1", 2023, sleeper_rosters_response=sleeper_output_2)
-            in calls
-        )
-        assert (
-            call("user2", 2023, sleeper_rosters_response=sleeper_output_2)
-            in calls
-        )
+        assert result[1] == "Tommy"
 
 
-class TestGetCurrentSeasonAndWeek:
-    """Unit tests for get_current_season_and_week function."""
+class TestGetLeagueInfo:
+    """Test get_league_info function."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
+        - `LEAGUE_IDS`: mock league IDs
+
+        Yields:
+            None
+        """
+        with (
+            patch(f"{MODULE_PATH}.fetch_sleeper_data") as mock_fetch,
+            patch(
+                f"{MODULE_PATH}.LEAGUE_IDS",
+                {2024: "league2024"},
+            ),
+        ):
+            self.mock_fetch_sleeper_data = mock_fetch
+            self.mock_fetch_sleeper_data.return_value = {
+                "league_id": "league2024",
+                "settings": {"waiver_type": 2},
+            }
+
+            yield
+
+    def test_returns_league_info(self):
+        """Test returns league info dict."""
+        result = get_league_info(2024)
+
+        assert result["league_id"] == "league2024"
+
+    def test_raises_when_no_league_id(self):
+        """Test raises ValueError when no league ID for year."""
+        with pytest.raises(ValueError) as exc_info:
+            get_league_info(2018)
+
+        assert "No league ID found" in str(exc_info.value)
+
+    def test_raises_when_api_returns_non_dict(self):
+        """Test raises ValueError when API returns non-dict."""
+        self.mock_fetch_sleeper_data.return_value = "not_a_dict"
+
+        with pytest.raises(ValueError) as exc_info:
+            get_league_info(2024)
+
+        assert "failed to retrieve league info" in str(exc_info.value)
+
+
+class TestFetchUserMetadata:
+    """Test fetch_user_metadata function."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `get_user_id`: `mock_get_user_id`
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
+
+        Yields:
+            None
+        """
+        with (
+            patch(f"{MODULE_PATH}.get_user_id") as mock_get_user_id,
+            patch(f"{MODULE_PATH}.fetch_sleeper_data") as mock_fetch,
+        ):
+            self.mock_get_user_id = mock_get_user_id
+            self.mock_get_user_id.return_value = "123456789"
+
+            self.mock_fetch_sleeper_data = mock_fetch
+            self.mock_fetch_sleeper_data.return_value = {
+                "user_id": "123456789",
+                "display_name": "tommylowry",
+                "avatar": "abc123",
+            }
+
+            yield
+
+    def test_returns_user_metadata(self):
+        """Test returns user metadata dict."""
+        result = fetch_user_metadata("Tommy")
+
+        assert result["user_id"] == "123456789"
+        assert result["display_name"] == "tommylowry"
+
+    def test_raises_when_no_user_id(self):
+        """Test raises ValueError when no user ID found."""
+        self.mock_get_user_id.return_value = None
+
+        with pytest.raises(ValueError) as exc_info:
+            fetch_user_metadata("Unknown")
+
+        assert "No user ID found" in str(exc_info.value)
+
+    def test_raises_when_api_returns_non_dict(self):
+        """Test raises ValueError when API returns non-dict."""
+        self.mock_fetch_sleeper_data.return_value = "not_a_dict"
+
+        with pytest.raises(ValueError) as exc_info:
+            fetch_user_metadata("Tommy")
+
+        assert "failed to retrieve user info" in str(exc_info.value)
+
+    def test_raises_when_api_returns_empty(self):
+        """Test raises ValueError when API returns empty response."""
+        self.mock_fetch_sleeper_data.return_value = {}
+
+        with pytest.raises(ValueError) as exc_info:
+            fetch_user_metadata("Tommy")
+
+        assert "failed to retrieve user info" in str(exc_info.value)
+
+
+class TestFetchAllPlayerIds:
+    """Test fetch_all_player_ids function."""
 
     @pytest.fixture(autouse=True)
     def setup(self):
@@ -304,57 +406,36 @@ class TestGetCurrentSeasonAndWeek:
         Yields:
             None
         """
-        with (
-            patch(
-                "patriot_center_backend.utils.sleeper_helpers"
-                ".fetch_sleeper_data"
-            ) as mock_fetch_sleeper_data,
-        ):
-            self.mock_fetch_sleeper_data = mock_fetch_sleeper_data
+        with patch(f"{MODULE_PATH}.fetch_sleeper_data") as mock_fetch:
+            self.mock_fetch_sleeper_data = mock_fetch
+            self.mock_fetch_sleeper_data.return_value = {
+                "4046": {"full_name": "Patrick Mahomes"},
+                "6794": {"full_name": "Jayden Daniels"},
+            }
 
             yield
 
-    def test_valid_middle_of_the_season(self):
-        """Test returns the correct season and week number in valid data."""
-        self.mock_fetch_sleeper_data.return_value = {
-            "season": 2023,
-            "settings": {"last_scored_leg": 2},
-        }
+    def test_returns_player_ids_dict(self):
+        """Test returns player IDs dictionary."""
+        result = fetch_all_player_ids()
 
-        result = get_current_season_and_week()
+        assert "4046" in result
+        assert result["4046"]["full_name"] == "Patrick Mahomes"
 
-        assert result == (2023, 2)
+    def test_raises_when_api_returns_non_dict(self):
+        """Test raises ValueError when API returns non-dict."""
+        self.mock_fetch_sleeper_data.return_value = "not_a_dict"
 
-    def test_feth_sleeper_called_correct(self):
-        """Test that fetch_sleeper_data is called with the correct arguments."""
-        self.mock_fetch_sleeper_data.return_value = {
-            "season": 2024,
-            "settings": {"last_scored_leg": 2},
-        }
+        with pytest.raises(ValueError) as exc_info:
+            fetch_all_player_ids()
 
-        get_current_season_and_week()
+        assert "failed to retrieve player info" in str(exc_info.value)
 
-        self.mock_fetch_sleeper_data.assert_called_once_with(
-            "league/leagueid2024"
-        )
+    def test_raises_when_api_returns_empty(self):
+        """Test raises ValueError when API returns empty response."""
+        self.mock_fetch_sleeper_data.return_value = {}
 
-    def test_valid_offseason(self):
-        """Test get_current_season_and_week function with offseason data."""
-        self.mock_fetch_sleeper_data.return_value = {
-            "season": 2023,
-            "settings": {"last_scored_leg": 17},
-        }
+        with pytest.raises(ValueError) as exc_info:
+            fetch_all_player_ids()
 
-        result = get_current_season_and_week()
-
-        assert result == (2023, 17)
-
-    def test_valid_preseason(self):
-        """Test get_current_season_and_week function with preseason data."""
-        self.mock_fetch_sleeper_data.return_value = {
-            "season": 2023,
-        }
-
-        result = get_current_season_and_week()
-
-        assert result == (2023, 0)
+        assert "failed to retrieve player info" in str(exc_info.value)

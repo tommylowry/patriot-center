@@ -54,11 +54,12 @@ def get_matchup_details_from_cache(
         .get("playoff_appearances", [])
     )
 
-    if (  # Manager has playoff appearances
+    has_playoff_data = (
         len(playoff_appearances) > 0
-        and year
-        and year in manager_cache[manager]["years"]
-    ):
+        and (not year or year in playoff_appearances)
+    )
+
+    if has_playoff_data:
         season_states.append("playoffs")
 
     else:  # Manager has no playoff appearances
@@ -136,13 +137,12 @@ def get_matchup_details_from_cache(
 
 
 def get_overall_data_details_from_cache(
-    manager: str, image_urls: dict[str, str]
+    manager: str
 ) -> dict[str, int | list[Any]]:
     """Get career achievements with playoff appearances & season placements.
 
     Args:
         manager: Manager name
-        image_urls: Dict of image urls
 
     Returns:
         Dictionary with playoff_appearances count and list of placements by year
@@ -185,7 +185,7 @@ def get_overall_data_details_from_cache(
             )
         else:
             matchup_card = get_matchup_card(
-                manager, opponent, year, week, image_urls
+                manager, opponent, year, week
             )
 
         placement_item = {

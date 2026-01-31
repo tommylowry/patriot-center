@@ -30,9 +30,7 @@ class FFWARCalculator:
 
         self.managers = []
 
-        self.replacement_scores = {
-            position: {} for position in self.starter_scores
-        }
+        self.replacement_scores = dict.fromkeys(self.starter_scores, 0.0)
         self.baseline_scores = {
             position: {} for position in self.starter_scores
         }

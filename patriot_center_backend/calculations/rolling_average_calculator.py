@@ -112,7 +112,7 @@ def calculate_three_year_averages(season: int, week: int) -> dict[str, Any]:
     return current_week_scores
 
 
-def _enforce_monotonicity(averages: dict[str, dict[str, float]]) -> None:
+def _enforce_monotonicity(averages: dict[str, dict[int, float]]) -> None:
     """Enforce monotonicity by ensuring lower bye counts have lower scores.
 
     Args:

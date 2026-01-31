@@ -562,9 +562,14 @@ class TestFetchReplacementScoreForWeek:
             week_data["TEAM_SF"] = {"pts": 25}
 
             # Need 13+ QB, 31+ RB, 31+ WR, 13+ TE, 13+ K, 13+ DEF
-            positions_needed = (
-                [("QB", 15), ("RB", 35), ("WR", 35), ("TE", 15), ("K", 15), ("DEF", 15)]  # noqa: E501
-            )
+            positions_needed = [
+                ("QB", 15),
+                ("RB", 35),
+                ("WR", 35),
+                ("TE", 15),
+                ("K", 15),
+                ("DEF", 15),
+            ]
             pid = 1000
             self._position_map: dict[str, str] = {}
             for pos, count in positions_needed:
@@ -578,9 +583,7 @@ class TestFetchReplacementScoreForWeek:
                 {"scoring_settings": {"pass_yd": 0.04}},
             ]
 
-            self.mock_get_player_info_and_score = (
-                mock_get_player_info_and_score
-            )
+            self.mock_get_player_info_and_score = mock_get_player_info_and_score
 
             score_counter = iter(range(50, -100, -1))
 
@@ -716,9 +719,7 @@ class TestUpdateWithThreeYearAverages:
         ):
             builder.update()
 
-        self.mock_calculate_three_year_averages.assert_called_once_with(
-            2024, 1
-        )
+        self.mock_calculate_three_year_averages.assert_called_once_with(2024, 1)
 
     def test_stores_three_year_avg_result_in_cache(self):
         """Test stores three year average result in cache."""

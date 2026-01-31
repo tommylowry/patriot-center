@@ -1,5 +1,6 @@
 """Unit tests for replacement_score_updater module."""
 
+import logging
 from typing import Any
 from unittest.mock import patch
 
@@ -438,6 +439,313 @@ class TestSetYearlyScoringSettings:
         assert "Sleeper API call failed" in str(exc_info.value)
 
 
+class TestProceedToNextWeek:
+    """Test ReplacementScoreCacheBuilder._proceed_to_next_week method."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_replacement_score_cache`:
+            `mock_get_replacement_score_cache`
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
+        - `ReplacementScoreCacheBuilder._initial_three_year_backfill`:
+            mocked to no-op
+        - `LEAGUE_IDS`: mock league IDs
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                f"{MODULE_PATH}.CACHE_MANAGER.get_replacement_score_cache"
+            ) as mock_get_replacement_score_cache,
+            patch(
+                f"{MODULE_PATH}.fetch_sleeper_data"
+            ) as mock_fetch_sleeper_data,
+            patch.object(
+                ReplacementScoreCacheBuilder,
+                "_initial_three_year_backfill",
+            ),
+            patch(
+                f"{MODULE_PATH}.LEAGUE_IDS",
+                {2024: "league2024"},
+            ),
+        ):
+            self.mock_replacement_score_cache: dict[str, Any] = {}
+            mock_get_replacement_score_cache.return_value = (
+                self.mock_replacement_score_cache
+            )
+
+            self.mock_fetch_sleeper_data = mock_fetch_sleeper_data
+            self.mock_fetch_sleeper_data.side_effect = [
+                # __init__: _set_week_data
+                {"4046": {"gp": 1.0}},
+                # __init__: _set_yearly_score_settings
+                {"scoring_settings": {"pass_yd": 0.04}},
+                # _proceed_to_next_week: _set_week_data
+                {"6794": {"gp": 1.0}},
+            ]
+
+            yield
+
+    def test_increments_week(self):
+        """Test increments week by 1."""
+        builder = ReplacementScoreCacheBuilder(2024)
+
+        assert builder.week == 1
+
+        builder._proceed_to_next_week()
+
+        assert builder.week == 2
+
+    def test_fetches_new_week_data(self):
+        """Test fetches new week data after incrementing."""
+        builder = ReplacementScoreCacheBuilder(2024)
+
+        builder._proceed_to_next_week()
+
+        assert builder.week_data == {"6794": {"gp": 1.0}}
+
+
+class TestFetchReplacementScoreForWeek:
+    """Test ReplacementScoreCacheBuilder._fetch_replacement_score_for_week."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_replacement_score_cache`:
+            `mock_get_replacement_score_cache`
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
+        - `get_player_info_and_score`:
+            `mock_get_player_info_and_score`
+        - `ReplacementScoreCacheBuilder._initial_three_year_backfill`:
+            mocked to no-op
+        - `LEAGUE_IDS`: mock league IDs
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                f"{MODULE_PATH}.CACHE_MANAGER.get_replacement_score_cache"
+            ) as mock_get_replacement_score_cache,
+            patch(
+                f"{MODULE_PATH}.fetch_sleeper_data"
+            ) as mock_fetch_sleeper_data,
+            patch(
+                f"{MODULE_PATH}.get_player_info_and_score"
+            ) as mock_get_player_info_and_score,
+            patch.object(
+                ReplacementScoreCacheBuilder,
+                "_initial_three_year_backfill",
+            ),
+            patch(
+                f"{MODULE_PATH}.LEAGUE_IDS",
+                {2024: "league2024"},
+            ),
+        ):
+            self.mock_replacement_score_cache: dict[str, Any] = {}
+            mock_get_replacement_score_cache.return_value = (
+                self.mock_replacement_score_cache
+            )
+
+            # Build week_data with TEAM entries + enough players
+            week_data: dict[str, Any] = {}
+            # Add 2 TEAM entries (byes = 32 - 2 = 30)
+            week_data["TEAM_KC"] = {"pts": 30}
+            week_data["TEAM_SF"] = {"pts": 25}
+
+            # Need 13+ QB, 31+ RB, 31+ WR, 13+ TE, 13+ K, 13+ DEF
+            positions_needed = (
+                [("QB", 15), ("RB", 35), ("WR", 35), ("TE", 15), ("K", 15), ("DEF", 15)]  # noqa: E501
+            )
+            pid = 1000
+            self._position_map: dict[str, str] = {}
+            for pos, count in positions_needed:
+                for _ in range(count):
+                    pid += 1
+                    week_data[str(pid)] = {"gp": 1.0}
+                    self._position_map[str(pid)] = pos
+
+            mock_fetch_sleeper_data.side_effect = [
+                week_data,
+                {"scoring_settings": {"pass_yd": 0.04}},
+            ]
+
+            self.mock_get_player_info_and_score = (
+                mock_get_player_info_and_score
+            )
+
+            score_counter = iter(range(50, -100, -1))
+
+            def side_effect(pid, wd, ws, ss):
+                pos = self._position_map.get(pid, "QB")
+                score = float(next(score_counter))
+                return (True, {"position": pos}, score, pid)
+
+            self.mock_get_player_info_and_score.side_effect = side_effect
+
+            yield
+
+    def test_returns_dict_with_byes(self):
+        """Test result contains byes count."""
+        builder = ReplacementScoreCacheBuilder(2024)
+
+        result = builder._fetch_replacement_score_for_week()
+
+        assert "byes" in result
+        assert result["byes"] == 30
+
+    def test_returns_dict_with_scoring_key(self):
+        """Test result contains year scoring key."""
+        builder = ReplacementScoreCacheBuilder(2024)
+
+        result = builder._fetch_replacement_score_for_week()
+
+        assert "2024_scoring" in result
+
+    def test_decrements_byes_for_team_entries(self):
+        """Test TEAM_ entries decrement byes from 32."""
+        builder = ReplacementScoreCacheBuilder(2024)
+
+        result = builder._fetch_replacement_score_for_week()
+
+        # 32 - 2 TEAM entries = 30
+        assert result["byes"] == 30
+
+    def test_skips_team_entries_for_scoring(self):
+        """Test TEAM_ entries are not passed to get_player_info_and_score."""
+        builder = ReplacementScoreCacheBuilder(2024)
+
+        builder._fetch_replacement_score_for_week()
+
+        # 130 player entries, 2 TEAM entries skipped
+        assert self.mock_get_player_info_and_score.call_count == 130
+
+
+class TestUpdateWithThreeYearAverages:
+    """Test update method when _has_three_year_averages returns True."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `CACHE_MANAGER.get_replacement_score_cache`:
+            `mock_get_replacement_score_cache`
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
+        - `log_cache_update`: (no-op)
+        - `calculate_three_year_averages`:
+            `mock_calculate_three_year_averages`
+        - `ReplacementScoreCacheBuilder._initial_three_year_backfill`:
+            mocked to no-op
+        - `LEAGUE_IDS`: mock league IDs
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                f"{MODULE_PATH}.CACHE_MANAGER.get_replacement_score_cache"
+            ) as mock_get_replacement_score_cache,
+            patch(
+                f"{MODULE_PATH}.fetch_sleeper_data"
+            ) as mock_fetch_sleeper_data,
+            patch(f"{MODULE_PATH}.log_cache_update"),
+            patch(
+                f"{MODULE_PATH}.calculate_three_year_averages"
+            ) as mock_calculate_three_year_averages,
+            patch.object(
+                ReplacementScoreCacheBuilder,
+                "_initial_three_year_backfill",
+            ),
+            patch(
+                f"{MODULE_PATH}.LEAGUE_IDS",
+                {2024: "league2024"},
+            ),
+        ):
+            self.mock_replacement_score_cache: dict[str, Any] = {
+                "2021": {"1": {}},
+            }
+            mock_get_replacement_score_cache.return_value = (
+                self.mock_replacement_score_cache
+            )
+
+            mock_fetch_sleeper_data.side_effect = [
+                {"4046": {"gp": 1.0}},
+                {"scoring_settings": {"pass_yd": 0.04}},
+                "not_a_dict",
+            ]
+
+            self.mock_calculate_three_year_averages = (
+                mock_calculate_three_year_averages
+            )
+            self.mock_calculate_three_year_averages.return_value = {
+                "byes": 30,
+                "QB_3yr_avg": 14.0,
+            }
+
+            yield
+
+    def test_calls_calculate_three_year_averages(self):
+        """Test calls calculate_three_year_averages when data exists."""
+        builder = ReplacementScoreCacheBuilder(2024)
+
+        def stop_after_first_week():
+            builder.week += 1
+            builder.week_data = {}
+
+        with (
+            patch.object(
+                builder,
+                "_fetch_replacement_score_for_week",
+                return_value={"byes": 30, "2024_scoring": {"QB": 15.0}},
+            ),
+            patch.object(
+                builder,
+                "_proceed_to_next_week",
+                side_effect=stop_after_first_week,
+            ),
+        ):
+            builder.update()
+
+        self.mock_calculate_three_year_averages.assert_called_once_with(
+            2024, 1
+        )
+
+    def test_stores_three_year_avg_result_in_cache(self):
+        """Test stores three year average result in cache."""
+        builder = ReplacementScoreCacheBuilder(2024)
+
+        def stop_after_first_week():
+            builder.week += 1
+            builder.week_data = {}
+
+        with (
+            patch.object(
+                builder,
+                "_fetch_replacement_score_for_week",
+                return_value={"byes": 30, "2024_scoring": {"QB": 15.0}},
+            ),
+            patch.object(
+                builder,
+                "_proceed_to_next_week",
+                side_effect=stop_after_first_week,
+            ),
+        ):
+            builder.update()
+
+        cached = self.mock_replacement_score_cache["2024"]["1"]
+        assert cached["QB_3yr_avg"] == 14.0
+
+
 class TestInitialThreeYearBackfill:
     """Test ReplacementScoreCacheBuilder._initial_three_year_backfill."""
 
@@ -483,3 +791,37 @@ class TestInitialThreeYearBackfill:
         # Only 2 calls: week data + scoring settings for init
         # No backfill calls
         assert self.mock_fetch_sleeper_data.call_count == 2
+
+    def test_backfills_three_years_when_cache_empty(
+        self, caplog: pytest.LogCaptureFixture
+    ):
+        """Test backfills 3 prior years when cache is empty.
+
+        Args:
+            caplog: pytest caplog fixture
+        """
+        self.mock_fetch_sleeper_data.side_effect = [
+            # For each backfill year: week data returns empty
+            # (no data triggers early return in update())
+            # Year 2021
+            {},
+            {"scoring_settings": {"pass_yd": 0.04}},
+            # Year 2022
+            {},
+            {"scoring_settings": {"pass_yd": 0.04}},
+            # Year 2023
+            {},
+            {"scoring_settings": {"pass_yd": 0.04}},
+            # Main builder (year 2024)
+            {"4046": {"gp": 1.0}},
+            {"scoring_settings": {"pass_yd": 0.04}},
+        ]
+
+        with caplog.at_level(logging.INFO):
+            ReplacementScoreCacheBuilder(2024)
+
+        assert "Starting backfill" in caplog.text
+        # Backfill creates keys for years 2021, 2022, 2023
+        assert "2021" in self.mock_replacement_score_cache
+        assert "2022" in self.mock_replacement_score_cache
+        assert "2023" in self.mock_replacement_score_cache

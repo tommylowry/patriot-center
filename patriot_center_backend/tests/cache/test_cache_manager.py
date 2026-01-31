@@ -1003,9 +1003,7 @@ class TestSaveWeeklyDataProgressTracker:
         with pytest.raises(ValueError) as exc_info:
             self.manager.save_weekly_data_progress_tracker()
 
-        assert "No weekly data progress tracker to save" in str(
-            exc_info.value
-        )
+        assert "No weekly data progress tracker to save" in str(exc_info.value)
 
 
 class TestReloadAllCaches:

@@ -95,9 +95,7 @@ class TestGetRosterId:
             {"owner_id": "user_2", "roster_id": 2},
         ]
 
-        result = get_roster_id(
-            "user_1", 2024, sleeper_rosters_response=rosters
-        )
+        result = get_roster_id("user_1", 2024, sleeper_rosters_response=rosters)
 
         assert result == 1
 

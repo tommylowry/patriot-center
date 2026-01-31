@@ -33,9 +33,7 @@ class TestGetImageUrl:
             None
         """
         with (
-            patch(
-                f"{MODULE_PATH}.detect_item_type"
-            ) as mock_detect_item_type,
+            patch(f"{MODULE_PATH}.detect_item_type") as mock_detect_item_type,
             patch(
                 f"{MODULE_PATH}.CACHE_MANAGER.get_image_urls_cache"
             ) as mock_get_image_urls_cache,
@@ -54,9 +52,7 @@ class TestGetImageUrl:
                     "last_name": "Mahomes",
                 },
             }
-            mock_get_image_urls_cache.return_value = (
-                self.mock_image_urls_cache
-            )
+            mock_get_image_urls_cache.return_value = self.mock_image_urls_cache
 
             self.mock_update_image_urls_cache = mock_update_image_urls_cache
             self.mock_update_image_urls_cache.return_value = {

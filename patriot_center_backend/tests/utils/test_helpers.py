@@ -43,9 +43,7 @@ class TestGetPlayerId:
                 "4046": {"full_name": "Patrick Mahomes"},
                 "6794": {"full_name": "Jayden Daniels"},
             }
-            mock_get_player_ids_cache.return_value = (
-                self.mock_player_ids_cache
-            )
+            mock_get_player_ids_cache.return_value = self.mock_player_ids_cache
 
             yield
 
@@ -89,9 +87,7 @@ class TestGetPlayerName:
             self.mock_player_ids_cache: dict[str, Any] = {
                 "4046": {"full_name": "Patrick Mahomes"},
             }
-            mock_get_player_ids_cache.return_value = (
-                self.mock_player_ids_cache
-            )
+            mock_get_player_ids_cache.return_value = self.mock_player_ids_cache
 
             yield
 
@@ -129,9 +125,7 @@ class TestGetPlayerPosition:
             self.mock_player_ids_cache: dict[str, Any] = {
                 "4046": {"full_name": "Patrick Mahomes", "position": "QB"},
             }
-            mock_get_player_ids_cache.return_value = (
-                self.mock_player_ids_cache
-            )
+            mock_get_player_ids_cache.return_value = self.mock_player_ids_cache
 
             yield
 

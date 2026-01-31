@@ -33,16 +33,12 @@ class TestCacheWeekData:
             None
         """
         with (
-            patch(
-                f"{MODULE_PATH}.get_roster_ids"
-            ) as mock_get_roster_ids,
+            patch(f"{MODULE_PATH}.get_roster_ids") as mock_get_roster_ids,
             patch(f"{MODULE_PATH}.validate_caching_preconditions"),
             patch(
                 f"{MODULE_PATH}.get_playoff_roster_ids"
             ) as mock_get_playoff_roster_ids,
-            patch(
-                f"{MODULE_PATH}.get_season_state"
-            ) as mock_get_season_state,
+            patch(f"{MODULE_PATH}.get_season_state") as mock_get_season_state,
             patch(f"{MODULE_PATH}.TransactionProcessor"),
             patch(f"{MODULE_PATH}.MatchupProcessor"),
         ):
@@ -93,7 +89,8 @@ class TestCacheWeekData:
         with (
             patch.object(manager, "_set_defaults_if_missing"),
             patch.object(
-                manager, "_setup_league_settings",
+                manager,
+                "_setup_league_settings",
                 side_effect=set_league_settings,
             ) as mock_setup,
         ):
@@ -109,9 +106,7 @@ class TestCacheWeekData:
 
         with (
             patch.object(manager, "_set_defaults_if_missing"),
-            patch.object(
-                manager, "_setup_league_settings"
-            ) as mock_setup,
+            patch.object(manager, "_setup_league_settings") as mock_setup,
         ):
             manager.cache_week_data("2024", "5")
 
@@ -218,9 +213,7 @@ class TestSetDefaultsIfMissing:
             patch(
                 f"{MODULE_PATH}.initialize_summary_templates"
             ) as mock_initialize_templates,
-            patch(
-                f"{MODULE_PATH}.get_season_state"
-            ) as mock_get_season_state,
+            patch(f"{MODULE_PATH}.get_season_state") as mock_get_season_state,
             patch(
                 f"{MODULE_PATH}.update_image_urls_cache"
             ) as mock_update_image_urls_cache,
@@ -234,9 +227,7 @@ class TestSetDefaultsIfMissing:
             mock_get_manager_cache.return_value = self.mock_manager_cache
 
             self.mock_image_urls_cache: dict[str, Any] = {}
-            mock_get_image_urls_cache.return_value = (
-                self.mock_image_urls_cache
-            )
+            mock_get_image_urls_cache.return_value = self.mock_image_urls_cache
 
             self.mock_initialize_templates = mock_initialize_templates
             self.mock_initialize_templates.return_value = {
@@ -255,12 +246,8 @@ class TestSetDefaultsIfMissing:
             self.mock_get_season_state = mock_get_season_state
             self.mock_get_season_state.return_value = "regular_season"
 
-            self.mock_update_image_urls_cache = (
-                mock_update_image_urls_cache
-            )
-            self.mock_initialize_faab_template = (
-                mock_initialize_faab_template
-            )
+            self.mock_update_image_urls_cache = mock_update_image_urls_cache
+            self.mock_initialize_faab_template = mock_initialize_faab_template
 
             yield
 
@@ -411,9 +398,7 @@ class TestUpdateUserId:
                 "user_id": "123456789",
             }
 
-            self.mock_update_image_urls_cache = (
-                mock_update_image_urls_cache
-            )
+            self.mock_update_image_urls_cache = mock_update_image_urls_cache
 
             yield
 
@@ -483,9 +468,7 @@ class TestSetupLeagueSettings:
             None
         """
         with (
-            patch(
-                f"{MODULE_PATH}.get_league_info"
-            ) as mock_get_league_info,
+            patch(f"{MODULE_PATH}.get_league_info") as mock_get_league_info,
             patch(f"{MODULE_PATH}.TransactionProcessor"),
             patch(f"{MODULE_PATH}.MatchupProcessor"),
         ):

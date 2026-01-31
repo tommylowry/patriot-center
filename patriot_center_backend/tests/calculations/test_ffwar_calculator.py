@@ -88,9 +88,7 @@ class TestCalculateFFWAR:
                     },
                 },
             }
-            mock_get_valid_options.return_value = (
-                self.mock_valid_options_cache
-            )
+            mock_get_valid_options.return_value = self.mock_valid_options_cache
 
             self.mock_replacement_score_cache = {
                 "2024": {
@@ -238,9 +236,7 @@ class TestApplyManagers:
                     },
                 },
             }
-            mock_get_valid_options.return_value = (
-                self.mock_valid_options_cache
-            )
+            mock_get_valid_options.return_value = self.mock_valid_options_cache
 
             yield
 

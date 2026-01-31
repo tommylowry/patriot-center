@@ -56,9 +56,7 @@ class TestFetchAllPlayerScores:
                     },
                 },
             }
-            mock_get_valid_options.return_value = (
-                self.mock_valid_options_cache
-            )
+            mock_get_valid_options.return_value = self.mock_valid_options_cache
 
             self.mock_fetch_sleeper_data = mock_fetch_sleeper_data
             self.mock_fetch_sleeper_data.side_effect = [
@@ -66,9 +64,7 @@ class TestFetchAllPlayerScores:
                 {"scoring_settings": {"pass_yd": 0.04}},
             ]
 
-            self.mock_get_player_info_and_score = (
-                mock_get_player_info_and_score
-            )
+            self.mock_get_player_info_and_score = mock_get_player_info_and_score
             self.mock_get_player_info_and_score.return_value = (
                 True,
                 {"position": "QB", "full_name": "Patrick Mahomes"},
@@ -101,7 +97,10 @@ class TestFetchAllPlayerScores:
     def test_skips_player_when_apply_is_false(self):
         """Test skips player when get_player_info_and_score returns False."""
         self.mock_get_player_info_and_score.return_value = (
-            False, {}, 0.0, "4046"
+            False,
+            {},
+            0.0,
+            "4046",
         )
 
         result = fetch_all_player_scores(2024, 1)
@@ -252,9 +251,7 @@ class TestFetchStartersByPosition:
                     },
                 },
             }
-            mock_get_valid_options.return_value = (
-                self.mock_valid_options_cache
-            )
+            mock_get_valid_options.return_value = self.mock_valid_options_cache
 
             self.mock_starters_cache = {
                 "2024": {

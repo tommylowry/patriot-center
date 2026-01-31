@@ -131,9 +131,7 @@ class TestBuildPlayerIdUrl:
                     "last_name": "Mahomes",
                 },
             }
-            mock_get_player_ids_cache.return_value = (
-                self.mock_player_ids_cache
-            )
+            mock_get_player_ids_cache.return_value = self.mock_player_ids_cache
             self.mock_get_player_name = mock_get_player_name
             self.mock_get_player_name.return_value = "Patrick Mahomes"
 
@@ -143,8 +141,9 @@ class TestBuildPlayerIdUrl:
         """Test returns NFL player image URL for numeric player ID."""
         result = build_player_id_url("4046")
 
-        assert "sleepercdn.com/content/nfl/players/4046.jpg" in (
-            result["image_url"]
+        assert (
+            "sleepercdn.com/content/nfl/players/4046.jpg"
+            in (result["image_url"])
         )
         assert result["name"] == "Patrick Mahomes"
 

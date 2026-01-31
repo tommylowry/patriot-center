@@ -40,9 +40,7 @@ class TestLogCacheUpdate:
             caplog.text
         )
 
-    def test_logs_week_18(
-        self, caplog: pytest.LogCaptureFixture
-    ):
+    def test_logs_week_18(self, caplog: pytest.LogCaptureFixture):
         """Test logs week 18 without extra space padding.
 
         Args:
@@ -55,9 +53,7 @@ class TestLogCacheUpdate:
             caplog.text
         )
 
-    def test_logs_week_9_with_padding(
-        self, caplog: pytest.LogCaptureFixture
-    ):
+    def test_logs_week_9_with_padding(self, caplog: pytest.LogCaptureFixture):
         """Test logs week 9 with extra space padding (boundary).
 
         Args:

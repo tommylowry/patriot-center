@@ -220,9 +220,7 @@ class TestUpdatePlayerNames:
             mock_get_players_cache.return_value = {}
 
             self.mock_image_urls_cache: dict[str, Any] = {}
-            mock_get_image_urls_cache.return_value = (
-                self.mock_image_urls_cache
-            )
+            mock_get_image_urls_cache.return_value = self.mock_image_urls_cache
 
             self.mock_recursive_replace = mock_recursive_replace
             self.mock_recursive_replace.side_effect = lambda data, old, new: (
@@ -265,9 +263,7 @@ class TestUpdatePlayerNames:
         synchronizer = CacheSynchronizer(new_ids)
         synchronizer._update_player_names("4046")
 
-        assert self.mock_image_urls_cache["4046"]["name"] == (
-            "Patrick Mahomes"
-        )
+        assert self.mock_image_urls_cache["4046"]["name"] == ("Patrick Mahomes")
         assert self.mock_image_urls_cache["4046"]["first_name"] == "Patrick"
 
     def test_updates_image_urls_cache_by_full_name(self):

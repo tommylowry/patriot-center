@@ -51,9 +51,7 @@ class TestGetPlayerInfoAndScore:
                     "position": "QB",
                 },
             }
-            mock_get_player_ids_cache.return_value = (
-                self.mock_player_ids_cache
-            )
+            mock_get_player_ids_cache.return_value = self.mock_player_ids_cache
 
             self.mock_calculate_player_score = mock_calculate_player_score
             self.mock_calculate_player_score.return_value = 25.5

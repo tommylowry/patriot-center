@@ -22,8 +22,7 @@ class TestGetDefenseEntries:
             None
         """
         with patch(
-            "patriot_center_backend.utils.defense_helper"
-            ".TEAM_DEFENSE_NAMES",
+            "patriot_center_backend.utils.defense_helper.TEAM_DEFENSE_NAMES",
             {
                 "SEA": {
                     "full_name": "Seattle Seahawks",
@@ -67,8 +66,7 @@ class TestGetDefenseEntries:
     def test_returns_empty_dict_when_no_teams(self):
         """Test returns empty dict when TEAM_DEFENSE_NAMES is empty."""
         with patch(
-            "patriot_center_backend.utils.defense_helper"
-            ".TEAM_DEFENSE_NAMES",
+            "patriot_center_backend.utils.defense_helper.TEAM_DEFENSE_NAMES",
             {},
         ):
             result = get_defense_entries()

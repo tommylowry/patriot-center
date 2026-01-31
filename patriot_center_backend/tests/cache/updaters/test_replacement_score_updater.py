@@ -9,9 +9,7 @@ from patriot_center_backend.cache.updaters.replacement_score_updater import (
     ReplacementScoreCacheBuilder,
 )
 
-MODULE_PATH = (
-    "patriot_center_backend.cache.updaters.replacement_score_updater"
-)
+MODULE_PATH = "patriot_center_backend.cache.updaters.replacement_score_updater"
 
 
 class TestReplacementScoreCacheBuilderInit:
@@ -109,9 +107,7 @@ class TestUpdate:
             patch(
                 f"{MODULE_PATH}.fetch_sleeper_data"
             ) as mock_fetch_sleeper_data,
-            patch(
-                f"{MODULE_PATH}.log_cache_update"
-            ) as mock_log_cache_update,
+            patch(f"{MODULE_PATH}.log_cache_update") as mock_log_cache_update,
             patch(
                 f"{MODULE_PATH}.calculate_three_year_averages"
             ) as mock_calculate_three_year_averages,
@@ -144,11 +140,12 @@ class TestUpdate:
                 mock_calculate_three_year_averages
             )
 
-            self.mock_get_player_info_and_score = (
-                mock_get_player_info_and_score
-            )
+            self.mock_get_player_info_and_score = mock_get_player_info_and_score
             self.mock_get_player_info_and_score.return_value = (
-                False, {}, 0.0, "4046"
+                False,
+                {},
+                0.0,
+                "4046",
             )
 
             yield
@@ -173,11 +170,13 @@ class TestUpdate:
 
         with (
             patch.object(
-                builder, "_fetch_replacement_score_for_week",
+                builder,
+                "_fetch_replacement_score_for_week",
                 return_value={"byes": 30, "2024_scoring": {"QB": 15.0}},
             ),
             patch.object(
-                builder, "_proceed_to_next_week",
+                builder,
+                "_proceed_to_next_week",
                 side_effect=stop_after_first_week,
             ),
         ):
@@ -195,11 +194,13 @@ class TestUpdate:
 
         with (
             patch.object(
-                builder, "_fetch_replacement_score_for_week",
+                builder,
+                "_fetch_replacement_score_for_week",
                 return_value={"byes": 30, "2024_scoring": {"QB": 15.0}},
             ),
             patch.object(
-                builder, "_proceed_to_next_week",
+                builder,
+                "_proceed_to_next_week",
                 side_effect=stop_after_first_week,
             ),
         ):
@@ -256,7 +257,9 @@ class TestGetNextWeekToUpdate:
     def test_returns_last_week_plus_1(self):
         """Test returns last cached week + 1."""
         self.mock_replacement_score_cache["2024"] = {
-            "1": {}, "2": {}, "3": {},
+            "1": {},
+            "2": {},
+            "3": {},
         }
 
         builder = ReplacementScoreCacheBuilder(2024)

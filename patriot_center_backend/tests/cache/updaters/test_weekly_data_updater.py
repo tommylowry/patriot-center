@@ -79,9 +79,7 @@ class TestUpdateWeeklyDataCaches:
             mock_replacement_builder_class.return_value = (
                 self.mock_replacement_builder_instance
             )
-            self.mock_replacement_builder_class = (
-                mock_replacement_builder_class
-            )
+            self.mock_replacement_builder_class = mock_replacement_builder_class
 
             self.mock_get_league_status = mock_get_league_status
             self.mock_get_league_status.return_value = ([1, 2, 3], False)

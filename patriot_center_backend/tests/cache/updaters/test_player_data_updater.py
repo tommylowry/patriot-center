@@ -79,9 +79,7 @@ class TestUpdatePlayerDataCache:
 
         update_player_data_cache(2024, 2)
 
-        assert self.mock_player_data_cache["2024"]["1"] == {
-            "existing": "data"
-        }
+        assert self.mock_player_data_cache["2024"]["1"] == {"existing": "data"}
         assert "2" in self.mock_player_data_cache["2024"]
 
     def test_instantiates_calculator_with_correct_args(self):

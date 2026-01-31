@@ -94,6 +94,89 @@ class TestGetMatchupDetailsFromCache:
 
         assert self.mock_manager_cache == original
 
+    def test_all_time_stats_includes_playoff_data_when_manager_has_appearances(
+        self,
+    ):
+        """Test all-time stats includes playoff matchup data.
+
+        When year=None (all-time) and manager has playoff appearances,
+        the playoffs key should contain actual playoff stats, not zeros.
+        """
+        result = get_matchup_details_from_cache("Manager 1")
+
+        # Manager 1 has playoff appearances, so playoff data should be populated
+        assert result["playoffs"]["wins"] == 2
+        assert result["playoffs"]["losses"] == 1
+        assert result["playoffs"]["ties"] == 0
+
+        # Win percentage: 2/(2+1+0) * 100 = 66.7%
+        assert result["playoffs"]["win_percentage"] == 66.7
+
+    def test_year_specific_stats_includes_playoff_data_when_year_in_appearances(
+        self,
+    ):
+        """Test year-specific stats includes playoff data for playoff year.
+
+        When year is specified and that year is in playoff_appearances,
+        the playoffs key should contain actual playoff stats for that year.
+        """
+        # Manager 1 made playoffs in 2023
+        result = get_matchup_details_from_cache("Manager 1", year="2023")
+
+        # 2023 playoff data should be populated
+        assert result["playoffs"]["wins"] == 1
+        assert result["playoffs"]["losses"] == 0
+        assert result["playoffs"]["ties"] == 0
+
+        # Win percentage: 1/(1+0+0) * 100 = 100%
+        assert result["playoffs"]["win_percentage"] == 100.0
+
+    def test_year_specific_stats_no_playoff_data_when_year_not_in_appearances(
+        self,
+    ):
+        """Test year-specific stats excludes playoff data for non-playoff year.
+
+        When year is specified but that year is NOT in playoff_appearances,
+        the playoffs key should contain zeros.
+        """
+        # Add a year where Manager 1 did NOT make playoffs
+        self.mock_manager_cache["Manager 1"]["years"]["2021"] = {
+            "summary": {
+                "matchup_data": {
+                    "overall": {
+                        "wins": {"total": 4, "opponents": {}},
+                        "losses": {"total": 10, "opponents": {}},
+                        "ties": {"total": 0, "opponents": {}},
+                        "points_for": {"total": 600.00, "opponents": {}},
+                        "points_against": {"total": 800.00, "opponents": {}},
+                    },
+                    "regular_season": {
+                        "wins": {"total": 4, "opponents": {}},
+                        "losses": {"total": 10, "opponents": {}},
+                        "ties": {"total": 0, "opponents": {}},
+                        "points_for": {"total": 600.00, "opponents": {}},
+                        "points_against": {"total": 800.00, "opponents": {}},
+                    },
+                    "playoffs": {
+                        "wins": {"total": 0, "opponents": {}},
+                        "losses": {"total": 0, "opponents": {}},
+                        "ties": {"total": 0, "opponents": {}},
+                        "points_for": {"total": 0.0, "opponents": {}},
+                        "points_against": {"total": 0.0, "opponents": {}},
+                    },
+                },
+            },
+            "weeks": {},
+        }
+        # 2021 is NOT in playoff_appearances (only 2023, 2022 are)
+
+        result = get_matchup_details_from_cache("Manager 1", year="2021")
+
+        # Playoff data should be zeros since 2021 not in playoff_appearances
+        assert result["playoffs"]["wins"] == 0
+        assert result["playoffs"]["losses"] == 0
+        assert result["playoffs"]["win_percentage"] == 0.0
+
 
 class TestGetOverallDataDetailsFromCache:
     """Test get_overall_data_details_from_cache function."""
@@ -144,7 +227,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1")
 
         assert isinstance(result["placements"], list)
         assert len(result["placements"]) == 2
@@ -171,7 +254,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1")
 
         assert isinstance(result["placements"], list)
         assert len(result["placements"]) == 2  # Still returns all-time data
@@ -183,7 +266,7 @@ class TestGetOverallDataDetailsFromCache:
 
     def test_manager_with_no_playoff_appearances(self):
         """Test manager with no playoff appearances."""
-        result = get_overall_data_details_from_cache("Manager 3", {})
+        result = get_overall_data_details_from_cache("Manager 3")
 
         assert result["playoff_appearances"] == 0
         assert result["placements"] == []
@@ -207,7 +290,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1")
 
         # Find the call for 2020 - should use week '16'
         calls = self.mock_get_matchup_card.call_args_list
@@ -226,7 +309,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1")
 
         # All calls should use week '17' since both years are after 2020
         for call in self.mock_get_matchup_card.call_args_list:
@@ -248,7 +331,7 @@ class TestGetOverallDataDetailsFromCache:
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
 
-        result = get_overall_data_details_from_cache("Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1")
 
         # Verify warning was printed for missing opponent
         assert "Unable to retreive opponent" in caplog.text
@@ -281,7 +364,7 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        result = get_overall_data_details_from_cache("Manager 1", {})
+        result = get_overall_data_details_from_cache("Manager 1")
 
         assert isinstance(result["placements"], list)
         for placement in result["placements"]:
@@ -291,8 +374,6 @@ class TestGetOverallDataDetailsFromCache:
         """Test that all parameters are passed to get_matchup_card."""
         self.mock_get_matchup_card.return_value = {"mock": "matchup_card"}
 
-        image_urls = {"url": "http://example.com"}
-
         self.mock_manager_cache["Manager 1"]["years"]["2023"]["weeks"]["17"] = {
             "matchup_data": {"opponent_manager": "Manager 2"}
         }
@@ -300,15 +381,14 @@ class TestGetOverallDataDetailsFromCache:
             "weeks": {"17": {"matchup_data": {"opponent_manager": "Manager 3"}}}
         }
 
-        get_overall_data_details_from_cache("Manager 1", image_urls)
+        get_overall_data_details_from_cache("Manager 1")
 
         # Verify get_matchup_card was called with the correct parameters
         call_args = self.mock_get_matchup_card.call_args_list[0][0]
         assert call_args[0] == "Manager 1"
         # call_args[1] is opponent
         # call_args[2] is year
-        # call_args[3] is week
-        assert call_args[4] == image_urls
+        assert call_args[3] == "17"
 
     def test_get_overall_data_immutable(self, caplog: pytest.LogCaptureFixture):
         """Test that function doesn't modify cache.
@@ -318,7 +398,7 @@ class TestGetOverallDataDetailsFromCache:
         """
         original = deepcopy(self.mock_manager_cache)
 
-        get_overall_data_details_from_cache("Manager 1", {})
+        get_overall_data_details_from_cache("Manager 1")
 
         # Verify warning was printed for missing opponent
         assert "Unable to retreive opponent" in caplog.text

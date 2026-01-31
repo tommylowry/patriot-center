@@ -6,16 +6,17 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters._validators import (
+    validate_matchup_data,
+)
 from patriot_center_backend.managers.formatters import get_matchup_card
-from patriot_center_backend.managers.validators import validate_matchup_data
-from patriot_center_backend.utils.image_providers import get_image_url
+from patriot_center_backend.utils.image_url_handler import get_image_url
 
 logger = logging.getLogger(__name__)
 
 
 def get_head_to_head_details_from_cache(
     manager: str,
-    image_urls: dict[str, str],
     year: str | None = None,
     opponent: str | None = None,
 ) -> list[dict[str, Any]] | dict[str, Any]:
@@ -26,7 +27,6 @@ def get_head_to_head_details_from_cache(
 
     Args:
         manager: Manager name
-        image_urls: Dict of image URLs
         year: Season year (optional - defaults to all-time if None)
         opponent: Specific opponent
             (optional - defaults to all opponents if None)
@@ -63,7 +63,7 @@ def get_head_to_head_details_from_cache(
             continue
 
         opponent_data = {
-            "opponent": get_image_url(opponent, image_urls, dictionary=True),
+            "opponent": get_image_url(opponent, dictionary=True),
             "wins": matchup_data["wins"]["opponents"].get(opponent, 0),
             "losses": matchup_data["losses"]["opponents"].get(opponent, 0),
             "ties": matchup_data["ties"]["opponents"].get(opponent, 0),
@@ -86,7 +86,6 @@ def get_head_to_head_details_from_cache(
 def get_head_to_head_overall_from_cache(
     manager1: str,
     manager2: str,
-    image_urls: dict[str, str],
     year: str | None = None,
     list_all_matchups: bool = False,
 ) -> list[dict[str, Any]] | dict[str, Any]:
@@ -101,7 +100,6 @@ def get_head_to_head_overall_from_cache(
     Args:
         manager1: First manager name
         manager2: Second manager name
-        image_urls: Dict of image URLs
         year: Season year (optional - defaults to all-time if None)
         list_all_matchups: If True, returns list with all
             matchup cards instead of dict with head-to-head data
@@ -126,7 +124,7 @@ def get_head_to_head_overall_from_cache(
         head_to_head_overall = {}
 
         head_to_head_data = get_head_to_head_details_from_cache(
-            manager1, image_urls, year=year, opponent=manager2
+            manager1, year=year, opponent=manager2
         )
 
         if isinstance(head_to_head_data, list):
@@ -230,7 +228,7 @@ def get_head_to_head_overall_from_cache(
                 continue
 
             matchup_card = get_matchup_card(
-                manager1, manager2, y, w, image_urls
+                manager1, manager2, y, w
             )
 
             if list_all_matchups:

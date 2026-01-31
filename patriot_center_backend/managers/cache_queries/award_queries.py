@@ -5,14 +5,14 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.updaters._validators import (
+    validate_matchup_data,
+)
 from patriot_center_backend.managers.formatters import get_matchup_card
-from patriot_center_backend.managers.validators import validate_matchup_data
-from patriot_center_backend.utils.image_providers import get_image_url
+from patriot_center_backend.utils.image_url_handler import get_image_url
 
 
-def get_manager_awards_from_cache(
-    manager: str, image_urls: dict[str, str]
-) -> dict[str, Any]:
+def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
     """Get manager career achievements and awards.
 
     Extracts:
@@ -23,7 +23,6 @@ def get_manager_awards_from_cache(
 
     Args:
         manager: Manager name
-        image_urls: Dict of image URLs
 
     Returns:
         Dictionary with all awards and achievements
@@ -84,7 +83,7 @@ def get_manager_awards_from_cache(
                     bid_amount = weekly_faab_bids[player]["total_faab_spent"]
                     if bid_amount > biggest_faab_bid["amount"]:
                         biggest_faab_bid["player"] = get_image_url(
-                            player, image_urls, dictionary=True
+                            player, dictionary=True
                         )
                         biggest_faab_bid["amount"] = bid_amount
                         biggest_faab_bid["year"] = year
@@ -95,7 +94,7 @@ def get_manager_awards_from_cache(
 
 
 def get_manager_score_awards_from_cache(
-    manager: str, image_urls: dict[str, str]
+    manager: str
 ) -> dict[str, dict[str, Any]]:
     """Get manager scoring records and extremes.
 
@@ -109,7 +108,6 @@ def get_manager_score_awards_from_cache(
 
     Args:
         manager: Manager name
-        image_urls: Dict of image URLs
 
     Returns:
         Dictionary with all scoring records
@@ -148,7 +146,6 @@ def get_manager_score_awards_from_cache(
                     matchup_data.get("opponent_manager", ""),
                     year,
                     week,
-                    image_urls,
                 )
 
             # Lowest Weekly Score
@@ -160,7 +157,6 @@ def get_manager_score_awards_from_cache(
                     matchup_data.get("opponent_manager", ""),
                     year,
                     week,
-                    image_urls,
                 )
 
             # Biggest Blowout Win
@@ -172,7 +168,6 @@ def get_manager_score_awards_from_cache(
                     matchup_data.get("opponent_manager", ""),
                     year,
                     week,
-                    image_urls,
                 )
                 biggest_blowout_win["differential"] = point_differential
 
@@ -185,7 +180,6 @@ def get_manager_score_awards_from_cache(
                     matchup_data.get("opponent_manager", ""),
                     year,
                     week,
-                    image_urls,
                 )
                 biggest_blowout_loss["differential"] = point_differential
 

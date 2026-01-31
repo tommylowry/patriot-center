@@ -23,7 +23,7 @@ from typing import Any
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.services.managers import fetch_starters
 from patriot_center_backend.utils.helpers import get_player_id
-from patriot_center_backend.utils.image_providers import get_image_url
+from patriot_center_backend.utils.image_url_handler import get_image_url
 
 logger = logging.getLogger(__name__)
 
@@ -285,7 +285,7 @@ def _initialize_player_data(
         "ffWAR": player_data["ffWAR"],
         "ffWAR_per_game": player_data["ffWAR"],
         "position": player_data["position"],
-        "player_image_endpoint": get_image_url(player, {}),
+        "player_image_endpoint": get_image_url(player),
         "slug": players_cache[player],
         "team": players_cache.get(player, {}).get("team"),
     }
@@ -384,7 +384,7 @@ def _initialize_manager_data(
         "ffWAR": raw_item["ffWAR"],
         "ffWAR_per_game": raw_item["ffWAR"],
         "position": raw_item["position"],
-        "player_image_endpoint": get_image_url(player, {}),
+        "player_image_endpoint": get_image_url(player),
         "slug": players_cache[player],
         "team": players_cache.get(player, {}).get("team"),
     }

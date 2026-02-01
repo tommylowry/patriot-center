@@ -13,12 +13,12 @@ from patriot_center_backend.dynamic_filtering.validator import (
 )
 
 
-def filter(
-    year: str | None = None,
-    week: str | None = None,
-    manager: str | None = None,
-    position: str | None = None,
-    player: str | None = None,
+def get_dynamic_filter_options_from_cache(
+    year: str | None,
+    week: str | None,
+    manager: str | None,
+    position: str | None,
+    player: str | None,
 ) -> dict[str, list[str]]:
     """Returns valid filter options given current selections.
 

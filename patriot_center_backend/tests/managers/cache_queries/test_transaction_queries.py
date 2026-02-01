@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.cache_queries.transaction_queries import (
+from patriot_center_backend.cache.queries.transaction_queries import (
     get_trade_history_between_two_managers,
     get_transaction_details_from_cache,
 )
@@ -55,15 +55,15 @@ class TestGetTradeHistoryBetweenTwoManagers:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".transaction_queries.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".transaction_queries.CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_ids,
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".transaction_queries.get_trade_card"
             ) as mock_get_trade_card,
         ):
@@ -120,11 +120,11 @@ class TestGetTransactionDetailsFromCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".transaction_queries.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".transaction_queries.extract_dict_data"
             ) as mock_extract_dict_data,
         ):
@@ -145,9 +145,7 @@ class TestGetTransactionDetailsFromCache:
 
     def test_single_season_transactions(self):
         """Test getting stats for specific season."""
-        result = get_transaction_details_from_cache(
-            "Manager 1", year="2023"
-        )
+        result = get_transaction_details_from_cache("Manager 1", year="2023")
 
         assert result["trades"]["total"] == 2
         assert result["adds"]["total"] == 5

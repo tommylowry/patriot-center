@@ -17,18 +17,22 @@ Notes:
 
 import logging
 from decimal import Decimal
-from functools import lru_cache
 from typing import Any
 
-from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.services.managers import fetch_starters
-from patriot_center_backend.utils.helpers import get_player_id
+from patriot_center_backend.cache.queries.aggregation_queries import (
+    get_ffwar_from_cache,
+    get_team,
+)
+from patriot_center_backend.cache.queries.starters_queries import (
+    get_starters_from_cache,
+)
 from patriot_center_backend.utils.image_url_handler import get_image_url
+from patriot_center_backend.utils.slug_utils import slugify
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_player_manager_aggregation(
+def get_player_manager_aggregation(
     player: str,
     manager: str,
     season: str | None = None,
@@ -51,7 +55,7 @@ def fetch_player_manager_aggregation(
         season_int = int(season)
     if week and week.isnumeric():
         week_int = int(week)
-    player_data = fetch_aggregated_managers(
+    player_data = get_aggregated_managers(
         player, season=season_int, week=week_int
     )
     if manager not in player_data:
@@ -60,7 +64,7 @@ def fetch_player_manager_aggregation(
     return {manager: player_data[manager]}
 
 
-def fetch_aggregated_players(
+def get_aggregated_players(
     manager: str | None = None,
     season: int | None = None,
     week: int | None = None,
@@ -82,7 +86,9 @@ def fetch_aggregated_players(
         A dictionary containing player metrics for the given manager or all
         managers if no manager provided.
     """
-    raw_dict = fetch_starters(manager=manager, season=season, week=week)
+    raw_dict = get_starters_from_cache(
+        manager=manager, season=season, week=week
+    )
     players_dict_to_return = {}
 
     if not raw_dict:
@@ -95,7 +101,7 @@ def fetch_aggregated_players(
                     if player == "Total_Points":
                         # Skip aggregate row inside source structure
                         continue
-                    ffwar_score = fetch_ffwar_for_player(
+                    ffwar_score = get_ffwar_from_cache(
                         player, season=year, week=wk
                     )
                     player_data["ffWAR"] = ffwar_score
@@ -120,7 +126,7 @@ def fetch_aggregated_players(
     return players_dict_to_return
 
 
-def fetch_aggregated_managers(
+def get_aggregated_managers(
     player: str, season: int | None = None, week: int | None = None
 ) -> dict[str, dict[str, Any]]:
     """Aggregate manager metrics for appearances of a given player.
@@ -133,7 +139,7 @@ def fetch_aggregated_managers(
     Returns:
         A dictionary containing manager metrics for the given player.
     """
-    raw_dict = fetch_starters(season=season, week=week)
+    raw_dict = get_starters_from_cache(season=season, week=week)
     managers_dict_to_return = {}
 
     if not raw_dict:
@@ -144,7 +150,7 @@ def fetch_aggregated_managers(
             for manager, manager_data in managers.items():
                 if player in manager_data:
                     raw_item = manager_data[player]
-                    ffwar_score = fetch_ffwar_for_player(
+                    ffwar_score = get_ffwar_from_cache(
                         player, season=year, week=wk
                     )
                     raw_item["ffWAR"] = ffwar_score
@@ -167,37 +173,6 @@ def fetch_aggregated_managers(
                         )
 
     return managers_dict_to_return
-
-
-@lru_cache(maxsize=10000)
-def fetch_ffwar_for_player(
-    player: str, season: str | None = None, week: str | None = None
-) -> float:
-    """Lookup ffWAR for a player at a specific season/week granularity.
-
-    Returns zero if season/week not provided or absent from cache.
-
-    Args:
-        player: Player identifier.
-        season: Season for lookup.
-        week: Week for lookup.
-
-    Returns:
-        ffWAR value (0.0 if unavailable).
-    """
-    if season is None or week is None:
-        return 0.0
-
-    player_data_cache = CACHE_MANAGER.get_player_data_cache()
-
-    if week in player_data_cache.get(season, {}):
-        week_data = player_data_cache[season][week]
-        player_id = get_player_id(player)
-
-        if player_id in week_data:
-            return week_data[player_id]["ffWAR"]
-
-    return 0.0
 
 
 def _update_player_data(
@@ -277,8 +252,6 @@ def _initialize_player_data(
     Rounds total_points, ffWAR, and ffWAR_per_game to appropriate precision
     using Decimal. Tracks playoff placements for players/managers.
     """
-    players_cache = CACHE_MANAGER.get_players_cache()
-
     players_dict[player] = {
         "total_points": player_data["points"],
         "num_games_started": 1,
@@ -286,8 +259,8 @@ def _initialize_player_data(
         "ffWAR_per_game": player_data["ffWAR"],
         "position": player_data["position"],
         "player_image_endpoint": get_image_url(player),
-        "slug": players_cache[player],
-        "team": players_cache.get(player, {}).get("team"),
+        "slug": slugify(player),
+        "team": get_team(player),
     }
 
     # Track playoff finishes if this is the last playoff week
@@ -375,8 +348,6 @@ def _initialize_manager_data(
     Rounds total_points, ffWAR, and ffWAR_per_game to appropriate precision
     using Decimal. Tracks playoff placements for players/managers.
     """
-    players_cache = CACHE_MANAGER.get_players_cache()
-
     managers_dict[manager] = {
         "player": player,  # Include the player name
         "total_points": raw_item["points"],
@@ -385,8 +356,8 @@ def _initialize_manager_data(
         "ffWAR_per_game": raw_item["ffWAR"],
         "position": raw_item["position"],
         "player_image_endpoint": get_image_url(player),
-        "slug": players_cache[player],
-        "team": players_cache.get(player, {}).get("team"),
+        "slug": slugify(player),
+        "team": get_team(player),
     }
 
     # Handle playoff placement if present

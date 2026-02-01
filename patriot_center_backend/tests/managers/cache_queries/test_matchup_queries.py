@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.cache_queries.matchup_queries import (
+from patriot_center_backend.cache.queries.matchup_queries import (
     get_matchup_details_from_cache,
     get_overall_data_details_from_cache,
 )
@@ -31,7 +31,7 @@ class TestGetMatchupDetailsFromCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries.matchup_queries"
+                "patriot_center_backend.cache.queries.matchup_queries"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
         ):
@@ -198,11 +198,11 @@ class TestGetOverallDataDetailsFromCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries.matchup_queries"
+                "patriot_center_backend.cache.queries.matchup_queries"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.cache_queries.matchup_queries"
+                "patriot_center_backend.cache.queries.matchup_queries"
                 ".get_matchup_card"
             ) as mock_get_matchup_card,
         ):

@@ -14,7 +14,7 @@ from patriot_center_backend.cache.updaters.valid_options_updater import (
     update_valid_options_cache,
 )
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.managers.formatters import get_season_state
+from patriot_center_backend.utils.formatters import get_season_state
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 

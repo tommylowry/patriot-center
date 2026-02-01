@@ -6,7 +6,7 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.managers.formatters import get_matchup_card
+from patriot_center_backend.utils.formatters import get_matchup_card
 
 logger = logging.getLogger(__name__)
 

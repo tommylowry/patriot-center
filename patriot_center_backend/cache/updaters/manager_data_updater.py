@@ -23,10 +23,10 @@ from patriot_center_backend.cache.updaters.processors.transactions.base_processo
 from patriot_center_backend.constants import (
     NAME_TO_MANAGER_USERNAME,
 )
-from patriot_center_backend.managers.formatters import get_season_state
 from patriot_center_backend.playoffs.playoff_tracker import (
     get_playoff_roster_ids,
 )
+from patriot_center_backend.utils.formatters import get_season_state
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
     get_league_info,

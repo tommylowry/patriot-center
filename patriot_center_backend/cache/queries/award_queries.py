@@ -8,7 +8,7 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._validators import (
     validate_matchup_data,
 )
-from patriot_center_backend.managers.formatters import get_matchup_card
+from patriot_center_backend.utils.formatters import get_matchup_card
 from patriot_center_backend.utils.image_url_handler import get_image_url
 
 

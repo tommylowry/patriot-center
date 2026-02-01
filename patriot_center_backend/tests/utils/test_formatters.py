@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.formatters import (
+from patriot_center_backend.utils.formatters import (
     draft_pick_decipher,
     extract_dict_data,
     get_matchup_card,
@@ -27,7 +27,7 @@ def globals_setup():
         None
     """
     with patch(
-        "patriot_center_backend.managers.formatters.LEAGUE_IDS",
+        "patriot_center_backend.utils.formatters.LEAGUE_IDS",
         {2023: "league123"},
     ):
         yield
@@ -48,7 +48,7 @@ class TestGetSeasonState:
             None
         """
         with patch(
-            "patriot_center_backend.managers.formatters.fetch_sleeper_data"
+            "patriot_center_backend.utils.formatters.fetch_sleeper_data"
         ) as mock_fetch_sleeper:
             self.mock_fetch_sleeper = mock_fetch_sleeper
 
@@ -167,19 +167,19 @@ class TestGetTop3ScorersFromMatchupData:
         """
         with (
             patch(
-                "patriot_center_backend.managers.formatters"
+                "patriot_center_backend.utils.formatters"
                 ".CACHE_MANAGER.get_player_ids_cache"
             ) as mock_get_player_ids,
             patch(
-                "patriot_center_backend.managers.formatters"
+                "patriot_center_backend.utils.formatters"
                 ".CACHE_MANAGER.get_players_cache"
             ) as mock_get_players_cache,
             patch(
-                "patriot_center_backend.managers.formatters"
+                "patriot_center_backend.utils.formatters"
                 ".CACHE_MANAGER.get_starters_cache"
             ) as mock_get_starters_cache,
             patch(
-                "patriot_center_backend.managers.formatters.get_image_url"
+                "patriot_center_backend.utils.formatters.get_image_url"
             ) as mock_get_image_url,
         ):
             self.mock_get_player_ids = mock_get_player_ids
@@ -497,15 +497,15 @@ class TestGetMatchupCard:
         """
         with (
             patch(
-                "patriot_center_backend.managers.formatters"
+                "patriot_center_backend.utils.formatters"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.formatters"
+                "patriot_center_backend.utils.formatters"
                 ".get_top_3_scorers_from_matchup_data"
             ) as mock_get_top_3,
             patch(
-                "patriot_center_backend.managers.formatters.get_image_url"
+                "patriot_center_backend.utils.formatters.get_image_url"
             ) as mock_get_image_url,
         ):
             self.mock_get_manager_cache = mock_get_manager_cache
@@ -743,11 +743,11 @@ class TestGetTradeCard:
         """
         with (
             patch(
-                "patriot_center_backend.managers.formatters"
+                "patriot_center_backend.utils.formatters"
                 ".CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_ids,
             patch(
-                "patriot_center_backend.managers.formatters.get_image_url"
+                "patriot_center_backend.utils.formatters.get_image_url"
             ) as mock_get_image_url,
         ):
             self.mock_get_trans_ids = mock_get_trans_ids
@@ -923,7 +923,7 @@ class TestExtractDictData:
         """
         with (
             patch(
-                "patriot_center_backend.managers.formatters.get_image_url"
+                "patriot_center_backend.utils.formatters.get_image_url"
             ) as mock_get_image_url,
         ):
             self.mock_get_image_url = mock_get_image_url
@@ -1022,12 +1022,9 @@ class TestDraftPickDecipher:
         Yields:
             None
         """
-        with (
-            patch(
-                "patriot_center_backend.managers.formatters"
-                ".update_image_urls_cache"
-            ) as mock_update_image_urls_cache
-        ):
+        with patch(
+            "patriot_center_backend.utils.formatters.update_image_urls_cache"
+        ) as mock_update_image_urls_cache:
             self.mock_update_image_urls_cache = mock_update_image_urls_cache
 
             yield

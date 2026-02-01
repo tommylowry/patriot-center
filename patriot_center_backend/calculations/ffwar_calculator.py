@@ -4,12 +4,12 @@ from statistics import mean
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.managers.formatters import get_season_state
 from patriot_center_backend.players.player_scores_fetcher import (
     fetch_all_player_scores,
     fetch_rostered_players,
     fetch_starters_by_position,
 )
+from patriot_center_backend.utils.formatters import get_season_state
 
 
 class FFWARCalculator:

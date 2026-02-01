@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.cache_queries.award_queries import (
+from patriot_center_backend.cache.queries.award_queries import (
     get_manager_awards_from_cache,
     get_manager_score_awards_from_cache,
 )
@@ -31,11 +31,11 @@ class TestGetManagerAwardsFromCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries.award_queries"
+                "patriot_center_backend.cache.queries.award_queries"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.cache_queries.award_queries"
+                "patriot_center_backend.cache.queries.award_queries"
                 ".get_image_url"
             ) as mock_get_image_url,
         ):
@@ -78,15 +78,15 @@ class TestGetManagerScoreAwardsFromCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries.award_queries"
+                "patriot_center_backend.cache.queries.award_queries"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.cache_queries.award_queries"
+                "patriot_center_backend.cache.queries.award_queries"
                 ".get_matchup_card"
             ) as mock_get_matchup_card,
             patch(
-                "patriot_center_backend.managers.cache_queries.award_queries"
+                "patriot_center_backend.cache.queries.award_queries"
                 ".validate_matchup_data"
             ) as mock_validate,
         ):

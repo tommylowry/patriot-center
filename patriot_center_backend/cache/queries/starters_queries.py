@@ -1,19 +1,11 @@
-"""Service helpers for querying starters cache.
-
-Provides filtered views over the starters cache by:
-- season and/or week
-- manager (optionally constrained by season/week)
-
-Notes:
-- Returns empty dicts on missing seasons/weeks/managers instead of raising.
-"""
+"""Cache query helpers for reading starters related manager metadata."""
 
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 
 
-def fetch_starters(
+def get_starters_from_cache(
     manager: str | None = None,
     season: int | None = None,
     week: int | None = None,

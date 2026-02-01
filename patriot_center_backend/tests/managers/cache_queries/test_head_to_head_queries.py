@@ -6,7 +6,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.cache_queries.head_to_head_queries import (
+from patriot_center_backend.cache.queries.head_to_head_queries import (
     _evaluate_matchup,
     get_head_to_head_details_from_cache,
     get_head_to_head_overall_from_cache,
@@ -36,11 +36,11 @@ class TestGetHeadToHeadDetailsFromCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".head_to_head_queries.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".head_to_head_queries.get_image_url",
             ) as mock_get_image_url,
         ):
@@ -85,23 +85,23 @@ class TestGetHeadToHeadOverallFromCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".head_to_head_queries.CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".head_to_head_queries.get_matchup_card",
             ) as mock_get_matchup_card,
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".head_to_head_queries.validate_matchup_data",
             ) as mock_validate,
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".head_to_head_queries.get_head_to_head_details_from_cache",
             ) as mock_h2h_details,
             patch(
-                "patriot_center_backend.managers.cache_queries"
+                "patriot_center_backend.cache.queries"
                 ".head_to_head_queries._evaluate_matchup",
             ) as mock_evaluate_matchup,
         ):

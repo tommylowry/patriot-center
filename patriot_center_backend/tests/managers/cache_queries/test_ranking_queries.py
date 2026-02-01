@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.managers.cache_queries.ranking_queries import (
+from patriot_center_backend.cache.queries.ranking_queries import (
     get_ranking_details_from_cache,
 )
 
@@ -46,11 +46,11 @@ class TestGetRankingDetailsFromCache:
         """
         with (
             patch(
-                "patriot_center_backend.managers.cache_queries.ranking_queries"
+                "patriot_center_backend.cache.queries.ranking_queries"
                 ".CACHE_MANAGER.get_manager_cache"
             ) as mock_get_manager_cache,
             patch(
-                "patriot_center_backend.managers.cache_queries.ranking_queries"
+                "patriot_center_backend.cache.queries.ranking_queries"
                 ".CACHE_MANAGER.get_valid_options_cache"
             ) as mock_get_valid_options_cache,
         ):

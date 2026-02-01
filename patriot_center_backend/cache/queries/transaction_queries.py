@@ -4,7 +4,7 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.managers.formatters import (
+from patriot_center_backend.utils.formatters import (
     extract_dict_data,
     get_trade_card,
 )
@@ -181,3 +181,70 @@ def get_trade_history_between_two_managers(
 
     trades_between.reverse()
     return trades_between
+
+
+def get_manager_transaction_history_from_cache(
+    manager_name: str, year: str | None
+) -> dict[str, Any]:
+    """Get manager transaction history from cache.
+
+    Args:
+        manager_name: The name of the manager.
+        year: Optional year to filter transactions. Defaults to all-time.
+
+    Returns:
+        Dictionary of transaction history.
+
+    Raises:
+        ValueError: If the manager or year is not found in the cache.
+    """
+    manager_cache = CACHE_MANAGER.get_manager_cache()
+
+    if manager_name not in manager_cache:
+        raise ValueError(
+            f"Manager {manager_name} not found in cache."
+        )
+    if year and year not in manager_cache[manager_name]["years"]:
+        raise ValueError(
+            f"Year {year} not found for manager "
+            f"{manager_name} in cache."
+        )
+
+    years_to_get = list(manager_cache[manager_name].get("years", {}).keys())
+    if year:
+        years_to_get = [year]
+
+    return_data = {
+        manager_name: {"years": {}},
+    }
+
+    for y in years_to_get:
+        return_data[manager_name]["years"][y] = {"weeks": {}}
+        for w in manager_cache[manager_name]["years"][y]["weeks"]:
+            return_data[manager_name]["years"][y]["weeks"][w] = {
+                "transactions": (
+                    manager_cache
+                    [manager_name]
+                    ["years"]
+                    [y]
+                    ["weeks"]
+                    [w]
+                    ["transactions"]
+                )
+            }
+
+    return deepcopy(return_data)
+
+
+def get_transaction_from_ids_cache(transaction_id: str) -> dict[str, Any]:
+    """Get transaction from transaction ID.
+
+    Args:
+        transaction_id: The ID of the transaction.
+
+    Returns:
+        Dictionary of transaction data.
+    """
+    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
+
+    return deepcopy(transaction_ids_cache.get(transaction_id, {}))

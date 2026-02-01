@@ -47,8 +47,7 @@ def get_matchup_details_from_cache(
 
     # Check if manager has playoff appearances
     playoff_appearances = (
-        manager_cache
-        .get(manager, {})
+        manager_cache.get(manager, {})
         .get("summary", {})
         .get("overall_data", {})
         .get("playoff_appearances", [])
@@ -97,14 +96,12 @@ def get_matchup_details_from_cache(
 
         # Calculate point averages (rounded to 2 decimal places)
         total_points_for = (
-            cached_matchup_data
-            .get(season_state, {})
+            cached_matchup_data.get(season_state, {})
             .get("points_for", {})
             .get("total", 0.0)
         )
         total_points_against = (
-            cached_matchup_data
-            .get(season_state, {})
+            cached_matchup_data.get(season_state, {})
             .get("points_against", {})
             .get("total", 0.0)
         )
@@ -137,7 +134,7 @@ def get_matchup_details_from_cache(
 
 
 def get_overall_data_details_from_cache(
-    manager: str
+    manager: str,
 ) -> dict[str, int | list[Any]]:
     """Get career achievements with playoff appearances & season placements.
 
@@ -167,8 +164,7 @@ def get_overall_data_details_from_cache(
             week = "16"
 
         opponent = (
-            manager_cache
-            .get(manager, {})
+            manager_cache.get(manager, {})
             .get("years", {})
             .get(year, {})
             .get("weeks", {})
@@ -184,9 +180,7 @@ def get_overall_data_details_from_cache(
                 f"matchup card for year {year} week {week}"
             )
         else:
-            matchup_card = get_matchup_card(
-                manager, opponent, year, week
-            )
+            matchup_card = get_matchup_card(manager, opponent, year, week)
 
         placement_item = {
             "year": year,

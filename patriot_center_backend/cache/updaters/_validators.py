@@ -192,6 +192,7 @@ def validate_transaction(
 
     return True
 
+
 def validate_manager_query(manager: str, year: str | None) -> None:
     """Validate manager and year exist in cache.
 
@@ -210,9 +211,7 @@ def validate_manager_query(manager: str, year: str | None) -> None:
 
     # Validate years exist
     if not manager_cache[manager].get("years", {}):
-        raise ValueError(
-            f"No years found for manager {manager} in cache."
-        )
+        raise ValueError(f"No years found for manager {manager} in cache.")
 
     # Validate year if specified
     if year and year not in manager_cache[manager]["years"]:

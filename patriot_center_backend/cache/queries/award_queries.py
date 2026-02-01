@@ -94,7 +94,7 @@ def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
 
 
 def get_manager_score_awards_from_cache(
-    manager: str
+    manager: str,
 ) -> dict[str, dict[str, Any]]:
     """Get manager scoring records and extremes.
 

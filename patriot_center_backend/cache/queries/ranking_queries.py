@@ -79,8 +79,7 @@ def get_ranking_details_from_cache(
         summary_section = deepcopy(manager_cache.get(m, {}).get("summary", {}))
         if year:
             summary_section = deepcopy(
-                manager_cache
-                .get(m, {})
+                manager_cache.get(m, {})
                 .get("years", {})
                 .get(year, {})
                 .get("summary", {})
@@ -120,8 +119,7 @@ def get_ranking_details_from_cache(
 
         num_trades = summary_section["transactions"]["trades"]["total"]
         num_playoffs = len(
-            manager_cache
-            .get(m, {})
+            manager_cache.get(m, {})
             .get("summary", {})
             .get("overall_data", {})
             .get("playoff_appearances", [])

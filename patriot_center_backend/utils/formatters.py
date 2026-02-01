@@ -246,9 +246,7 @@ def get_matchup_card(
         "winner": winner,
     }
 
-    get_top_3_scorers_from_matchup_data(
-        matchup, manager_1, manager_2
-    )
+    get_top_3_scorers_from_matchup_data(matchup, manager_1, manager_2)
 
     return deepcopy(matchup)
 
@@ -305,9 +303,9 @@ def get_trade_card(transaction_id: str) -> dict[str, Any]:
         )
 
     # Populate sent/received arrays with players/assets
-    for player in trans['trade_details']:
+    for player in trans["trade_details"]:
         trade_details_player_details = (
-            trans.get('trade_details', {}).get(player, {})
+            trans.get("trade_details", {}).get(player, {})
         )
         old_manager = trade_details_player_details.get("old_manager", "")
         new_manager = trade_details_player_details.get("new_manager", "")

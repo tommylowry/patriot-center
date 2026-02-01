@@ -14,6 +14,7 @@ from patriot_center_backend.utils.formatters import get_season_state
 
 class FFWARCalculator:
     """Calculates the ffWAR for a given week."""
+
     def __init__(self, year: int, week: int):
         """Initialize the FFWARCalculator.
 
@@ -40,7 +41,7 @@ class FFWARCalculator:
 
         self.player_data = {}
 
-# ==================== Public Methods ====================
+    # ==================== Public Methods ====================
     def calculate_ffwar(self) -> dict[str, dict[str, Any]]:
         """Calculates the ffWAR for a given week.
 
@@ -88,7 +89,6 @@ class FFWARCalculator:
         """
         # Simulate all possible manager pairings with this player
         for player_id in self.player_data:
-
             position = self.player_data[player_id]["position"]
 
             player_score = self.player_data[player_id]["score"]
@@ -98,7 +98,6 @@ class FFWARCalculator:
             num_simulated_games = 0
 
             for manager_playing in self.baseline_scores[position]:
-
                 baseline = self.baseline_scores[position][manager_playing]
 
                 # Manager's score with THIS player at this position
@@ -171,8 +170,7 @@ class FFWARCalculator:
         valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
         managers = (
-            valid_options_cache
-            .get(str(self.year), {})
+            valid_options_cache.get(str(self.year), {})
             .get(str(self.week), {})
             .get("managers", [])
         )
@@ -182,7 +180,6 @@ class FFWARCalculator:
             )
 
         self.managers = managers
-
 
     def _apply_baseline_and_weighted_scores(self) -> None:
         """Calculates the baseline and weighted scores for each position.
@@ -202,7 +199,6 @@ class FFWARCalculator:
             #   impact
             managers_with_scores = position_scores["managers"]
             for manager in managers_with_scores:
-
                 manager_position_scores = managers_with_scores[manager]
 
                 # The manager has no players at this position, so no
@@ -215,9 +211,7 @@ class FFWARCalculator:
 
                 else:
                     # Calculate this manager's average score at this position
-                    mgr_average = mean(
-                        manager_position_scores["scores"]
-                    )
+                    mgr_average = mean(manager_position_scores["scores"])
 
                     # Store manager's total points minus their positional
                     #   contribution
@@ -277,7 +271,6 @@ class FFWARCalculator:
                     "started": started,
                 }
 
-
     def _apply_replacement_scores(self):
         """Fetches replacement scores for every positinon in the given week.
 
@@ -294,10 +287,8 @@ class FFWARCalculator:
         )
         if not weekly_replacement_scores:
             raise ValueError(
-                f"No replacement scores found for "
-                f"{self.year}-{self.week}"
+                f"No replacement scores found for {self.year}-{self.week}"
             )
-
 
         for position in self.replacement_scores:
             replacement_score = weekly_replacement_scores.get(

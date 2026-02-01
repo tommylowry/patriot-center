@@ -36,6 +36,7 @@ def get_ffwar_from_cache(
 
     return 0.0
 
+
 def get_team(player: str) -> str | None:
     """Lookup team for a player.
 

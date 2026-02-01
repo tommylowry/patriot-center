@@ -158,7 +158,6 @@ class ManagerMetadataManager:
         self._transaction_processor.clear_session_state()
         self._matchup_processor.clear_session_state()
 
-
     # ========== PRIVATE HELPER METHODS ==========
     def _set_defaults_if_missing(self) -> None:
         """Initialize cache structure for manager/year/week if not present.
@@ -236,14 +235,12 @@ class ManagerMetadataManager:
                     )
 
             # Update FAAB image urls cache if needed
-            if (
-                self._needs_faab_image_urls_update
-                and not image_urls_cache.get("$1 FAAB")
+            if self._needs_faab_image_urls_update and not image_urls_cache.get(
+                "$1 FAAB"
             ):
                 for i in range(1, 101):
                     update_image_urls_cache(f"${i} FAAB")
                 self._needs_faab_image_urls_update = False
-
 
             if self._use_faab:
                 initialize_faab_template(manager, self._year, self._week)
@@ -262,19 +259,14 @@ class ManagerMetadataManager:
             )
 
         user_payload = fetch_sleeper_data(f"user/{username}")
-        if (
-            not isinstance(user_payload, dict)
-            or "user_id" not in user_payload
-        ):
+        if not isinstance(user_payload, dict) or "user_id" not in user_payload:
             raise ValueError(  # User data fetch failed
                 f"Failed to fetch 'user_id' for manager "
                 f"{manager} with username {username}."
             )
 
         # Add user_id to manager cache
-        manager_cache[manager]["summary"]["user_id"] = (
-            user_payload["user_id"]
-        )
+        manager_cache[manager]["summary"]["user_id"] = user_payload["user_id"]
 
         update_image_urls_cache(manager)
 
@@ -294,9 +286,7 @@ class ManagerMetadataManager:
         self._use_faab = waiver_type == 2
 
         # Set playoff_week_start
-        self._playoff_week_start = league_settings.get(
-            "playoff_week_start"
-        )
+        self._playoff_week_start = league_settings.get("playoff_week_start")
 
     def _clear_weekly_metadata(self) -> None:
         """Clear weekly session state after processing.

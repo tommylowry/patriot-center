@@ -227,9 +227,7 @@ def get_head_to_head_overall_from_cache(
                 )
                 continue
 
-            matchup_card = get_matchup_card(
-                manager1, manager2, y, w
-            )
+            matchup_card = get_matchup_card(manager1, manager2, y, w)
 
             if list_all_matchups:
                 matchup_history.append(matchup_card)
@@ -355,4 +353,3 @@ def _evaluate_matchup(
         biggest_blowout = deepcopy(matchup_card)
 
     return last_win, biggest_blowout
-

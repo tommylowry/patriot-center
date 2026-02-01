@@ -203,7 +203,6 @@ class MatchupProcessor:
             if self._year not in manager_overall_data["playoff_appearances"]:
                 manager_overall_data["playoff_appearances"].append(self._year)
 
-
     def _add_matchup_details_to_cache(
         self, matchup_data: dict[str, Any]
     ) -> None:
@@ -335,9 +334,7 @@ class MatchupProcessor:
             if opponent_manager not in summary["points_against"]["opponents"]:
                 summary["points_against"]["opponents"][opponent_manager] = 0.0
 
-            opp_points_against = (
-                summary["points_against"]["opponents"]
-            )
+            opp_points_against = summary["points_against"]["opponents"]
             opp_points_against[opponent_manager] += points_against
             opp_points_against[opponent_manager] = float(
                 Decimal(opp_points_against[opponent_manager]).quantize(
@@ -379,5 +376,5 @@ class MatchupProcessor:
                 int(self._week),
                 manager,
                 player_id,
-                player_score
+                player_score,
             )

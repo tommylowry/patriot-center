@@ -56,9 +56,7 @@ def get_transaction_details_from_cache(
     # ---- Trades Summary ----
     # Most Aquired Players
     trade_players_acquired = trans_cache["trades"]["trade_players_acquired"]
-    most_acquired_players = extract_dict_data(
-        deepcopy(trade_players_acquired)
-    )
+    most_acquired_players = extract_dict_data(deepcopy(trade_players_acquired))
     for player in most_acquired_players:
         player_details = deepcopy(trade_players_acquired[player["name"]])
         player["from"] = extract_dict_data(
@@ -69,9 +67,7 @@ def get_transaction_details_from_cache(
 
     # Most Sent Players
     trade_players_sent = trans_cache["trades"]["trade_players_sent"]
-    most_sent_players = extract_dict_data(
-        deepcopy(trade_players_sent)
-    )
+    most_sent_players = extract_dict_data(deepcopy(trade_players_sent))
     for player in most_sent_players:
         player_details = deepcopy(trade_players_sent.get(player["name"], {}))
         player["to"] = extract_dict_data(
@@ -159,8 +155,7 @@ def get_trade_history_between_two_managers(
         weeks = deepcopy(manager_cache[manager1]["years"][y]["weeks"])
         for w in weeks:
             weekly_trade_transaction_ids = deepcopy(
-                weeks
-                .get(w, {})
+                weeks.get(w, {})
                 .get("transactions", {})
                 .get("trades", {})
                 .get("transaction_ids", [])
@@ -201,13 +196,10 @@ def get_manager_transaction_history_from_cache(
     manager_cache = CACHE_MANAGER.get_manager_cache()
 
     if manager_name not in manager_cache:
-        raise ValueError(
-            f"Manager {manager_name} not found in cache."
-        )
+        raise ValueError(f"Manager {manager_name} not found in cache.")
     if year and year not in manager_cache[manager_name]["years"]:
         raise ValueError(
-            f"Year {year} not found for manager "
-            f"{manager_name} in cache."
+            f"Year {year} not found for manager {manager_name} in cache."
         )
 
     years_to_get = list(manager_cache[manager_name].get("years", {}).keys())

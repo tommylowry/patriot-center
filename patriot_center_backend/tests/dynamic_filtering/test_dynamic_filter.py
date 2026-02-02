@@ -4,7 +4,9 @@ from unittest.mock import patch
 
 import pytest
 
-from patriot_center_backend.dynamic_filtering.dynamic_filter import filter
+from patriot_center_backend.dynamic_filtering.dynamic_filter import (
+    get_dynamic_filter_options_from_cache,
+)
 
 
 class TestFilter:
@@ -77,7 +79,7 @@ class TestFilter:
 
     def test_calls_validate_with_all_args(self):
         """Calls validate_dynamic_filter_args with all arguments."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024", week="1", manager="Tommy", position="QB", player=None
         )
 
@@ -87,7 +89,7 @@ class TestFilter:
 
     def test_calls_find_valid_years_with_filters(self):
         """Calls find_valid_years with manager, position, and player."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024", week="1", manager="Tommy", position="QB", player=None
         )
 
@@ -95,7 +97,7 @@ class TestFilter:
 
     def test_calls_find_valid_weeks_with_filters(self):
         """Calls find_valid_weeks with year, manager, position, and player."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024", week="1", manager="Tommy", position="QB", player=None
         )
 
@@ -105,7 +107,7 @@ class TestFilter:
 
     def test_calls_find_valid_managers_with_filters(self):
         """Calls find_valid_managers with year, week, position, and player."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024", week="1", manager="Tommy", position="QB", player=None
         )
 
@@ -113,7 +115,7 @@ class TestFilter:
 
     def test_calls_find_valid_positions_when_no_player(self):
         """Calls find_valid_positions when player is not provided."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024", week="1", manager="Tommy", position=None, player=None
         )
 
@@ -121,7 +123,7 @@ class TestFilter:
 
     def test_skips_find_valid_positions_when_player_provided(self):
         """Does not call find_valid_positions when player is provided."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024",
             week="1",
             manager="Tommy",
@@ -133,7 +135,7 @@ class TestFilter:
 
     def test_locks_position_when_player_provided(self):
         """Uses player's position from cache when player is provided."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024",
             week=None,
             manager=None,
@@ -148,7 +150,7 @@ class TestFilter:
 
     def test_calls_format_output_with_results(self):
         """Calls format_output with results from find functions."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024", week="1", manager="Tommy", position="QB", player=None
         )
 
@@ -158,7 +160,7 @@ class TestFilter:
 
     def test_with_no_filters(self):
         """Works correctly when no filters are provided."""
-        filter()
+        get_dynamic_filter_options_from_cache(None, None, None, None, None)
 
         self.mock_validate.assert_called_once_with(None, None, None, None, None)
         self.mock_find_years.assert_called_once_with(None, None, None)
@@ -168,7 +170,7 @@ class TestFilter:
 
     def test_player_position_used_in_all_find_calls(self):
         """When player is provided, their position is used in all find calls."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year="2024",
             week="1",
             manager="Tommy",
@@ -190,7 +192,7 @@ class TestFilter:
 
     def test_format_output_receives_player_position_set(self):
         """When player provided, format_output receives set with position."""
-        filter(
+        get_dynamic_filter_options_from_cache(
             year=None,
             week=None,
             manager=None,

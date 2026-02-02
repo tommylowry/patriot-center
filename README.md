@@ -1,10 +1,12 @@
 # Patriot Center
 
-A fantasy football analytics platform that calculates and displays advanced metrics for a private fantasy football league across multiple seasons (2019-2025).
+> **Note:** This platform is currently built around a specific Sleeper league but is intended to support any Sleeper league in the future.
+
+A fantasy football analytics platform that calculates and displays advanced metrics for a fantasy football league across multiple seasons.
 
 ## Overview
 
-Patriot Center tracks 16 managers in a multi-year fantasy football league and provides detailed insights into player performance using **ffWAR (Fantasy Football Wins Above Replacement)** - a custom metric that measures how many wins a player adds compared to a "replacement level" player.
+Patriot Center tracks 18 managers in a multi-year fantasy football league and provides detailed insights into player performance using **ffWAR (Fantasy Football Wins Above Replacement)** - a custom metric that measures how many wins a player adds compared to a "replacement level" player.
 
 ## Key Features
 
@@ -232,7 +234,9 @@ Replacement-level scores use 3-year rolling averages by position.
 
 ## League Information
 
-- **Managers**: 16
+> **Note:** The platform is currently built around a specific league but is intended to support any Sleeper league in the future.
+
+- **Managers**: 18
 - **Seasons**: 2019-2025
 - **Regular Season Weeks**: 1-17
 - **Positions**: QB, RB, WR, TE, K, DEF

@@ -60,9 +60,7 @@ class TestGetStarters:
         """Test getting starters filtered by week."""
         get_starters(week=5)
 
-        self.mock_get_starters_from_cache.assert_called_once_with(
-            None, None, 5
-        )
+        self.mock_get_starters_from_cache.assert_called_once_with(None, None, 5)
 
     def test_get_starters_with_manager(self):
         """Test getting starters filtered by manager."""

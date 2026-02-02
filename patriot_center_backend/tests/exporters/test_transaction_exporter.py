@@ -37,12 +37,8 @@ class TestGetManagerTransactions:
             patch(
                 f"{MODULE_PATH}.get_transaction_from_ids_cache"
             ) as mock_get_transaction_from_ids,
-            patch(
-                f"{MODULE_PATH}.get_image_url"
-            ) as mock_get_image_url,
-            patch(
-                f"{MODULE_PATH}.get_trade_card"
-            ) as mock_get_trade_card,
+            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
+            patch(f"{MODULE_PATH}.get_trade_card") as mock_get_trade_card,
         ):
             self.mock_manager_transactions = {
                 "Tommy": {
@@ -62,9 +58,7 @@ class TestGetManagerTransactions:
                 self.mock_manager_transactions
             )
 
-            self.mock_get_transaction_from_ids = (
-                mock_get_transaction_from_ids
-            )
+            self.mock_get_transaction_from_ids = mock_get_transaction_from_ids
             self.mock_get_transaction_from_ids.return_value = {}
 
             self.mock_get_image_url = mock_get_image_url
@@ -108,9 +102,7 @@ class TestGetManagerTransactions:
         self.mock_manager_transactions["Tommy"]["years"]["2023"]["weeks"] = {
             "1": {
                 "transactions": {
-                    "trades": {
-                        "transaction_ids": ["trade1", "trade2"]
-                    }
+                    "trades": {"transaction_ids": ["trade1", "trade2"]}
                 }
             }
         }
@@ -123,19 +115,13 @@ class TestGetManagerTransactions:
         result = get_manager_transactions("Tommy", year="2023")
 
         assert result["total_count"] == 2
-        trades = [
-            t for t in result["transactions"] if t["type"] == "trade"
-        ]
+        trades = [t for t in result["transactions"] if t["type"] == "trade"]
         assert len(trades) == 2
 
     def test_get_transactions_with_adds(self):
         """Test get_manager_transactions processes add transactions."""
         self.mock_manager_transactions["Tommy"]["years"]["2023"]["weeks"] = {
-            "1": {
-                "transactions": {
-                    "adds": {"transaction_ids": ["add1"]}
-                }
-            }
+            "1": {"transactions": {"adds": {"transaction_ids": ["add1"]}}}
         }
         self.mock_get_transaction_from_ids.return_value = {
             "types": ["add"],
@@ -156,11 +142,7 @@ class TestGetManagerTransactions:
     def test_get_transactions_with_drops(self):
         """Test get_manager_transactions processes drop transactions."""
         self.mock_manager_transactions["Tommy"]["years"]["2023"]["weeks"] = {
-            "1": {
-                "transactions": {
-                    "drops": {"transaction_ids": ["drop1"]}
-                }
-            }
+            "1": {"transactions": {"drops": {"transaction_ids": ["drop1"]}}}
         }
         self.mock_get_transaction_from_ids.return_value = {
             "types": ["drop"],
@@ -180,11 +162,7 @@ class TestGetManagerTransactions:
     def test_get_transactions_with_add_and_drop(self):
         """Test get_manager_transactions processes add_and_drop."""
         self.mock_manager_transactions["Tommy"]["years"]["2023"]["weeks"] = {
-            "1": {
-                "transactions": {
-                    "adds": {"transaction_ids": ["add_drop1"]}
-                }
-            }
+            "1": {"transactions": {"adds": {"transaction_ids": ["add_drop1"]}}}
         }
         self.mock_get_transaction_from_ids.return_value = {
             "types": ["add", "drop"],
@@ -206,8 +184,7 @@ class TestGetManagerTransactions:
         result = get_manager_transactions("Tommy", year="2023")
 
         add_drops = [
-            t for t in result["transactions"]
-            if t["type"] == "add_and_drop"
+            t for t in result["transactions"] if t["type"] == "add_and_drop"
         ]
         assert len(add_drops) == 1
         assert add_drops[0]["added_player"]["name"] == "Jayden Daniels"
@@ -217,20 +194,8 @@ class TestGetManagerTransactions:
     def test_get_transactions_multiple_weeks(self):
         """Test transactions spanning multiple weeks."""
         self.mock_manager_transactions["Tommy"]["years"]["2023"]["weeks"] = {
-            "1": {
-                "transactions": {
-                    "trades": {
-                        "transaction_ids": ["trade1"]
-                    }
-                }
-            },
-            "2": {
-                "transactions": {
-                    "trades": {
-                        "transaction_ids": ["trade2"]
-                    }
-                }
-            },
+            "1": {"transactions": {"trades": {"transaction_ids": ["trade1"]}}},
+            "2": {"transactions": {"trades": {"transaction_ids": ["trade2"]}}},
         }
         self.mock_get_trade_card.return_value = {
             "year": "2023",

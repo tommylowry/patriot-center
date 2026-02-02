@@ -37,9 +37,7 @@ class TestGetManagerSummary:
             patch(
                 f"{MODULE_PATH}.validate_manager_query"
             ) as mock_validate_manager_query,
-            patch(
-                f"{MODULE_PATH}.get_image_url"
-            ) as mock_get_image_url,
+            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(
                 f"{MODULE_PATH}.get_manager_years_active_from_cache"
             ) as mock_get_manager_years_active,
@@ -67,9 +65,7 @@ class TestGetManagerSummary:
             )
 
             self.mock_get_manager_years_active = mock_get_manager_years_active
-            self.mock_get_manager_years_active.return_value = [
-                "2023", "2022"
-            ]
+            self.mock_get_manager_years_active.return_value = ["2023", "2022"]
 
             self.mock_get_matchup = mock_get_matchup
             self.mock_get_matchup.return_value = {}
@@ -101,9 +97,7 @@ class TestGetManagerSummary:
         result = get_manager_summary("Tommy")
 
         assert result["manager_name"] == "Tommy"
-        assert result["image_url"] == (
-            "https://sleepercdn.com/avatars/abc123"
-        )
+        assert result["image_url"] == "https://sleepercdn.com/avatars/abc123"
         assert result["years_active"] == ["2023", "2022"]
         assert result["matchup_data"] == {"overall": {"wins": 10}}
         assert result["transactions"] == {"trades": {"total": 5}}
@@ -129,18 +123,10 @@ class TestGetManagerSummary:
         assert result["manager_name"] == "Tommy"
 
         # Verify year was passed to underlying functions
-        self.mock_get_matchup.assert_called_once_with(
-            "Tommy", year="2023"
-        )
-        self.mock_get_trans.assert_called_once_with(
-            "Tommy", year="2023"
-        )
-        self.mock_get_ranking.assert_called_once_with(
-            "Tommy", year="2023"
-        )
-        self.mock_get_h2h.assert_called_once_with(
-            "Tommy", year="2023"
-        )
+        self.mock_get_matchup.assert_called_once_with("Tommy", year="2023")
+        self.mock_get_trans.assert_called_once_with("Tommy", year="2023")
+        self.mock_get_ranking.assert_called_once_with("Tommy", year="2023")
+        self.mock_get_h2h.assert_called_once_with("Tommy", year="2023")
 
     def test_get_manager_summary_validates_manager(self):
         """Test that validate_manager_query is called."""
@@ -154,9 +140,7 @@ class TestGetManagerSummary:
         """Test that validate_manager_query is called without year."""
         get_manager_summary("Tommy")
 
-        self.mock_validate_manager_query.assert_called_once_with(
-            "Tommy", None
-        )
+        self.mock_validate_manager_query.assert_called_once_with("Tommy", None)
 
     def test_get_manager_summary_validation_error_propagates(self):
         """Test that ValueError from validation propagates."""

@@ -35,18 +35,10 @@ class TestGetAggregatedPlayers:
             patch(
                 f"{MODULE_PATH}.get_starters_from_cache"
             ) as mock_get_starters,
-            patch(
-                f"{MODULE_PATH}.get_ffwar_from_cache"
-            ) as mock_get_ffwar,
-            patch(
-                f"{MODULE_PATH}.get_image_url"
-            ) as mock_get_image_url,
-            patch(
-                f"{MODULE_PATH}.slugify"
-            ) as mock_slugify,
-            patch(
-                f"{MODULE_PATH}.get_team"
-            ) as mock_get_team,
+            patch(f"{MODULE_PATH}.get_ffwar_from_cache") as mock_get_ffwar,
+            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
+            patch(f"{MODULE_PATH}.slugify") as mock_slugify,
+            patch(f"{MODULE_PATH}.get_team") as mock_get_team,
         ):
             self.mock_get_starters = mock_get_starters
             self.mock_get_starters.return_value = {}
@@ -206,18 +198,10 @@ class TestGetAggregatedManagers:
             patch(
                 f"{MODULE_PATH}.get_starters_from_cache"
             ) as mock_get_starters,
-            patch(
-                f"{MODULE_PATH}.get_ffwar_from_cache"
-            ) as mock_get_ffwar,
-            patch(
-                f"{MODULE_PATH}.get_image_url"
-            ) as mock_get_image_url,
-            patch(
-                f"{MODULE_PATH}.slugify"
-            ) as mock_slugify,
-            patch(
-                f"{MODULE_PATH}.get_team"
-            ) as mock_get_team,
+            patch(f"{MODULE_PATH}.get_ffwar_from_cache") as mock_get_ffwar,
+            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
+            patch(f"{MODULE_PATH}.slugify") as mock_slugify,
+            patch(f"{MODULE_PATH}.get_team") as mock_get_team,
         ):
             self.mock_get_starters = mock_get_starters
             self.mock_get_starters.return_value = {}
@@ -316,13 +300,9 @@ class TestGetAggregatedManagers:
 
     def test_get_aggregated_managers_passes_filters(self):
         """Test that season and week filters are passed through."""
-        get_aggregated_managers(
-            player="Jayden Daniels", season=2023, week=5
-        )
+        get_aggregated_managers(player="Jayden Daniels", season=2023, week=5)
 
-        self.mock_get_starters.assert_called_once_with(
-            season=2023, week=5
-        )
+        self.mock_get_starters.assert_called_once_with(season=2023, week=5)
 
 
 class TestGetPlayerManagerAggregation:
@@ -347,18 +327,10 @@ class TestGetPlayerManagerAggregation:
             patch(
                 f"{MODULE_PATH}.get_starters_from_cache"
             ) as mock_get_starters,
-            patch(
-                f"{MODULE_PATH}.get_ffwar_from_cache"
-            ) as mock_get_ffwar,
-            patch(
-                f"{MODULE_PATH}.get_image_url"
-            ) as mock_get_image_url,
-            patch(
-                f"{MODULE_PATH}.slugify"
-            ) as mock_slugify,
-            patch(
-                f"{MODULE_PATH}.get_team"
-            ) as mock_get_team,
+            patch(f"{MODULE_PATH}.get_ffwar_from_cache") as mock_get_ffwar,
+            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
+            patch(f"{MODULE_PATH}.slugify") as mock_slugify,
+            patch(f"{MODULE_PATH}.get_team") as mock_get_team,
         ):
             self.mock_get_starters = mock_get_starters
             self.mock_get_starters.return_value = {
@@ -394,18 +366,14 @@ class TestGetPlayerManagerAggregation:
 
     def test_get_player_manager_aggregation_found(self):
         """Test getting aggregation for existing player-manager pair."""
-        result = get_player_manager_aggregation(
-            "Jayden Daniels", "Tommy"
-        )
+        result = get_player_manager_aggregation("Jayden Daniels", "Tommy")
 
         assert "Tommy" in result
         assert result["Tommy"]["total_points"] == 25.5
 
     def test_get_player_manager_aggregation_not_found(self):
         """Test getting aggregation for non-existent pair."""
-        result = get_player_manager_aggregation(
-            "Jayden Daniels", "Benz"
-        )
+        result = get_player_manager_aggregation("Jayden Daniels", "Benz")
 
         assert result == {}
 
@@ -440,8 +408,6 @@ class TestGetPlayerManagerAggregation:
             }
         }
 
-        result = get_player_manager_aggregation(
-            "Jayden Daniels", "Tommy"
-        )
+        result = get_player_manager_aggregation("Jayden Daniels", "Tommy")
 
         assert result == {}

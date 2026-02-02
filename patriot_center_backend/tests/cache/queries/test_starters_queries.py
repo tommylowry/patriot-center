@@ -88,9 +88,7 @@ class TestGetStartersFromCache:
         ):
             self.mock_starters_cache = mock_starters_cache
 
-            mock_get_starters_cache.return_value = (
-                self.mock_starters_cache
-            )
+            mock_get_starters_cache.return_value = self.mock_starters_cache
 
             yield
 
@@ -138,9 +136,7 @@ class TestGetStartersFromCache:
 
     def test_filter_by_manager_and_season_and_week(self):
         """Test filtering by manager, season, and week."""
-        result = get_starters_from_cache(
-            manager="Tommy", season=2023, week=1
-        )
+        result = get_starters_from_cache(manager="Tommy", season=2023, week=1)
 
         assert "2023" in result
         assert "1" in result["2023"]

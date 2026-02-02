@@ -33,9 +33,7 @@ class TestGetHeadToHead:
             patch(
                 f"{MODULE_PATH}.validate_manager_query"
             ) as mock_validate_manager_query,
-            patch(
-                f"{MODULE_PATH}.get_image_url"
-            ) as mock_get_image_url,
+            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(
                 f"{MODULE_PATH}.get_head_to_head_overall_from_cache"
             ) as mock_get_h2h,
@@ -70,15 +68,13 @@ class TestGetHeadToHead:
 
         result = get_head_to_head("Tommy", "Benz")
 
-        assert result["manager_1"] == (
-            "https://sleepercdn.com/avatars/abc123"
-        )
-        assert result["manager_2"] == (
-            "https://sleepercdn.com/avatars/abc123"
-        )
+        assert result["manager_1"] == ("https://sleepercdn.com/avatars/abc123")
+        assert result["manager_2"] == ("https://sleepercdn.com/avatars/abc123")
         assert result["overall"] == {"wins": 7, "losses": 3}
         assert result["matchup_history"] == {
-            "manager_1_wins": 7, "manager_2_wins": 3, "ties": 1
+            "manager_1_wins": 7,
+            "manager_2_wins": 3,
+            "ties": 1,
         }
         assert result["trades_between"]["total"] == 0
         assert result["trades_between"]["trade_history"] == []

@@ -37,20 +37,24 @@ class TestGetManagersList:
             None
         """
         with (
-            patch(f"{MODULE_PATH}.get_list_of_managers_from_cache")
-            as mock_get_list_of_managers,
-            patch(f"{MODULE_PATH}.get_manager_summary_from_cache")
-            as mock_get_manager_summary,
-            patch(f"{MODULE_PATH}.get_ranking_details_from_cache")
-            as mock_get_ranking_details,
-            patch(f"{MODULE_PATH}.get_image_url")
-            as mock_get_image_url,
-            patch(f"{MODULE_PATH}.get_manager_years_active_from_cache")
-            as mock_get_manager_years_active,
+            patch(
+                f"{MODULE_PATH}.get_list_of_managers_from_cache"
+            ) as mock_get_list_of_managers,
+            patch(
+                f"{MODULE_PATH}.get_manager_summary_from_cache"
+            ) as mock_get_manager_summary,
+            patch(
+                f"{MODULE_PATH}.get_ranking_details_from_cache"
+            ) as mock_get_ranking_details,
+            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
+            patch(
+                f"{MODULE_PATH}.get_manager_years_active_from_cache"
+            ) as mock_get_manager_years_active,
         ):
             self.mock_get_list_of_managers = mock_get_list_of_managers
             self.mock_get_list_of_managers.return_value = [
-                "Manager 1", "Manager 2"
+                "Manager 1",
+                "Manager 2",
             ]
 
             self.mock_get_manager_summary = mock_get_manager_summary
@@ -130,7 +134,6 @@ class TestGetManagersList:
         assert "managers" in result
         # Should get all managers from cache keys
         assert len(result["managers"]) == 2
-
 
     def test_managers_list_sorted_by_weight(self):
         """Test that managers are sorted by weight (best first)."""

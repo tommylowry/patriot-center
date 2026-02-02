@@ -59,11 +59,13 @@ class TestFlattenDict:
 
     def test_mixed_nested_and_flat(self):
         """Test dict with mix of nested and flat values."""
-        result = flatten_dict({
-            "a": 1,
-            "b": {"c": 2, "d": 3},
-            "e": 4,
-        })
+        result = flatten_dict(
+            {
+                "a": 1,
+                "b": {"c": 2, "d": 3},
+                "e": 4,
+            }
+        )
 
         assert result == {"a": 1, "b.c": 2, "b.d": 3, "e": 4}
 

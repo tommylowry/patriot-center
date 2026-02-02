@@ -46,8 +46,11 @@ class TestGetDynamicFilterOptions:
     def test_get_dynamic_filter_options_no_filters(self):
         """Test getting filter options with no selections."""
         result = get_dynamic_filter_options(
-            year=None, week=None, manager=None,
-            position=None, player=None,
+            year=None,
+            week=None,
+            manager=None,
+            position=None,
+            player=None,
         )
 
         assert "years" in result
@@ -65,8 +68,11 @@ class TestGetDynamicFilterOptions:
         }
 
         result = get_dynamic_filter_options(
-            year="2023", week=None, manager=None,
-            position=None, player=None,
+            year="2023",
+            week=None,
+            manager=None,
+            position=None,
+            player=None,
         )
 
         assert result["years"] == ["2023"]
@@ -75,8 +81,11 @@ class TestGetDynamicFilterOptions:
     def test_get_dynamic_filter_options_with_all_params(self):
         """Test getting filter options with all params."""
         get_dynamic_filter_options(
-            year="2023", week="1", manager="Tommy",
-            position="QB", player="Jayden Daniels",
+            year="2023",
+            week="1",
+            manager="Tommy",
+            position="QB",
+            player="Jayden Daniels",
         )
 
         self.mock_get_dynamic_filter_options.assert_called_once_with(
@@ -91,6 +100,9 @@ class TestGetDynamicFilterOptions:
 
         with pytest.raises(ValueError, match="Invalid year"):
             get_dynamic_filter_options(
-                year="9999", week=None, manager=None,
-                position=None, player=None,
+                year="9999",
+                week=None,
+                manager=None,
+                position=None,
+                player=None,
             )

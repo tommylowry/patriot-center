@@ -130,7 +130,7 @@ def _validate_position(
     if not position:
         return
 
-    if position not in list(Position):
+    if position not in Position:
         raise ValueError(f"Invalid position: {position}")
 
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()

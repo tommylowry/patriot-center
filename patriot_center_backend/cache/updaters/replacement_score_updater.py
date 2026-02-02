@@ -22,7 +22,7 @@ from patriot_center_backend.cache.updaters._base import (
 from patriot_center_backend.calculations.rolling_average_calculator import (
     calculate_three_year_averages,
 )
-from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.constants import LEAGUE_IDS, Position
 from patriot_center_backend.players.player_data import (
     get_player_info_and_score,
 )
@@ -188,14 +188,7 @@ class ReplacementScoreCacheBuilder:
         final_week_scores: dict[str, Any] = {"byes": 32}
         first = True
         for yr in self.yearly_score_settings:
-            week_scores = {
-                "QB": [],  # List of QB scores for the week
-                "RB": [],  # List of RB scores for the week
-                "WR": [],  # List of WR scores for the week
-                "TE": [],  # List of TE scores for the week
-                "K": [],  # List of K scores for the week
-                "DEF": [],  # List of DEF scores for the week
-            }
+            week_scores = {pos: [] for pos in Position}
 
             for player_id in self.week_data:
                 if "TEAM_" in player_id:
@@ -224,12 +217,12 @@ class ReplacementScoreCacheBuilder:
 
             # Determine the replacement scores for each position
             final_week_scores[f"{yr}_scoring"] = {
-                "QB": week_scores["QB"][12],  # 13th QB
-                "RB": week_scores["RB"][30],  # 31st RB
-                "WR": week_scores["WR"][30],  # 31st WR
-                "TE": week_scores["TE"][12],  # 13th TE
-                "K": week_scores["K"][12],  # 13th K
-                "DEF": week_scores["DEF"][12],  # 13th DEF
+                Position.QB: week_scores[Position.QB][12],  # 13th QB
+                Position.RB: week_scores[Position.RB][30],  # 31st RB
+                Position.WR: week_scores[Position.WR][30],  # 31st WR
+                Position.TE: week_scores[Position.TE][12],  # 13th TE
+                Position.K: week_scores[Position.K][12],  # 13th K
+                Position.DEF: week_scores[Position.DEF][12],  # 13th DEF
             }
 
         return final_week_scores

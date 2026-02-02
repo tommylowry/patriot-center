@@ -1,6 +1,7 @@
 """Cache query helpers for manager metadata."""
 
 import logging
+from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
@@ -22,7 +23,9 @@ def get_manager_summary_from_cache(manager_name: str) -> dict[str, Any]:
         ValueError: If the manager is not found in the cache.
     """
     manager_cache = CACHE_MANAGER.get_manager_cache()
-    return_summary = manager_cache.get(manager_name, {}).get("summary", {})
+    return_summary = deepcopy(
+        manager_cache.get(manager_name, {}).get("summary", {})
+    )
 
     if not return_summary:
         raise ValueError(f"Manager {manager_name} not found in cache.")
@@ -62,8 +65,9 @@ def get_manager_years_active_from_cache(manager_name: str) -> list[str]:
     Raises:
         ValueError: If the manager is not found in the cache.
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_data = deepcopy(main_manager_cache[manager_name])
 
-    if "years" not in manager_cache[manager_name]:
+    if "years" not in manager_data:
         raise ValueError(f"Manager {manager_name} not found in cache.")
-    return list(manager_cache[manager_name]["years"].keys())
+    return list(manager_data["years"].keys())

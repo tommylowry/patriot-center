@@ -26,6 +26,9 @@ class CacheSynchronizer:
 
     def synchronize(self) -> None:
         """Check for name changes between the old and new player IDs."""
+        if not self.old_ids:
+            return
+
         for id in self.new_ids:
             # New player entirely being added, continue
             if id not in self.new_ids:

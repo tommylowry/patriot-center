@@ -25,25 +25,25 @@ jobs:
           script: |
             set -e  # Exit immediately if any command fails
 
-            echo "📦 Pulling latest code from GitHub..."
+            echo "Pulling latest code from GitHub..."
             cd /opt/patriot-center
 
             # Discard any local changes in backend (e.g., updated cache files)
-            echo "🔄 Discarding local changes in backend..."
+            echo "Discarding local changes in backend..."
             git fetch origin main
             git reset --hard origin/main
 
-            echo "✅ Repository updated to latest main"
+            echo "Repository updated to latest main"
 
-            echo "📚 Installing dependencies..."
+            echo "Installing dependencies..."
             source venv/bin/activate
             pip install -r requirements.txt
 
-            echo "🔄 Restarting backend service..."
+            echo "Restarting backend service..."
             sudo systemctl restart patriot-center
 
-            echo "✅ Verifying service is running..."
+            echo "Verifying service is running..."
             sudo systemctl is-active --quiet patriot-center || exit 1
             sudo systemctl status patriot-center --no-pager
 
-            echo "✅ Deployment complete!"
+            echo "Deployment complete!"

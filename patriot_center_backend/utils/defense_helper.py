@@ -1,6 +1,6 @@
 """Helper functions for generating synthetic team defense entries."""
 
-from patriot_center_backend.constants import TEAM_DEFENSE_NAMES
+from patriot_center_backend.constants import TEAM_DEFENSE_NAMES, Position
 
 
 def get_defense_entries() -> dict[str, dict[str, str]]:
@@ -16,14 +16,14 @@ def get_defense_entries() -> dict[str, dict[str, str]]:
     for defense in TEAM_DEFENSE_NAMES:
         output[defense] = {
             "active": True,
-            "position": "DEF",
+            "position": Position.DEF,
             "full_name": TEAM_DEFENSE_NAMES[defense]["full_name"],
             "first_name": TEAM_DEFENSE_NAMES[defense]["first_name"],
             "last_name": TEAM_DEFENSE_NAMES[defense]["last_name"],
             "sport": "nfl",
             "team": defense,
             "player_id": defense,
-            "fantasy_positions": ["DEF"],
+            "fantasy_positions": [Position.DEF],
             "injury_status": None,
         }
 

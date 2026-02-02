@@ -1,5 +1,6 @@
 """Configuration constants for the Patriot Center backend."""
 
+from enum import StrEnum
 
 # Map year to the league ids (Sleeper league IDs for each fantasy season)
 LEAGUE_IDS = {
@@ -37,6 +38,15 @@ USERNAME_TO_REAL_NAME = {
 # Invert the MANAGER_USERNAME_TO_REAL_NAME mapping
 NAME_TO_MANAGER_USERNAME = {v: k for k, v in USERNAME_TO_REAL_NAME.items()}
 
+# Enum for player positions
+class Position(StrEnum):
+    """Enum for player positions."""
+    QB = "QB"
+    RB = "RB"
+    WR = "WR"
+    TE = "TE"
+    K = "K"
+    DEF = "DEF"
 
 # Mapping of team IDs to their full names
 TEAM_DEFENSE_NAMES = {

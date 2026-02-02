@@ -55,7 +55,7 @@ def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
     # Most Trades in a Year
     most_trades_in_year = {"count": 0, "year": ""}
 
-    for year in manager_cache[manager].get("years", {}):
+    for year in list(manager_cache[manager].get("years", {})):
         mgr_yr_sum = manager_cache[manager]["years"][year]["summary"]
 
         num_trades = mgr_yr_sum["transactions"]["trades"]["total"]
@@ -72,7 +72,7 @@ def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
         "faab" in mgr_summary.get("transactions", {})
         and mgr_summary["transactions"]["faab"]
     ):
-        for year in manager_cache[manager].get("years", {}):
+        for year in list(manager_cache[manager].get("years", {})):
             weeks = deepcopy(manager_cache[manager]["years"][year]["weeks"])
             for week in weeks:
                 weekly_trans = weeks.get(week, {}).get("transactions", {})
@@ -121,7 +121,7 @@ def get_manager_score_awards_from_cache(
     biggest_blowout_win = {}
     biggest_blowout_loss = {}
 
-    for year in manager_cache[manager].get("years", {}):
+    for year in list(manager_cache[manager].get("years", {})):
         weeks = deepcopy(manager_cache[manager]["years"][year]["weeks"])
         for week in weeks:
             matchup_data = deepcopy(weeks.get(week, {}).get("matchup_data", {}))

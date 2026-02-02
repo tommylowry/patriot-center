@@ -158,7 +158,7 @@ def get_overall_data_details_from_cache(
 
     # ----- Other Overall Data -----
     placements = []
-    for year in cached_overall_data.get("placement", {}):
+    for year in list(cached_overall_data.get("placement", {})):
         week = "17"
         if int(year) <= 2020:
             week = "16"

@@ -3,42 +3,29 @@
 import logging
 from typing import Any
 
-import requests
-
 from patriot_center_backend.constants import (
     LEAGUE_IDS,
     USERNAME_TO_REAL_NAME,
 )
 from patriot_center_backend.utils.helpers import get_user_id
-
-SLEEPER_API_URL = "https://api.sleeper.app/v1"
+from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_sleeper_data(endpoint: str) -> dict[str, Any] | list[Any]:
-    """Fetches data from the Sleeper API given an endpoint.
+def fetch_sleeper_data(
+    endpoint: str, bypass_cache: bool = False
+) -> dict[str, Any] | list[Any]:
+    """Fetch data from the Sleeper API.
 
     Args:
         endpoint: The endpoint to call on the Sleeper API.
+        bypass_cache: Whether to bypass the cache.
 
     Returns:
         The parsed JSON response from the Sleeper API.
-
-    Raises:
-        ConnectionAbortedError: If the request to the Sleeper API fails.
     """
-    url = f"{SLEEPER_API_URL}/{endpoint}"
-
-    response = requests.get(url)
-
-    if response.status_code != 200:
-        raise ConnectionAbortedError(
-            f"Failed to fetch data from Sleeper API with call to {url}"
-        )
-
-    # Return parsed JSON
-    return response.json()
+    return SLEEPER_CLIENT.fetch(endpoint, bypass_cache=bypass_cache)
 
 
 def get_roster_id(
@@ -203,11 +190,14 @@ def get_league_info(year: int) -> dict[str, Any]:
     return league_info
 
 
-def fetch_user_metadata(manager_name: str) -> dict[str, Any]:
+def fetch_user_metadata(
+    manager_name: str, bypass_cache: bool = False
+) -> dict[str, Any]:
     """Retrieves the user metadata for a given manager name.
 
     Args:
         manager_name: The name of the manager.
+        bypass_cache: Whether to bypass the cache.
 
     Returns:
         The user metadata.
@@ -220,7 +210,9 @@ def fetch_user_metadata(manager_name: str) -> dict[str, Any]:
         raise ValueError(f"No user ID found for manager {manager_name}.")
 
     # Query Sleeper API for user metadata
-    sleeper_response = fetch_sleeper_data(f"user/{user_id}")
+    sleeper_response = fetch_sleeper_data(
+        f"user/{user_id}", bypass_cache=bypass_cache
+    )
     if not sleeper_response or not isinstance(sleeper_response, dict):
         raise ValueError(
             f"Sleeper API call failed to retrieve user info "

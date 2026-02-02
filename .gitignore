@@ -23,3 +23,5 @@ htmlcov/
 
 # Ignore git credentials and SSH keys (security)
 *.key
+
+.ruff_cache/

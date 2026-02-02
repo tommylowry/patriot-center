@@ -15,6 +15,7 @@ from patriot_center_backend.cache.updaters.player_ids_updater import (
 from patriot_center_backend.cache.updaters.weekly_data_updater import (
     update_weekly_data_caches,
 )
+from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
 
 logger = logging.getLogger(__name__)
 
@@ -28,6 +29,8 @@ logging.basicConfig(
 def update_all_caches() -> None:
     """Update all caches in dependency order."""
     start = time.perf_counter()
+
+    SLEEPER_CLIENT.clear_cache()
 
     update_player_ids_cache()  # Step 1
     update_weekly_data_caches()  # Step 2

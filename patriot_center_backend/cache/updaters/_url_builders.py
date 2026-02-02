@@ -19,7 +19,7 @@ def build_manager_url(manager_name: str) -> dict[str, str]:
     Returns:
         A dictionary containing the name, image URL, and timestamp.
     """
-    user_metadata = fetch_user_metadata(manager_name)
+    user_metadata = fetch_user_metadata(manager_name, bypass_cache=True)
 
     avatar = user_metadata.get("avatar")
     if not avatar:

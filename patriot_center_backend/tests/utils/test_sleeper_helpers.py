@@ -26,16 +26,14 @@ class TestFetchSleeperData:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `requests.get`: `mock_requests_get`
+        - `SLEEPER_CLIENT.fetch`: `mock_sleeper_client_fetch`
 
         Yields:
             None
         """
-        with patch(f"{MODULE_PATH}.requests.get") as mock_requests_get:
-            self.mock_requests_get = mock_requests_get
-            self.mock_response = mock_requests_get.return_value
-            self.mock_response.status_code = 200
-            self.mock_response.json.return_value = {"data": "value"}
+        with patch(f"{MODULE_PATH}.SLEEPER_CLIENT") as mock_sleeper_client:
+            self.mock_sleeper_client = mock_sleeper_client
+            self.mock_sleeper_client.fetch.return_value = {"data": "value"}
 
             yield
 
@@ -45,22 +43,21 @@ class TestFetchSleeperData:
 
         assert result == {"data": "value"}
 
-    def test_calls_correct_url(self):
-        """Test calls the correct Sleeper API URL."""
+    def test_delegates_to_sleeper_client(self):
+        """Test delegates to SLEEPER_CLIENT.fetch with correct args."""
         fetch_sleeper_data("league/123/rosters")
 
-        self.mock_requests_get.assert_called_once_with(
-            "https://api.sleeper.app/v1/league/123/rosters"
+        self.mock_sleeper_client.fetch.assert_called_once_with(
+            "league/123/rosters", bypass_cache=False
         )
 
-    def test_raises_on_non_200_status(self):
-        """Test raises ConnectionAbortedError on non-200 status."""
-        self.mock_response.status_code = 500
+    def test_passes_bypass_cache_to_client(self):
+        """Test passes bypass_cache parameter to SLEEPER_CLIENT."""
+        fetch_sleeper_data("league/123", bypass_cache=True)
 
-        with pytest.raises(ConnectionAbortedError) as exc_info:
-            fetch_sleeper_data("league/123")
-
-        assert "Failed to fetch data" in str(exc_info.value)
+        self.mock_sleeper_client.fetch.assert_called_once_with(
+            "league/123", bypass_cache=True
+        )
 
 
 class TestGetRosterId:
@@ -390,6 +387,22 @@ class TestFetchUserMetadata:
             fetch_user_metadata("Tommy")
 
         assert "failed to retrieve user info" in str(exc_info.value)
+
+    def test_passes_bypass_cache_to_fetch(self):
+        """Test passes bypass_cache parameter to fetch_sleeper_data."""
+        fetch_user_metadata("Tommy", bypass_cache=True)
+
+        self.mock_fetch_sleeper_data.assert_called_once_with(
+            "user/123456789", bypass_cache=True
+        )
+
+    def test_default_bypass_cache_is_false(self):
+        """Test default bypass_cache is False."""
+        fetch_user_metadata("Tommy")
+
+        self.mock_fetch_sleeper_data.assert_called_once_with(
+            "user/123456789", bypass_cache=False
+        )
 
 
 class TestFetchAllPlayerIds:

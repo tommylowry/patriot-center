@@ -39,6 +39,7 @@ def get_ranking_details_from_cache(
         or dict with 'values' and 'ranks' if manager_summary_usage=True
     """
     manager_cache = CACHE_MANAGER.get_manager_cache()
+
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
     returning_dictionary = {}
@@ -76,13 +77,12 @@ def get_ranking_details_from_cache(
     returning_dictionary["worst"] = len(managers)
 
     for m in managers:
-        summary_section = deepcopy(manager_cache.get(m, {}).get("summary", {}))
+        manager_data = deepcopy(manager_cache.get(m, {}))
+
+        summary_section = manager_data.get("summary", {})
         if year:
-            summary_section = deepcopy(
-                manager_cache.get(m, {})
-                .get("years", {})
-                .get(year, {})
-                .get("summary", {})
+            summary_section = (
+                manager_data.get("years", {}).get(year, {}).get("summary", {})
             )
 
         ovr_matchup_data = summary_section["matchup_data"]["overall"]
@@ -119,7 +119,7 @@ def get_ranking_details_from_cache(
 
         num_trades = summary_section["transactions"]["trades"]["total"]
         num_playoffs = len(
-            manager_cache.get(m, {})
+            manager_data
             .get("summary", {})
             .get("overall_data", {})
             .get("playoff_appearances", [])

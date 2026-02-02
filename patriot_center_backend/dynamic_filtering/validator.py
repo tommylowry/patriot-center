@@ -6,6 +6,7 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import (
     LEAGUE_IDS,
     NAME_TO_MANAGER_USERNAME,
+    Position,
 )
 
 
@@ -129,7 +130,7 @@ def _validate_position(
     if not position:
         return
 
-    if position not in ["QB", "RB", "WR", "TE", "K", "DEF"]:
+    if position not in Position:
         raise ValueError(f"Invalid position: {position}")
 
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()

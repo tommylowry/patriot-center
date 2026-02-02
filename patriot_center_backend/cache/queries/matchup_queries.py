@@ -30,24 +30,25 @@ def get_matchup_details_from_cache(
     Returns:
         Dictionary with matchup stats for overall, regular_season, and playoffs
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_data = deepcopy(main_manager_cache[manager])
 
     matchup_data = {"overall": {}, "regular_season": {}, "playoffs": {}}
 
     # Get all-time stats by default, or single season stats if year specified
     cached_matchup_data = deepcopy(
-        manager_cache[manager]["summary"]["matchup_data"]
+        manager_data["summary"]["matchup_data"]
     )
     if year:
         cached_matchup_data = deepcopy(
-            manager_cache[manager]["years"][year]["summary"]["matchup_data"]
+            manager_data["years"][year]["summary"]["matchup_data"]
         )
 
     season_states = ["overall", "regular_season"]
 
     # Check if manager has playoff appearances
     playoff_appearances = (
-        manager_cache.get(manager, {})
+        manager_data
         .get("summary", {})
         .get("overall_data", {})
         .get("playoff_appearances", [])
@@ -144,11 +145,10 @@ def get_overall_data_details_from_cache(
     Returns:
         Dictionary with playoff_appearances count and list of placements by year
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_data = deepcopy(main_manager_cache[manager])
 
-    cached_overall_data = deepcopy(
-        manager_cache[manager]["summary"]["overall_data"]
-    )
+    cached_overall_data = manager_data["summary"]["overall_data"]
 
     overall_data: dict[str, int | list[Any]] = {
         "playoff_appearances": len(
@@ -158,13 +158,13 @@ def get_overall_data_details_from_cache(
 
     # ----- Other Overall Data -----
     placements = []
-    for year in cached_overall_data.get("placement", {}):
+    for year in list(cached_overall_data.get("placement", {})):
         week = "17"
         if int(year) <= 2020:
             week = "16"
 
         opponent = (
-            manager_cache.get(manager, {})
+            manager_data
             .get("years", {})
             .get(year, {})
             .get("weeks", {})

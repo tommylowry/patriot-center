@@ -66,4 +66,4 @@ def get_manager_years_active_from_cache(manager_name: str) -> list[str]:
 
     if "years" not in manager_cache[manager_name]:
         raise ValueError(f"Manager {manager_name} not found in cache.")
-    return manager_cache[manager_name]["years"].keys()
+    return list(manager_cache[manager_name]["years"].keys())

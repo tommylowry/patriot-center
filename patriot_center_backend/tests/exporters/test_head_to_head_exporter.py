@@ -44,9 +44,10 @@ class TestGetHeadToHead:
             self.mock_validate_manager_query = mock_validate_manager_query
 
             self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = (
-                "https://sleepercdn.com/avatars/abc123"
-            )
+            self.mock_get_image_url.return_value = {
+                "name": "Tommy",
+                "image_url": "https://sleepercdn.com/avatars/abc123",
+            }
 
             self.mock_get_h2h = mock_get_h2h
             self.mock_get_h2h.return_value = {}
@@ -68,8 +69,14 @@ class TestGetHeadToHead:
 
         result = get_head_to_head("Tommy", "Benz")
 
-        assert result["manager_1"] == ("https://sleepercdn.com/avatars/abc123")
-        assert result["manager_2"] == ("https://sleepercdn.com/avatars/abc123")
+        assert result["manager_1"] == {
+            "name": "Tommy",
+            "image_url": "https://sleepercdn.com/avatars/abc123",
+        }
+        assert result["manager_2"] == {
+            "name": "Tommy",
+            "image_url": "https://sleepercdn.com/avatars/abc123",
+        }
         assert result["overall"] == {"wins": 7, "losses": 3}
         assert result["matchup_history"] == {
             "manager_1_wins": 7,
@@ -103,6 +110,15 @@ class TestGetHeadToHead:
 
         assert result["trades_between"]["total"] == 2
         assert len(result["trades_between"]["trade_history"]) == 2
+
+    def test_get_image_url_called_with_dictionary_true(self):
+        """Test that get_image_url is called with dictionary=True."""
+        get_head_to_head("Tommy", "Benz")
+
+        calls = self.mock_get_image_url.call_args_list
+        assert len(calls) == 2
+        assert calls[0] == (("Tommy",), {"dictionary": True})
+        assert calls[1] == (("Benz",), {"dictionary": True})
 
     def test_get_h2h_validates_both_managers(self):
         """Test that validate_manager_query is called for both managers."""

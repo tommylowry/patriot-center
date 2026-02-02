@@ -599,66 +599,6 @@
         "first_name": "$100",
         "last_name": "FAAB"
     },
-    "Tommy": {
-        "name": "Tommy",
-        "image_url": "https://sleepercdn.com/avatars/c48db1ffd7921c649bde8d06617f13e8",
-        "timestamp": 1769795453.6409512
-    },
-    "Owen": {
-        "name": "Owen",
-        "image_url": "https://sleepercdn.com/avatars/b7b4d28d01b23cf36659fd1effdb124f",
-        "timestamp": 1769795453.812187
-    },
-    "Anthony": {
-        "name": "Anthony",
-        "image_url": "https://sleepercdn.com/avatars/af3ebf02e0aa504ad43483f93cd64296",
-        "timestamp": 1769795454.014546
-    },
-    "Jay": {
-        "name": "Jay",
-        "image_url": "https://sleepercdn.com/avatars/6e24e802c9b3f2ccd8ccd3c533ecf2f2",
-        "timestamp": 1769795454.21336
-    },
-    "Mitch": {
-        "name": "Mitch",
-        "image_url": "https://sleepercdn.com/avatars/8042428b761036f38538d127a69a60d2",
-        "timestamp": 1769795454.399306
-    },
-    "Soup": {
-        "name": "Soup",
-        "image_url": "https://sleepercdn.com/avatars/44242586d45a08bba681c671f65feb01",
-        "timestamp": 1769795454.601938
-    },
-    "Luke": {
-        "name": "Luke",
-        "image_url": "https://sleepercdn.com/avatars/a9ae0ec7ef916c24dac9ddd92d0fd709",
-        "timestamp": 1769795454.7899141
-    },
-    "Billiam": {
-        "name": "Billiam",
-        "image_url": "https://sleepercdn.com/avatars/9bff988fc0f8637a429d9c503a7e0273",
-        "timestamp": 1769795454.965211
-    },
-    "Jack": {
-        "name": "Jack",
-        "image_url": "https://sleepercdn.com/avatars/48d1b6b36587173e7ef8de991bf24e85",
-        "timestamp": 1769795455.154388
-    },
-    "Ty": {
-        "name": "Ty",
-        "image_url": "https://sleepercdn.com/avatars/de0141ca8ff0cde9df2ca290e20340a2",
-        "timestamp": 1769795455.328641
-    },
-    "Christian": {
-        "name": "Christian",
-        "image_url": "https://sleepercdn.com/avatars/d9257a5651cd2f331c816802a6b6b15a",
-        "timestamp": 1769795455.5257971
-    },
-    "Parker": {
-        "name": "Parker",
-        "image_url": "https://sleepercdn.com/avatars/15d7cf259bc30eab8f6120f45f652fb6",
-        "timestamp": 1769795455.7292218
-    },
     "Owen's 2019 Round 1 Draft Pick": {
         "image_url": "https://upload.wikimedia.org/wikipedia/en/thumb/8/80/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png",
         "name": "Owen's 2019 Round 1 Draft Pick",
@@ -4289,11 +4229,6 @@
         "first_name": "Indianapolis",
         "last_name": "Colts"
     },
-    "Cody": {
-        "name": "Cody",
-        "image_url": "https://sleepercdn.com/avatars/c2e4ada767ce0722390d38a6980554bc",
-        "timestamp": 1769795458.706636
-    },
     "Adam Vinatieri": {
         "name": "Adam Vinatieri",
         "image_url": "https://sleepercdn.com/content/nfl/players/120.jpg",
@@ -5121,11 +5056,6 @@
         "image_url": "https://sleepercdn.com/content/nfl/players/1287.jpg",
         "first_name": "Kai",
         "last_name": "Forbath"
-    },
-    "Dheeraj": {
-        "name": "Dheeraj",
-        "image_url": "https://sleepercdn.com/avatars/4d3fac9b19aed275a1a3c9e056eacede",
-        "timestamp": 1769795474.761548
     },
     "A.J. Dillon": {
         "name": "A.J. Dillon",
@@ -6350,16 +6280,6 @@
         "image_url": "https://sleepercdn.com/content/nfl/players/6421.jpg",
         "first_name": "Jalen",
         "last_name": "Guyton"
-    },
-    "Davey": {
-        "name": "Davey",
-        "image_url": "https://sleepercdn.com/avatars/6253dac7242e88151714e13d499f5222",
-        "timestamp": 1769795494.463611
-    },
-    "Benz": {
-        "name": "Benz",
-        "image_url": "https://sleepercdn.com/avatars/af82d0b1a4ca427a4be8a9014d538108",
-        "timestamp": 1769795494.872986
     },
     "Tim Tebow": {
         "name": "Tim Tebow",
@@ -8160,16 +8080,6 @@
         "image_url": "https://sleepercdn.com/content/nfl/players/3357.jpg",
         "first_name": "Brandon",
         "last_name": "Allen"
-    },
-    "Sach": {
-        "name": "Sach",
-        "image_url": "https://sleepercdn.com/avatars/d2b7c04e00d0608b2fa577946de54f0b",
-        "timestamp": 1769795535.385927
-    },
-    "Sam": {
-        "name": "Sam",
-        "image_url": "https://sleepercdn.com/avatars/4f1ecfdb4579d940914aea54b33f124f",
-        "timestamp": 1769795535.6537752
     },
     "Bijan Robinson": {
         "name": "Bijan Robinson",

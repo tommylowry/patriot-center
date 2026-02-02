@@ -43,8 +43,8 @@ def get_head_to_head(
     )
 
     return_dict = {
-        "manager_1": get_image_url(manager1),
-        "manager_2": get_image_url(manager2),
+        "manager_1": get_image_url(manager1, dictionary=True),
+        "manager_2": get_image_url(manager2, dictionary=True),
         "overall": get_head_to_head_overall_from_cache(
             manager1, manager2, year=year
         ),

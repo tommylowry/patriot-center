@@ -8,7 +8,7 @@
     ],
     "python.testing.pytestEnabled": true,
     "python.testing.unittestEnabled": false,
-    "python.defaultInterpreterPath": "/Library/Frameworks/Python.framework/Versions/3.10/bin/python3",
+    "python.defaultInterpreterPath": "/Library/Frameworks/Python.framework/Versions/3.14/bin/python3",
     "python.terminal.activateEnvironment": true,
     "terminal.integrated.env.osx": {
         "PYTHONPATH": "${workspaceFolder}"

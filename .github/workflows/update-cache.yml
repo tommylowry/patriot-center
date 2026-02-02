@@ -21,7 +21,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: '3.14'
 
       - name: Install dependencies
         run: |
@@ -60,18 +60,18 @@ jobs:
           key: ${{ secrets.ORACLE_SSH_KEY }}
           script: |
             set -e
-            echo "📦 Pulling latest cache updates from GitHub..."
+            echo "Pulling latest cache updates from GitHub..."
             cd /opt/patriot-center
             git fetch origin main
             git reset --hard origin/main
-            echo "✅ Cache files updated"
+            echo "Cache files updated"
 
-            echo "🔄 Restarting backend service..."
+            echo "Restarting backend service..."
             sudo systemctl restart patriot-center
 
-            echo "✅ Verifying service is running..."
+            echo "Verifying service is running..."
             sudo systemctl is-active --quiet patriot-center || exit 1
             sudo systemctl status patriot-center --no-pager
 
-            echo "✅ Deployment complete!"
+            echo "Deployment complete!"
 

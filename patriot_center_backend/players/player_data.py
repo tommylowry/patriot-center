@@ -7,6 +7,7 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.calculations.player_score_calculator import (
     calculate_player_score,
 )
+from patriot_center_backend.constants import Position
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 def get_player_info_and_score(
     player_id: str,
     week_data: dict[str, dict[str, Any]],
-    final_week_scores: dict[str, Any],
+    final_week_scores: dict[Position, Any],
     scoring_settings: dict[str, Any],
 ) -> tuple[bool, dict[str, Any], float, str]:
     """Get player information and score for a given player ID.
@@ -67,7 +68,7 @@ def get_player_info_and_score(
         player_data = week_data[player_id]
 
     # If the player ID is numeric and the position is DEF, skip processing
-    if player_id.isnumeric() and player_info["position"] == "DEF":
+    if player_id.isnumeric() and player_info["position"] == Position.DEF:
         return False, {}, 0.0, player_id
 
     if player_info["position"] in list(final_week_scores.keys()):

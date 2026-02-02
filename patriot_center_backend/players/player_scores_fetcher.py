@@ -3,7 +3,7 @@
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.constants import LEAGUE_IDS, Position
 from patriot_center_backend.players.player_data import get_player_info_and_score
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
@@ -13,7 +13,7 @@ from patriot_center_backend.utils.sleeper_helpers import (
 
 def fetch_all_player_scores(
     year: int, week: int
-) -> dict[str, dict[str, dict[str, float | str]]]:
+) -> dict[Position, dict[str, dict[str, float | str]]]:
     """Fetch and calculate fantasy scores for all NFL players in a given week.
 
     This function retrieves raw stats from the Sleeper API for the specified
@@ -69,7 +69,7 @@ def fetch_all_player_scores(
     if not scoring_settings:
         raise Exception(f"Could not find scoring settings for season {year}")
 
-    final_week_scores = {pos: {} for pos in positions}
+    final_week_scores = {Position(pos): {} for pos in positions}
 
     for player_id in week_data:
         # "TEAM_*" is stats for an entire team, so skip it

@@ -1,5 +1,7 @@
 """Functions for formatting the output of the dynamic filter."""
 
+from patriot_center_backend.constants import Position
+
 
 def format_output(
     years: set[str], weeks: set[str], managers: set[str], positions: set[str]
@@ -41,9 +43,9 @@ def format_weeks(weeks: set[str]) -> list[str]:
 
 
 def format_positions(positions: set[str]) -> list[str]:
-    """Formats a set of position strings into a sorted list of strings.
+    """Formats a set of positions into a sorted list of strings.
 
-    The positions are sorted in the order of (QB, RB, WR, TE, K, DEF).
+    Sorts by the order of the Position enum
 
     Args:
         positions: set of position strings
@@ -51,7 +53,7 @@ def format_positions(positions: set[str]) -> list[str]:
     Returns:
         A sorted list of position strings
     """
-    desired_order = ["QB", "RB", "WR", "TE", "K", "DEF"]
+    desired_order = [p.value for p in Position]
     positions_list = sorted(
         [p for p in positions if p in desired_order],
         key=lambda x: desired_order.index(x),

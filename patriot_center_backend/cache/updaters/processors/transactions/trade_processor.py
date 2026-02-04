@@ -5,15 +5,13 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.player_cache_updater import (
-    update_players_cache,
-)
 from patriot_center_backend.cache.updaters.processors.transactions.faab_processor import (  # noqa: E501
     add_faab_details_to_cache,
 )
 from patriot_center_backend.cache.updaters.processors.transactions.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
 )
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.utils.formatters import draft_pick_decipher
 
 logger = logging.getLogger(__name__)
@@ -49,8 +47,7 @@ def process_trade_transaction(
         commish_action: Whether this is a commissioner-forced trade
         use_faab: Whether FAAB is used
     """
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-
+    players = []
     for roster_id in transaction.get("roster_ids", []):
         manager = roster_ids.get(roster_id)
 
@@ -69,28 +66,25 @@ def process_trade_transaction(
         acquired = {}
         if transaction.get("adds"):
             for player_id in transaction.get("adds", {}):
-                if transaction["adds"][player_id] == roster_id:
-                    player_name = player_ids_cache.get(player_id, {}).get(
-                        "full_name", "unknown_player"
-                    )
+                player = Player(player_id)
+                players.append(player)
 
-                    acquired[player_name] = roster_ids.get(
-                        transaction["drops"][player_id], "unknown_manager"
+                if transaction["adds"][str(player)] == roster_id:
+                    acquired[str(player)] = roster_ids.get(
+                        transaction["drops"][str(player)],
+                        "unknown_manager",
                     )
-                    update_players_cache(player_id)
 
         sent = {}
         if transaction.get("drops"):
             for player_id in transaction.get("drops", {}):
-                if transaction["drops"][player_id] == roster_id:
-                    player_name = player_ids_cache.get(player_id, {}).get(
-                        "full_name", "unknown_player"
-                    )
+                player = Player(player_id)
+                players.append(player)
 
-                    sent[player_name] = roster_ids.get(
-                        transaction["adds"][player_id], "unknown_manager"
+                if transaction["drops"][player_id] == roster_id:
+                    sent[str(player)] = roster_ids.get(
+                        transaction["adds"][str(player)], "unknown_manager"
                     )
-                    update_players_cache(player_id)
 
         if transaction.get("draft_picks"):
             for draft_pick in transaction.get("draft_picks", []):
@@ -142,6 +136,7 @@ def process_trade_transaction(
             year,
             week,
             manager,
+            players,
             trade_partners,
             acquired,
             sent,
@@ -189,6 +184,7 @@ def add_trade_details_to_cache(
     year: str,
     week: str,
     manager: str,
+    players: list[Player],
     trade_partners: list[str],
     acquired: dict[str, str],
     sent: dict[str, str],
@@ -208,6 +204,7 @@ def add_trade_details_to_cache(
         year: year of the trade
         week: week of the trade
         manager: Manager name
+        players: List of players involved in trade
         trade_partners: List of other managers involved in trade
         acquired: Dict of {player/asset: previous_owner} acquired by manager
         sent: Dict of {player/asset: new_owner} sent by manager
@@ -237,6 +234,7 @@ def add_trade_details_to_cache(
     transaction_info = {
         "type": "trade",
         "manager": manager,
+        "players": players,
         "trade_partners": trade_partners,
         "acquired": acquired,
         "sent": sent,
@@ -270,26 +268,47 @@ def add_trade_details_to_cache(
 
         # Process players acquired
         acquired_summary = summary["trade_players_acquired"]
-        for player in acquired:
-            if player not in acquired_summary:
-                acquired_summary[player] = deepcopy(player_initial_dict)
+        for player_id in acquired:
+            player = Player(player_id)
+
+            if str(player) not in acquired_summary:
+                acquired_summary[str(player)] = deepcopy(player_initial_dict)
             if (
-                acquired[player]
-                not in (acquired_summary[player]["trade_partners"])
+                acquired[str(player)]
+                not in (acquired_summary[str(player)]["trade_partners"])
             ):
-                acquired_summary[player]["trade_partners"][acquired[player]] = 0
-            acquired_summary[player]["trade_partners"][acquired[player]] += 1
-            acquired_summary[player]["total"] += 1
+                (
+                    acquired_summary[str(player)]["trade_partners"][
+                        acquired[str(player)]
+                    ]
+                ) = 0
+            (
+                acquired_summary[str(player)]["trade_partners"][
+                    acquired[str(player)]
+                ]
+            ) += 1
+            acquired_summary[str(player)]["total"] += 1
 
         # Process players sent
         sent_summary = summary["trade_players_sent"]
-        for player in sent:
-            if player not in sent_summary:
-                sent_summary[player] = deepcopy(player_initial_dict)
-            if sent[player] not in sent_summary[player]["trade_partners"]:
-                sent_summary[player]["trade_partners"][sent[player]] = 0
-            sent_summary[player]["trade_partners"][sent[player]] += 1
-            sent_summary[player]["total"] += 1
+        for player_id in sent:
+            player = Player(player_id)
+
+            if str(player) not in sent_summary:
+                sent_summary[str(player)] = deepcopy(player_initial_dict)
+            if (
+                sent[str(player)]
+                not in sent_summary[str(player)]["trade_partners"]
+            ):
+                (
+                    sent_summary[str(player)]["trade_partners"][
+                        sent[str(player)]
+                    ]
+                ) = 0
+            (
+                sent_summary[str(player)]["trade_partners"][sent[str(player)]]
+            ) += 1
+            sent_summary[str(player)]["total"] += 1
 
     # Finally, add transaction ID to weekly summary to avoid double counting
     weekly_summary["transaction_ids"].append(transaction_id)
@@ -365,11 +384,14 @@ def revert_trade_transaction(
                 if d["trades"]["trade_partners"][other_manager] == 0:
                     del d["trades"]["trade_partners"][other_manager]
 
-            for player in list(transaction["trade_details"].keys()):
-                new_mgr = transaction["trade_details"][player].get(
+            for player_id in list(transaction["trade_details"].keys()):
+                # Get player if not FAAB or draft pick
+                player = Player(player_id)
+
+                new_mgr = transaction["trade_details"][str(player)].get(
                     "new_manager"
                 )
-                old_mgr = transaction["trade_details"][player].get(
+                old_mgr = transaction["trade_details"][str(player)].get(
                     "old_manager"
                 )
 
@@ -389,27 +411,47 @@ def revert_trade_transaction(
                 trade_partner = new_mgr if manager == old_mgr else old_mgr
 
                 # Remove from acquired
-                plyrs_acq[player]["total"] -= 1
-                if plyrs_acq[player]["total"] == 0:
-                    del plyrs_acq[player]
+                plyrs_acq[str(player)]["total"] -= 1
+                if plyrs_acq[str(player)]["total"] == 0:
+                    del plyrs_acq[str(player)]
                 else:
-                    plyrs_acq[player]["trade_partners"][trade_partner] -= 1
-                    if plyrs_acq[player]["trade_partners"][trade_partner] == 0:
-                        del plyrs_acq[player]["trade_partners"][trade_partner]
+                    plyrs_acq[str(player)]["trade_partners"][trade_partner] -= 1
+                    if (
+                        plyrs_acq[str(player)]["trade_partners"][trade_partner]
+                        == 0
+                    ):
+                        del (
+                            plyrs_acq
+                            [str(player)]
+                            ["trade_partners"]
+                            [trade_partner]
+                        )
 
                 # Remove from sent
-                plyrs_sent[player]["total"] -= 1
-                if plyrs_sent[player]["total"] == 0:
-                    del plyrs_sent[player]
+                plyrs_sent[str(player)]["total"] -= 1
+                if plyrs_sent[str(player)]["total"] == 0:
+                    del plyrs_sent[str(player)]
                 else:
-                    plyrs_sent[player]["trade_partners"][trade_partner] -= 1
-                    if plyrs_sent[player]["trade_partners"][trade_partner] == 0:
-                        del plyrs_sent[player]["trade_partners"][trade_partner]
+                    (
+                        plyrs_sent[str(player)]["trade_partners"][trade_partner]
+                    ) -= 1
+                    if (
+                        plyrs_sent[str(player)]["trade_partners"][trade_partner]
+                    ) == 0:
+                        del (
+                            plyrs_sent
+                            [str(player)]
+                            ["trade_partners"]
+                            [trade_partner]
+                        )
+
+                if player.is_real_player:
+                    player.remove_transaction(year, week, transaction_id1)
 
                 # faab is here, the logic is to turn it
                 # into an int, so player = "$1 FAAB" -> faab = 1
-                if "FAAB" in player:
-                    faab = player.split(" ")[0]
+                if "FAAB" in player_id:
+                    faab = player_id.split(" ")[0]
                     faab = faab.replace("$", "")
                     faab = int(faab)
 

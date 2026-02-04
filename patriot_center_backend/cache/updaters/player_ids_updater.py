@@ -9,7 +9,6 @@ import logging
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.cache_synchronizer import CacheSynchronizer
 from patriot_center_backend.cache.updaters._helpers import (
     get_full_name,
     get_image_url,
@@ -58,10 +57,6 @@ def update_player_ids_cache() -> None:
 
     # Fill in historic team defense entries (OAK, SD, etc.)
     _fill_missing_defenses(new_player_ids_cache)
-
-    # If players change their names they need to be
-    # changed throughout every cache file.
-    CacheSynchronizer(new_player_ids_cache).synchronize()
 
     # Save the new player IDs cache
     CACHE_MANAGER.save_player_ids_cache(new_player_ids_cache)

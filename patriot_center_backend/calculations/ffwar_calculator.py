@@ -1,7 +1,6 @@
 """Calculates the ffWAR for a given week."""
 
 from statistics import mean
-from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.domains.player import Player
@@ -43,7 +42,7 @@ class FFWARCalculator:
         self.player_data = {}
 
     # ==================== Public Methods ====================
-    def calculate_ffwar(self) -> dict[str, dict[str, Any]]:
+    def calculate_ffwar(self) -> None:
         """Calculates the ffWAR for a given week.
 
         Returns:
@@ -59,11 +58,6 @@ class FFWARCalculator:
 
         # Simulate all possible manager pairings
         self._simulate_matchups()
-
-        # Sort the player_data by ffWAR descending, then by name ascending
-        self._sort_player_data()
-
-        return self.player_data
 
     def _simulate_matchups(self) -> None:
         """Simulates all possible manager pairings with the given player data.
@@ -325,17 +319,3 @@ class FFWARCalculator:
             The adjusted score.
         """
         return score / 3 if self.season_state == "playoffs" else score
-
-    def _sort_player_data(self):
-        """Sorts the player data.
-
-        - Sorts player data by ffWAR in descending order.
-        - Then by name in ascending order.
-        """
-        sorted_player_data = dict(
-            sorted(
-                self.player_data.items(),
-                key=lambda item: (-item[1]["ffWAR"], item[1]["name"]),
-            )
-        )
-        self.player_data = sorted_player_data

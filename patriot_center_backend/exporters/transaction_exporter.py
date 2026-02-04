@@ -7,6 +7,7 @@ from patriot_center_backend.cache.queries.transaction_queries import (
     get_manager_transaction_history_from_cache,
     get_transaction_from_ids_cache,
 )
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.utils.formatters import get_trade_card
 from patriot_center_backend.utils.image_url_handler import get_image_url
 
@@ -65,13 +66,19 @@ def get_manager_transactions(
                 #   transaction for "add" filter
                 add_details = get_transaction_from_ids_cache(transaction_id)
                 if add_details and "add" in add_details.get("types", []):
+
+                    player = Player(add_details["add"])
+
                     transaction_item = {
                         "year": yr,
                         "week": week,
                         "type": "add",
-                        "player": get_image_url(
-                            add_details.get("add", ""), dictionary=True
-                        ),
+                        "player": {
+                            "name": player.full_name,
+                            "first_name": player.first_name,
+                            "last_name": player.last_name,
+                            "image_url": player.image_url,
+                        },
                         # None if FAAB not implemented yet
                         #   or a free agent add
                         "faab_spent": add_details.get("faab_spent", None),
@@ -87,13 +94,19 @@ def get_manager_transactions(
             for transaction_id in transaction_ids:
                 drop_details = get_transaction_from_ids_cache(transaction_id)
                 if drop_details and "drop" in drop_details.get("types", []):
+
+                    player = Player(add_details["add"])
+
                     transaction_item = {
                         "year": yr,
                         "week": week,
                         "type": "drop",
-                        "player": get_image_url(
-                            drop_details.get("drop", ""), dictionary=True
-                        ),
+                        "player": {
+                            "name": player.full_name,
+                            "first_name": player.first_name,
+                            "last_name": player.last_name,
+                            "image_url": player.image_url,
+                        },
                         "transaction_id": transaction_id,
                     }
                     filtered_transactions.append(deepcopy(transaction_item))
@@ -111,16 +124,26 @@ def get_manager_transactions(
                 # Only include add_and_drop transactions
                 types = add_drop_details.get("types", [])
                 if types and "add" in types and "drop" in types:
+
+                    added_player = Player(add_drop_details["add"])
+                    dropped_player = Player(add_drop_details["drop"])
+
                     transaction_item = {
                         "year": yr,
                         "week": week,
                         "type": "add_and_drop",
-                        "added_player": get_image_url(
-                            add_drop_details.get("add", ""), dictionary=True
-                        ),
-                        "dropped_player": get_image_url(
-                            add_drop_details.get("drop", ""), dictionary=True
-                        ),
+                        "added_player": {
+                            "name": added_player.full_name,
+                            "first_name": added_player.first_name,
+                            "last_name": added_player.last_name,
+                            "image_url": added_player.image_url,
+                        },
+                        "dropped_player": {
+                            "name": dropped_player.full_name,
+                            "first_name": dropped_player.first_name,
+                            "last_name": dropped_player.last_name,
+                            "image_url": dropped_player.image_url,
+                        },
                         # None if FAAB not implemented yet
                         # or a free agent add/drop
                         "faab_spent": (

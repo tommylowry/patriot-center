@@ -26,12 +26,10 @@ from patriot_center_backend.cache.updaters._progress_tracker import (
 from patriot_center_backend.cache.updaters.manager_data_updater import (
     ManagerMetadataManager,
 )
-from patriot_center_backend.cache.updaters.player_data_updater import (
-    update_player_data_cache,
-)
 from patriot_center_backend.cache.updaters.replacement_score_updater import (
     ReplacementScoreCacheBuilder,
 )
+from patriot_center_backend.calculations.ffwar_calculator import FFWARCalculator
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.playoffs.playoff_tracker import (
     assign_placements_retroactively,
@@ -70,7 +68,8 @@ def update_weekly_data_caches() -> None:
                 assign_placements_retroactively(year)
 
             manager_updater.cache_week_data(str(year), str(week))
-            update_player_data_cache(year, week)
+            FFWARCalculator(year, week)
+
 
             log_cache_update(year, week, "Weekly Data")
 

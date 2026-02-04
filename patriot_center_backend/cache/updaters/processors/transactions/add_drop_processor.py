@@ -5,15 +5,13 @@ from copy import deepcopy
 from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.player_cache_updater import (
-    update_players_cache,
-)
 from patriot_center_backend.cache.updaters.processors.transactions.faab_processor import (  # noqa: E501
     add_faab_details_to_cache,
 )
 from patriot_center_backend.cache.updaters.processors.transactions.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
 )
+from patriot_center_backend.domains.player import Player
 
 logger = logging.getLogger(__name__)
 
@@ -54,24 +52,16 @@ def process_add_or_drop_transaction(
         logger.warning("Waiver transaction with no adds or drops:", transaction)
         return
 
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-
     if adds:
         for player_id in adds:
-            roster_id = adds[player_id]
+            player = Player(player_id)
+
+            roster_id = adds[str(player)]
 
             manager = roster_ids.get(roster_id, "unknown_manager")
             if manager == "unknown_manager":
                 logger.warning(
                     f"Could not find manager for roster ID: {roster_id}"
-                )
-
-            player_name = player_ids_cache.get(player_id, {}).get(
-                "full_name", "unknown_player"
-            )
-            if player_name == "unknown_player":
-                logger.warning(
-                    f"Could not find player for player ID: {player_id}"
                 )
 
             transaction_id = transaction.get(
@@ -93,13 +83,12 @@ def process_add_or_drop_transaction(
                 weekly_transaction_ids,
                 "add",
                 manager,
-                player_name,
+                player,
                 transaction_id,
                 commish_action,
                 use_faab,
                 waiver_bid=waiver_bid,
             )
-            update_players_cache(player_id)
 
             # add FAAB details to the cache
             if use_faab and transaction.get("settings"):
@@ -112,27 +101,21 @@ def process_add_or_drop_transaction(
                     week,
                     transaction_type,
                     manager,
-                    player_name,
+                    str(player),
                     faab_amount,
                     transaction_id,
                 )
 
     if drops:
         for player_id in drops:
-            roster_id = drops[player_id]
+            player = Player(player_id)
+
+            roster_id = drops[str(player)]
 
             manager = roster_ids.get(roster_id, "unknown_manager")
             if manager == "unknown_manager":
                 logger.warning(
                     f"Could not find manager for roster ID: {roster_id}"
-                )
-
-            player_name = player_ids_cache.get(player_id, {}).get(
-                "full_name", "unknown_player"
-            )
-            if player_name == "unknown_player":
-                logger.warning(
-                    f"Could not find player for player ID: {player_id}"
                 )
 
             transaction_id = transaction.get("transaction_id", "")
@@ -144,12 +127,11 @@ def process_add_or_drop_transaction(
                 weekly_transaction_ids,
                 "drop",
                 manager,
-                player_name,
+                player,
                 transaction_id,
                 commish_action,
                 use_faab,
             )
-            update_players_cache(player_id)
 
 
 def add_add_or_drop_details_to_cache(
@@ -158,7 +140,7 @@ def add_add_or_drop_details_to_cache(
     weekly_transaction_ids: list[str],
     free_agent_type: str,
     manager: str,
-    player_name: str,
+    player: Player,
     transaction_id: str,
     commish_action: bool,
     use_faab: bool,
@@ -176,7 +158,7 @@ def add_add_or_drop_details_to_cache(
         weekly_transaction_ids: List of transaction ids for the week
         free_agent_type: Either "add" or "drop"
         manager: Manager name
-        player_name: Full player name
+        player: Player object
         transaction_id: Unique transaction ID
         commish_action: Whether this is a commissioner action
         use_faab: Whether faab was used that season
@@ -204,7 +186,7 @@ def add_add_or_drop_details_to_cache(
         "type": "add_or_drop",
         "free_agent_type": free_agent_type,
         "manager": manager,
-        "player_name": player_name,
+        "player": player,
         "transaction_id": transaction_id,
         "waiver_bid": waiver_bid,
     }
@@ -231,9 +213,9 @@ def add_add_or_drop_details_to_cache(
 
     # Add add details in all summaries
     for summary in summaries:
-        if player_name not in summary["players"]:
-            summary["players"][player_name] = 0
-        summary["players"][player_name] += 1
+        if str(player) not in summary["players"]:
+            summary["players"][str(player)] = 0
+        summary["players"][str(player)] += 1
         summary["total"] += 1
 
     # Finally, add transaction ID to weekly summary to avoid double counting
@@ -281,7 +263,8 @@ def revert_add_drop_transaction(
     year = transaction["year"]
     week = transaction["week"]
     manager = transaction["managers_involved"][0]
-    player = transaction[transaction_type]
+    player_id = transaction[transaction_type]
+    player = Player(player_id)
 
     if len(transaction["managers_involved"]) > 1:
         raise Exception(f"Weird {transaction_type} with multiple managers")
@@ -303,10 +286,10 @@ def revert_add_drop_transaction(
     for d in places_to_change:
         # remove the add/drop transaction from the cache
         d["total"] -= 1
-        d["players"][player] -= 1
+        d["players"][str(player)] -= 1
 
-        if d["players"][player] == 0:
-            del d["players"][player]
+        if d["players"][str(player)] == 0:
+            del d["players"][str(player)]
 
     # If this transaction had faab spent and the transaction to remove is add,
     # remove the transaction id from the faab spent portion.
@@ -321,15 +304,19 @@ def revert_add_drop_transaction(
         ]
 
         for d in places_to_change:
-            d["players"][player]["num_bids_won"] -= 1
-            if d["players"][player]["num_bids_won"] == 0:
-                del d["players"][player]
+            d["players"][str(player)]["num_bids_won"] -= 1
+            if d["players"][str(player)]["num_bids_won"] == 0:
+                del d["players"][str(player)]
 
     # remove the transaction_type portion of this transaction and keep
     # it intact in case there was the other type involved
     del transaction_ids_cache[transaction_id][transaction_type]
     transaction_ids_cache[transaction_id]["types"].remove(transaction_type)
-    transaction_ids_cache[transaction_id]["players_involved"].remove(player)
+    transaction_ids_cache[transaction_id]["players_involved"].remove(
+        str(player)
+    )
+
+    player.remove_transaction(year, week, transaction_id)
 
     # this was the only data in the transaction so it can be fully removed
     if len(transaction_ids_cache[transaction_id]["types"]) == 0:

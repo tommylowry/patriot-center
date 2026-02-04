@@ -50,6 +50,11 @@ _PLAYERS_DATA_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "player_data_cache.json"
 )
 
+# ==== EXPERIMENTAL ====
+_PLAYER_CACHE_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "player_cache.json"
+)
+
 
 class CacheManager:
     """Centralized cache manager for all cache files.
@@ -88,6 +93,7 @@ class CacheManager:
         self._valid_options_cache: dict | None = None
         self._image_urls_cache: dict | None = None
         self._weekly_data_progress_tracker: dict | None = None
+        self._player_cache: dict | None = None
 
     # ===== LOADER AND SAVER =====
     def _load_cache(self, file_path: str) -> dict[str, Any]:
@@ -488,6 +494,41 @@ class CacheManager:
         self._save_cache(_WEEKLY_DATA_PROGRESS_TRACKER_FILE, data_to_save)
         self._weekly_data_progress_tracker = data_to_save
 
+    def get_player_cache(
+        self, force_reload: bool = False
+    ) -> dict[str, dict[str, Any]]:
+        """Get player cache.
+
+        Args:
+            force_reload: If True, reload from disk
+
+        Returns:
+            Player cache dictionary
+        """
+        if self._player_cache is None or force_reload:
+            self._player_cache = self._load_cache(_PLAYER_CACHE_FILE)
+
+        return self._player_cache
+
+    def save_player_cache(
+        self, cache: dict[str, dict[str, Any]] | None = None
+    ) -> None:
+        """Save player cache to disk.
+
+        Args:
+            cache: Cache to save (uses in-memory cache if not provided)
+
+        Raises:
+            ValueError: If no player cache to save
+        """
+        data_to_save = cache if cache is not None else self._player_cache
+
+        if data_to_save is None:
+            raise ValueError("No player cache to save")
+
+        self._save_cache(_PLAYER_CACHE_FILE, data_to_save)
+        self._player_cache = data_to_save
+
     # ===== UTILITY METHODS =====
     def is_cache_stale(
         self, cache_name: str, max_age: timedelta = timedelta(weeks=1)
@@ -536,6 +577,7 @@ class CacheManager:
         self._valid_options_cache = None
         self._image_urls_cache = None
         self._weekly_data_progress_tracker = None
+        self._player_cache = None
 
     def save_all_caches(self) -> None:
         """Save all loaded caches to disk."""
@@ -559,6 +601,8 @@ class CacheManager:
             self.save_image_urls_cache()
         if self._weekly_data_progress_tracker is not None:
             self.save_weekly_data_progress_tracker()
+        if self._player_cache is not None:
+            self.save_player_cache()
 
 
 # ===== SINGLETON INSTANCE =====

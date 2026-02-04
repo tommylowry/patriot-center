@@ -4,6 +4,7 @@ from statistics import mean
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.players.player_scores_fetcher import (
     fetch_all_player_scores,
     fetch_rostered_players,
@@ -89,16 +90,18 @@ class FFWARCalculator:
         """
         # Simulate all possible manager pairings with this player
         for player_id in self.player_data:
-            position = self.player_data[player_id]["position"]
+            player = Player(player_id)
 
             player_score = self.player_data[player_id]["score"]
-            replacement_score = self.replacement_scores[position]
+            replacement_score = self.replacement_scores[player.position]
 
             num_wins = 0
             num_simulated_games = 0
 
-            for manager_playing in self.baseline_scores[position]:
-                baseline = self.baseline_scores[position][manager_playing]
+            for manager_playing in self.baseline_scores[player.position]:
+                baseline = (
+                    self.baseline_scores[player.position][manager_playing]
+                )
 
                 # Manager's score with THIS player at this position
                 simulated_player_score = baseline + player_score
@@ -106,7 +109,7 @@ class FFWARCalculator:
                 # Manager's score with REPLACEMENT player at this position
                 simulated_replacement_score = baseline + replacement_score
 
-                for manager_opposing in self.weighted_scores[position]:
+                for manager_opposing in self.weighted_scores[player.position]:
                     if manager_playing == manager_opposing:
                         continue  # Skip self-matchups
 
@@ -114,7 +117,7 @@ class FFWARCalculator:
                     # applied instead of the average of all players with this
                     # position
                     simulated_opponent_score = (
-                        self.weighted_scores[position][manager_opposing]
+                        self.weighted_scores[player.position][manager_opposing]
                     )
 
                     # Determine if the player would win or lose the matchup
@@ -159,6 +162,15 @@ class FFWARCalculator:
             ffwar_score = self._apply_playoff_adjustment(ffwar_score)
 
             self.player_data[player_id]["ffWAR"] = round(ffwar_score, 3)
+
+            player.set_week_data(
+                str(self.year),
+                str(self.week),
+                self.player_data[player_id]["score"],
+                self.player_data[player_id]["ffWAR"],
+                self.player_data[player_id]["manager"],
+                self.player_data[player_id]["started"],
+            )
 
     def _apply_managers(self) -> None:
         """Fetches valid manager options for the given year and week.

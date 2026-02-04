@@ -93,9 +93,9 @@ class FFWARCalculator:
             num_simulated_games = 0
 
             for manager_playing in self.baseline_scores[player.position]:
-                baseline = (
-                    self.baseline_scores[player.position][manager_playing]
-                )
+                baseline = self.baseline_scores[player.position][
+                    manager_playing
+                ]
 
                 # Manager's score with THIS player at this position
                 simulated_player_score = baseline + player_score
@@ -110,9 +110,9 @@ class FFWARCalculator:
                     # Opponent's score with the week's positional average
                     # applied instead of the average of all players with this
                     # position
-                    simulated_opponent_score = (
-                        self.weighted_scores[player.position][manager_opposing]
-                    )
+                    simulated_opponent_score = self.weighted_scores[
+                        player.position
+                    ][manager_opposing]
 
                     # Determine if the player would win or lose the matchup
                     player_wins = (
@@ -286,11 +286,9 @@ class FFWARCalculator:
         """
         replacement_scores_cache = CACHE_MANAGER.get_replacement_score_cache()
 
-        weekly_replacement_scores = (
-            replacement_scores_cache
-            .get(str(self.year), {})
-            .get(str(self.week), {})
-        )
+        weekly_replacement_scores = replacement_scores_cache.get(
+            str(self.year), {}
+        ).get(str(self.week), {})
         if not weekly_replacement_scores:
             raise ValueError(
                 f"No replacement scores found for {self.year}-{self.week}"

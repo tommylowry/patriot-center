@@ -127,7 +127,7 @@ def get_aggregated_players(
 
 
 def get_aggregated_managers(
-    player: str, season: int | None = None, week: int | None = None
+    player_id: str, season: int | None = None, week: int | None = None
 ) -> dict[str, dict[str, Any]]:
     """Aggregate manager metrics for appearances of a given player.
 

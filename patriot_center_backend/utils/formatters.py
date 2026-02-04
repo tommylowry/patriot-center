@@ -44,8 +44,8 @@ def get_season_state(
                 f"league info for year {year}"
             )
 
-        playoff_week_start = (
-            league_info.get("settings", {}).get("playoff_week_start")
+        playoff_week_start = league_info.get("settings", {}).get(
+            "playoff_week_start"
         )
 
         if not playoff_week_start:
@@ -278,8 +278,8 @@ def get_trade_card(transaction_id: str) -> dict[str, Any]:
     for player_id in trans["trade_details"]:
         player = Player(player_id)
 
-        trade_details_player_details = (
-            trans.get("trade_details", {}).get(str(player), {})
+        trade_details_player_details = trans.get("trade_details", {}).get(
+            str(player), {}
         )
         old_manager = trade_details_player_details.get("old_manager", "")
         new_manager = trade_details_player_details.get("new_manager", "")
@@ -353,7 +353,7 @@ def extract_dict_data(
                 i = j
                 break
             i = j + 1
-        top_three = dict(sorted_items[:i + 1])
+        top_three = dict(sorted_items[: i + 1])
 
     # Build formatted output list with image URLs
     items = []

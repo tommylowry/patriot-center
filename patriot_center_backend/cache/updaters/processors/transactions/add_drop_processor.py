@@ -316,7 +316,7 @@ def revert_add_drop_transaction(
         str(player)
     )
 
-    player.remove_transaction(year, week, transaction_id)
+    player.remove_transaction(transaction_id)
 
     # this was the only data in the transaction so it can be fully removed
     if len(transaction_ids_cache[transaction_id]["types"]) == 0:

@@ -100,7 +100,7 @@ def add_to_transaction_ids(
     # Add/Drop transactions
     if transaction_type in valid_add_or_drop_types:
         player: Player = transaction_info["player"]
-        player.set_transaction(year, week, transaction_id)
+        player.set_transaction(transaction_id)
 
         transaction_info_to_cache["players_involved"].append(str(player))
 
@@ -154,7 +154,7 @@ def add_to_transaction_ids(
 
         for player_obj in transaction_info["players"]:
             player_obj: Player
-            player_obj.set_transaction(year, week, transaction_id)
+            player_obj.set_transaction(transaction_id)
 
     # FAAB data being handled in trades and add/drop for transactions
     elif transaction_type != "faab":

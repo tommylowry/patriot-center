@@ -21,13 +21,13 @@ class Player:
         self.player_id: str = player_id
 
         if " faab" in player_id.lower():
-            self.is_real_player = False
+            self._is_real_player = False
             self._initialize_faab()
         elif " draft pick" in player_id.lower():
-            self.is_real_player = False
+            self._is_real_player = False
             self._initialize_draft_pick()
         else:
-            self.is_real_player = True
+            self._is_real_player = True
             self._load_from_cache()
 
     def __str__(self) -> str:
@@ -155,14 +155,9 @@ class Player:
             ffwar: The ffWAR.
             manager: The manager.
             started: Whether the player started the week.
-
-        Raises:
-            ValueError: If the player is not a real player
         """
-        if not self.is_real_player:
-            raise ValueError(
-                f"Player {self.player_id} is not a real player"
-            )
+        if not self._is_real_player:
+            return
 
         self._data[f"{year}_{week}"] = {
             "score": score,
@@ -172,124 +167,77 @@ class Player:
         }
         self._apply_to_cache()
 
-    def set_transaction(
-        self, year: str, week: str, transaction_id: str
-    ) -> None:
+    def set_transaction(self, transaction_id: str) -> None:
         """Set player data for a given transaction.
 
         Args:
             year: The year.
             week: The week.
             transaction_id: The transaction ID.
-
-        Raises:
-            ValueError: If the player is not a real player
         """
-        if not self.is_real_player:
-            raise ValueError(
-                f"Player {self.player_id} is not a real player"
-            )
-
-        if transaction_id in self._transactions:
+        if not self._is_real_player or transaction_id in self._transactions:
             return
 
         self._transactions.append(transaction_id)
         self._apply_to_cache()
 
-    def remove_transaction(
-        self, year: str, week: str, transaction_id: str
-    ) -> None:
+    def remove_transaction(self, transaction_id: str) -> None:
         """Remove player data for a given transaction.
 
         Args:
             year: The year.
             week: The week.
             transaction_id: The transaction ID.
-
-        Raises:
-            ValueError: If the player is not a real player
         """
-        if not self.is_real_player:
-            raise ValueError(
-                f"Player {self.player_id} is not a real player"
-            )
-
-        if transaction_id not in self._transactions:
+        if not self._is_real_player or transaction_id not in self._transactions:
             return
 
         # Remove from transactions
         self._transactions.remove(transaction_id)
         self._apply_to_cache()
 
-    def _get_data(
+    def _get_matching_data(
         self,
         year: str | None,
         week: str | None,
-        manager: str | None,
         only_started: bool,
-        data_type: Literal["score", "ffwar"],
-    ) -> float:
-        """Get the player's data for a given week.
+        manager: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Get all data entries matching the given filters.
 
         Args:
-            year: The year.
-            week: The week.
-            manager: The manager.
-            only_started: Whether to only return the player's data if they
-                started the week.
-            data_type: The data type to return.
+            year: Filter by year.
+            week: Filter by week.
+            only_started: Only include weeks where player started.
+            manager: Filter by manager.
 
         Returns:
-            The player's data.
+            List of matching data entries.
         """
         if year and week:
             data = self._data.get(f"{year}_{week}")
             if not data:
-                logger.warning(
-                    f"Player {self.full_name} ({self.player_id}) "
-                    f"does not have data for {year} week {week}."
-                )
-                return 0.0
+                return []
             if manager and data["manager"] != manager:
-                logger.warning(
-                    f"Player {self.full_name} ({self.player_id}) "
-                    f"does not have data for {year} week {week} "
-                    f"from manager {manager}."
-                )
-                return 0.0
+                return []
             if only_started and not data["started"]:
-                logger.warning(
-                    f"Player {self.full_name} ({self.player_id}) "
-                    f"did not start {year} week {week}."
-                )
-                return 0.0
+                return []
+            return [data]
 
-            return data[data_type]
-
-        data_num = 0.0
-        count = 0
-        for key in self._data:
+        matches = []
+        for key, data in self._data.items():
             data_year, data_week = key.split("_")
             if year and data_year != year:
                 continue
             if week and data_week != week:
                 continue
-            if manager and self._data[key]["manager"] != manager:
+            if manager and data["manager"] != manager:
                 continue
-            if only_started and not self._data[key]["started"]:
+            if only_started and not data["started"]:
                 continue
+            matches.append(data)
 
-            data_num += self._data[key][data_type]
-            count += 1
-
-        if count == 0:
-            logger.warning(
-                f"Player {self.full_name} ({self.player_id}) "
-                f"does not have data for the given parameters."
-            )
-            return 0.0
-
-        return data_num
+        return matches
 
     def get_score(
         self,
@@ -298,27 +246,31 @@ class Player:
         manager: str | None = None,
         only_started: bool = False,
     ) -> float:
-        """Get the player's score for a given week.
+        """Get the player's total score for matching weeks.
 
         Args:
-            year: The year.
-            week: The week.
-            manager: The manager.
-            only_started: Whether to only return the player's data if they
-                started the week.
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
 
         Returns:
-            The player's score.
-
-        Raises:
-            ValueError: If the player is not a real player
+            The player's total score
         """
-        if not self.is_real_player:
-            raise ValueError(
-                f"Player {self.player_id} is not a real player"
-            )
+        if not self._is_real_player:
+            return 0.0
 
-        return self._get_data(year, week, manager, only_started, "score")
+        matches = self._get_matching_data(
+            year, week, only_started, manager=manager
+        )
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return 0.0
+        return sum(d["score"] for d in matches)
+
 
     def get_ffwar(
         self,
@@ -327,24 +279,117 @@ class Player:
         manager: str | None = None,
         only_started: bool = False,
     ) -> float:
-        """Get the player's ffWAR for a given week.
+        """Get the player's total ffWAR for matching weeks.
 
         Args:
-            year: The year.
-            week: The week.
-            manager: The manager.
-            only_started: Whether to only return the player's data if they
-                started the week.
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
 
         Returns:
-            The player's ffWAR.
-
-        Raises:
-            ValueError: If the player is not a real player
+            The player's total ffWAR
         """
-        if not self.is_real_player:
-            raise ValueError(
-                f"Player {self.player_id} is not a real player"
-            )
+        if not self._is_real_player:
+            return 0.0
 
-        return self._get_data(year, week, manager, only_started, "ffwar")
+        matches = self._get_matching_data(
+            year, week, only_started, manager=manager
+        )
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return 0.0
+        return sum(d["ffwar"] for d in matches)
+
+
+    def get_managers(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        only_started: bool = False,
+    ) -> list[str]:
+        """Get the player's managers for matching weeks.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            only_started: Only include weeks where player started.
+
+        Returns:
+            The player's managers
+        """
+        if not self._is_real_player:
+            return []
+
+        matches = self._get_matching_data(year, week, only_started)
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return []
+        return [d["manager"] for d in matches]
+
+    def get_scoring_summary(
+        self,
+        key: Literal["manager", "year"] = "manager",
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+        only_started: bool = False
+    ) -> dict[str, Any]:
+        """Get a summary of the player's scoring data.
+
+        Args:
+            key: The key to group by.
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
+
+        Returns:
+            The player's scoring summary
+        """
+        if not self._is_real_player:
+            return {}
+
+        matches = self._get_matching_data(
+            year, week, only_started, manager=manager
+        )
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return {}
+
+        return self._group_matches(key, matches)
+
+    def _group_matches(
+        self, key: Literal["manager", "year"], matches: list[dict[str, Any]]
+    ) -> dict[str, Any]:
+        """Group matches by the specified key.
+
+        Args:
+            key: The key to group by.
+            matches: The matches to group.
+
+        Returns:
+            The grouped matches
+        """
+        grouped = {}
+
+        for match in matches:
+            key_value = match[key]
+            if key_value not in grouped:
+                grouped[key_value] = {
+                    "score": 0.0,
+                    "ffwar": 0.0,
+                }
+            grouped[key_value]["score"] += match["score"]
+            grouped[key_value]["ffwar"] += match["ffwar"]
+
+        return grouped

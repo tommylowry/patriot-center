@@ -420,12 +420,9 @@ def revert_trade_transaction(
                         plyrs_acq[str(player)]["trade_partners"][trade_partner]
                         == 0
                     ):
-                        del (
-                            plyrs_acq
-                            [str(player)]
-                            ["trade_partners"]
-                            [trade_partner]
-                        )
+                        del plyrs_acq[str(player)]["trade_partners"][
+                            trade_partner
+                        ]
 
                 # Remove from sent
                 plyrs_sent[str(player)]["total"] -= 1
@@ -436,17 +433,18 @@ def revert_trade_transaction(
                         plyrs_sent[str(player)]["trade_partners"][trade_partner]
                     ) -= 1
                     if (
-                        plyrs_sent[str(player)]["trade_partners"][trade_partner]
-                    ) == 0:
-                        del (
-                            plyrs_sent
-                            [str(player)]
-                            ["trade_partners"]
-                            [trade_partner]
+                        (
+                            plyrs_sent[str(player)]["trade_partners"][
+                                trade_partner
+                            ]
                         )
+                        == 0
+                    ):
+                        del plyrs_sent[str(player)]["trade_partners"][
+                            trade_partner
+                        ]
 
-                if player.is_real_player:
-                    player.remove_transaction(year, week, transaction_id1)
+                player.remove_transaction(transaction_id1)
 
                 # faab is here, the logic is to turn it
                 # into an int, so player = "$1 FAAB" -> faab = 1

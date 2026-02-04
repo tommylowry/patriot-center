@@ -1,12 +1,14 @@
 """Process transaction IDs for deduplication and reversal detection."""
 
+from typing import Any
+
 from patriot_center_backend.cache import CACHE_MANAGER
 
 
 def add_to_transaction_ids(
     year: str,
     week: str,
-    transaction_info: dict,
+    transaction_info: dict[str, Any],
     weekly_transaction_ids: list[str],
     commish_action: bool,
     use_faab: bool,

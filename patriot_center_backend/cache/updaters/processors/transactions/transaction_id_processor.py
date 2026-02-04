@@ -1,8 +1,13 @@
 """Process transaction IDs for deduplication and reversal detection."""
 
+import logging
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.domains.player import Player
+from patriot_center_backend.utils.helpers import get_player_id
+
+logger = logging.getLogger(__name__)
 
 
 def add_to_transaction_ids(
@@ -103,6 +108,22 @@ def add_to_transaction_ids(
             )
 
         transaction_info_to_cache["players_involved"].append(player_name)
+        # TODO: change from player_name to player and get player_id
+        if (
+            "faab" not in player_name.lower()
+            and "draft" not in player_name.lower()
+        ):
+            player_id = get_player_id(player_name)
+            if not player_id:
+                logger.warning(
+                    f"Player {player_name} does not have "
+                    f"a player_id in player_ids_cache."
+                )
+            else:
+                player_object = Player(player_id)
+                player_object.set_transaction(year, week, transaction_id)
+
+
 
         if transaction_type in transaction_info_to_cache:
             raise ValueError("Can only add or drop one player per transaction.")
@@ -136,6 +157,20 @@ def add_to_transaction_ids(
 
             if player not in transaction_info_to_cache["players_involved"]:
                 transaction_info_to_cache["players_involved"].append(player)
+                # TODO: change from player_name to player and get player_id
+                if (
+                    "faab" not in player.lower()
+                    and "draft" not in player.lower()
+                ):
+                    player_id = get_player_id(player)
+                    if not player_id:
+                        logger.warning(
+                            f"Player {player} does not have "
+                            f"a player_id in player_ids_cache."
+                        )
+                    else:
+                        player_object = Player(player_id)
+                        player_object.set_transaction(year, week, transaction_id)
 
             if player not in transaction_info_to_cache["trade_details"]:
                 transaction_info_to_cache["trade_details"][player] = {
@@ -151,6 +186,20 @@ def add_to_transaction_ids(
 
             if player not in transaction_info_to_cache["players_involved"]:
                 transaction_info_to_cache["players_involved"].append(player)
+                # TODO: change from player_name to player and get player_id
+                if (
+                    "faab" not in player.lower()
+                    and "draft" not in player.lower()
+                ):
+                    player_id = get_player_id(player)
+                    if not player_id:
+                        logger.warning(
+                            f"Player {player} does not have "
+                            f"a player_id in player_ids_cache."
+                        )
+                    else:
+                        player_object = Player(player_id)
+                        player_object.set_transaction(year, week, transaction_id)
 
             if player not in transaction_info_to_cache["trade_details"]:
                 transaction_info_to_cache["trade_details"][player] = {

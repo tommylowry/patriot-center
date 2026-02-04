@@ -52,6 +52,8 @@ def update_player_ids_cache() -> None:
     # fetch fresh data from Sleeper API and populate the cache
     updated_sleeper_player_ids = fetch_all_player_ids()
     for player_id, player_info in updated_sleeper_player_ids.items():
+        if player_info["position"] == "DEF":
+            continue
         _add_player_id_entry(player_id, player_info, new_player_ids_cache)
 
     # Fill in historic team defense entries (OAK, SD, etc.)

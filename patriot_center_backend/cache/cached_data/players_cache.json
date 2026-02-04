@@ -3991,7 +3991,7 @@
         "first_name": "Elijah",
         "last_name": "Moore",
         "position": "WR",
-        "team": "DEN",
+        "team": null,
         "slug": "elijah%20moore",
         "player_id": "7596"
     },
@@ -5881,7 +5881,7 @@
         "first_name": "Brandon",
         "last_name": "Johnson",
         "position": "WR",
-        "team": "DEN",
+        "team": null,
         "slug": "brandon%20johnson",
         "player_id": "8756"
     },

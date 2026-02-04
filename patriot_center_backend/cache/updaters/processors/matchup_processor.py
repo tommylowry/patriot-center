@@ -4,9 +4,6 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.player_cache_updater import (
-    update_players_cache_with_list,
-)
 from patriot_center_backend.cache.updaters.starters_updater import (
     update_starters_cache,
 )
@@ -107,8 +104,6 @@ class MatchupProcessor:
 
         if isinstance(manager_matchup_data, dict):
             raise ValueError("No matchup data found for week.")
-
-        update_players_cache_with_list(manager_matchup_data)
 
         season_state = get_season_state(
             self._week, self._year, self._playoff_week_start

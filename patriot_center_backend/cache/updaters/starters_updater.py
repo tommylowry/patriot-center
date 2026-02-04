@@ -4,10 +4,7 @@ import logging
 from decimal import Decimal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.utils.helpers import (
-    get_player_name,
-    get_player_position,
-)
+from patriot_center_backend.domains.player import Player
 
 logger = logging.getLogger(__name__)
 
@@ -38,16 +35,10 @@ def update_starters_cache(
     manager_data.setdefault("Total_Points", 0.0)
 
     # Get player data
-    player = get_player_name(player_id)
-    position = get_player_position(player_id)
-    if not player or not position:
-        logger.warning(
-            f"Unknown player: {player_id} in year: {year}, week: {week}"
-        )
-        return
+    player = Player(player_id)
 
     # Skip if player already exists
-    if player in manager_data:
+    if str(player) in manager_data:
         logger.warning(
             f"Duplicate player: {player} for manager: "
             f"{manager} in year: {year}, week: {week}"
@@ -61,8 +52,8 @@ def update_starters_cache(
     )
 
     # Add player
-    manager_data[player] = {
+    manager_data[str(player)] = {
         "points": player_score,
-        "position": position,
+        "position": player.position,
         "player_id": player_id,
     }

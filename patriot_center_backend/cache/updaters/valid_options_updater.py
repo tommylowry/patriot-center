@@ -3,10 +3,7 @@
 import logging
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.utils.helpers import (
-    get_player_name,
-    get_player_position,
-)
+from patriot_center_backend.domains.player import Player
 
 logger = logging.getLogger(__name__)
 
@@ -25,13 +22,7 @@ def update_valid_options_cache(
         manager: Manager name
         player_id: Player ID
     """
-    player = get_player_name(player_id)
-    position = get_player_position(player_id)
-    if not player or not position:
-        logger.warning(
-            f"Could not find player or position for player_id: {player_id}"
-        )
-        return
+    player = Player(player_id)
 
     update_valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
@@ -40,24 +31,24 @@ def update_valid_options_cache(
         str(year), {"managers": [], "players": [], "weeks": [], "positions": []}
     )
     _update_list(year_data["managers"], manager)
-    _update_list(year_data["players"], player)
+    _update_list(year_data["players"], str(player))
     _update_list(year_data["weeks"], str(week))
-    _update_list(year_data["positions"], position)
+    _update_list(year_data["positions"], player.position)
 
     # Week level
     week_data = year_data.setdefault(
         str(week), {"managers": [], "players": [], "positions": []}
     )
     _update_list(week_data["managers"], manager)
-    _update_list(week_data["players"], player)
-    _update_list(week_data["positions"], position)
+    _update_list(week_data["players"], str(player))
+    _update_list(week_data["positions"], player.position)
 
     # Manager level
     manager_data = week_data.setdefault(
         manager, {"players": [], "positions": []}
     )
-    _update_list(manager_data["players"], player)
-    _update_list(manager_data["positions"], position)
+    _update_list(manager_data["players"], str(player))
+    _update_list(manager_data["positions"], player.position)
 
 
 def _update_list(list_to_update: list[str], value: str) -> None:

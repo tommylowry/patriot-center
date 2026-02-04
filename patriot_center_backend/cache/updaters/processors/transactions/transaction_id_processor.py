@@ -5,7 +5,6 @@ from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.domains.player import Player
-from patriot_center_backend.utils.helpers import get_player_id
 
 logger = logging.getLogger(__name__)
 
@@ -100,35 +99,15 @@ def add_to_transaction_ids(
 
     # Add/Drop transactions
     if transaction_type in valid_add_or_drop_types:
-        player_name = transaction_info.get("player_name")
-        if not player_name:
-            raise ValueError(
-                f"player_name not found for "
-                f"{transaction_type} with info: {transaction_info}"
-            )
+        player: Player = transaction_info["player"]
+        player.set_transaction(year, week, transaction_id)
 
-        transaction_info_to_cache["players_involved"].append(player_name)
-        # TODO: change from player_name to player and get player_id
-        if (
-            "faab" not in player_name.lower()
-            and "draft" not in player_name.lower()
-        ):
-            player_id = get_player_id(player_name)
-            if not player_id:
-                logger.warning(
-                    f"Player {player_name} does not have "
-                    f"a player_id in player_ids_cache."
-                )
-            else:
-                player_object = Player(player_id)
-                player_object.set_transaction(year, week, transaction_id)
-
-
+        transaction_info_to_cache["players_involved"].append(str(player))
 
         if transaction_type in transaction_info_to_cache:
             raise ValueError("Can only add or drop one player per transaction.")
 
-        transaction_info_to_cache[transaction_type] = player_name
+        transaction_info_to_cache[transaction_type] = str(player)
         bid = transaction_info.get("waiver_bid")
         if transaction_type == "add" and use_faab and bid is not None:
             transaction_info_to_cache["faab_spent"] = bid
@@ -151,61 +130,31 @@ def add_to_transaction_ids(
 
         # Adding player from players_acquired into players_involved and into
         # the trade details if not already in cache
-        for player in players_acquired:
-            if not player:
-                continue
+        for player_id in players_acquired:
+            if player_id not in transaction_info_to_cache["players_involved"]:
+                transaction_info_to_cache["players_involved"].append(player_id)
 
-            if player not in transaction_info_to_cache["players_involved"]:
-                transaction_info_to_cache["players_involved"].append(player)
-                # TODO: change from player_name to player and get player_id
-                if (
-                    "faab" not in player.lower()
-                    and "draft" not in player.lower()
-                ):
-                    player_id = get_player_id(player)
-                    if not player_id:
-                        logger.warning(
-                            f"Player {player} does not have "
-                            f"a player_id in player_ids_cache."
-                        )
-                    else:
-                        player_object = Player(player_id)
-                        player_object.set_transaction(year, week, transaction_id)
-
-            if player not in transaction_info_to_cache["trade_details"]:
-                transaction_info_to_cache["trade_details"][player] = {
-                    "old_manager": players_acquired[player],
+            if player_id not in transaction_info_to_cache["trade_details"]:
+                transaction_info_to_cache["trade_details"][player_id] = {
+                    "old_manager": players_acquired[player_id],
                     "new_manager": manager,
                 }
 
         # Adding player from players_sent into players_involved and into
         # the trade details if not already in cache
-        for player in players_sent:
-            if not player:
-                continue
+        for player_id in players_sent:
+            if player_id not in transaction_info_to_cache["players_involved"]:
+                transaction_info_to_cache["players_involved"].append(player_id)
 
-            if player not in transaction_info_to_cache["players_involved"]:
-                transaction_info_to_cache["players_involved"].append(player)
-                # TODO: change from player_name to player and get player_id
-                if (
-                    "faab" not in player.lower()
-                    and "draft" not in player.lower()
-                ):
-                    player_id = get_player_id(player)
-                    if not player_id:
-                        logger.warning(
-                            f"Player {player} does not have "
-                            f"a player_id in player_ids_cache."
-                        )
-                    else:
-                        player_object = Player(player_id)
-                        player_object.set_transaction(year, week, transaction_id)
-
-            if player not in transaction_info_to_cache["trade_details"]:
-                transaction_info_to_cache["trade_details"][player] = {
+            if player_id not in transaction_info_to_cache["trade_details"]:
+                transaction_info_to_cache["trade_details"][player_id] = {
                     "old_manager": manager,
-                    "new_manager": players_sent[player],
+                    "new_manager": players_sent[player_id],
                 }
+
+        for player_obj in transaction_info["players"]:
+            player_obj: Player
+            player_obj.set_transaction(year, week, transaction_id)
 
     # FAAB data being handled in trades and add/drop for transactions
     elif transaction_type != "faab":

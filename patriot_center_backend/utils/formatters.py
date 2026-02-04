@@ -5,10 +5,8 @@ from copy import deepcopy
 from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.image_urls_updater import (
-    update_image_urls_cache,
-)
 from patriot_center_backend.constants import LEAGUE_IDS
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.utils.image_url_handler import get_image_url
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
@@ -79,8 +77,6 @@ def get_top_3_scorers_from_matchup_data(
     Raises:
         ValueError: If get_image_url fails to retrieve output in dict form
     """
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-    players_cache = CACHE_MANAGER.get_players_cache()
     starters_cache = CACHE_MANAGER.get_starters_cache()
 
     matchup_data["manager_1_top_3_scorers"] = []
@@ -120,45 +116,21 @@ def get_top_3_scorers_from_matchup_data(
 
         # Iterate over starters
         top_scorers = []
-        for player in manager_starters:
-            player_dict = get_image_url(player, dictionary=True)
+        for player_id in manager_starters:
+            player = Player(player_id)
 
-            if not isinstance(player_dict, dict):
-                raise ValueError(
-                    f"Dict expected from get_image_url for player {player}, "
-                    f"dictionary was set to True, but got {type(player_dict)}"
-                )
+            player_score = player.get_score(year, week)
 
-            player_id = players_cache[player]["player_id"]
-            if not player_id:
-                logger.warning(
-                    f"WARNING: Player ID missing for player {player}. "
-                    f"Cannot get top 3 scorers for {manager_1} vs {manager_2}."
-                )
-                return
+            player_dict = {
+                "name": player.full_name,
+                "first_name": player.first_name,
+                "last_name": player.last_name,
+                "image_url": player.image_url,
+                "score": player_score,
+                "position": manager_starters[player]["position"],
+            }
 
-            first_name = player_ids_cache[player_id]["first_name"]
-            last_name = player_ids_cache[player_id]["last_name"]
-
-            player_dict.update(
-                {
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "score": manager_starters[player]["points"],
-                    "position": manager_starters[player]["position"],
-                }
-            )
-
-            player_score = player_dict.get("score")
-
-            # Track lowest scorer
-            if not isinstance(player_score, float):
-                logger.warning(
-                    f"Player score not float for player {player}. "
-                    f"For {year}, week {week}."
-                )
-                continue
-
+            # Update lowest scorer
             if player_score < lowest_scorer["score"]:
                 lowest_scorer = deepcopy(player_dict)
 
@@ -303,21 +275,32 @@ def get_trade_card(transaction_id: str) -> dict[str, Any]:
         )
 
     # Populate sent/received arrays with players/assets
-    for player in trans["trade_details"]:
+    for player_id in trans["trade_details"]:
+        player = Player(player_id)
+
         trade_details_player_details = (
-            trans.get("trade_details", {}).get(player, {})
+            trans.get("trade_details", {}).get(str(player), {})
         )
         old_manager = trade_details_player_details.get("old_manager", "")
         new_manager = trade_details_player_details.get("new_manager", "")
 
         if not old_manager or not new_manager:
-            logger.warning(f"Missing trade details for player {player}")
+            if player:
+                logger.warning(
+                    f"Missing trade details for player {player.full_name} "
+                    f"({player.player_id})."
+                )
             continue
 
         old_manager = old_manager.lower().replace(" ", "_")
         new_manager = new_manager.lower().replace(" ", "_")
 
-        player_dict = get_image_url(player, dictionary=True)
+        player_dict = {
+            "name": player.full_name,
+            "first_name": player.first_name,
+            "last_name": player.last_name,
+            "image_url": player.image_url,
+        }
 
         trade_item[f"{old_manager}_sent"].append(deepcopy(player_dict))
         trade_item[f"{new_manager}_received"].append(deepcopy(player_dict))
@@ -332,7 +315,7 @@ def extract_dict_data(
     key_name: str = "name",
     value_name: str = "count",
     cutoff: int = 3,
-) -> list:
+) -> list[dict[str, Any]]:
     """Extract top N items from a dictionary and format with image URLs.
 
     Handles tie-breaking logic to include all items tied for the cutoff
@@ -413,6 +396,5 @@ def draft_pick_decipher(
     origin_manager = weekly_roster_ids.get(origin_team, "unknown_manager")
 
     draft_pick = f"{origin_manager}'s {season} Round {round_num} Draft Pick"
-    update_image_urls_cache(draft_pick)
 
     return draft_pick

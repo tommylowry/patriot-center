@@ -34,10 +34,12 @@ class Player:
         # there is an update to the metadata
         metadata_from_player_ids_cache = False
         if self.player_id in player_ids_cache:
-            metadata = player_ids_cache.pop(self.player_id)
-            metadata_from_player_ids_cache = True
 
-        metadata = player_data.get("metadata", {})
+            # TODO: pop not get for the future
+            metadata = deepcopy(player_ids_cache.get(self.player_id))
+            metadata_from_player_ids_cache = True
+        else:
+            metadata = player_data.get("metadata", {})
         if not metadata:
             raise ValueError(f"Player with ID {self.player_id} not found")
 
@@ -132,23 +134,25 @@ class Player:
         self._years[year][week]["manager"] = manager  # TODO: change to Manager
         self._years[year][week]["started"] = started
 
-    def set_transaction(self, transaction_id: str) -> None:
+    def set_transaction(
+        self, year: str, week: str, transaction_id: str
+    ) -> None:
         """Set player data for a given transaction.
 
         Args:
+            year: The year.
+            week: The week.
             transaction_id: The transaction ID.
         """
         if transaction_id in self._transactions:
             return
 
+        self._ensure_year_week(year, week)
+
+        # TODO: change to Transaction class instead of using id
+
         # Add to transactions
         self._transactions.append(transaction_id)
-
-        # Get year and week from transaction TODO: change to Transaction
-        transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
-        year = transaction_ids_cache[str(transaction_id)]["year"]
-        week = transaction_ids_cache[str(transaction_id)]["week"]
-        self._ensure_year_week(year, week)
 
         # Add to years
         self._years[year][week]["transactions"].append(transaction_id)

@@ -40,3 +40,5 @@ def update_all_caches() -> None:
     logger.info(
         f"Cache update completed in {int(elapsed // 60)}:{elapsed % 60:05.2f}"
     )
+
+update_all_caches()

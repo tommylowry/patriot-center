@@ -3,7 +3,6 @@
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.domains.player import Player
 
 
 def fetch_manager_scores(

@@ -3,7 +3,6 @@
 from functools import lru_cache
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.utils.helpers import get_player_id
 
 
 @lru_cache(maxsize=10000)

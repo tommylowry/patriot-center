@@ -8,7 +8,7 @@ from patriot_center_backend.constants import (
 
 def parse_arguments(
     arg1: str | None, arg2: str | None, arg3: str | None
-) -> tuple[int | None, int | None, str | None]:
+) -> tuple[str | None, str | None, str | None]:
     """Parse provided arguments into year, week, and manager.
 
     Args:
@@ -17,7 +17,7 @@ def parse_arguments(
         arg3 (str | None): Season (year) or week number or manager name.
 
     Returns:
-        tuple[int | None, int | None, str | None]: Year, week, and manager.
+        tuple[str | None, str | None, str | None]: Year, week, and manager.
 
     Raises:
         ValueError: If multiple arguments of the same type are provided
@@ -40,12 +40,12 @@ def parse_arguments(
             if arg_int in LEAGUE_IDS:
                 if year is not None:
                     raise ValueError("Multiple year arguments provided.")
-                year = arg_int
+                year = arg
             # Check if it's a valid week number (1-17)
             elif 1 <= arg_int <= 17:
                 if week is not None:
                     raise ValueError("Multiple week arguments provided.")
-                week = arg_int
+                week = arg
             else:
                 raise ValueError("Invalid integer argument provided.")
         else:

@@ -3,10 +3,16 @@
 import logging
 from typing import Any
 
+from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.calculations.player_score_calculator import (
+    calculate_player_score,
+)
 from patriot_center_backend.constants import (
     LEAGUE_IDS,
     USERNAME_TO_REAL_NAME,
+    Position,
 )
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.utils.helpers import get_user_id
 from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
 
@@ -236,3 +242,80 @@ def fetch_all_player_ids() -> dict[str, Any]:
         raise ValueError("Sleeper API call failed to retrieve player info")
 
     return sleeper_response
+
+
+def fetch_players(year: int, week: int) -> list["Player"]:
+    """Retrieves the player data for a given year and week.
+
+    This function retrieves raw stats from the Sleeper API for the specified
+    year and week, then calculates each player's fantasy score, their manager,
+    and if they are a starter based on the league's scoring settings.
+
+    Args:
+        year: The year for which to retrieve player metadata.
+        week: The week for which to retrieve player metadata.
+
+    Returns:
+        A list of Player objects.
+
+    Raises:
+        ValueError: If Sleeper API call returns invalid data.
+    """
+    week_data = fetch_sleeper_data(
+        f"stats/nfl/regular/{year}/{week}"
+    )
+    if not isinstance(week_data, dict):
+        raise ValueError(
+            f"Sleeper API call failed for "
+            f"year {year}, week {week}"
+        )
+
+    settings = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}")
+    if not isinstance(settings, dict):
+        raise ValueError(
+            f"Sleeper API call failed to retrieve "
+            f"scoring settings for year {year}"
+        )
+    scoring_settings = settings["scoring_settings"]
+
+    players = []
+
+    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
+    for player_id in week_data:
+        if "TEAM_" in player_id:
+            continue
+
+        if player_ids_cache.get(player_id, {}).get("position") not in Position:
+            continue
+
+        player = Player(player_id)
+        score = calculate_player_score(
+            week_data[player_id], scoring_settings
+        )
+        player.set_week_data(str(year), str(week), score)
+
+        players.append(player)
+
+    matchup_data_response = fetch_sleeper_data(
+        f"league/{LEAGUE_IDS[year]}/matchups/{week}"
+    )
+    if not isinstance(matchup_data_response, list):
+        raise Exception(
+            f"Could not fetch matchup data for season {year} week {week}"
+        )
+    roster_ids = get_roster_ids(year, week)
+
+    for matchup in matchup_data_response:
+        manager = roster_ids[matchup['roster_id']]
+        for player_id in matchup['players']:
+            player = Player(player_id)
+
+            started = player_id in matchup['starters']
+
+            player.set_week_data(
+                str(year), str(week), manager=manager, started=started
+            )
+
+    return players
+
+

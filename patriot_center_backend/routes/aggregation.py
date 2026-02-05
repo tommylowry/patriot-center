@@ -70,21 +70,21 @@ def get_aggregated_players_route(
 
 
 @bp.route(
-    "/get_aggregated_managers/<string:player>",
+    "/get_aggregated_managers/<string:player_id>",
     defaults={"arg2": None, "arg3": None},
     methods=["GET"],
 )
 @bp.route(
-    "/get_aggregated_managers/<string:player>/<string:arg2>",
+    "/get_aggregated_managers/<string:player_id>/<string:arg2>",
     defaults={"arg3": None},
     methods=["GET"],
 )
 @bp.route(
-    "/get_aggregated_managers/<string:player>/<string:arg2>/<string:arg3>",
+    "/get_aggregated_managers/<string:player_id>/<string:arg2>/<string:arg3>",
     methods=["GET"],
 )
 def get_aggregated_managers_route(
-    player: str, arg2: str | None, arg3: str | None
+    player_id: str, arg2: str | None, arg3: str | None
 ) -> tuple[Response, int]:
     """Aggregate manager totals (points, games started, ffWAR) for a player.
 
@@ -94,21 +94,19 @@ def get_aggregated_managers_route(
     - If `arg2` or `arg3` are not provided, result is for all seasons and weeks.
 
     Args:
-        player: The player to filter.
+        player_id: Player name key.
         arg2: Season (year) or week number.
         arg3: Season (year) or week number.
 
     Returns:
         Response in JSON format and status code.
     """
-    player = slug_to_name(player)  # Convert slug to player name
-
     try:
         year, week, _ = parse_arguments(arg2, arg3, None)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    data = get_aggregated_managers(player=player, season=year, week=week)
+    data = get_aggregated_managers(player_id, year=year, week=week)
     if request.args.get("format") == "json":
         response = jsonify(data)
 
@@ -162,8 +160,8 @@ def get_player_manager_aggregation_route(
     """
     player = slug_to_name(player)  # Convert slug to player name
 
-    data = get_player_manager_aggregation(
-        player, manager, season=year, week=week
+    data = get_aggregated_managers(
+        player, manager, year=year, week=week
     )
     if request.args.get("format") == "json":
         response = jsonify(data)

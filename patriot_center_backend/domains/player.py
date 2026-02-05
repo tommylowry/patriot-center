@@ -2,7 +2,7 @@
 
 import logging
 from copy import deepcopy
-from typing import Any, Literal
+from typing import Any, ClassVar, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
 
@@ -11,6 +11,22 @@ logger = logging.getLogger(__name__)
 
 class Player:
     """Player class."""
+    _instances: ClassVar[dict[str, "Player"]] = {}
+
+    def __new__(cls, player_id: str) -> "Player":
+        """Create a new player instance or return the existing one.
+
+        Args:
+            player_id: The player ID
+
+        Returns:
+            The player instance
+        """
+        if player_id in cls._instances:
+            return cls._instances[player_id]
+        instance = super().__new__(cls)
+        cls._instances[player_id] = instance
+        return instance
 
     def __init__(self, player_id: str) -> None:
         """Player class.
@@ -18,6 +34,10 @@ class Player:
         Args:
             player_id: The player ID
         """
+        if hasattr(self, '_initialized'):
+            return  # Already initialized
+        self._initialized = True
+
         self.player_id: str = player_id
 
         if " faab" in player_id.lower():
@@ -141,17 +161,17 @@ class Player:
         self,
         year: str,
         week: str,
-        score: float,
-        ffwar: float,
-        manager: str | None,
-        started: bool
+        points: float | None = None,
+        ffwar: float | None = None,
+        manager: str | None = "",
+        started: bool | None = None,
     ) -> None:
         """Set player data for a given week.
 
         Args:
             year: The year.
             week: The week.
-            score: The score.
+            points: The points.
             ffwar: The ffWAR.
             manager: The manager.
             started: Whether the player started the week.
@@ -159,12 +179,21 @@ class Player:
         if not self._is_real_player:
             return
 
-        self._data[f"{year}_{week}"] = {
-            "score": score,
-            "ffwar": ffwar,
-            "manager": manager,
-            "started": started,
-        }
+        if f"{year}_{week}" not in self._data:
+            self._data[f"{year}_{week}"] = {
+                "manager": None,
+                "started": False,
+            }
+
+        if points is not None:
+            self._data[f"{year}_{week}"]["points"] = points
+        if ffwar is not None:
+            self._data[f"{year}_{week}"]["ffwar"] = ffwar
+        if manager != "":
+            self._data[f"{year}_{week}"]["manager"] = manager
+        if started is not None:
+            self._data[f"{year}_{week}"]["started"] = started
+
         self._apply_to_cache()
 
     def set_transaction(self, transaction_id: str) -> None:
@@ -201,6 +230,7 @@ class Player:
         year: str | None,
         week: str | None,
         only_started: bool,
+        only_rostered: bool,
         manager: str | None = None,
     ) -> list[dict[str, Any]]:
         """Get all data entries matching the given filters.
@@ -209,6 +239,7 @@ class Player:
             year: Filter by year.
             week: Filter by week.
             only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
             manager: Filter by manager.
 
         Returns:
@@ -221,6 +252,8 @@ class Player:
             if manager and data["manager"] != manager:
                 return []
             if only_started and not data["started"]:
+                return []
+            if only_rostered and data["manager"] is None:
                 return []
             return [data]
 
@@ -235,33 +268,37 @@ class Player:
                 continue
             if only_started and not data["started"]:
                 continue
+            if only_rostered and data["manager"] is None:
+                continue
             matches.append(data)
 
         return matches
 
-    def get_score(
+    def get_points(
         self,
         year: str | None = None,
         week: str | None = None,
         manager: str | None = None,
-        only_started: bool = False,
+        only_started: bool = True,
+        only_rostered: bool = True,
     ) -> float:
-        """Get the player's total score for matching weeks.
+        """Get the player's total points for matching weeks.
 
         Args:
             year: Filter by year.
             week: Filter by week.
             manager: Filter by manager.
             only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
 
         Returns:
-            The player's total score
+            The player's total points
         """
         if not self._is_real_player:
             return 0.0
 
         matches = self._get_matching_data(
-            year, week, only_started, manager=manager
+            year, week, only_started, only_rostered, manager=manager
         )
         if not matches:
             logger.warning(
@@ -269,7 +306,7 @@ class Player:
                 f"does not have data for the given parameters."
             )
             return 0.0
-        return sum(d["score"] for d in matches)
+        return round(sum(d["points"] for d in matches), 2)
 
 
     def get_ffwar(
@@ -277,7 +314,8 @@ class Player:
         year: str | None = None,
         week: str | None = None,
         manager: str | None = None,
-        only_started: bool = False,
+        only_started: bool = True,
+        only_rostered: bool = True,
     ) -> float:
         """Get the player's total ffWAR for matching weeks.
 
@@ -286,6 +324,7 @@ class Player:
             week: Filter by week.
             manager: Filter by manager.
             only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
 
         Returns:
             The player's total ffWAR
@@ -294,7 +333,7 @@ class Player:
             return 0.0
 
         matches = self._get_matching_data(
-            year, week, only_started, manager=manager
+            year, week, only_started, only_rostered, manager=manager
         )
         if not matches:
             logger.warning(
@@ -302,14 +341,15 @@ class Player:
                 f"does not have data for the given parameters."
             )
             return 0.0
-        return sum(d["ffwar"] for d in matches)
+        return round(sum(d["ffwar"] for d in matches), 3)
 
 
     def get_managers(
         self,
         year: str | None = None,
         week: str | None = None,
-        only_started: bool = False,
+        only_started: bool = True,
+        only_rostered: bool = True
     ) -> list[str]:
         """Get the player's managers for matching weeks.
 
@@ -317,6 +357,7 @@ class Player:
             year: Filter by year.
             week: Filter by week.
             only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
 
         Returns:
             The player's managers
@@ -324,7 +365,9 @@ class Player:
         if not self._is_real_player:
             return []
 
-        matches = self._get_matching_data(year, week, only_started)
+        matches = self._get_matching_data(
+            year, week, only_started, only_rostered
+        )
         if not matches:
             logger.warning(
                 f"Player {self.full_name} ({self.player_id}) "
@@ -333,13 +376,40 @@ class Player:
             return []
         return [d["manager"] for d in matches]
 
+    def get_num_games(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+        only_started: bool = True,
+        only_rostered: bool = True,
+    ) -> int:
+        """Get the player's number of games for matching weeks.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
+
+        Returns:
+            The player's number of games
+        """
+        return len(
+            self._get_matching_data(
+                year, week, only_started, only_rostered, manager=manager
+            )
+        )
+
     def get_scoring_summary(
         self,
         key: Literal["manager", "year"] = "manager",
         year: str | None = None,
         week: str | None = None,
         manager: str | None = None,
-        only_started: bool = False
+        only_started: bool = True,
+        only_rostered: bool = True,
     ) -> dict[str, Any]:
         """Get a summary of the player's scoring data.
 
@@ -349,6 +419,7 @@ class Player:
             week: Filter by week.
             manager: Filter by manager.
             only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
 
         Returns:
             The player's scoring summary
@@ -357,7 +428,7 @@ class Player:
             return {}
 
         matches = self._get_matching_data(
-            year, week, only_started, manager=manager
+            year, week, only_started, only_rostered, manager=manager
         )
         if not matches:
             logger.warning(
@@ -386,10 +457,18 @@ class Player:
             key_value = match[key]
             if key_value not in grouped:
                 grouped[key_value] = {
-                    "score": 0.0,
+                    "points": 0.0,
                     "ffwar": 0.0,
+                    "num_games": 0,
                 }
-            grouped[key_value]["score"] += match["score"]
+            grouped[key_value]["points"] += match["points"]
             grouped[key_value]["ffwar"] += match["ffwar"]
+            grouped[key_value]["num_games"] += 1
+
+        for key_value in grouped:
+            grouped[key_value]["points"] = round(
+                grouped[key_value]["points"], 2
+            )
+            grouped[key_value]["ffwar"] = round(grouped[key_value]["ffwar"], 3)
 
         return grouped

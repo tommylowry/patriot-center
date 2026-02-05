@@ -13,11 +13,12 @@ class Player:
     """Player class."""
     _instances: ClassVar[dict[str, "Player"]] = {}
 
-    def __new__(cls, player_id: str) -> "Player":
+    def __new__(cls, player_id: str, apply: bool = True) -> "Player":
         """Create a new player instance or return the existing one.
 
         Args:
             player_id: The player ID
+            apply: Whether to apply the player to the player cache
 
         Returns:
             The player instance
@@ -28,12 +29,15 @@ class Player:
         cls._instances[player_id] = instance
         return instance
 
-    def __init__(self, player_id: str) -> None:
+    def __init__(self, player_id: str, apply: bool = True) -> None:
         """Player class.
 
         Args:
             player_id: The player ID
+            apply: Whether to apply the player to the player cache
         """
+        self._apply: bool = apply
+
         if hasattr(self, '_initialized'):
             return  # Already initialized
         self._initialized = True
@@ -135,6 +139,8 @@ class Player:
 
     def _apply_to_cache(self) -> None:
         """Applies the player data to the cache."""
+        if not self._apply:
+            return
         player_cache = CACHE_MANAGER.get_player_cache()
 
         player_cache[self.player_id] = {

@@ -1,6 +1,6 @@
 """Functions for finding valid filtering options based on selected criteria."""
 
-from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.dynamic_filtering.find_valid_options import (
     find_valid_managers,
     find_valid_positions,
@@ -18,7 +18,7 @@ def get_dynamic_filter_options_from_cache(
     week: str | None,
     manager: str | None,
     position: str | None,
-    player: str | None,
+    player: Player | None,
 ) -> dict[str, list[str]]:
     """Returns valid filter options given current selections.
 
@@ -35,13 +35,10 @@ def get_dynamic_filter_options_from_cache(
     """
     validate_dynamic_filter_args(year, week, manager, position, player)
 
-    players_cache = CACHE_MANAGER.get_players_cache()
-
     # Lock position if player selected
     positions = set()
     if player:
-        position = players_cache[player]["position"]
-        positions.add(position)
+        positions.add(player.position)
 
     # Each function returns a set of valid options for the given criteria
     years = find_valid_years(manager, position, player)

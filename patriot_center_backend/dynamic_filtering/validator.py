@@ -8,6 +8,7 @@ from patriot_center_backend.constants import (
     NAME_TO_MANAGER_USERNAME,
     Position,
 )
+from patriot_center_backend.domains.player import Player
 
 
 def validate_dynamic_filter_args(
@@ -15,7 +16,7 @@ def validate_dynamic_filter_args(
     week: str | None,
     manager: str | None,
     position: str | None,
-    player: str | None,
+    player: Player | None,
 ) -> None:
     """Validates dynamic filter arguments.
 
@@ -156,7 +157,7 @@ def _validate_position(
 
 
 def _validate_player(
-    player: str | None,
+    player: Player | None,
     year: str | None,
     week: str | None,
     manager: str | None,
@@ -177,29 +178,27 @@ def _validate_player(
     if not player:
         return
 
-    players_cache = CACHE_MANAGER.get_players_cache()
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
-    if player not in players_cache:
-        raise ValueError(f"Invalid player: {player}")
+    error_str = f"Invalid player: {player.full_name} ({player})"
 
-    if position and players_cache[player]["position"] != position:
-        raise ValueError(f"Invalid player: {player}")
+    if position and player.position != position:
+        raise ValueError(error_str)
 
     if year:
         year_options = valid_options_cache.get(year, {})
-        if player not in year_options.get("players", []):
-            raise ValueError(f"Invalid player: {player}")
+        if str(player) not in year_options.get("players", []):
+            raise ValueError(error_str)
 
         if week:
             week_options = year_options.get(week, {})
-            if player not in week_options.get("players", []):
-                raise ValueError(f"Invalid player: {player}")
+            if str(player) not in week_options.get("players", []):
+                raise ValueError(error_str)
 
             if manager:
                 manager_options = week_options.get(manager, {})
-                if player not in manager_options.get("players", []):
-                    raise ValueError(f"Invalid player: {player}")
+                if str(player) not in manager_options.get("players", []):
+                    raise ValueError(error_str)
                 return
 
     if manager:
@@ -209,7 +208,7 @@ def _validate_player(
 def _traverse_for_year_and_manager(
     year: str | None,
     manager: str,
-    item: str,
+    item: Player | str,
     item_type: Literal["player", "position"],
 ) -> None:
     """Validates the item when filtering by year, manager, and player/position.
@@ -236,8 +235,10 @@ def _traverse_for_year_and_manager(
         # Check if item exists in ANY week for this manager
         for wk in yr_data.get("weeks", []):
             wk_data = yr_data.get(wk, {})
-            if item in wk_data.get(manager, {}).get(f"{item_type}s", []):
+            if str(item) in wk_data.get(manager, {}).get(f"{item_type}s", []):
                 return
 
     # Not found in any year
+    if isinstance(item, Player):
+        raise ValueError(f"Invalid player: {item.full_name} ({item})")
     raise ValueError(f"Invalid {item_type}: {item}")

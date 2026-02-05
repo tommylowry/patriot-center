@@ -47,9 +47,6 @@ _WEEKLY_DATA_PROGRESS_TRACKER_FILE = os.path.join(
 _REPLACEMENT_SCORE_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "replacement_score_cache.json"
 )
-_PLAYERS_DATA_CACHE_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "player_data_cache.json"
-)
 
 # ==== EXPERIMENTAL ====
 _PLAYER_CACHE_FILE = os.path.join(
@@ -89,7 +86,6 @@ class CacheManager:
         self._players_cache: dict | None = None
         self._player_ids_cache: dict | None = None
         self._starters_cache: dict | None = None
-        self._player_data_cache: dict | None = None
         self._replacement_score_cache: dict | None = None
         self._valid_options_cache: dict | None = None
         self._image_urls_cache: dict | None = None
@@ -323,45 +319,6 @@ class CacheManager:
 
         self._save_cache(_STARTERS_CACHE_FILE, data_to_save)
         self._starters_cache = data_to_save
-
-    # ===== PLAYER DATA CACHE (ffWAR) =====
-    def get_player_data_cache(
-        self, force_reload: bool = False, copy: bool = False
-    ) -> dict[str, Any]:
-        """Get player data cache (ffWAR data).
-
-        Args:
-            force_reload: If True, reload from disk
-            copy: If True, return a copy of the cache
-
-        Returns:
-            Player data cache dictionary
-        """
-        if self._player_data_cache is None or force_reload:
-            self._player_data_cache = self._load_cache(_PLAYERS_DATA_CACHE_FILE)
-
-        if copy:
-            return deepcopy(self._player_data_cache)
-        return self._player_data_cache
-
-    def save_player_data_cache(
-        self, cache: dict[str, Any] | None = None
-    ) -> None:
-        """Save player data cache to disk.
-
-        Args:
-            cache: Cache to save (uses in-memory cache if not provided)
-
-        Raises:
-            ValueError: If no player data cache to save
-        """
-        data_to_save = cache if cache is not None else self._player_data_cache
-
-        if data_to_save is None:
-            raise ValueError("No player data cache to save")
-
-        self._save_cache(_PLAYERS_DATA_CACHE_FILE, data_to_save)
-        self._player_data_cache = data_to_save
 
     # ===== REPLACEMENT SCORE CACHE =====
     def get_replacement_score_cache(
@@ -608,7 +565,6 @@ class CacheManager:
         self._players_cache = None
         self._player_ids_cache = None
         self._starters_cache = None
-        self._player_data_cache = None
         self._replacement_score_cache = None
         self._valid_options_cache = None
         self._image_urls_cache = None
@@ -627,8 +583,6 @@ class CacheManager:
             self.save_player_ids_cache()
         if self._starters_cache is not None:
             self.save_starters_cache()
-        if self._player_data_cache is not None:
-            self.save_player_data_cache()
         if self._replacement_score_cache is not None:
             self.save_replacement_score_cache()
         if self._valid_options_cache is not None:

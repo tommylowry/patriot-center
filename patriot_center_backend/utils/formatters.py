@@ -119,7 +119,7 @@ def get_top_3_scorers_from_matchup_data(
         for player_id in manager_starters:
             player = Player(player_id)
 
-            player_score = player.get_score(year, week)
+            player_score = player.get_points(year=year, week=week)
 
             player_dict = {
                 "name": player.full_name,
@@ -127,7 +127,7 @@ def get_top_3_scorers_from_matchup_data(
                 "last_name": player.last_name,
                 "image_url": player.image_url,
                 "score": player_score,
-                "position": manager_starters[player]["position"],
+                "position": player.position,
             }
 
             # Update lowest scorer

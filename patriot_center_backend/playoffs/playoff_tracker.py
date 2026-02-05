@@ -169,7 +169,7 @@ def assign_placements_retroactively(year: int) -> None:
                     )
 
                     # placement already assigned
-                    if "placement" in manager_lvl[player_id]:
+                    if "placement" in manager_lvl[str(player)]:
                         return
 
                     if need_to_log:
@@ -179,7 +179,7 @@ def assign_placements_retroactively(year: int) -> None:
                         )
                         need_to_log = False
 
-                    manager_lvl[player_id]["placement"] = placements[manager]
+                    manager_lvl[str(player)]["placement"] = placements[manager]
 
 
 def _manager_cache_set_playoff_placements(

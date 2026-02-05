@@ -2,6 +2,7 @@
 
 from flask import Blueprint, Response, jsonify, request
 
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.exporters.dynamic_filter_exporter import (
     get_dynamic_filter_options,
 )
@@ -9,7 +10,6 @@ from patriot_center_backend.exporters.options_exporter import (
     get_options_list,
 )
 from patriot_center_backend.utils.data_formatters import to_records
-from patriot_center_backend.utils.slug_utils import slug_to_name
 
 bp = Blueprint("options", __name__)
 
@@ -50,12 +50,12 @@ def get_dynamic_filter_options_route() -> tuple[Response, int]:
     - wk: Week number
     - mgr: Manager name
     - pos: Player position
-    - plyr: Player name
+    - pid: Player ID
 
     Returns:
         Response in JSON format and status code.
     """
-    acceptable_args = ["yr", "wk", "mgr", "pos", "plyr"]
+    acceptable_args = ["yr", "wk", "mgr", "pos", "pid"]
     for arg in request.args:
         if arg not in acceptable_args:
             return jsonify({"error": f"Invalid argument: {arg}"}), 400
@@ -64,14 +64,14 @@ def get_dynamic_filter_options_route() -> tuple[Response, int]:
     wk = request.args.get("wk")
     mgr = request.args.get("mgr")
     pos = request.args.get("pos")
-    plyr = request.args.get("plyr")
+    pid = request.args.get("pid")
 
-    if plyr:
-        plyr = slug_to_name(plyr)
+    if pid:
+        player = Player(pid)
 
     try:
         data = get_dynamic_filter_options(
-            year=yr, week=wk, manager=mgr, position=pos, player=plyr
+            yr, wk, mgr, pos, player
         )
     except ValueError as e:
         return jsonify({"error": str(e)}), 400

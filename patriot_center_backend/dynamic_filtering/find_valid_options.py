@@ -3,12 +3,13 @@
 import logging
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.domains.player import Player
 
 logger = logging.getLogger(__name__)
 
 
 def find_valid_years(
-    manager: str | None, position: str | None, player: str | None
+    manager: str | None, position: str | None, player: Player | None
 ) -> set[str]:
     """Finds years that have data matching the filters.
 
@@ -40,13 +41,15 @@ def find_valid_years(
                     "positions", []
                 ):
                     continue
-                if player and player not in manager_data.get("players", []):
+                if player and str(player) not in manager_data.get(
+                    "players", []
+                ):
                     continue
 
             else:
                 if position and position not in week_data.get("positions", []):
                     continue
-                if player and player not in week_data.get("players", []):
+                if player and str(player) not in week_data.get("players", []):
                     continue
 
             # Found a valid year, add it and move on to the next year
@@ -63,7 +66,7 @@ def find_valid_weeks(
     year: str | None,
     manager: str | None,
     position: str | None,
-    player: str | None,
+    player: Player | None,
 ) -> set[str]:
     """Find weeks that have data matching the filters.
 
@@ -95,13 +98,15 @@ def find_valid_weeks(
                     "positions", []
                 ):
                     continue
-                if player and player not in manager_data.get("players", []):
+                if player and str(player) not in manager_data.get(
+                    "players", []
+                ):
                     continue
 
             else:
                 if position and position not in week_data.get("positions", []):
                     continue
-                if player and player not in week_data.get("players", []):
+                if player and str(player) not in week_data.get("players", []):
                     continue
 
             valid.add(wk)
@@ -113,7 +118,10 @@ def find_valid_weeks(
 
 
 def find_valid_managers(
-    year: str | None, week: str | None, position: str | None, player: str | None
+    year: str | None,
+    week: str | None,
+    position: str | None,
+    player: Player | None,
 ) -> set[str]:
     """Finds managers that have data matching the filters.
 
@@ -151,7 +159,9 @@ def find_valid_managers(
                     "positions", []
                 ):
                     continue
-                if player and player not in manager_data.get("players", []):
+                if player and str(player) not in manager_data.get(
+                    "players", []
+                ):
                     continue
                 valid.add(mgr)
 

@@ -3,10 +3,8 @@
 from statistics import mean
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.players.player_scores_fetcher import (
-    fetch_manager_scores,
-)
 from patriot_center_backend.utils.formatters import get_season_state
+from patriot_center_backend.utils.helpers import fetch_manager_scores
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_players,
 )
@@ -274,5 +272,3 @@ class FFWARCalculator:
             The adjusted score.
         """
         return score / 3 if self.season_state == "playoffs" else score
-
-# FFWARCalculator(2024, 12).calculate_ffwar()

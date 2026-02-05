@@ -19,13 +19,14 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._base import (
     log_cache_update,
 )
+from patriot_center_backend.calculations.player_score_calculator import (
+    calculate_player_score,
+)
 from patriot_center_backend.calculations.rolling_average_calculator import (
     calculate_three_year_averages,
 )
 from patriot_center_backend.constants import LEAGUE_IDS, Position
-from patriot_center_backend.players.player_data import (
-    get_player_info_and_score,
-)
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
 )
@@ -197,15 +198,27 @@ class ReplacementScoreCacheBuilder:
                         final_week_scores["byes"] -= 1
                     continue
 
-                apply, player_info, score, _ = get_player_info_and_score(
-                    player_id,
-                    self.week_data,
-                    week_scores,
-                    self.yearly_score_settings[yr],
+                # Weird edge case with Zach Ertz traded, his stats show twice
+                # and one is 1339z
+                if player_id == "1339z":
+                    continue
+
+                player = Player(player_id, apply=False)
+
+                if player.position not in Position:
+                    continue
+
+                player_data = self.week_data[str(player)]
+
+                if player_data.get("gp", 0.0) == 0.0:
+                    continue
+
+                player_score = calculate_player_score(
+                    player_data, self.yearly_score_settings[yr]
                 )
-                if apply:
-                    # Add the player's points to the appropriate position list
-                    week_scores[player_info["position"]].append(score)
+
+                # Add the player's points to the appropriate position list
+                week_scores[Position(player.position)].append(player_score)
 
             # Set first to false after first iteration
             # since we have the number of byes

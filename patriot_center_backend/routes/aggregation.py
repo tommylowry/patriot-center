@@ -2,6 +2,7 @@
 
 from flask import Blueprint, Response, jsonify, request
 
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.exporters.aggregation_exporter import (
     get_aggregated_managers,
     get_aggregated_players,
@@ -105,7 +106,7 @@ def get_aggregated_managers_route(
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    data = get_aggregated_managers(player_id, year, week)
+    data = get_aggregated_managers(Player(player_id), year, week)
     if request.args.get("format") == "json":
         response = jsonify(data)
 
@@ -149,7 +150,7 @@ def get_player_manager_aggregation_route(
     to allow URL-friendly player names.
 
     Args:
-        player_id: The player_d to filter.
+        player_id: The player_id to filter.
         manager: The manager to filter.
         year: Season (year) or week number.
         week: Season (year) or week number.
@@ -158,7 +159,7 @@ def get_player_manager_aggregation_route(
         Response in JSON format (aggregated stats or error) and status code.
     """
     data = get_player_manager_aggregation(
-        player_id, manager, year=year, week=week
+        Player(player_id), manager, year=year, week=week
     )
     if request.args.get("format") == "json":
         response = jsonify(data)

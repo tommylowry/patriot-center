@@ -84,7 +84,7 @@ class FFWARCalculator:
         # Simulate all possible manager pairings with this player
         for player in self.players:
 
-            player_score = player.get_score(
+            player_score = player.get_points(
                 year=str(self.year),
                 week=str(self.week),
                 only_started=False,

@@ -3,6 +3,7 @@
 import json
 import os
 import sys
+from copy import deepcopy
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
@@ -128,12 +129,13 @@ class CacheManager:
 
     # ===== MANAGER METADATA CACHE =====
     def get_manager_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
         """Get manager metadata cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Manager metadata cache dictionary
@@ -141,6 +143,8 @@ class CacheManager:
         if self._manager_cache is None or force_reload:
             self._manager_cache = self._load_cache(_MANAGER_METADATA_CACHE_FILE)
 
+        if copy:
+            return deepcopy(self._manager_cache)
         return self._manager_cache
 
     def save_manager_cache(
@@ -164,12 +168,13 @@ class CacheManager:
 
     # ===== TRANSACTION IDS CACHE =====
     def get_transaction_ids_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
         """Get transaction IDs cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Transaction IDs cache dictionary
@@ -179,6 +184,8 @@ class CacheManager:
                 _TRANSACTION_IDS_FILE
             )
 
+        if copy:
+            return deepcopy(self._transaction_ids_cache)
         return self._transaction_ids_cache
 
     def save_transaction_ids_cache(
@@ -204,12 +211,13 @@ class CacheManager:
 
     # ===== PLAYERS CACHE =====
     def get_players_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, str | None]]:
         """Get players cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Players cache dictionary
@@ -217,6 +225,8 @@ class CacheManager:
         if self._players_cache is None or force_reload:
             self._players_cache = self._load_cache(_PLAYERS_CACHE_FILE)
 
+        if copy:
+            return deepcopy(self._players_cache)
         return self._players_cache
 
     def save_players_cache(
@@ -240,12 +250,13 @@ class CacheManager:
 
     # ===== PLAYER IDS CACHE =====
     def get_player_ids_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
         """Get player IDs cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Player IDs cache dictionary
@@ -253,6 +264,8 @@ class CacheManager:
         if self._player_ids_cache is None or force_reload:
             self._player_ids_cache = self._load_cache(_PLAYER_IDS_CACHE_FILE)
 
+        if copy:
+            return deepcopy(self._player_ids_cache)
         return self._player_ids_cache
 
     def save_player_ids_cache(
@@ -275,11 +288,14 @@ class CacheManager:
         self._player_ids_cache = data_to_save
 
     # ===== STARTERS CACHE =====
-    def get_starters_cache(self, force_reload: bool = False) -> dict[str, Any]:
+    def get_starters_cache(
+        self, force_reload: bool = False, copy: bool = False
+    ) -> dict[str, Any]:
         """Get starters cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Starters cache dictionary
@@ -287,6 +303,8 @@ class CacheManager:
         if self._starters_cache is None or force_reload:
             self._starters_cache = self._load_cache(_STARTERS_CACHE_FILE)
 
+        if copy:
+            return deepcopy(self._starters_cache)
         return self._starters_cache
 
     def save_starters_cache(self, cache: dict[str, Any] | None = None) -> None:
@@ -308,12 +326,13 @@ class CacheManager:
 
     # ===== PLAYER DATA CACHE (ffWAR) =====
     def get_player_data_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, Any]:
         """Get player data cache (ffWAR data).
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Player data cache dictionary
@@ -321,6 +340,8 @@ class CacheManager:
         if self._player_data_cache is None or force_reload:
             self._player_data_cache = self._load_cache(_PLAYERS_DATA_CACHE_FILE)
 
+        if copy:
+            return deepcopy(self._player_data_cache)
         return self._player_data_cache
 
     def save_player_data_cache(
@@ -344,12 +365,13 @@ class CacheManager:
 
     # ===== REPLACEMENT SCORE CACHE =====
     def get_replacement_score_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, Any]:
         """Get replacement score cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Replacement score cache dictionary
@@ -359,6 +381,8 @@ class CacheManager:
                 _REPLACEMENT_SCORE_CACHE_FILE
             )
 
+        if copy:
+            return deepcopy(self._replacement_score_cache)
         return self._replacement_score_cache
 
     def save_replacement_score_cache(
@@ -384,12 +408,13 @@ class CacheManager:
 
     # ===== VALID OPTIONS CACHE =====
     def get_valid_options_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
         """Get valid options cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Valid options cache dictionary
@@ -399,6 +424,8 @@ class CacheManager:
                 _VALID_OPTIONS_CACHE_FILE
             )
 
+        if copy:
+            return deepcopy(self._valid_options_cache)
         return self._valid_options_cache
 
     def save_valid_options_cache(
@@ -421,12 +448,13 @@ class CacheManager:
         self._valid_options_cache = data_to_save
 
     def get_image_urls_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
         """Get image urls cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Image urls cache dictionary
@@ -434,6 +462,8 @@ class CacheManager:
         if self._image_urls_cache is None or force_reload:
             self._image_urls_cache = self._load_cache(_IMAGE_URLS_CACHE_FILE)
 
+        if copy:
+            return deepcopy(self._image_urls_cache)
         return self._image_urls_cache
 
     def save_image_urls_cache(
@@ -456,12 +486,13 @@ class CacheManager:
         self._image_urls_cache = data_to_save
 
     def get_weekly_data_progress_tracker(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, Any]:
         """Get weekly data progress tracker.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Weekly data progress tracker dictionary
@@ -471,6 +502,8 @@ class CacheManager:
                 _WEEKLY_DATA_PROGRESS_TRACKER_FILE
             )
 
+        if copy:
+            return deepcopy(self._weekly_data_progress_tracker)
         return self._weekly_data_progress_tracker
 
     def save_weekly_data_progress_tracker(
@@ -495,12 +528,13 @@ class CacheManager:
         self._weekly_data_progress_tracker = data_to_save
 
     def get_player_cache(
-        self, force_reload: bool = False
+        self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
         """Get player cache.
 
         Args:
             force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
 
         Returns:
             Player cache dictionary
@@ -508,6 +542,8 @@ class CacheManager:
         if self._player_cache is None or force_reload:
             self._player_cache = self._load_cache(_PLAYER_CACHE_FILE)
 
+        if copy:
+            return deepcopy(self._player_cache)
         return self._player_cache
 
     def save_player_cache(

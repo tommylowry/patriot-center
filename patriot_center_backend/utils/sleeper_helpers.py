@@ -289,10 +289,10 @@ def fetch_players(year: int, week: int) -> list["Player"]:
             continue
 
         player = Player(player_id)
-        score = calculate_player_score(
+        points = calculate_player_score(
             week_data[player_id], scoring_settings
         )
-        player.set_week_data(str(year), str(week), score)
+        player.set_week_data(str(year), str(week), points=points)
 
         players.append(player)
 

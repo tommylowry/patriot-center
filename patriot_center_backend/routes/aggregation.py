@@ -9,7 +9,6 @@ from patriot_center_backend.exporters.aggregation_exporter import (
 )
 from patriot_center_backend.utils.argument_parser import parse_arguments
 from patriot_center_backend.utils.data_formatters import to_records
-from patriot_center_backend.utils.slug_utils import slug_to_name
 
 bp = Blueprint("aggregation", __name__)
 
@@ -54,7 +53,7 @@ def get_aggregated_players_route(
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    data = get_aggregated_players(manager=manager, season=year, week=week)
+    data = get_aggregated_players(manager=manager, year=year, week=week)
     if request.args.get("format") == "json":
         response = jsonify(data)
 
@@ -106,7 +105,7 @@ def get_aggregated_managers_route(
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    data = get_aggregated_managers(player_id, year=year, week=week)
+    data = get_aggregated_managers(player_id, year, week)
     if request.args.get("format") == "json":
         response = jsonify(data)
 
@@ -122,23 +121,23 @@ def get_aggregated_managers_route(
 
 
 @bp.route(
-    "/get_player_manager_aggregation/<string:player>/<string:manager>",
+    "/get_player_manager_aggregation/<string:player_id>/<string:manager>",
     defaults={"year": None, "week": None},
     methods=["GET"],
 )
 @bp.route(
     "/get_player_manager_aggregation/"
-    "<string:player>/<string:manager>/<string:year>",
+    "<string:player_id>/<string:manager>/<string:year>",
     defaults={"week": None},
     methods=["GET"],
 )
 @bp.route(
     "/get_player_manager_aggregation/"
-    "<string:player>/<string:manager>/<string:year>/<string:week>",
+    "<string:player_id>/<string:manager>/<string:year>/<string:week>",
     methods=["GET"],
 )
 def get_player_manager_aggregation_route(
-    player: str,
+    player_id: str,
     manager: str,
     year: str | None,
     week: str | None,
@@ -150,7 +149,7 @@ def get_player_manager_aggregation_route(
     to allow URL-friendly player names.
 
     Args:
-        player: The player to filter.
+        player_id: The player_d to filter.
         manager: The manager to filter.
         year: Season (year) or week number.
         week: Season (year) or week number.
@@ -158,10 +157,8 @@ def get_player_manager_aggregation_route(
     Returns:
         Response in JSON format (aggregated stats or error) and status code.
     """
-    player = slug_to_name(player)  # Convert slug to player name
-
-    data = get_aggregated_managers(
-        player, manager, year=year, week=week
+    data = get_player_manager_aggregation(
+        player_id, manager, year=year, week=week
     )
     if request.args.get("format") == "json":
         response = jsonify(data)

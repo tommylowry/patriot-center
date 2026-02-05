@@ -165,6 +165,7 @@ class Player:
         ffwar: float | None = None,
         manager: str | None = "",
         started: bool | None = None,
+        playoff_placement: int | None = None,
     ) -> None:
         """Set player data for a given week.
 
@@ -175,6 +176,7 @@ class Player:
             ffwar: The ffWAR.
             manager: The manager.
             started: Whether the player started the week.
+            playoff_placement: The playoff placement.
         """
         if not self._is_real_player:
             return
@@ -193,6 +195,10 @@ class Player:
             self._data[f"{year}_{week}"]["manager"] = manager
         if started is not None:
             self._data[f"{year}_{week}"]["started"] = started
+        if playoff_placement is not None:
+            self._data[f"{year}_{week}"]["playoff_placement"] = (
+                playoff_placement
+            )
 
         self._apply_to_cache()
 
@@ -255,6 +261,8 @@ class Player:
                 return []
             if only_rostered and data["manager"] is None:
                 return []
+            data["year"] = year
+            data["week"] = week
             return [data]
 
         matches = []
@@ -270,6 +278,8 @@ class Player:
                 continue
             if only_rostered and data["manager"] is None:
                 continue
+            data["year"] = data_year
+            data["week"] = data_week
             matches.append(data)
 
         return matches
@@ -402,19 +412,19 @@ class Player:
             )
         )
 
-    def get_scoring_summary(
+    def get_grouped_scoring_summary(
         self,
-        key: Literal["manager", "year"] = "manager",
+        group_by: Literal["manager", "year"] = "manager",
         year: str | None = None,
         week: str | None = None,
         manager: str | None = None,
         only_started: bool = True,
         only_rostered: bool = True,
     ) -> dict[str, Any]:
-        """Get a summary of the player's scoring data.
+        """Get a summary of the player's scoring data grouped by the given key.
 
         Args:
-            key: The key to group by.
+            group_by: The key to group by.
             year: Filter by year.
             week: Filter by week.
             manager: Filter by manager.
@@ -422,10 +432,15 @@ class Player:
             only_rostered: Only include weeks where player is rostered.
 
         Returns:
-            The player's scoring summary
+            The player's summary
         """
         if not self._is_real_player:
             return {}
+
+        if (manager and group_by == "manager") or (year and group_by == "year"):
+            return self.get_scoring_summary(
+                year, week, manager, only_started, only_rostered
+            )
 
         matches = self._get_matching_data(
             year, week, only_started, only_rostered, manager=manager
@@ -437,7 +452,69 @@ class Player:
             )
             return {}
 
-        return self._group_matches(key, matches)
+        return self._group_matches(group_by, matches)
+
+    def get_scoring_summary(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+        only_started: bool = True,
+        only_rostered: bool = True,
+    ) -> dict[str, Any]:
+        """Get a summary of the player's scoring data.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
+
+        Returns:
+            The player's summary
+        """
+        if not self._is_real_player:
+            return {}
+
+        matches = self._get_matching_data(
+            year, week, only_started, only_rostered, manager=manager
+        )
+
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return {}
+
+        raw_dict = {
+            "total_points": 0.0,
+            "ffWAR": 0.0,
+            "num_games_started": 0,
+        }
+
+        # Add up the total points, ffWAR, and number of games started
+        for match in matches:
+            raw_dict["total_points"] += match["points"]
+            raw_dict["ffWAR"] += match["ffwar"]
+            raw_dict["num_games_started"] += 1
+
+            # Add playoff placement if available
+            if "playoff_placement" in match:
+                (
+                    raw_dict
+                    .setdefault("playoff_placement", {})
+                    .setdefault(match["manager"], {})
+                )[match["year"]] = match["playoff_placement"]
+
+        # Round total_points to 2 decimal places and ffWAR to 3
+        raw_dict["total_points"] = round(
+            raw_dict["total_points"], 2
+        )
+        raw_dict["ffWAR"] = round(raw_dict["ffWAR"], 3)
+
+        return raw_dict
 
     def _group_matches(
         self, key: Literal["manager", "year"], matches: list[dict[str, Any]]
@@ -457,18 +534,29 @@ class Player:
             key_value = match[key]
             if key_value not in grouped:
                 grouped[key_value] = {
-                    "points": 0.0,
-                    "ffwar": 0.0,
-                    "num_games": 0,
+                    "total_points": 0.0,
+                    "ffWAR": 0.0,
+                    "num_games_started": 0,
                 }
-            grouped[key_value]["points"] += match["points"]
-            grouped[key_value]["ffwar"] += match["ffwar"]
-            grouped[key_value]["num_games"] += 1
+            key_level = grouped[key_value]
 
-        for key_value in grouped:
-            grouped[key_value]["points"] = round(
-                grouped[key_value]["points"], 2
+            key_level["total_points"] += match["points"]
+            key_level["ffWAR"] += match["ffwar"]
+            key_level["num_games_started"] += 1
+
+            if "playoff_placement" in match:
+                (
+                    key_level
+                    .setdefault("playoff_placement", {})
+                    .setdefault(match["manager"], {})
+                )[match["year"]] = match["playoff_placement"]
+
+        for key_value in list(grouped.keys()):
+            key_level = grouped[key_value]
+
+            key_level["total_points"] = round(
+                key_level["total_points"], 2
             )
-            grouped[key_value]["ffwar"] = round(grouped[key_value]["ffwar"], 3)
+            key_level["ffWAR"] = round(key_level["ffWAR"], 3)
 
         return grouped

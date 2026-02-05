@@ -4,6 +4,7 @@ import logging
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
+from patriot_center_backend.domains.player import Player
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 logger = logging.getLogger(__name__)
@@ -156,20 +157,29 @@ def assign_placements_retroactively(year: int) -> None:
         for manager in starters_cache.get(year_str, {}).get(week, {}):
             if manager in placements:
                 manager_lvl = starters_cache[year_str][week][manager]
-                for player in manager_lvl:
-                    if player != "Total_Points":
-                        # placement already assigned
-                        if "placement" in manager_lvl[player]:
-                            return
+                for player_id in manager_lvl:
+                    if player_id == "Total_Points":
+                        continue
 
-                        if need_to_log:
-                            logger.info(
-                                f"New placements found: {placements}, "
-                                f"retroactively applying placements."
-                            )
-                            need_to_log = False
+                    player = Player(player_id)
+                    player.set_week_data(
+                        year_str,
+                        week,
+                        playoff_placement=placements[manager],
+                    )
 
-                        manager_lvl[player]["placement"] = placements[manager]
+                    # placement already assigned
+                    if "placement" in manager_lvl[player_id]:
+                        return
+
+                    if need_to_log:
+                        logger.info(
+                            f"New placements found: {placements}, "
+                            f"retroactively applying placements."
+                        )
+                        need_to_log = False
+
+                    manager_lvl[player_id]["placement"] = placements[manager]
 
 
 def _manager_cache_set_playoff_placements(

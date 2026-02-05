@@ -3,13 +3,13 @@
 from statistics import mean
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.domains.player import Player
 from patriot_center_backend.players.player_scores_fetcher import (
-    fetch_all_player_scores,
-    fetch_rostered_players,
-    fetch_starters_by_position,
+    fetch_manager_scores,
 )
 from patriot_center_backend.utils.formatters import get_season_state
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_players,
+)
 
 
 class FFWARCalculator:
@@ -27,7 +27,9 @@ class FFWARCalculator:
 
         self.season_state = get_season_state(str(self.week), str(self.year))
 
-        self.starter_scores = fetch_starters_by_position(self.year, self.week)
+        self.starter_scores = fetch_manager_scores(self.year, self.week)
+
+        self.players = fetch_players(self.year, self.week)
 
         self.managers = []
 
@@ -38,8 +40,6 @@ class FFWARCalculator:
         self.weighted_scores = {
             position: {} for position in self.starter_scores
         }
-
-        self.player_data = {}
 
     # ==================== Public Methods ====================
     def calculate_ffwar(self) -> None:
@@ -54,7 +54,6 @@ class FFWARCalculator:
         # Calculate the prerequisites for calculating ffWAR
         self._apply_replacement_scores()
         self._apply_baseline_and_weighted_scores()
-        self._apply_player_data()
 
         # Simulate all possible manager pairings
         self._simulate_matchups()
@@ -83,10 +82,14 @@ class FFWARCalculator:
             playoffs.
         """
         # Simulate all possible manager pairings with this player
-        for player_id in self.player_data:
-            player = Player(player_id)
+        for player in self.players:
 
-            player_score = self.player_data[player_id]["score"]
+            player_score = player.get_score(
+                year=str(self.year),
+                week=str(self.week),
+                only_started=False,
+                only_rostered=False,
+            )
             replacement_score = self.replacement_scores[player.position]
 
             num_wins = 0
@@ -155,15 +158,10 @@ class FFWARCalculator:
             # play each week
             ffwar_score = self._apply_playoff_adjustment(ffwar_score)
 
-            self.player_data[player_id]["ffWAR"] = round(ffwar_score, 3)
-
             player.set_week_data(
                 str(self.year),
                 str(self.week),
-                self.player_data[player_id]["score"],
-                self.player_data[player_id]["ffWAR"],
-                self.player_data[player_id]["manager"],
-                self.player_data[player_id]["started"],
+                ffwar=round(ffwar_score, 3),
             )
 
     def _apply_managers(self) -> None:
@@ -236,47 +234,6 @@ class FFWARCalculator:
                         + pos_average
                     )
 
-    def _apply_player_data(self) -> None:
-        """Populate scores and roster information for each player.
-
-        For each player, we store the following information:
-            - name: The player's full name.
-            - score: The player's fantasy score for the week.
-            - ffWAR: The player's ffWAR score for the week.
-            - position: The player's position (QB, RB, WR, TE, K, DEF).
-            - manager: The manager who rostered this player, or None if not
-                rostered.
-            - started: A boolean indicating whether this player was a starter
-                for the week.
-        """
-        player_scores = fetch_all_player_scores(self.year, self.week)
-        rostered_players = fetch_rostered_players(self.year, self.week)
-
-        for position in player_scores:
-            position_scores = player_scores[position]
-            for player_id in position_scores:
-                # Player's Full Name
-                player = position_scores[player_id]["name"]
-
-                # Determine if this player is a starter
-                started = player in self.starter_scores[position]["players"]
-
-                # Determine if this player is rostered and by whom
-                player_data_manager_value = None
-                for manager in self.managers:
-                    if player_id in rostered_players[manager]:
-                        player_data_manager_value = manager
-                        break
-
-                self.player_data[player_id] = {
-                    "name": player,
-                    "score": position_scores[player_id]["score"],
-                    "ffWAR": 0.0,
-                    "position": position,
-                    "manager": player_data_manager_value,
-                    "started": started,
-                }
-
     def _apply_replacement_scores(self):
         """Fetches replacement scores for every positinon in the given week.
 
@@ -317,3 +274,5 @@ class FFWARCalculator:
             The adjusted score.
         """
         return score / 3 if self.season_state == "playoffs" else score
+
+# FFWARCalculator(2024, 12).calculate_ffwar()

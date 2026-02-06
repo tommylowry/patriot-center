@@ -12,8 +12,10 @@ from patriot_center_backend.cache.updaters.valid_options_updater import (
     update_valid_options_cache,
 )
 from patriot_center_backend.constants import LEAGUE_IDS
-from patriot_center_backend.utils.formatters import get_season_state
-from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_sleeper_data,
+    get_season_state,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -109,7 +111,7 @@ class MatchupProcessor:
             raise ValueError("No matchup data found for week.")
 
         season_state = get_season_state(
-            self._week, self._year, self._playoff_week_start
+            self._year, self._week, self._playoff_week_start
         )
 
         for manager_1_data in manager_matchup_data:
@@ -265,7 +267,7 @@ class MatchupProcessor:
 
         # Prepare yearly and top-level summaries
         season_state = get_season_state(
-            self._week, self._year, self._playoff_week_start
+            self._year, self._week, self._playoff_week_start
         )
 
         yearly_overall_summary = (

@@ -23,14 +23,12 @@ from patriot_center_backend.cache.updaters.processors.transactions.base_processo
 from patriot_center_backend.constants import (
     NAME_TO_MANAGER_USERNAME,
 )
-from patriot_center_backend.playoffs.playoff_tracker import (
-    get_playoff_roster_ids,
-)
-from patriot_center_backend.utils.formatters import get_season_state
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
     get_league_info,
+    get_playoff_roster_ids,
     get_roster_ids,
+    get_season_state,
 )
 
 
@@ -146,7 +144,7 @@ class ManagerMetadataManager:
         self._matchup_processor.scrub_matchup_data()
 
         # Scrub playoff data for the week if applicable
-        if get_season_state(week, year, self._playoff_week_start) == "playoffs":
+        if get_season_state(year, week, self._playoff_week_start) == "playoffs":
             self._matchup_processor.scrub_playoff_data()
 
         # Clear weekly metadata
@@ -215,7 +213,7 @@ class ManagerMetadataManager:
             if self._week not in weeks_level:
                 # Differentiate between playoff and non-playoff weeks
                 season_state = get_season_state(
-                    self._week, self._year, self._playoff_week_start
+                    self._year, self._week, self._playoff_week_start
                 )
 
                 if (

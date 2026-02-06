@@ -1,7 +1,7 @@
 """This module provides utility for interacting with the Sleeper API."""
 
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.calculations.player_score_calculator import (
@@ -167,7 +167,119 @@ def get_roster_ids(year: int, week: int) -> dict[int, str]:
     if len(roster_ids) > len(user_ids):
         raise Exception("Not all roster IDs are assigned to a user")
 
+    if get_season_state(str(year), str(week)) == "playoffs":
+        playoff_ids = get_playoff_roster_ids(year, week)
+        returning_ids = {}
+        for id in playoff_ids:
+            returning_ids[id] = roster_ids[id]
+
+        return returning_ids
+
     return roster_ids
+
+
+def get_playoff_roster_ids(year: int, week: int) -> list[int]:
+    """Determine which rosters are participating in playoffs for a given week.
+
+    Filters out regular year weeks and consolation bracket teams,
+    returning only the roster IDs competing in the winners bracket.
+
+    Rules:
+    - 2019/2020: Playoffs start week 14 (rounds 1-3 for weeks 14-16).
+    - 2021+: Playoffs start week 15 (rounds 1-3 for weeks 15-17).
+    - Week 17 in 2019/2020 (round 4) is unsupported and raises an error.
+    - Consolation bracket matchups (p=5) are excluded.
+
+    Args:
+        year (int): Target year year.
+        week (int): Target week number.
+
+    Returns:
+        [int] or [] if regular year week.
+              Empty dict signals no playoff filtering needed.
+
+    Raises:
+        ValueError: If week 17 in 2019/2020 or no rosters found for the round.
+    """
+    sleeper_response_playoff_bracket = fetch_sleeper_data(
+        f"league/{LEAGUE_IDS[year]}/winners_bracket"
+    )
+
+    if week == 14:
+        round = 1
+    elif week == 15:
+        round = 2
+    elif week == 16:
+        round = 3
+    else:
+        round = 4
+
+    if year >= 2021:
+        round -= 1
+
+    if round == 4:
+        raise ValueError("Cannot get playoff roster IDs for week 17")
+    if not isinstance(sleeper_response_playoff_bracket, list):
+        raise ValueError("Cannot get playoff roster IDs for the given week")
+
+    relevant_roster_ids = []
+    for matchup in sleeper_response_playoff_bracket:
+        if matchup.get("r") == round:
+            if matchup.get("p") == 5:
+                continue  # Skip consolation match
+            relevant_roster_ids.append(matchup["t1"])
+            relevant_roster_ids.append(matchup["t2"])
+
+    if len(relevant_roster_ids) == 0:
+        raise ValueError("Cannot get playoff roster IDs for the given week")
+
+    return relevant_roster_ids
+
+
+def get_season_state(
+    year: str, week: str, playoff_week_start: int | None = None
+) -> Literal["regular_season", "playoffs"]:
+    """Determine the current state of the season (regular season or playoffs).
+
+    Args:
+        week: Current week number as string
+        year: Current year as string
+        playoff_week_start: Week when playoffs start
+            (fetched from API if not provided)
+
+    Returns:
+        "regular_season" or "playoffs"
+
+    Raises:
+        ValueError: If week or year not provided
+            or if Sleeper API call fails to retrieve what is expected
+    """
+    if not week or not year:
+        raise ValueError("Week or Year not set. Cannot determine season state.")
+
+    # Fetch playoff week start from league settings if not provided
+    if not playoff_week_start:
+        league_info = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year))}")
+
+        if not isinstance(league_info, dict):
+            raise ValueError(
+                f"Sleeper API call failed to retrieve "
+                f"league info for year {year}"
+            )
+
+        playoff_week_start = league_info.get("settings", {}).get(
+            "playoff_week_start"
+        )
+
+        if not playoff_week_start:
+            raise ValueError(
+                f"Sleeper API call failed to retrieve "
+                f"playoff_week_start for year {year}"
+            )
+
+    if int(week) >= playoff_week_start:
+        return "playoffs"
+    return "regular_season"
 
 
 def get_league_info(year: int) -> dict[str, Any]:
@@ -244,7 +356,7 @@ def fetch_all_player_ids() -> dict[str, Any]:
     return sleeper_response
 
 
-def fetch_players(year: int, week: int) -> list["Player"]:
+def fetch_players(year: int, week: int) -> list[Player]:
     """Retrieves the player data for a given year and week.
 
     This function retrieves raw stats from the Sleeper API for the specified
@@ -312,3 +424,6 @@ def fetch_players(year: int, week: int) -> list["Player"]:
             )
 
     return players
+
+
+get_roster_ids(2025, 16)

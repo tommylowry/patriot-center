@@ -12,7 +12,7 @@ from patriot_center_backend.constants import (
     USERNAME_TO_REAL_NAME,
     Position,
 )
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.utils.helpers import get_user_id
 from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
 
@@ -261,13 +261,10 @@ def fetch_players(year: int, week: int) -> list["Player"]:
     Raises:
         ValueError: If Sleeper API call returns invalid data.
     """
-    week_data = fetch_sleeper_data(
-        f"stats/nfl/regular/{year}/{week}"
-    )
+    week_data = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
     if not isinstance(week_data, dict):
         raise ValueError(
-            f"Sleeper API call failed for "
-            f"year {year}, week {week}"
+            f"Sleeper API call failed for year {year}, week {week}"
         )
 
     settings = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}")
@@ -289,9 +286,7 @@ def fetch_players(year: int, week: int) -> list["Player"]:
             continue
 
         player = Player(player_id)
-        points = calculate_player_score(
-            week_data[player_id], scoring_settings
-        )
+        points = calculate_player_score(week_data[player_id], scoring_settings)
         player.set_week_data(str(year), str(week), points=points)
 
         players.append(player)
@@ -306,16 +301,14 @@ def fetch_players(year: int, week: int) -> list["Player"]:
     roster_ids = get_roster_ids(year, week)
 
     for matchup in matchup_data_response:
-        manager = roster_ids[matchup['roster_id']]
-        for player_id in matchup['players']:
+        manager = roster_ids[matchup["roster_id"]]
+        for player_id in matchup["players"]:
             player = Player(player_id)
 
-            started = player_id in matchup['starters']
+            started = player_id in matchup["starters"]
 
             player.set_week_data(
                 str(year), str(week), manager=manager, started=started
             )
 
     return players
-
-

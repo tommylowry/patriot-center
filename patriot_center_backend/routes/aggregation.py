@@ -2,7 +2,7 @@
 
 from flask import Blueprint, Response, jsonify, request
 
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.exporters.aggregation_exporter import (
     get_aggregated_managers,
     get_aggregated_players,

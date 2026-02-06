@@ -1,6 +1,6 @@
 """Functions for finding valid filtering options based on selected criteria."""
 
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.dynamic_filtering.find_valid_options import (
     find_valid_managers,
     find_valid_positions,

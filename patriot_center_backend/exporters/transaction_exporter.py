@@ -7,7 +7,7 @@ from patriot_center_backend.cache.queries.transaction_queries import (
     get_manager_transaction_history_from_cache,
     get_transaction_from_ids_cache,
 )
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.utils.formatters import get_trade_card
 from patriot_center_backend.utils.image_url_handler import get_image_url
 
@@ -66,7 +66,6 @@ def get_manager_transactions(
                 #   transaction for "add" filter
                 add_details = get_transaction_from_ids_cache(transaction_id)
                 if add_details and "add" in add_details.get("types", []):
-
                     player = Player(add_details["add"])
 
                     transaction_item = {
@@ -94,7 +93,6 @@ def get_manager_transactions(
             for transaction_id in transaction_ids:
                 drop_details = get_transaction_from_ids_cache(transaction_id)
                 if drop_details and "drop" in drop_details.get("types", []):
-
                     player = Player(add_details["add"])
 
                     transaction_item = {
@@ -124,7 +122,6 @@ def get_manager_transactions(
                 # Only include add_and_drop transactions
                 types = add_drop_details.get("types", [])
                 if types and "add" in types and "drop" in types:
-
                     added_player = Player(add_drop_details["add"])
                     dropped_player = Player(add_drop_details["drop"])
 

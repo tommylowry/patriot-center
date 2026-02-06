@@ -1,7 +1,7 @@
 """Options exporters for Patriot Center."""
 
 from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.utils.image_url_handler import get_image_url
 
 

@@ -26,7 +26,7 @@ from patriot_center_backend.calculations.rolling_average_calculator import (
     calculate_three_year_averages,
 )
 from patriot_center_backend.constants import LEAGUE_IDS, Position
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
 )

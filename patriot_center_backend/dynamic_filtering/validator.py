@@ -8,7 +8,7 @@ from patriot_center_backend.constants import (
     NAME_TO_MANAGER_USERNAME,
     Position,
 )
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 
 
 def validate_dynamic_filter_args(

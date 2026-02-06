@@ -11,7 +11,7 @@ from patriot_center_backend.cache.updaters.processors.transactions.faab_processo
 from patriot_center_backend.cache.updaters.processors.transactions.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
 )
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.utils.formatters import draft_pick_decipher
 
 logger = logging.getLogger(__name__)

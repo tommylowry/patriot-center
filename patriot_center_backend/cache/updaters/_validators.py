@@ -181,7 +181,7 @@ def validate_transaction(
 
         # At least one involved roster must be
         # relevant to current caching session
-
+        no_relevant_roster_ids = False
         for roster_id in transaction.get("roster_ids", {}):
             no_relevant_roster_ids = True
             if roster_id in roster_ids:

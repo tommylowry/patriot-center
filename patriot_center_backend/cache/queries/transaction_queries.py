@@ -243,5 +243,3 @@ def get_transaction_from_ids_cache(transaction_id: str) -> dict[str, Any]:
     transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
 
     return deepcopy(transaction_ids_cache.get(transaction_id, {}))
-
-get_transaction_details_from_cache("Tommy")

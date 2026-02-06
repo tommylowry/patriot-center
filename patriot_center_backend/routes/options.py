@@ -66,8 +66,7 @@ def get_dynamic_filter_options_route() -> tuple[Response, int]:
     pos = request.args.get("pos")
     pid = request.args.get("pid")
 
-    if pid:
-        player = Player(pid)
+    player = Player(pid) if pid else None
 
     try:
         data = get_dynamic_filter_options(yr, wk, mgr, pos, player)

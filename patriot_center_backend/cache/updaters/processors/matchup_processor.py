@@ -1,5 +1,6 @@
 """Matchup and playoff processing for manager metadata."""
 
+import logging
 from decimal import Decimal
 from typing import Any
 
@@ -13,6 +14,8 @@ from patriot_center_backend.cache.updaters.valid_options_updater import (
 from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.utils.formatters import get_season_state
 from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
+
+logger = logging.getLogger(__name__)
 
 
 class MatchupProcessor:
@@ -131,6 +134,11 @@ class MatchupProcessor:
                     continue
                 if manager_2_data.get("matchup_id", None) == matchup_id:
                     break
+            else:
+                logger.warning(
+                    f"No manager_2_data found for matchup_id: {matchup_id}"
+                )
+                continue
 
             manager_2_roster_id = manager_2_data.get("roster_id")
 

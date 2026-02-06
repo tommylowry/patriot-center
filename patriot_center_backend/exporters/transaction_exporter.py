@@ -93,7 +93,7 @@ def get_manager_transactions(
             for transaction_id in transaction_ids:
                 drop_details = get_transaction_from_ids_cache(transaction_id)
                 if drop_details and "drop" in drop_details.get("types", []):
-                    player = Player(add_details["add"])
+                    player = Player(drop_details["drop"])
 
                     transaction_item = {
                         "year": yr,

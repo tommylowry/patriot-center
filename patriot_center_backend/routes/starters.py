@@ -51,6 +51,9 @@ def get_starters_route(
     # Parse positional arguments to determine filter values
     year, week, manager = parse_arguments(arg1, arg2, arg3)
 
+    year = int(year) if year is not None else None
+    week = int(week) if week is not None else None
+
     # Fetch filtered starters data from cache
     data = get_starters(season=year, manager=manager, week=week)
 

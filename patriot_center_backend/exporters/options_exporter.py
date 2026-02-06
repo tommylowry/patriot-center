@@ -5,7 +5,7 @@ from patriot_center_backend.domains import Player
 from patriot_center_backend.utils.image_url_handler import get_image_url
 
 
-def get_options_liste() -> dict[str, dict[str, str | None]]:
+def get_options_list() -> dict[str, dict[str, str | None]]:
     """Get list of options.
 
     Returns:

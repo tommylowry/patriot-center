@@ -10,12 +10,27 @@ from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
     fetch_user_metadata,
     get_league_info,
+    get_playoff_roster_ids,
     get_roster_id,
     get_roster_ids,
+    get_season_state,
 )
 
 MODULE_PATH = "patriot_center_backend.utils.sleeper_helpers"
 
+@pytest.fixture(autouse=True)
+def globals_setup():
+    """Setup common mocks for all tests.
+
+    The mocks are set up to return a pre-defined
+    set of values when accessed.
+    - `LEAGUE_IDS`: `{2023: "league123"}`
+
+    Yields:
+        None
+    """
+    with patch(f"{MODULE_PATH}.LEAGUE_IDS", {2023: "league123"}):
+        yield
 
 class TestFetchSleeperData:
     """Test fetch_sleeper_data function."""
@@ -58,6 +73,254 @@ class TestFetchSleeperData:
         self.mock_sleeper_client.fetch.assert_called_once_with(
             "league/123", bypass_cache=True
         )
+
+
+class TestGetPlayoffRosterIds:
+    """Test get_playoff_roster_ids function."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
+
+        Yields:
+            None
+        """
+        with (
+            patch(
+                "patriot_center_backend.playoffs.playoff_tracker"
+                ".LEAGUE_IDS", {
+                    2019: "league2019", 2020: "league2020", 2024: "league2024"
+                }
+            ),
+            patch(
+                "patriot_center_backend.playoffs.playoff_tracker"
+                ".fetch_sleeper_data"
+            ) as mock_fetch_sleeper_data,
+        ):
+            self.mock_fetch_sleeper_data = mock_fetch_sleeper_data
+
+            yield
+
+    def test_returns_empty_list_for_regular_season_pre_2021(self):
+        """Test returns empty list for regular season weeks pre-2021."""
+        result = get_playoff_roster_ids(2020, 13)
+
+        assert result == []
+        self.mock_fetch_sleeper_data.assert_not_called()
+
+    def test_returns_empty_list_for_regular_season_2021_plus(self):
+        """Test returns empty list for regular season weeks 2021+."""
+        result = get_playoff_roster_ids(2024, 14)
+
+        assert result == []
+        self.mock_fetch_sleeper_data.assert_not_called()
+
+    def test_fetches_winners_bracket_for_playoff_week_pre_2021(self):
+        """Test fetches winners bracket for playoff weeks."""
+        self.mock_fetch_sleeper_data.return_value = [
+            {"r": 1, "t1": 1, "t2": 2},
+            {"r": 1, "t1": 3, "t2": 4},
+        ]
+
+        result = get_playoff_roster_ids(2019, 14)
+
+        self.mock_fetch_sleeper_data.assert_called_once_with(
+            "league/league2019/winners_bracket"
+        )
+        assert 1 in result
+        assert 2 in result
+
+    def test_fetches_winners_bracket_for_championship_pre_2021(self):
+        """Test fetches winners bracket for playoff weeks."""
+        self.mock_fetch_sleeper_data.return_value = [
+            {"r": 3, "t1": 1, "t2": 2},
+            {"r": 3, "t1": 3, "t2": 4},
+        ]
+
+        result = get_playoff_roster_ids(2019, 16)
+
+        self.mock_fetch_sleeper_data.assert_called_once_with(
+            "league/league2019/winners_bracket"
+        )
+        assert 1 in result
+        assert 2 in result
+
+    def test_fetches_winners_bracket_for_playoff_week(self):
+        """Test fetches winners bracket for playoff weeks."""
+        self.mock_fetch_sleeper_data.return_value = [
+            {"r": 1, "t1": 1, "t2": 2},
+            {"r": 1, "t1": 3, "t2": 4},
+        ]
+
+        result = get_playoff_roster_ids(2024, 15)
+
+        self.mock_fetch_sleeper_data.assert_called_once_with(
+            "league/league2024/winners_bracket"
+        )
+        assert 1 in result
+        assert 2 in result
+
+    def test_excludes_consolation_matchups(self):
+        """Test excludes consolation bracket matchups (p=5)."""
+        self.mock_fetch_sleeper_data.return_value = [
+            {"r": 1, "t1": 1, "t2": 2},
+            {"r": 1, "t1": 3, "t2": 4, "p": 5},
+        ]
+
+        result = get_playoff_roster_ids(2024, 15)
+
+        assert 3 not in result
+        assert 4 not in result
+
+    def test_raises_error_for_week_17_pre_2021(self):
+        """Test raises ValueError for week 17 in pre-2021 seasons."""
+        self.mock_fetch_sleeper_data.return_value = []
+
+        with pytest.raises(ValueError) as exc_info:
+            get_playoff_roster_ids(2020, 17)
+
+        assert "Cannot get playoff roster IDs for week 17" in str(
+            exc_info.value
+        )
+
+    def test_raises_error_when_api_returns_non_list(self):
+        """Test raises ValueError when API returns non-list."""
+        self.mock_fetch_sleeper_data.return_value = {}
+
+        with pytest.raises(ValueError) as exc_info:
+            get_playoff_roster_ids(2024, 15)
+
+        assert "Cannot get playoff roster IDs" in str(exc_info.value)
+
+    def test_raises_error_when_no_rosters_found(self):
+        """Test raises ValueError when no rosters found for round."""
+        self.mock_fetch_sleeper_data.return_value = [
+            {"r": 2, "t1": 1, "t2": 2},
+        ]
+
+        with pytest.raises(ValueError) as exc_info:
+            get_playoff_roster_ids(2024, 15)
+
+        assert "Cannot get playoff roster IDs" in str(exc_info.value)
+
+
+class TestGetSeasonState:
+    """Test get_season_state function."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        """Setup common mocks for all tests.
+
+        The mocks are set up to return a pre-defined
+        set of values when accessed.
+        - `fetch_sleeper_data`: `mock_fetch_sleeper`
+
+        Yields:
+            None
+        """
+        with patch(
+            "patriot_center_backend.utils.formatters.fetch_sleeper_data"
+        ) as mock_fetch_sleeper:
+            self.mock_fetch_sleeper = mock_fetch_sleeper
+
+            yield
+
+    def test_regular_season(self):
+        """Test regular season detection."""
+        week = "5"
+        year = "2023"
+        playoff_week_start = 15
+
+        result = get_season_state(week, year, playoff_week_start)
+
+        assert result == "regular_season"
+        self.mock_fetch_sleeper.assert_not_called()
+
+    def test_playoffs(self):
+        """Test playoff detection."""
+        week = "15"
+        year = "2023"
+        playoff_week_start = 15
+
+        result = get_season_state(week, year, playoff_week_start)
+
+        assert result == "playoffs"
+        self.mock_fetch_sleeper.assert_not_called()
+
+    def test_playoffs_late_week(self):
+        """Test playoff detection in late weeks."""
+        week = "17"
+        year = "2023"
+        playoff_week_start = 15
+
+        result = get_season_state(week, year, playoff_week_start)
+
+        assert result == "playoffs"
+
+    def test_fetch_playoff_week_from_api(self):
+        """Test fetching playoff_week_start from API when not provided."""
+        self.mock_fetch_sleeper.return_value = {
+            "settings": {"playoff_week_start": 15}
+        }
+
+        week = "10"
+        year = "2023"
+        playoff_week_start = None
+
+        result = get_season_state(week, year, playoff_week_start)
+
+        assert result == "regular_season"
+        self.mock_fetch_sleeper.assert_called_once_with("league/league123")
+
+    def test_missing_week_raises_error(self):
+        """Test that missing week raises ValueError."""
+        week = None
+        year = "2023"
+        playoff_week_start = 15
+
+        with pytest.raises(ValueError, match="Week or Year not set"):
+            get_season_state(week, year, playoff_week_start)  # type: ignore
+
+    def test_empty_week_raises_error(self):
+        """Test that empty week raises ValueError."""
+        week = ""
+        year = "2023"
+        playoff_week_start = 15
+
+        with pytest.raises(ValueError, match="Week or Year not set"):
+            get_season_state(week, year, playoff_week_start)
+
+    def test_missing_year_raises_error(self):
+        """Test that missing year raises ValueError."""
+        week = "5"
+        year = None
+        playoff_week_start = 15
+
+        with pytest.raises(ValueError, match="Week or Year not set"):
+            get_season_state(week, year, playoff_week_start)  # type: ignore
+
+    def test_empty_year_raises_error(self):
+        """Test that empty year raises ValueError."""
+        week = "5"
+        year = ""
+        playoff_week_start = 15
+
+        with pytest.raises(ValueError, match="Week or Year not set"):
+            get_season_state(week, year, playoff_week_start)
+
+    def test_boundary_week_before_playoffs(self):
+        """Test week just before playoffs."""
+        week = "14"
+        year = "2023"
+        playoff_week_start = 15
+
+        result = get_season_state(week, year, playoff_week_start)
+
+        assert result == "regular_season"
 
 
 class TestGetRosterId:

@@ -2,61 +2,13 @@
 
 import logging
 from copy import deepcopy
-from typing import Any, Literal
+from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.domains import Player
 from patriot_center_backend.utils.image_url_handler import get_image_url
-from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 
 logger = logging.getLogger(__name__)
-
-
-def get_season_state(
-    week: str, year: str, playoff_week_start: int | None = None
-) -> Literal["regular_season", "playoffs"]:
-    """Determine the current state of the season (regular season or playoffs).
-
-    Args:
-        week: Current week number as string
-        year: Current year as string
-        playoff_week_start: Week when playoffs start
-            (fetched from API if not provided)
-
-    Returns:
-        "regular_season" or "playoffs"
-
-    Raises:
-        ValueError: If week or year not provided
-            or if Sleeper API call fails to retrieve what is expected
-    """
-    if not week or not year:
-        raise ValueError("Week or Year not set. Cannot determine season state.")
-
-    # Fetch playoff week start from league settings if not provided
-    if not playoff_week_start:
-        league_info = fetch_sleeper_data(f"league/{LEAGUE_IDS.get(int(year))}")
-
-        if not isinstance(league_info, dict):
-            raise ValueError(
-                f"Sleeper API call failed to retrieve "
-                f"league info for year {year}"
-            )
-
-        playoff_week_start = league_info.get("settings", {}).get(
-            "playoff_week_start"
-        )
-
-        if not playoff_week_start:
-            raise ValueError(
-                f"Sleeper API call failed to retrieve "
-                f"playoff_week_start for year {year}"
-            )
-
-    if int(week) >= playoff_week_start:
-        return "playoffs"
-    return "regular_season"
 
 
 def get_top_3_scorers_from_matchup_data(

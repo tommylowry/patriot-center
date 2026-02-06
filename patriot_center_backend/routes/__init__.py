@@ -13,10 +13,8 @@ def register_blueprints(app: Flask) -> None:
     from patriot_center_backend.routes.health import bp as health_bp
     from patriot_center_backend.routes.managers import bp as managers_bp
     from patriot_center_backend.routes.options import bp as options_bp
-    from patriot_center_backend.routes.starters import bp as starters_bp
 
     app.register_blueprint(aggregation_bp)
     app.register_blueprint(health_bp)
     app.register_blueprint(managers_bp)
     app.register_blueprint(options_bp)
-    app.register_blueprint(starters_bp)

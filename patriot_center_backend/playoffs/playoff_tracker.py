@@ -10,69 +10,6 @@ from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
 logger = logging.getLogger(__name__)
 
 
-def get_playoff_roster_ids(year: int, week: int) -> list[int]:
-    """Determine which rosters are participating in playoffs for a given week.
-
-    Filters out regular year weeks and consolation bracket teams,
-    returning only the roster IDs competing in the winners bracket.
-
-    Rules:
-    - 2019/2020: Playoffs start week 14 (rounds 1-3 for weeks 14-16).
-    - 2021+: Playoffs start week 15 (rounds 1-3 for weeks 15-17).
-    - Week 17 in 2019/2020 (round 4) is unsupported and raises an error.
-    - Consolation bracket matchups (p=5) are excluded.
-
-    Args:
-        year (int): Target year year.
-        week (int): Target week number.
-
-    Returns:
-        [int] or [] if regular year week.
-              Empty dict signals no playoff filtering needed.
-
-    Raises:
-        ValueError: If week 17 in 2019/2020 or no rosters found for the round.
-    """
-    if year <= 2020 and week <= 13:
-        return []
-    if year >= 2021 and week <= 14:
-        return []
-
-    sleeper_response_playoff_bracket = fetch_sleeper_data(
-        f"league/{LEAGUE_IDS[year]}/winners_bracket"
-    )
-
-    if week == 14:
-        round = 1
-    elif week == 15:
-        round = 2
-    elif week == 16:
-        round = 3
-    else:
-        round = 4
-
-    if year >= 2021:
-        round -= 1
-
-    if round == 4:
-        raise ValueError("Cannot get playoff roster IDs for week 17")
-    if not isinstance(sleeper_response_playoff_bracket, list):
-        raise ValueError("Cannot get playoff roster IDs for the given week")
-
-    relevant_roster_ids = []
-    for matchup in sleeper_response_playoff_bracket:
-        if matchup.get("r") == round:
-            if matchup.get("p") == 5:
-                continue  # Skip consolation match
-            relevant_roster_ids.append(matchup["t1"])
-            relevant_roster_ids.append(matchup["t2"])
-
-    if len(relevant_roster_ids) == 0:
-        raise ValueError("Cannot get playoff roster IDs for the given week")
-
-    return relevant_roster_ids
-
-
 def get_playoff_placements(year: int) -> dict[str, int]:
     """Retrieve final playoff placements (1st, 2nd, 3rd) for a completed year.
 

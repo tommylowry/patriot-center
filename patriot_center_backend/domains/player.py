@@ -92,6 +92,29 @@ class Player:
 
         return players
 
+    def get_metadata(self) -> dict[str, Any]:
+        """Get player metadata.
+
+        Returns:
+            Player metadata
+        """
+        if not self._is_real_player:
+            return {
+                "name": self.full_name,
+                "first_name": self.first_name,
+                "last_name": self.last_name,
+                "image_url": self.image_url,
+            }
+        return {
+            "name": self.full_name,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
+            "image_url": self.image_url,
+            "player_id": self.player_id,
+            "position": self.position,
+            "team": self.team,
+        }
+
     def set_week_data(
         self,
         year: str,
@@ -452,7 +475,6 @@ class Player:
         self.first_name: str = metadata["first_name"]
         self.last_name: str = metadata["last_name"]
         self.position: str = metadata["position"]
-        self.slug: str = metadata["slug"]
         self.image_url: str = metadata["image_url"]
         self.fantasy_positions: list[str] = metadata["fantasy_positions"]
 
@@ -516,7 +538,6 @@ class Player:
                 "fantasy_positions": self.fantasy_positions,
                 "position": self.position,
                 "number": self.number,
-                "slug": self.slug,
                 "image_url": self.image_url,
             },
             "data": self._data,

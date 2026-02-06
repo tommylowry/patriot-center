@@ -6,7 +6,7 @@ import { Link } from 'react-router-dom';
  */
 function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faabAmount = null, scaleFactor = 1, isMobile = false }) {
   const playerName = typeof player === 'string' ? player : player?.name || 'Unknown';
-  const playerSlug = typeof player === 'object' && player?.slug ? player.slug : encodeURIComponent(playerName.toLowerCase());
+  const playerId = typeof player === 'object' ? player?.player_id : null;
   const imageUrl = typeof player === 'object' ? player?.image_url : null;
   const firstName = typeof player === 'object' ? player?.first_name : null;
   const lastName = typeof player === 'object' ? player?.last_name : null;
@@ -87,7 +87,7 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
   // For real players, wrap everything in a Link with hover effect
   return (
     <Link
-      to={`/player/${playerSlug}`}
+      to={`/player/${playerId}`}
       style={{
         display: 'flex',
         alignItems: 'center',

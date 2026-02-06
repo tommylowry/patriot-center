@@ -333,7 +333,7 @@ function App() {
           <Routes>
             <Route path="/" element={<ManagersPage />} />
             <Route path="/players" element={<HomePage />} />
-            <Route path="/player/:playerSlug" element={<PlayerPage />} />
+            <Route path="/player/:playerId" element={<PlayerPage />} />
             <Route path="/managers" element={<ManagersPage />} />
             <Route path="/manager/:managerName" element={<ManagerPage />} />
             <Route path="/head-to-head" element={<HeadToHeadPage />} />

@@ -818,9 +818,9 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
 
   // Extract values with optional chaining before useEffect
   const playerName = player?.key || player?.name || '';
-  const playerSlug = player?.["slug.slug"] || player?.slug || (playerName ? encodeURIComponent(playerName.toLowerCase()) : '');
-  const firstName = player?.["slug.first_name"] || (playerName ? playerName.split(' ')[0] : '') || '';
-  const lastName = player?.["slug.last_name"] || (playerName ? playerName.split(' ').slice(1).join(' ') : '') || '';
+  const playerId = player?.player_id;
+  const firstName = player?.first_name || (playerName ? playerName.split(' ')[0] : '') || '';
+  const lastName = player?.last_name || (playerName ? playerName.split(' ').slice(1).join(' ') : '') || '';
   const statValue = stat === 'num_games_started' ? player?.[stat] : (player?.[stat]?.toFixed(3) || player?.[stat] || 0);
 
   // Dynamically calculate font size based on actual text width measurement
@@ -930,7 +930,7 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
         // Mobile: Original structure with div wrapper and separate link on name
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.25rem' : '0.5rem' }}>
           {player.player_image_endpoint && (
-            <Link to={`/player/${playerSlug}`} style={{ flexShrink: 0 }}>
+            <Link to={`/player/${playerId}`} style={{ flexShrink: 0 }}>
               <img
                 src={player.player_image_endpoint}
                 alt={playerName}
@@ -951,7 +951,7 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
           {player.player_image_endpoint && <div style={{ width: '1px', height: isMobile ? '50px' : '75px', background: 'var(--border)', flexShrink: 0 }} />}
           <div ref={textContainerRef} style={{ minWidth: 0, textAlign: 'left', width: '100%' }}>
             <Link
-              to={`/player/${playerSlug}`}
+              to={`/player/${playerId}`}
               style={{
                 fontWeight: 600,
                 fontSize: fontSize,
@@ -989,7 +989,7 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
       ) : (
         // Desktop: New structure with Link wrapper and hover border
         <Link
-          to={`/player/${playerSlug}`}
+          to={`/player/${playerId}`}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -1065,7 +1065,7 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
 // PlayerLink Component - Displays player with image and clickable link
 function PlayerLink({ player, showImage = true }) {
   const playerName = typeof player === 'string' ? player : player?.name || 'Unknown';
-  const playerSlug = typeof player === 'object' && player?.slug ? player.slug : encodeURIComponent(playerName.toLowerCase());
+  const playerId = typeof player === 'object' ? player?.player_id : null;
   const imageUrl = typeof player === 'object' ? player?.image_url : null;
 
   // Check if this is FAAB or a draft pick (not a real player)
@@ -1095,7 +1095,7 @@ function PlayerLink({ player, showImage = true }) {
       )}
       {shouldLink ? (
         <Link
-          to={`/player/${playerSlug}`}
+          to={`/player/${playerId}`}
           style={{
             color: 'var(--text)',
             textDecoration: 'none',

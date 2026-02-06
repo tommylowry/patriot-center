@@ -81,14 +81,11 @@ def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
                 )
                 for player_id in weekly_faab_bids:
                     player = Player(player_id)
-                    bid_amount = weekly_faab_bids[player]["total_faab_spent"]
+                    bid_amount = (
+                        weekly_faab_bids[str(player)]["total_faab_spent"]
+                    )
                     if bid_amount > biggest_faab_bid["amount"]:
-                        biggest_faab_bid["player"] = {
-                            "name": player.full_name,
-                            "first_name": player.first_name,
-                            "last_name": player.last_name,
-                            "image_url": player.image_url,
-                        }
+                        biggest_faab_bid["player"] = player.get_metadata()
                         biggest_faab_bid["amount"] = bid_amount
                         biggest_faab_bid["year"] = year
 

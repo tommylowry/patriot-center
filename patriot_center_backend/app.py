@@ -38,7 +38,6 @@ CORS(
         r"/get_aggregated_players*": {
             "origins": ["https://patriotcenter.netlify.app"]
         },
-        r"/get_starters*": {"origins": ["https://patriotcenter.netlify.app"]},
         r"/get_aggregated_managers*": {
             "origins": ["https://patriotcenter.netlify.app"]
         },

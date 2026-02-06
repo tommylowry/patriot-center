@@ -104,7 +104,6 @@ def _populate_scoring_summary(
     )
     scoring_summary["position"] = player.position
     scoring_summary["player_image_endpoint"] = player.image_url
-    scoring_summary["slug"] = player.slug
     scoring_summary["team"] = player.team
 
 

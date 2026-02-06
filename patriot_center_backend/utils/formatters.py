@@ -121,14 +121,8 @@ def get_top_3_scorers_from_matchup_data(
 
             player_score = player.get_points(year=year, week=week)
 
-            player_dict = {
-                "name": player.full_name,
-                "first_name": player.first_name,
-                "last_name": player.last_name,
-                "image_url": player.image_url,
-                "score": player_score,
-                "position": player.position,
-            }
+            player_dict = player.get_metadata()
+            player_dict["score"] = player_score
 
             # Update lowest scorer
             if player_score < lowest_scorer["score"]:
@@ -295,15 +289,8 @@ def get_trade_card(transaction_id: str) -> dict[str, Any]:
         old_manager = old_manager.lower().replace(" ", "_")
         new_manager = new_manager.lower().replace(" ", "_")
 
-        player_dict = {
-            "name": player.full_name,
-            "first_name": player.first_name,
-            "last_name": player.last_name,
-            "image_url": player.image_url,
-        }
-
-        trade_item[f"{old_manager}_sent"].append(deepcopy(player_dict))
-        trade_item[f"{new_manager}_received"].append(deepcopy(player_dict))
+        trade_item[f"{old_manager}_sent"].append(player.get_metadata())
+        trade_item[f"{new_manager}_received"].append(player.get_metadata())
 
     trade_item["transaction_id"] = transaction_id
 

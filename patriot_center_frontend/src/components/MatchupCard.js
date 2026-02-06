@@ -158,7 +158,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false, i
               {manager1Players?.map((player, i) => (
                 <Link
                   key={i}
-                  to={`/player/${player.slug || encodeURIComponent(player.name?.toLowerCase() || '')}`}
+                  to={`/player/${player.player_id}`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -357,7 +357,7 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false, i
               {manager2Players?.map((player, i) => (
                 <Link
                   key={i}
-                  to={`/player/${player.slug || encodeURIComponent(player.name?.toLowerCase() || '')}`}
+                  to={`/player/${player.player_id}`}
                   style={{
                     display: 'flex',
                     alignItems: 'center',

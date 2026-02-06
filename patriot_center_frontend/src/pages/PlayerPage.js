@@ -4,10 +4,10 @@ import { usePlayerManagers } from '../hooks/usePlayerManagers';
 import { useDynamicFiltering } from '../hooks/useDynamicFiltering';
 
 export default function PlayerPage() {
-    const { playerSlug } = useParams();
+    const { playerId } = useParams();
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const slug = playerSlug || 'amon-ra%20st.%20brown';
+    const playerIdToUse = playerId || '10859'; // Default to Amon-Ra St. Brown's player_id
 
     const [year, setYear] = useState(null);    // default: ALL years
     const [week, setWeek] = useState(null);      // default: ALL weeks
@@ -35,7 +35,7 @@ export default function PlayerPage() {
         }, 0);
     }, [searchParams]);
 
-    const { options, loading: optionsLoading, error: optionsError } = useDynamicFiltering(year, week, manager, slug);
+    const { options, loading: optionsLoading, error: optionsError } = useDynamicFiltering(year, week, manager, playerIdToUse);
 
     // Update URL when filters change from user interaction (not from URL sync)
     useEffect(() => {
@@ -55,14 +55,14 @@ export default function PlayerPage() {
     }, [year]);
 
     // Fetch all-time data for medals (unfiltered)
-    const { managers: allTimeManagers } = usePlayerManagers(slug, {});
+    const { managers: allTimeManagers } = usePlayerManagers(playerIdToUse, {});
 
     // Fetch filtered data for the table
-    const { managers, loading, error } = usePlayerManagers(slug, { year, week, manager });
+    const { managers, loading, error } = usePlayerManagers(playerIdToUse, { year, week, manager });
 
     // Extract player data from first manager object
     const playerImageUrl = managers?.[0]?.player_image_endpoint;
-    const displayName = managers?.[0]?.player || allTimeManagers?.[0]?.player || decodeURIComponent(slug);
+    const displayName = managers?.[0]?.player || allTimeManagers?.[0]?.player || playerIdToUse;
 
     // Reset image error when player changes
     React.useEffect(() => {

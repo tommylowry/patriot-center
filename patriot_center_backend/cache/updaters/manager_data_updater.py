@@ -180,7 +180,6 @@ class ManagerMetadataManager:
             )
 
         manager_cache = CACHE_MANAGER.get_manager_cache()
-        image_urls_cache = CACHE_MANAGER.get_image_urls_cache()
 
         if not self._templates:
             self._templates = initialize_summary_templates(

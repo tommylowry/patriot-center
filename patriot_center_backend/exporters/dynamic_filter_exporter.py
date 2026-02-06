@@ -1,6 +1,6 @@
 """Dynamic filter exporter for manager metadata."""
 
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.dynamic_filtering.dynamic_filter import (
     get_dynamic_filter_options_from_cache,
 )

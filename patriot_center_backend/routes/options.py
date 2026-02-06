@@ -2,7 +2,7 @@
 
 from flask import Blueprint, Response, jsonify, request
 
-from patriot_center_backend.domains.player import Player
+from patriot_center_backend.domains import Player
 from patriot_center_backend.exporters.dynamic_filter_exporter import (
     get_dynamic_filter_options,
 )
@@ -70,9 +70,7 @@ def get_dynamic_filter_options_route() -> tuple[Response, int]:
         player = Player(pid)
 
     try:
-        data = get_dynamic_filter_options(
-            yr, wk, mgr, pos, player
-        )
+        data = get_dynamic_filter_options(yr, wk, mgr, pos, player)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     response = jsonify(data)

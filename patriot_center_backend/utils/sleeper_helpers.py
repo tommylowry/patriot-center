@@ -1,6 +1,7 @@
 """This module provides utility for interacting with the Sleeper API."""
 
 import logging
+from math import ceil
 from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
@@ -88,7 +89,9 @@ def get_roster_id(
     return None
 
 
-def get_roster_ids(year: int, week: int) -> dict[int, str]:
+def get_roster_ids(
+    year: int, week: int, ignore_playoffs: bool = False
+) -> dict[int, str]:
     """Retrieves a mapping of roster IDs to real names for a given year.
 
     Special Cases:
@@ -99,6 +102,9 @@ def get_roster_ids(year: int, week: int) -> dict[int, str]:
     Args:
         year: The year for which to retrieve the roster IDs.
         week: The week for which to retrieve the roster IDs.
+        ignore_playoffs: Whether to return roster IDs for the playoffs only or
+            for all weeks. Defaults to False, which returns roster IDs for the
+            playoffs only if playoffs have started.
 
     Returns:
         Mapping of roster IDs to real names.
@@ -167,7 +173,10 @@ def get_roster_ids(year: int, week: int) -> dict[int, str]:
     if len(roster_ids) > len(user_ids):
         raise Exception("Not all roster IDs are assigned to a user")
 
-    if get_season_state(str(year), str(week)) == "playoffs":
+    if (
+        get_season_state(str(year), str(week)) == "playoffs"
+        and not ignore_playoffs
+    ):
         playoff_ids = get_playoff_roster_ids(year, week)
         returning_ids = {}
         for id in playoff_ids:
@@ -201,24 +210,62 @@ def get_playoff_roster_ids(year: int, week: int) -> list[int]:
     Raises:
         ValueError: If week 17 in 2019/2020 or no rosters found for the round.
     """
+    league_info = get_league_info(year)
+    settings = league_info["settings"]
+    playoff_type = settings["playoff_type"]
+    playoff_week_start = settings["playoff_week_start"]
+    num_playoff_teams = settings["playoff_teams"]
+
+    if week < playoff_week_start:
+        return []
+
+    rounds_needed = ceil(num_playoff_teams / 2)
+
+    # One week per round
+    if playoff_type == 0:
+        if week == playoff_week_start:
+            round = 1
+        elif week == playoff_week_start + 1:
+            round = 2
+        elif week == playoff_week_start + 2:
+            round = 3
+        else:
+            return []
+    # Two weeks Championship
+    elif playoff_type == 1:
+        if week == playoff_week_start:
+            round = 1
+        elif week == playoff_week_start + 1:
+            round = 2
+        elif week == playoff_week_start + 2 or week == playoff_week_start + 3:
+            round = 3
+        else:
+            return []
+    # Each round 2 weeks
+    elif playoff_type == 2:
+        if week == playoff_week_start or week == playoff_week_start + 1:
+            round = 1
+        elif week == playoff_week_start + 2 or week == playoff_week_start + 3:
+            round = 2
+        elif week == playoff_week_start + 4 or week == playoff_week_start + 5:
+            round = 3
+        else:
+            return []
+    else:
+        logger.warning(
+            f"Playoff type {playoff_type} not supported. "
+            f"Returning empty playoff roster IDs.")
+        return []
+
+    if round > rounds_needed:
+        return []
+
+
+
     sleeper_response_playoff_bracket = fetch_sleeper_data(
         f"league/{LEAGUE_IDS[year]}/winners_bracket"
     )
 
-    if week == 14:
-        round = 1
-    elif week == 15:
-        round = 2
-    elif week == 16:
-        round = 3
-    else:
-        round = 4
-
-    if year >= 2021:
-        round -= 1
-
-    if round == 4:
-        raise ValueError("Cannot get playoff roster IDs for week 17")
     if not isinstance(sleeper_response_playoff_bracket, list):
         raise ValueError("Cannot get playoff roster IDs for the given week")
 
@@ -413,6 +460,11 @@ def fetch_players(year: int, week: int) -> list[Player]:
     roster_ids = get_roster_ids(year, week)
 
     for matchup in matchup_data_response:
+        # Playoffs, skip that manager as the player
+        # didn't start in a matchup that matters.
+        if matchup["roster_id"] not in roster_ids:
+            continue
+
         manager = roster_ids[matchup["roster_id"]]
         for player_id in matchup["players"]:
             player = Player(player_id)
@@ -424,6 +476,3 @@ def fetch_players(year: int, week: int) -> list[Player]:
             )
 
     return players
-
-
-get_roster_ids(2025, 16)

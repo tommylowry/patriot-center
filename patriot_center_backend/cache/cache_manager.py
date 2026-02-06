@@ -24,9 +24,6 @@ _STARTERS_CACHE_FILE = os.path.join(
 _VALID_OPTIONS_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "valid_options_cache.json"
 )
-_PLAYERS_CACHE_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "players_cache.json"
-)
 _IMAGE_URLS_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "image_urls_cache.json"
 )
@@ -83,7 +80,6 @@ class CacheManager:
         # In-memory cache storage (loaded lazily)
         self._manager_cache: dict | None = None
         self._transaction_ids_cache: dict | None = None
-        self._players_cache: dict | None = None
         self._player_ids_cache: dict | None = None
         self._starters_cache: dict | None = None
         self._replacement_score_cache: dict | None = None
@@ -204,45 +200,6 @@ class CacheManager:
 
         self._save_cache(_TRANSACTION_IDS_FILE, data_to_save)
         self._transaction_ids_cache = data_to_save
-
-    # ===== PLAYERS CACHE =====
-    def get_players_cache(
-        self, force_reload: bool = False, copy: bool = False
-    ) -> dict[str, dict[str, str | None]]:
-        """Get players cache.
-
-        Args:
-            force_reload: If True, reload from disk
-            copy: If True, return a copy of the cache
-
-        Returns:
-            Players cache dictionary
-        """
-        if self._players_cache is None or force_reload:
-            self._players_cache = self._load_cache(_PLAYERS_CACHE_FILE)
-
-        if copy:
-            return deepcopy(self._players_cache)
-        return self._players_cache
-
-    def save_players_cache(
-        self, cache: dict[str, dict[str, str | None]] | None = None
-    ) -> None:
-        """Save players cache to disk.
-
-        Args:
-            cache: Cache to save (uses in-memory cache if not provided)
-
-        Raises:
-            ValueError: If no players cache data to save
-        """
-        data_to_save = cache if cache is not None else self._players_cache
-
-        if data_to_save is None:
-            raise ValueError("No players cache data to save")
-
-        self._save_cache(_PLAYERS_CACHE_FILE, data_to_save)
-        self._players_cache = data_to_save
 
     # ===== PLAYER IDS CACHE =====
     def get_player_ids_cache(
@@ -562,7 +519,6 @@ class CacheManager:
         """
         self._manager_cache = None
         self._transaction_ids_cache = None
-        self._players_cache = None
         self._player_ids_cache = None
         self._starters_cache = None
         self._replacement_score_cache = None
@@ -577,8 +533,6 @@ class CacheManager:
             self.save_manager_cache()
         if self._transaction_ids_cache is not None:
             self.save_transaction_ids_cache()
-        if self._players_cache is not None:
-            self.save_players_cache()
         if self._player_ids_cache is not None:
             self.save_player_ids_cache()
         if self._starters_cache is not None:

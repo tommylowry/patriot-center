@@ -110,19 +110,13 @@ class MatchupProcessor:
         if isinstance(manager_matchup_data, dict):
             raise ValueError("No matchup data found for week.")
 
-        season_state = get_season_state(
-            self._year, self._week, self._playoff_week_start
-        )
 
         for manager_1_data in manager_matchup_data:
             manager_1_roster_id = manager_1_data.get("roster_id")
-            if not manager_1_roster_id:
-                continue
             if (
-                season_state == "playoffs"
-                and manager_1_roster_id not in self._playoff_roster_ids
+                not manager_1_roster_id
+                or manager_1_roster_id not in self._weekly_roster_ids
             ):
-                # Manager not in playoffs; skip
                 continue
 
             matchup_id = manager_1_data.get("matchup_id")

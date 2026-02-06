@@ -102,7 +102,11 @@ class ManagerMetadataManager:
             year: Season year as string
             week: Week number as string
         """
-        self._weekly_roster_ids = get_roster_ids(int(year), int(week))
+        self._weekly_roster_ids = get_roster_ids(
+            int(year),
+            int(week),
+            ignore_playoffs=True
+        )
 
         validate_caching_preconditions(self._weekly_roster_ids, year, week)
 
@@ -129,7 +133,7 @@ class ManagerMetadataManager:
         self._matchup_processor.set_session_state(
             year=year,
             week=week,
-            weekly_roster_ids=self._weekly_roster_ids,
+            weekly_roster_ids=get_roster_ids(int(year), int(week)),
             playoff_roster_ids=self._playoff_roster_ids,
             playoff_week_start=self._playoff_week_start,
         )

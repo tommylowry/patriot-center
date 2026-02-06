@@ -116,14 +116,14 @@ def get_head_to_head_overall_from_cache(
     """
     manager_cache = CACHE_MANAGER.get_manager_cache()
 
+    # Only for list_all_matchups = False
+    head_to_head_overall = {}
+
     if list_all_matchups:
         years = list(manager_cache[manager1].get("years", {}).keys())
         if year:
             years = [year]
-        matchup_history = []
     else:
-        head_to_head_overall = {}
-
         head_to_head_data = get_head_to_head_details_from_cache(
             manager1, year=year, opponent=manager2
         )
@@ -146,8 +146,43 @@ def get_head_to_head_overall_from_cache(
         # Get average margin of victory, last win, biggest blowout
         years = list(manager_cache[manager1].get("years", {}).keys())
 
+    # Only for list_all_matchups = True
+    matchup_history = []
+
+    # Only for list_all_matchups = False
+    manager_1_victory_margins = []
+    manager_1_last_win = {}
+    manager_1_biggest_blowout = {}
+
+    manager_2_victory_margins = []
+    manager_2_last_win = {}
+    manager_2_biggest_blowout = {}
+
+    manager_1_points_for = (
+        manager_cache[manager1]
+        .get("summary", {})
+        .get("matchup_data", {})
+        .get("overall", {})
+        .get("points_for", {})
+        .get("opponents", {})
+        .get(manager2, 0.0)
+    )
+    manager_2_points_for = (
+        manager_cache[manager2]
+        .get("summary", {})
+        .get("matchup_data", {})
+        .get("overall", {})
+        .get("points_for", {})
+        .get("opponents", {})
+        .get(manager1, 0.0)
+    )
+
+    if year:
+        years = [year]
         manager_1_points_for = (
             manager_cache[manager1]
+            .get("years", {})
+            .get(year, {})
             .get("summary", {})
             .get("matchup_data", {})
             .get("overall", {})
@@ -157,6 +192,8 @@ def get_head_to_head_overall_from_cache(
         )
         manager_2_points_for = (
             manager_cache[manager2]
+            .get("years", {})
+            .get(year, {})
             .get("summary", {})
             .get("matchup_data", {})
             .get("overall", {})
@@ -164,39 +201,6 @@ def get_head_to_head_overall_from_cache(
             .get("opponents", {})
             .get(manager1, 0.0)
         )
-
-        if year:
-            years = [year]
-            manager_1_points_for = (
-                manager_cache[manager1]
-                .get("years", {})
-                .get(year, {})
-                .get("summary", {})
-                .get("matchup_data", {})
-                .get("overall", {})
-                .get("points_for", {})
-                .get("opponents", {})
-                .get(manager2, 0.0)
-            )
-            manager_2_points_for = (
-                manager_cache[manager2]
-                .get("years", {})
-                .get(year, {})
-                .get("summary", {})
-                .get("matchup_data", {})
-                .get("overall", {})
-                .get("points_for", {})
-                .get("opponents", {})
-                .get(manager1, 0.0)
-            )
-
-        manager_1_victory_margins = []
-        manager_1_last_win = {}
-        manager_1_biggest_blowout = {}
-
-        manager_2_victory_margins = []
-        manager_2_last_win = {}
-        manager_2_biggest_blowout = {}
 
     # Get average margin of victory
     for y in years:

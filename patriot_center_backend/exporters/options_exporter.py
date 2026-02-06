@@ -15,24 +15,14 @@ def get_options_list() -> dict[str, dict[str, str | None]]:
 
     players = Player.get_all_starters()
     for player in players:
-        data[str(player)] = {
-            "full_name": player.full_name,
-            "first_name": player.first_name,
-            "last_name": player.last_name,
-            "position": player.position,
-            "team": player.team,
-            "slug": player.slug,
-            "player_id": player.player_id,
-            "image_url": player.image_url,
-            "type": "player",
-        }
+        data[str(player)] = player.get_metadata()
+        data[str(player)]["type"] = "player"
 
     for manager in NAME_TO_MANAGER_USERNAME:
         data[manager] = {
             "type": "manager",
             "name": manager,
             "full_name": manager,
-            "slug": manager,
             "image_url": get_image_url(manager),
         }
 

@@ -72,12 +72,7 @@ def get_manager_transactions(
                         "year": yr,
                         "week": week,
                         "type": "add",
-                        "player": {
-                            "name": player.full_name,
-                            "first_name": player.first_name,
-                            "last_name": player.last_name,
-                            "image_url": player.image_url,
-                        },
+                        "player": player.get_metadata(),
                         # None if FAAB not implemented yet
                         #   or a free agent add
                         "faab_spent": add_details.get("faab_spent", None),
@@ -99,12 +94,7 @@ def get_manager_transactions(
                         "year": yr,
                         "week": week,
                         "type": "drop",
-                        "player": {
-                            "name": player.full_name,
-                            "first_name": player.first_name,
-                            "last_name": player.last_name,
-                            "image_url": player.image_url,
-                        },
+                        "player": player.get_metadata(),
                         "transaction_id": transaction_id,
                     }
                     filtered_transactions.append(deepcopy(transaction_item))
@@ -134,12 +124,14 @@ def get_manager_transactions(
                             "first_name": added_player.first_name,
                             "last_name": added_player.last_name,
                             "image_url": added_player.image_url,
+                            "player_id": added_player.player_id,
                         },
                         "dropped_player": {
                             "name": dropped_player.full_name,
                             "first_name": dropped_player.first_name,
                             "last_name": dropped_player.last_name,
                             "image_url": dropped_player.image_url,
+                            "player_id": dropped_player.player_id,
                         },
                         # None if FAAB not implemented yet
                         # or a free agent add/drop

@@ -3,21 +3,6 @@
 from typing import Any
 
 
-def slugify(full_name: str) -> str:
-    """Returns a slugified version of the player's full name.
-
-    Args:
-        full_name: The player's full name.
-
-    Returns:
-        A slugified version of the player's full name.
-    """
-    slug = full_name.lower()
-    slug = slug.replace(" ", "%20")
-    slug = slug.replace("'", "%27")
-    return slug
-
-
 def get_image_url(player_id: str) -> str:
     """Returns the URL of the player's image.
 

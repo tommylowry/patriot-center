@@ -268,7 +268,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                   }}>
                     {group.players.map((player, playerIdx) => {
                       const playerName = player.name || 'Unknown';
-                      const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
+                      const playerId = player?.player_id;
                       const isFAAB = playerName.includes('FAAB');
                       const remainder = isMobile && group.players.length > 3 ? group.players.length % 3 : 0;
                       const isLastAndSingle = remainder === 1 && playerIdx === group.players.length - 1;
@@ -289,7 +289,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                           }}>
                             {leftoverPlayers.map((p, idx) => {
                               const pName = p.name || 'Unknown';
-                              const pSlug = p.slug || encodeURIComponent(pName.toLowerCase());
+                              const pId = p?.player_id;
                               const pIsFAAB = pName.includes('FAAB');
 
                               return (
@@ -357,7 +357,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                                     </>
                                   ) : (
                                     <Link
-                                      to={`/player/${pSlug}`}
+                                      to={`/player/${pId}`}
                                       style={{
                                         textDecoration: 'none',
                                         display: 'inline-flex',
@@ -513,7 +513,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                             </>
                           ) : (
                             <Link
-                              to={`/player/${playerSlug}`}
+                              to={`/player/${playerId}`}
                               style={{
                                 textDecoration: 'none',
                                 display: 'inline-flex',
@@ -805,7 +805,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
             }}>
               {row.sent.map((player, playerIdx) => {
                 const playerName = player.name || 'Unknown';
-                const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
+                const playerId = player?.player_id;
                 const isFAAB = playerName.includes('FAAB');
                 const isLastAndOdd = isMobile && playerIdx === row.sent.length - 1 && row.sent.length % 2 === 1;
 
@@ -879,7 +879,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                       </>
                     ) : (
                       <Link
-                        to={`/player/${playerSlug}`}
+                        to={`/player/${playerId}`}
                         style={{
                           textDecoration: 'none',
                           display: 'inline-flex',
@@ -978,7 +978,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
             }}>
               {row.received.map((player, playerIdx) => {
                 const playerName = player.name || 'Unknown';
-                const playerSlug = player.slug || encodeURIComponent(playerName.toLowerCase());
+                const playerId = player?.player_id;
                 const isFAAB = playerName.includes('FAAB');
                 const isLastAndOdd = isMobile && playerIdx === row.received.length - 1 && row.received.length % 2 === 1;
 
@@ -1049,7 +1049,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                       </>
                     ) : (
                       <Link
-                        to={`/player/${playerSlug}`}
+                        to={`/player/${playerId}`}
                         style={{
                           textDecoration: 'none',
                           display: 'inline-flex',

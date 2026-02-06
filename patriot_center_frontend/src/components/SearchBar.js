@@ -116,13 +116,14 @@ export default function SearchBar() {
     };
 
     const selectOption = (option) => {
-        if (!option.slug) return;
-
         // Navigate based on type
         if (option.type === 'manager') {
-            navigate(`/manager/${option.slug}`);
+            if (!option.name) return;
+            navigate(`/manager/${encodeURIComponent(option.name)}`);
         } else {
-            navigate(`/player/${option.slug}`);
+            // For players, use player_id for navigation
+            if (!option.player_id) return;
+            navigate(`/player/${option.player_id}`);
         }
 
         setQuery('');
@@ -198,7 +199,7 @@ export default function SearchBar() {
                 }}>
                     {filteredOptions.map((option, index) => (
                         <div
-                            key={option.slug || index}
+                            key={option.player_id || option.name || index}
                             onClick={() => selectOption(option)}
                             onMouseEnter={() => setSelectedIndex(index)}
                             style={{

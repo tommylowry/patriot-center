@@ -1,4 +1,7 @@
+"""Player class.
 
+This module defines the Player class, which represents a player in the game.
+"""
 
 import logging
 from copy import deepcopy
@@ -61,6 +64,363 @@ class Player:
             The player ID
         """
         return self.player_id
+
+    @classmethod
+    def get_all_starters(
+        cls,
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+    ) -> list["Player"]:
+        """Get players who have started at least one game matching filters.
+
+        Args:
+            year: Filter by year
+            week: Filter by week
+            manager: Filter by manager
+
+        Returns:
+            List of players who have started at least one game matching filters
+        """
+        player_cache = CACHE_MANAGER.get_player_cache()
+
+        players = []
+        for player_id in player_cache:
+            player = cls(player_id)
+            if player.has_started(year=year, week=week, manager=manager):
+                players.append(player)
+
+        return players
+
+    def set_week_data(
+        self,
+        year: str,
+        week: str,
+        points: float | None = None,
+        ffwar: float | None = None,
+        manager: str | None = "",
+        started: bool | None = None,
+        playoff_placement: int | None = None,
+    ) -> None:
+        """Set player data for a given week.
+
+        Args:
+            year: The year.
+            week: The week.
+            points: The points.
+            ffwar: The ffWAR.
+            manager: The manager.
+            started: Whether the player started the week.
+            playoff_placement: The playoff placement.
+        """
+        if not self._is_real_player:
+            return
+
+        if f"{year}_{week}" not in self._data:
+            self._data[f"{year}_{week}"] = {
+                "manager": None,
+                "started": False,
+            }
+
+        if points is not None:
+            self._data[f"{year}_{week}"]["points"] = points
+        if ffwar is not None:
+            self._data[f"{year}_{week}"]["ffwar"] = ffwar
+        if manager != "":
+            self._data[f"{year}_{week}"]["manager"] = manager
+        if started is not None:
+            self._data[f"{year}_{week}"]["started"] = started
+        if playoff_placement is not None:
+            self._data[f"{year}_{week}"]["playoff_placement"] = (
+                playoff_placement
+            )
+
+        self._apply_to_cache()
+
+    def set_transaction(self, transaction_id: str) -> None:
+        """Set player data for a given transaction.
+
+        Args:
+            year: The year.
+            week: The week.
+            transaction_id: The transaction ID.
+        """
+        if not self._is_real_player or transaction_id in self._transactions:
+            return
+
+        self._transactions.append(transaction_id)
+        self._apply_to_cache()
+
+    def remove_transaction(self, transaction_id: str) -> None:
+        """Remove player data for a given transaction.
+
+        Args:
+            year: The year.
+            week: The week.
+            transaction_id: The transaction ID.
+        """
+        if not self._is_real_player or transaction_id not in self._transactions:
+            return
+
+        # Remove from transactions
+        self._transactions.remove(transaction_id)
+        self._apply_to_cache()
+
+    def get_points(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+        only_started: bool = True,
+        only_rostered: bool = True,
+    ) -> float:
+        """Get the player's total points for matching weeks.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
+
+        Returns:
+            The player's total points
+        """
+        if not self._is_real_player:
+            return 0.0
+
+        matches = self._get_matching_data(
+            year, week, only_started, only_rostered, manager=manager
+        )
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return 0.0
+        return round(sum(d["points"] for d in matches), 2)
+
+    def get_ffwar(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+        only_started: bool = True,
+        only_rostered: bool = True,
+    ) -> float:
+        """Get the player's total ffWAR for matching weeks.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
+
+        Returns:
+            The player's total ffWAR
+        """
+        if not self._is_real_player:
+            return 0.0
+
+        matches = self._get_matching_data(
+            year, week, only_started, only_rostered, manager=manager
+        )
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return 0.0
+        return round(sum(d["ffwar"] for d in matches), 3)
+
+    def get_managers(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        only_started: bool = True,
+        only_rostered: bool = True
+    ) -> list[str]:
+        """Get the player's managers for matching weeks.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
+
+        Returns:
+            The player's managers
+        """
+        if not self._is_real_player:
+            return []
+
+        matches = self._get_matching_data(
+            year, week, only_started, only_rostered
+        )
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return []
+        return [d["manager"] for d in matches]
+
+    def get_num_games(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+        only_started: bool = True,
+        only_rostered: bool = True,
+    ) -> int:
+        """Get the player's number of games for matching weeks.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
+
+        Returns:
+            The player's number of games
+        """
+        return len(
+            self._get_matching_data(
+                year, week, only_started, only_rostered, manager=manager
+            )
+        )
+
+    def get_grouped_scoring_summary(
+        self,
+        group_by: Literal["manager", "year"] = "manager",
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+        only_started: bool = True,
+        only_rostered: bool = True,
+    ) -> dict[str, Any]:
+        """Get a summary of the player's scoring data grouped by the given key.
+
+        Args:
+            group_by: The key to group by.
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
+
+        Returns:
+            The player's summary
+        """
+        if not self._is_real_player:
+            return {}
+
+        if (manager and group_by == "manager") or (year and group_by == "year"):
+            return self.get_scoring_summary(
+                year, week, manager, only_started, only_rostered
+            )
+
+        matches = self._get_matching_data(
+            year, week, only_started, only_rostered, manager=manager
+        )
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return {}
+
+        return self._group_matches(group_by, matches)
+
+    def has_started(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+    ) -> bool:
+        """Check if player has started at least one game matching filters.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+
+        Returns:
+            True if player has started at least one matching game.
+        """
+        if not self._is_real_player:
+            return False
+        return self.get_num_games(
+            year=year,
+            week=week,
+            manager=manager,
+            only_started=True,
+            only_rostered=True,
+        ) > 0
+
+    def get_scoring_summary(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        manager: str | None = None,
+        only_started: bool = True,
+        only_rostered: bool = True,
+    ) -> dict[str, Any]:
+        """Get a summary of the player's scoring data.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            manager: Filter by manager.
+            only_started: Only include weeks where player started.
+            only_rostered: Only include weeks where player is rostered.
+
+        Returns:
+            The player's summary
+        """
+        if not self._is_real_player:
+            return {}
+
+        matches = self._get_matching_data(
+            year, week, only_started, only_rostered, manager=manager
+        )
+
+        if not matches:
+            logger.warning(
+                f"Player {self.full_name} ({self.player_id}) "
+                f"does not have data for the given parameters."
+            )
+            return {}
+
+        raw_dict = {
+            "total_points": 0.0,
+            "ffWAR": 0.0,
+            "num_games_started": 0,
+        }
+
+        # Add up the total points, ffWAR, and number of games started
+        for match in matches:
+            raw_dict["total_points"] += match["points"]
+            raw_dict["ffWAR"] += match["ffwar"]
+            raw_dict["num_games_started"] += 1
+
+            # Add playoff placement if available
+            if "playoff_placement" in match:
+                (
+                    raw_dict
+                    .setdefault("playoff_placement", {})
+                    .setdefault(match["manager"], {})
+                )[match["year"]] = match["playoff_placement"]
+
+        # Round total_points to 2 decimal places and ffWAR to 3
+        raw_dict["total_points"] = round(
+            raw_dict["total_points"], 2
+        )
+        raw_dict["ffWAR"] = round(raw_dict["ffWAR"], 3)
+
+        return raw_dict
 
     def _load_from_cache(self) -> None:
         """Loads player data from cache.
@@ -163,80 +523,6 @@ class Player:
             "transactions": self._transactions,
         }
 
-    def set_week_data(
-        self,
-        year: str,
-        week: str,
-        points: float | None = None,
-        ffwar: float | None = None,
-        manager: str | None = "",
-        started: bool | None = None,
-        playoff_placement: int | None = None,
-    ) -> None:
-        """Set player data for a given week.
-
-        Args:
-            year: The year.
-            week: The week.
-            points: The points.
-            ffwar: The ffWAR.
-            manager: The manager.
-            started: Whether the player started the week.
-            playoff_placement: The playoff placement.
-        """
-        if not self._is_real_player:
-            return
-
-        if f"{year}_{week}" not in self._data:
-            self._data[f"{year}_{week}"] = {
-                "manager": None,
-                "started": False,
-            }
-
-        if points is not None:
-            self._data[f"{year}_{week}"]["points"] = points
-        if ffwar is not None:
-            self._data[f"{year}_{week}"]["ffwar"] = ffwar
-        if manager != "":
-            self._data[f"{year}_{week}"]["manager"] = manager
-        if started is not None:
-            self._data[f"{year}_{week}"]["started"] = started
-        if playoff_placement is not None:
-            self._data[f"{year}_{week}"]["playoff_placement"] = (
-                playoff_placement
-            )
-
-        self._apply_to_cache()
-
-    def set_transaction(self, transaction_id: str) -> None:
-        """Set player data for a given transaction.
-
-        Args:
-            year: The year.
-            week: The week.
-            transaction_id: The transaction ID.
-        """
-        if not self._is_real_player or transaction_id in self._transactions:
-            return
-
-        self._transactions.append(transaction_id)
-        self._apply_to_cache()
-
-    def remove_transaction(self, transaction_id: str) -> None:
-        """Remove player data for a given transaction.
-
-        Args:
-            year: The year.
-            week: The week.
-            transaction_id: The transaction ID.
-        """
-        if not self._is_real_player or transaction_id not in self._transactions:
-            return
-
-        # Remove from transactions
-        self._transactions.remove(transaction_id)
-        self._apply_to_cache()
-
     def _get_matching_data(
         self,
         year: str | None,
@@ -289,238 +575,6 @@ class Player:
             matches.append(data)
 
         return matches
-
-    def get_points(
-        self,
-        year: str | None = None,
-        week: str | None = None,
-        manager: str | None = None,
-        only_started: bool = True,
-        only_rostered: bool = True,
-    ) -> float:
-        """Get the player's total points for matching weeks.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-            manager: Filter by manager.
-            only_started: Only include weeks where player started.
-            only_rostered: Only include weeks where player is rostered.
-
-        Returns:
-            The player's total points
-        """
-        if not self._is_real_player:
-            return 0.0
-
-        matches = self._get_matching_data(
-            year, week, only_started, only_rostered, manager=manager
-        )
-        if not matches:
-            logger.warning(
-                f"Player {self.full_name} ({self.player_id}) "
-                f"does not have data for the given parameters."
-            )
-            return 0.0
-        return round(sum(d["points"] for d in matches), 2)
-
-
-    def get_ffwar(
-        self,
-        year: str | None = None,
-        week: str | None = None,
-        manager: str | None = None,
-        only_started: bool = True,
-        only_rostered: bool = True,
-    ) -> float:
-        """Get the player's total ffWAR for matching weeks.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-            manager: Filter by manager.
-            only_started: Only include weeks where player started.
-            only_rostered: Only include weeks where player is rostered.
-
-        Returns:
-            The player's total ffWAR
-        """
-        if not self._is_real_player:
-            return 0.0
-
-        matches = self._get_matching_data(
-            year, week, only_started, only_rostered, manager=manager
-        )
-        if not matches:
-            logger.warning(
-                f"Player {self.full_name} ({self.player_id}) "
-                f"does not have data for the given parameters."
-            )
-            return 0.0
-        return round(sum(d["ffwar"] for d in matches), 3)
-
-
-    def get_managers(
-        self,
-        year: str | None = None,
-        week: str | None = None,
-        only_started: bool = True,
-        only_rostered: bool = True
-    ) -> list[str]:
-        """Get the player's managers for matching weeks.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-            only_started: Only include weeks where player started.
-            only_rostered: Only include weeks where player is rostered.
-
-        Returns:
-            The player's managers
-        """
-        if not self._is_real_player:
-            return []
-
-        matches = self._get_matching_data(
-            year, week, only_started, only_rostered
-        )
-        if not matches:
-            logger.warning(
-                f"Player {self.full_name} ({self.player_id}) "
-                f"does not have data for the given parameters."
-            )
-            return []
-        return [d["manager"] for d in matches]
-
-    def get_num_games(
-        self,
-        year: str | None = None,
-        week: str | None = None,
-        manager: str | None = None,
-        only_started: bool = True,
-        only_rostered: bool = True,
-    ) -> int:
-        """Get the player's number of games for matching weeks.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-            manager: Filter by manager.
-            only_started: Only include weeks where player started.
-            only_rostered: Only include weeks where player is rostered.
-
-        Returns:
-            The player's number of games
-        """
-        return len(
-            self._get_matching_data(
-                year, week, only_started, only_rostered, manager=manager
-            )
-        )
-
-    def get_grouped_scoring_summary(
-        self,
-        group_by: Literal["manager", "year"] = "manager",
-        year: str | None = None,
-        week: str | None = None,
-        manager: str | None = None,
-        only_started: bool = True,
-        only_rostered: bool = True,
-    ) -> dict[str, Any]:
-        """Get a summary of the player's scoring data grouped by the given key.
-
-        Args:
-            group_by: The key to group by.
-            year: Filter by year.
-            week: Filter by week.
-            manager: Filter by manager.
-            only_started: Only include weeks where player started.
-            only_rostered: Only include weeks where player is rostered.
-
-        Returns:
-            The player's summary
-        """
-        if not self._is_real_player:
-            return {}
-
-        if (manager and group_by == "manager") or (year and group_by == "year"):
-            return self.get_scoring_summary(
-                year, week, manager, only_started, only_rostered
-            )
-
-        matches = self._get_matching_data(
-            year, week, only_started, only_rostered, manager=manager
-        )
-        if not matches:
-            logger.warning(
-                f"Player {self.full_name} ({self.player_id}) "
-                f"does not have data for the given parameters."
-            )
-            return {}
-
-        return self._group_matches(group_by, matches)
-
-    def get_scoring_summary(
-        self,
-        year: str | None = None,
-        week: str | None = None,
-        manager: str | None = None,
-        only_started: bool = True,
-        only_rostered: bool = True,
-    ) -> dict[str, Any]:
-        """Get a summary of the player's scoring data.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-            manager: Filter by manager.
-            only_started: Only include weeks where player started.
-            only_rostered: Only include weeks where player is rostered.
-
-        Returns:
-            The player's summary
-        """
-        if not self._is_real_player:
-            return {}
-
-        matches = self._get_matching_data(
-            year, week, only_started, only_rostered, manager=manager
-        )
-
-        if not matches:
-            logger.warning(
-                f"Player {self.full_name} ({self.player_id}) "
-                f"does not have data for the given parameters."
-            )
-            return {}
-
-        raw_dict = {
-            "total_points": 0.0,
-            "ffWAR": 0.0,
-            "num_games_started": 0,
-        }
-
-        # Add up the total points, ffWAR, and number of games started
-        for match in matches:
-            raw_dict["total_points"] += match["points"]
-            raw_dict["ffWAR"] += match["ffwar"]
-            raw_dict["num_games_started"] += 1
-
-            # Add playoff placement if available
-            if "playoff_placement" in match:
-                (
-                    raw_dict
-                    .setdefault("playoff_placement", {})
-                    .setdefault(match["manager"], {})
-                )[match["year"]] = match["playoff_placement"]
-
-        # Round total_points to 2 decimal places and ffWAR to 3
-        raw_dict["total_points"] = round(
-            raw_dict["total_points"], 2
-        )
-        raw_dict["ffWAR"] = round(raw_dict["ffWAR"], 3)
-
-        return raw_dict
 
     def _group_matches(
         self, key: Literal["manager", "year"], matches: list[dict[str, Any]]

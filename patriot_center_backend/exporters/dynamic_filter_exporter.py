@@ -11,7 +11,6 @@ from patriot_center_backend.dynamic_filtering.formatter import format_output
 from patriot_center_backend.dynamic_filtering.validator import (
     validate_dynamic_filter_args,
 )
-from patriot_center_backend.domains import Player
 
 
 def get_dynamic_filter_options(
@@ -49,5 +48,3 @@ def get_dynamic_filter_options(
         positions = find_valid_positions(year, week, manager)
 
     return format_output(years, weeks, managers, positions)
-
-get_dynamic_filter_options(None, None, None, None, Player("9756"))

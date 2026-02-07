@@ -104,6 +104,7 @@ class Player:
                 "first_name": self.first_name,
                 "last_name": self.last_name,
                 "image_url": self.image_url,
+                "provide_link": False,
             }
         return {
             "name": self.full_name,
@@ -584,6 +585,8 @@ class Player:
         Returns:
             List of matching data entries.
         """
+        if not self._data:
+            return []
         if year and week:
             data = self._data.get(f"{year}_{week}")
             if not data:
@@ -659,5 +662,12 @@ class Player:
                 key_level["total_points"], 2
             )
             key_level["ffWAR"] = round(key_level["ffWAR"], 3)
+
+            if key_level["num_games_started"] == 0:
+                key_level["ffWAR_per_game"] = 0.0
+            else:
+                key_level["ffWAR_per_game"] = round(
+                    key_level["ffWAR"] / key_level["num_games_started"], 3
+                )
 
         return grouped

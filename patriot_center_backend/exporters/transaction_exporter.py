@@ -119,20 +119,8 @@ def get_manager_transactions(
                         "year": yr,
                         "week": week,
                         "type": "add_and_drop",
-                        "added_player": {
-                            "name": added_player.full_name,
-                            "first_name": added_player.first_name,
-                            "last_name": added_player.last_name,
-                            "image_url": added_player.image_url,
-                            "player_id": added_player.player_id,
-                        },
-                        "dropped_player": {
-                            "name": dropped_player.full_name,
-                            "first_name": dropped_player.first_name,
-                            "last_name": dropped_player.last_name,
-                            "image_url": dropped_player.image_url,
-                            "player_id": dropped_player.player_id,
-                        },
+                        "added_player": added_player.get_metadata(),
+                        "dropped_player": dropped_player.get_metadata(),
                         # None if FAAB not implemented yet
                         # or a free agent add/drop
                         "faab_spent": (

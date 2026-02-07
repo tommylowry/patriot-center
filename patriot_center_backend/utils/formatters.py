@@ -300,7 +300,18 @@ def extract_dict_data(
         long_dict = {}
         long_dict[key_name] = item
         long_dict[value_name] = top_three[item]
-        long_dict["image_url"] = get_image_url(item)
+
+        image_url = get_image_url(item, suppress_warning=True)
+        if image_url == "":
+            Player(item)
+            long_dict["metadata"] = Player(item).get_metadata()
+        else:
+            long_dict["metadata"] = {
+                "name": item,
+                "image_url": image_url,
+                "provide_link": True,
+            }
+
         items.append(deepcopy(long_dict))
 
     return deepcopy(items)

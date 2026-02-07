@@ -137,8 +137,6 @@ def _get_players(
                 )
                 continue
             if manager in valid_options_cache[y][w]["managers"]:
-                if "5121" in valid_options_cache[y][w][manager]["players"]:
-                    print("debug")
                 player_ids = player_ids.union(
                     set(valid_options_cache[y][w][manager]["players"])
                 )
@@ -149,5 +147,3 @@ def _get_players(
         players.add(player)
 
     return players
-
-get_aggregated_players("Jay", None, None)

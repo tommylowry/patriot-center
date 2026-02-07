@@ -14,7 +14,9 @@ from patriot_center_backend.utils.item_type_detector import detect_item_type
 logger = logging.getLogger(__name__)
 
 
-def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
+def get_image_url(
+    item: str, dictionary: bool = False, suppress_warning: bool = False
+) -> dict[str, str] | str:
     """Get image URL for item.
 
     If item is manager, check to see if manager image URL is already in cache
@@ -28,6 +30,7 @@ def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
         item: Item to get image URL for
         dictionary: If True, return dictionary with other values, otherwise
             return string
+        suppress_warning: If True, suppress warning if item type is unknown
 
     Returns:
         Image URL for item
@@ -36,7 +39,8 @@ def get_image_url(item: str, dictionary: bool = False) -> dict[str, str] | str:
     item_type = detect_item_type(item)
 
     if item_type == "unknown":
-        logger.warning(f"Could not find image URL for item: {item}")
+        if not suppress_warning:
+            logger.warning(f"Could not detect item type for item: {item}")
         return {} if dictionary else ""
 
     image_urls_cache = CACHE_MANAGER.get_image_urls_cache()

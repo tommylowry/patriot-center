@@ -50,12 +50,12 @@ def get_dynamic_filter_options_route() -> tuple[Response, int]:
     - wk: Week number
     - mgr: Manager name
     - pos: Player position
-    - pid: Player ID
+    - plyr: Player ID
 
     Returns:
         Response in JSON format and status code.
     """
-    acceptable_args = ["yr", "wk", "mgr", "pos", "pid"]
+    acceptable_args = ["yr", "wk", "mgr", "pos", "plyr"]
     for arg in request.args:
         if arg not in acceptable_args:
             return jsonify({"error": f"Invalid argument: {arg}"}), 400
@@ -64,9 +64,9 @@ def get_dynamic_filter_options_route() -> tuple[Response, int]:
     wk = request.args.get("wk")
     mgr = request.args.get("mgr")
     pos = request.args.get("pos")
-    pid = request.args.get("pid")
+    plyr = request.args.get("plyr")
 
-    player = Player(pid) if pid else None
+    player = Player(plyr) if plyr else None
 
     try:
         data = get_dynamic_filter_options(yr, wk, mgr, pos, player)

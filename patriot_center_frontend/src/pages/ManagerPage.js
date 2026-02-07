@@ -1100,16 +1100,17 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
 
 // PlayerLink Component - Displays player with image and clickable link
 function PlayerLink({ player, showImage = true }) {
-  const playerName = typeof player === 'string' ? player : player?.name || 'Unknown';
-  const playerId = typeof player === 'object' ? player?.player_id : null;
-  const imageUrl = typeof player === 'object' ? player?.image_url : null;
+  const meta = typeof player === 'object' ? player?.metadata : null;
+  const playerName = meta?.name || (typeof player === 'string' ? player : player?.name || 'Unknown');
+  const playerId = meta?.player_id || (typeof player === 'object' ? player?.player_id : null);
+  const imageUrl = meta?.image_url || (typeof player === 'object' ? player?.image_url : null);
 
   // Check if this is FAAB or a draft pick (not a real player)
   const isFAAB = playerName.toLowerCase().includes('faab');
   const isDraftPick = playerName.toLowerCase().includes('draft pick') ||
                       playerName.toLowerCase().includes('round pick') ||
                       /\d{4}\s+(1st|2nd|3rd|4th|5th|6th|7th)\s+round/i.test(playerName);
-  const provideLink = typeof player === 'object' ? player?.provide_link : undefined;
+  const provideLink = meta?.provide_link ?? (typeof player === 'object' ? player?.provide_link : undefined);
   const shouldLink = !isFAAB && !isDraftPick && provideLink !== false;
 
   return (
@@ -1134,16 +1135,16 @@ function PlayerLink({ player, showImage = true }) {
         <Link
           to={`/player/${playerId}`}
           style={{
-            color: 'var(--text)',
+            color: 'var(--accent)',
             textDecoration: 'none',
             fontWeight: 600,
-            transition: 'color 0.2s ease'
+            transition: 'opacity 0.2s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.color = 'var(--accent)';
+            e.currentTarget.style.opacity = '0.8';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.color = 'var(--text)';
+            e.currentTarget.style.opacity = '1';
           }}
         >
           {playerName}

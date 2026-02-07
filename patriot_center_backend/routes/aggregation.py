@@ -168,7 +168,8 @@ def get_player_manager_aggregation_route(
         response.headers["Cache-Control"] = "public, max-age=3600"
         return response, 200
 
-    response = jsonify(to_records(data, key_name="manager"))
+    response = jsonify(to_records({manager: data}, key_name="manager"))
+
 
     # Cache for 1 hour
     response.headers["Cache-Control"] = "public, max-age=3600"

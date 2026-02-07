@@ -99,8 +99,7 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
         borderRadius: '8px',
         transition: 'all 0.2s ease',
         cursor: 'pointer',
-        textDecoration: 'none',
-        color: 'var(--text)'
+        textDecoration: 'none'
       }}
       onMouseEnter={(e) => {
         e.currentTarget.style.background = 'var(--bg)';
@@ -159,12 +158,12 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
           </div>
         )}
         {lastName && (
-          <div style={{ fontSize: fontSize, fontWeight: 600 }}>
+          <div style={{ fontSize: fontSize, fontWeight: 600, color: 'var(--accent)' }}>
             {lastName}
           </div>
         )}
         {!firstName && !lastName && (
-          <div style={{ fontSize: fontSize, fontWeight: 600 }}>
+          <div style={{ fontSize: fontSize, fontWeight: 600, color: 'var(--accent)' }}>
             {playerName}
           </div>
         )}

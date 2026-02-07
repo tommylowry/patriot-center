@@ -8,7 +8,9 @@ Single entry point for all cache updates. Runs updates in dependency order:
 
 import logging
 import time
+from typing import Literal
 
+from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters.player_ids_updater import (
     update_player_ids_cache,
 )
@@ -26,9 +28,12 @@ logging.basicConfig(
 )
 
 
-def update_all_caches() -> None:
+def update_all_caches(restart: Literal["partial", "full", None] = None) -> None:
     """Update all caches in dependency order."""
     start = time.perf_counter()
+
+    if restart:
+        CACHE_MANAGER.restart_all_caches(restart)
 
     SLEEPER_CLIENT.clear_cache()
 
@@ -40,5 +45,3 @@ def update_all_caches() -> None:
     logger.info(
         f"Cache update completed in {int(elapsed // 60)}:{elapsed % 60:05.2f}"
     )
-
-update_all_caches()

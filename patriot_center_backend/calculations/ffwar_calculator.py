@@ -13,12 +13,15 @@ from patriot_center_backend.utils.sleeper_helpers import (
 class FFWARCalculator:
     """Calculates the ffWAR for a given week."""
 
+    # ==========================================================================
+    # ============================= Constructor ================================
+    # ==========================================================================
     def __init__(self, year: int, week: int):
         """Initialize the FFWARCalculator.
 
         Args:
-            year (int): The season year.
-            week (int): The week number.
+            year: The season year.
+            week: The week number.
         """
         self.year = year
         self.week = week
@@ -26,8 +29,6 @@ class FFWARCalculator:
         self.season_state = get_season_state(str(year), str(week))
 
         self.starter_scores = fetch_manager_scores(self.year, self.week)
-
-        self.players = fetch_players(self.year, self.week)
 
         self.managers = []
 
@@ -39,27 +40,51 @@ class FFWARCalculator:
             position: {} for position in self.starter_scores
         }
 
-    # ==================== Public Methods ====================
-    def calculate_ffwar(self) -> None:
+        self._dynamic_vars_set = False
+
+    # ==========================================================================
+    # ============================= Public Methods =============================
+    # ==========================================================================
+    def calculate_and_set_ffwar_for_week(self) -> None:
         """Calculates the ffWAR for a given week.
 
         Returns:
             A dictionary with the ffWAR scores for each player.
+
+        Notes:
+            - This function assumes that the player data has already been
+            populated with the necessary information.
         """
-        # Fetch all managers for the given week
-        self._apply_managers()
-
-        # Calculate the prerequisites for calculating ffWAR
-        self._apply_replacement_scores()
-        self._apply_baseline_and_weighted_scores()
-
         # Simulate all possible manager pairings
-        self._simulate_matchups()
+        self._apply_dynamic_vars()
 
-    def _simulate_matchups(self) -> None:
-        """Simulates all possible manager pairings with the given player data.
+        # Get all the players that played that week
+        players = fetch_players(self.year, self.week)
+        for player in players:
+            points = player.get_points(
+                year=str(self.year),
+                week=str(self.week),
+                only_started=False,
+                only_rostered=False,
+            )
 
-        This function takes the given player data and simulates all possible
+            ffwar = self.calculate_ffwar_for_player(
+                player_points=points,
+                position=player.position,
+            )
+
+            player.set_week_data(
+                str(self.year),
+                str(self.week),
+                ffwar=ffwar
+            )
+
+    def calculate_ffwar_for_player(
+        self, player_points: float, position: str
+    ) -> float:
+        """Simulates all possible manager pairings with a specific player.
+
+        This function takes a player's points and simulates all possible
         manager pairings. For each manager pairing, it calculates the score
         with the given player and the score with the replacement player at the
         same position. It then determines if the player would win or lose the
@@ -67,100 +92,107 @@ class FFWARCalculator:
         The results of these simulations are used to calculate the final ffWAR
         score as a win rate differential.
 
+        Args:
+            player_points: The points scored by the player.
+            position: The position of the player.
+
+        Returns:
+            The ffWAR score for the player.
+
         Raises:
             ValueError: If no simulated games are played
 
         Notes:
-            - This function assumes that the player data has already been
-            populated with the necessary information.
             - The ffWAR score is calculated as the win rate differential
             between the player and the replacement player.
             - The ffWAR score is adjusted for the playoffs by scaling it down
             by 1/3. This is because only 4 of 12 teams play each week in the
             playoffs.
         """
-        # Simulate all possible manager pairings with this player
-        for player in self.players:
+        if not self._dynamic_vars_set:
+            self._apply_dynamic_vars()
 
-            player_score = player.get_points(
-                year=str(self.year),
-                week=str(self.week),
-                only_started=False,
-                only_rostered=False,
-            )
-            replacement_score = self.replacement_scores[player.position]
+        replacement_score = self.replacement_scores[position]
 
-            num_wins = 0
-            num_simulated_games = 0
+        num_wins = 0
+        num_simulated_games = 0
 
-            for manager_playing in self.baseline_scores[player.position]:
-                baseline = self.baseline_scores[player.position][
-                    manager_playing
-                ]
+        for manager_playing in self.baseline_scores[position]:
+            baseline = self.baseline_scores[position][
+                manager_playing
+            ]
 
-                # Manager's score with THIS player at this position
-                simulated_player_score = baseline + player_score
+            # Manager's score with THIS player at this position
+            simulated_player_score = baseline + player_points
 
-                # Manager's score with REPLACEMENT player at this position
-                simulated_replacement_score = baseline + replacement_score
+            # Manager's score with REPLACEMENT player at this position
+            simulated_replacement_score = baseline + replacement_score
 
-                for manager_opposing in self.weighted_scores[player.position]:
-                    if manager_playing == manager_opposing:
-                        continue  # Skip self-matchups
+            for manager_opposing in self.weighted_scores[position]:
+                if manager_playing == manager_opposing:
+                    continue  # Skip self-matchups
 
-                    # Opponent's score with the week's positional average
-                    # applied instead of the average of all players with this
-                    # position
-                    simulated_opponent_score = self.weighted_scores[
-                        player.position
-                    ][manager_opposing]
+                # Opponent's score with the week's positional average
+                # applied instead of the average of all players with this
+                # position
+                simulated_opponent_score = (
+                    self.weighted_scores[position][manager_opposing]
+                )
 
-                    # Determine if the player would win or lose the matchup
-                    player_wins = (
-                        simulated_player_score > simulated_opponent_score
-                    )
-                    player_loses = (
-                        simulated_player_score < simulated_opponent_score
-                    )
+                # Determine if the player would win or lose the matchup
+                player_wins = (
+                    simulated_player_score > simulated_opponent_score
+                )
+                player_loses = (
+                    simulated_player_score < simulated_opponent_score
+                )
 
-                    # Determine if the replacement would win or lose the matchup
-                    replacement_wins = (
-                        simulated_replacement_score > simulated_opponent_score
-                    )
-                    replacement_loses = (
-                        simulated_replacement_score < simulated_opponent_score
-                    )
+                # Determine if the replacement would win or lose the matchup
+                replacement_wins = (
+                    simulated_replacement_score > simulated_opponent_score
+                )
+                replacement_loses = (
+                    simulated_replacement_score < simulated_opponent_score
+                )
 
-                    # Case 1: Player wins but replacement would lose
-                    # (+1 fantasy football Win Above Replacement aka ffWAR)
-                    if player_wins and replacement_loses:
-                        num_wins += 1
+                # Case 1: Player wins but replacement would lose
+                # (+1 fantasy football Win Above Replacement aka ffWAR)
+                if player_wins and replacement_loses:
+                    num_wins += 1
 
-                    # Case 2: Player loses but replacement would win
-                    # (-1 fantasy football Win Above Replacement aka ffWAR)
-                    if player_loses and replacement_wins:
-                        num_wins -= 1
+                # Case 2: Player loses but replacement would win
+                # (-1 fantasy football Win Above Replacement aka ffWAR)
+                if player_loses and replacement_wins:
+                    num_wins -= 1
 
-                    # Case 3 & 4: Both win or both lose
-                    # (no change to ffWAR)
+                # Case 3 & 4: Both win or both lose
+                # (no change to ffWAR)
 
-                    num_simulated_games += 1
+                num_simulated_games += 1
 
-            # Calculate final ffWAR score as win rate differential
-            if num_simulated_games == 0:
-                raise ValueError("No simulated games played")
+        # Calculate final ffWAR score as win rate differential
+        if num_simulated_games == 0:
+            raise ValueError("No simulated games played")
 
-            ffwar_score = num_wins / num_simulated_games
+        ffwar = num_wins / num_simulated_games
 
-            # Playoff adjustment: scale down by 1/3 since only 4 of 12 teams
-            # play each week
-            ffwar_score = self._apply_playoff_adjustment(ffwar_score)
+        # Playoff adjustment: scale down by 1/3 since only 4 of 12 teams
+        # play each week
+        return self._apply_playoff_adjustment(ffwar)
 
-            player.set_week_data(
-                str(self.year),
-                str(self.week),
-                ffwar=round(ffwar_score, 3),
-            )
+    # =========================================================================
+    # ============================ Private Methods ============================
+    # =========================================================================
+    def _apply_dynamic_vars(self):
+        """Applies the dynamic variables to the calculator."""
+        # Fetch all managers for the given week
+        self._apply_managers()
+
+        # Calculate the prerequisites for calculating ffWAR
+        self._apply_replacement_scores()
+        self._apply_baseline_and_weighted_scores()
+
+        self._dynamic_vars_set = True
 
     def _apply_managers(self) -> None:
         """Fetches valid manager options for the given year and week.
@@ -262,13 +294,13 @@ class FFWARCalculator:
 
             self.replacement_scores[position] = replacement_score
 
-    def _apply_playoff_adjustment(self, score: float) -> float:
+    def _apply_playoff_adjustment(self, ffwar: float) -> float:
         """Apply playoff adjustment to score based on season state.
 
         Args:
-            score: The score to adjust.
+            ffwar: The unadjusted ffwar.
 
         Returns:
-            The adjusted score.
+            The adjusted ffwar if season is playoffs, otherwise the unadjusted
         """
-        return score / 3 if self.season_state == "playoffs" else score
+        return ffwar / 3 if self.season_state == "playoffs" else ffwar

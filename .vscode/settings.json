@@ -28,5 +28,14 @@
 
 
     "python.analysis.typeCheckingMode": "standard",
-    "python.analysis.diagnosticSeverityOverrides": {}
+    "python.analysis.diagnosticSeverityOverrides": {},
+
+    "files.watcherExclude": {
+        "**/.git/**": true,
+        "**/.git/objects/**": true,
+        "**/.git/refs/**": true
+    },
+    "files.exclude": {
+        "**/.git": true
+    }
 }

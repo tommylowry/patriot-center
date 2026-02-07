@@ -18,7 +18,7 @@ export default function SearchBar() {
 
         return players
             .filter(option => {
-                const fullName = (option.full_name || '').toLowerCase();
+                const fullName = (option.full_name || option.name || '').toLowerCase();
 
                 // For managers (no first_name/last_name), only check full_name
                 if (option.type === 'manager') {
@@ -42,8 +42,8 @@ export default function SearchBar() {
                 if (!aIsManager && bIsManager) return 1;
 
                 // SECOND PRIORITY: Within same type, prioritize exact matches
-                const aFullName = (a.full_name || '').toLowerCase();
-                const bFullName = (b.full_name || '').toLowerCase();
+                const aFullName = (a.full_name || a.name || '').toLowerCase();
+                const bFullName = (b.full_name || b.name || '').toLowerCase();
                 const aFirstName = (a.first_name || '').toLowerCase();
                 const bFirstName = (b.first_name || '').toLowerCase();
                 const aLastName = (a.last_name || '').toLowerCase();
@@ -121,8 +121,7 @@ export default function SearchBar() {
             if (!option.name) return;
             navigate(`/manager/${encodeURIComponent(option.name)}`);
         } else {
-            // For players, use player_id for navigation
-            if (!option.player_id) return;
+            if (!option.player_id || option.provide_link === false) return;
             navigate(`/player/${option.player_id}`);
         }
 
@@ -212,7 +211,7 @@ export default function SearchBar() {
                             }}
                         >
                             <div style={{ fontWeight: 500, marginBottom: '0.15rem' }}>
-                                {highlightMatch(option.full_name || '', query)}
+                                {highlightMatch(option.full_name || option.name || '', query)}
                             </div>
                             {option.type === 'manager' ? (
                                 <div style={{

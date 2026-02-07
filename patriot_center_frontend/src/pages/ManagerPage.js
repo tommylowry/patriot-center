@@ -817,8 +817,9 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
   const [fontSize, setFontSize] = React.useState(isMobile ? '0.65rem' : '0.95rem');
 
   // Extract values with optional chaining before useEffect
-  const playerName = player?.key || player?.name || '';
-  const playerId = player?.player_id;
+  const playerName = player?.player || player?.name || '';
+  const playerId = player?.player_id || player?.key;
+  const shouldLink = player?.provide_link !== false;
   const firstName = player?.first_name || (playerName ? playerName.split(' ')[0] : '') || '';
   const lastName = player?.last_name || (playerName ? playerName.split(' ').slice(1).join(' ') : '') || '';
   const statValue = stat === 'num_games_started' ? player?.[stat] : (player?.[stat]?.toFixed(3) || player?.[stat] || 0);
@@ -930,7 +931,24 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
         // Mobile: Original structure with div wrapper and separate link on name
         <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.25rem' : '0.5rem' }}>
           {player.player_image_endpoint && (
-            <Link to={`/player/${playerId}`} style={{ flexShrink: 0 }}>
+            shouldLink ? (
+              <Link to={`/player/${playerId}`} style={{ flexShrink: 0 }}>
+                <img
+                  src={player.player_image_endpoint}
+                  alt={playerName}
+                  style={{
+                    width: isMobile ? '50px' : '75px',
+                    height: isMobile ? '50px' : '75px',
+                    borderRadius: '8px',
+                    objectFit: 'cover',
+                    cursor: 'pointer'
+                  }}
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                  }}
+                />
+              </Link>
+            ) : (
               <img
                 src={player.player_image_endpoint}
                 alt={playerName}
@@ -939,40 +957,54 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
                   height: isMobile ? '50px' : '75px',
                   borderRadius: '8px',
                   objectFit: 'cover',
-                  cursor: 'pointer'
+                  flexShrink: 0
                 }}
                 onError={(e) => {
                   e.target.style.display = 'none';
                 }}
               />
-            </Link>
+            )
           )}
           {/* Vertical Divider */}
           {player.player_image_endpoint && <div style={{ width: '1px', height: isMobile ? '50px' : '75px', background: 'var(--border)', flexShrink: 0 }} />}
           <div ref={textContainerRef} style={{ minWidth: 0, textAlign: 'left', width: '100%' }}>
-            <Link
-              to={`/player/${playerId}`}
-              style={{
+            {shouldLink ? (
+              <Link
+                to={`/player/${playerId}`}
+                style={{
+                  fontWeight: 600,
+                  fontSize: fontSize,
+                  color: 'var(--text)',
+                  textDecoration: 'none',
+                  lineHeight: '1.2',
+                  display: 'block',
+                  transition: 'color 0.2s ease',
+                  overflow: 'hidden',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = 'var(--accent)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = 'var(--text)';
+                }}
+              >
+                <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{firstName}</div>
+                <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{lastName}</div>
+              </Link>
+            ) : (
+              <div style={{
                 fontWeight: 600,
                 fontSize: fontSize,
                 color: 'var(--text)',
-                textDecoration: 'none',
                 lineHeight: '1.2',
-                display: 'block',
-                transition: 'color 0.2s ease',
                 overflow: 'hidden',
                 whiteSpace: 'nowrap'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.color = 'var(--accent)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.color = 'var(--text)';
-              }}
-            >
-              <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{firstName}</div>
-              <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{lastName}</div>
-            </Link>
+              }}>
+                <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{firstName}</div>
+                <div style={{ overflow: 'hidden', textOverflow: 'clip' }}>{lastName}</div>
+              </div>
+            )}
             <div style={{ fontSize: isMobile ? '0.45rem' : '0.8rem', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
               {player.position} • {player.team}
             </div>
@@ -986,10 +1018,13 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
             )}
           </div>
         </div>
-      ) : (
+      ) : (() => {
+        const DesktopTag = shouldLink ? Link : 'div';
+        const desktopLinkProps = shouldLink ? { to: `/player/${playerId}` } : {};
+        return (
         // Desktop: New structure with Link wrapper and hover border
-        <Link
-          to={`/player/${playerId}`}
+        <DesktopTag
+          {...desktopLinkProps}
           style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -999,17 +1034,17 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
             background: 'transparent',
             borderRadius: '8px',
             transition: 'all 0.2s ease',
-            cursor: 'pointer',
+            cursor: shouldLink ? 'pointer' : 'default',
             textDecoration: 'none'
           }}
-          onMouseEnter={(e) => {
+          onMouseEnter={shouldLink ? (e) => {
             e.currentTarget.style.background = 'var(--bg)';
             e.currentTarget.style.borderColor = 'var(--accent)';
-          }}
-          onMouseLeave={(e) => {
+          } : undefined}
+          onMouseLeave={shouldLink ? (e) => {
             e.currentTarget.style.background = 'transparent';
             e.currentTarget.style.borderColor = 'transparent';
-          }}
+          } : undefined}
         >
           {player.player_image_endpoint && (
             <img
@@ -1056,8 +1091,9 @@ function PlayerStatCard({ title, player, stat, additionalInfo, isMobile }) {
               </div>
             )}
           </div>
-        </Link>
-      )}
+        </DesktopTag>
+        );
+      })()}
     </div>
   );
 }
@@ -1073,7 +1109,8 @@ function PlayerLink({ player, showImage = true }) {
   const isDraftPick = playerName.toLowerCase().includes('draft pick') ||
                       playerName.toLowerCase().includes('round pick') ||
                       /\d{4}\s+(1st|2nd|3rd|4th|5th|6th|7th)\s+round/i.test(playerName);
-  const shouldLink = !isFAAB && !isDraftPick;
+  const provideLink = typeof player === 'object' ? player?.provide_link : undefined;
+  const shouldLink = !isFAAB && !isDraftPick && provideLink !== false;
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

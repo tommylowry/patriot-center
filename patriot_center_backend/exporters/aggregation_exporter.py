@@ -98,10 +98,6 @@ def _populate_scoring_summary(
         player: The player object.
     """
     scoring_summary["player"] = player.full_name
-
-    scoring_summary["ffWAR_per_game"] = round(
-        scoring_summary["ffWAR"] / scoring_summary["num_games_started"], 3
-    )
     scoring_summary["position"] = player.position
     scoring_summary["player_image_endpoint"] = player.image_url
     scoring_summary["team"] = player.team
@@ -141,6 +137,8 @@ def _get_players(
                 )
                 continue
             if manager in valid_options_cache[y][w]["managers"]:
+                if "5121" in valid_options_cache[y][w][manager]["players"]:
+                    print("debug")
                 player_ids = player_ids.union(
                     set(valid_options_cache[y][w][manager]["players"])
                 )
@@ -151,3 +149,5 @@ def _get_players(
         players.add(player)
 
     return players
+
+get_aggregated_players("Jay", None, None)

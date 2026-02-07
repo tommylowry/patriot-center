@@ -113,6 +113,7 @@ class Player:
             "player_id": self.player_id,
             "position": self.position,
             "team": self.team,
+            "provide_link": self.has_started(),
         }
 
     def set_week_data(
@@ -413,13 +414,6 @@ class Player:
             year, week, only_started, only_rostered, manager=manager
         )
 
-        if not matches:
-            logger.warning(
-                f"Player {self.full_name} ({self.player_id}) "
-                f"does not have data for the given parameters."
-            )
-            return {}
-
         raw_dict = {
             "total_points": 0.0,
             "ffWAR": 0.0,
@@ -461,6 +455,13 @@ class Player:
             raw_dict["total_points"], 2
         )
         raw_dict["ffWAR"] = round(raw_dict["ffWAR"], 3)
+
+        if raw_dict["num_games_started"] == 0:
+            raw_dict["ffWAR_per_game"] = 0.0
+        else:
+            raw_dict["ffWAR_per_game"] = round(
+                raw_dict["ffWAR"] / raw_dict["num_games_started"], 3
+            )
 
         return raw_dict
 

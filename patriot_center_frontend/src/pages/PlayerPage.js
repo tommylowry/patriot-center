@@ -62,7 +62,7 @@ export default function PlayerPage() {
 
     // Extract player data from first manager object
     const playerImageUrl = managers?.[0]?.player_image_endpoint;
-    const displayName = managers?.[0]?.player || allTimeManagers?.[0]?.player || playerIdToUse;
+    const displayName = managers?.[0]?.player || allTimeManagers?.[0]?.player || '';
 
     // Reset image error when player changes
     React.useEffect(() => {

@@ -269,7 +269,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                     {group.players.map((player, playerIdx) => {
                       const playerName = player.name || 'Unknown';
                       const playerId = player?.player_id;
-                      const isFAAB = playerName.includes('FAAB');
+                      const isFAAB = playerName.includes('FAAB') || player?.provide_link === false;
                       const remainder = isMobile && group.players.length > 3 ? group.players.length % 3 : 0;
                       const isLastAndSingle = remainder === 1 && playerIdx === group.players.length - 1;
                       const isFirstOfTwoLeftover = remainder === 2 && playerIdx === group.players.length - 2;
@@ -290,7 +290,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
                             {leftoverPlayers.map((p, idx) => {
                               const pName = p.name || 'Unknown';
                               const pId = p?.player_id;
-                              const pIsFAAB = pName.includes('FAAB');
+                              const pIsFAAB = pName.includes('FAAB') || p?.provide_link === false;
 
                               return (
                                 <div key={playerIdx + idx} style={{
@@ -806,7 +806,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
               {row.sent.map((player, playerIdx) => {
                 const playerName = player.name || 'Unknown';
                 const playerId = player?.player_id;
-                const isFAAB = playerName.includes('FAAB');
+                const isFAAB = playerName.includes('FAAB') || player?.provide_link === false;
                 const isLastAndOdd = isMobile && playerIdx === row.sent.length - 1 && row.sent.length % 2 === 1;
 
                 return (
@@ -979,7 +979,7 @@ export function TradeCard({ trade, hideHeader = false, isMobile = false }) {
               {row.received.map((player, playerIdx) => {
                 const playerName = player.name || 'Unknown';
                 const playerId = player?.player_id;
-                const isFAAB = playerName.includes('FAAB');
+                const isFAAB = playerName.includes('FAAB') || player?.provide_link === false;
                 const isLastAndOdd = isMobile && playerIdx === row.received.length - 1 && row.received.length % 2 === 1;
 
                 return (

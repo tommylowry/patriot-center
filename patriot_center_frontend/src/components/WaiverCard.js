@@ -16,7 +16,8 @@ function PlayerLinkVertical({ player, imageSize = 45, fontSize = '0.75rem', faab
   const isDraftPick = playerName.toLowerCase().includes('draft pick') ||
                       playerName.toLowerCase().includes('round pick') ||
                       /\d{4}\s+(1st|2nd|3rd|4th|5th|6th|7th)\s+round/i.test(playerName);
-  const shouldLink = !isFAAB && !isDraftPick;
+  const provideLink = typeof player === 'object' ? player?.provide_link : undefined;
+  const shouldLink = !isFAAB && !isDraftPick && provideLink !== false;
 
   if (!shouldLink) {
     // For FAAB and draft picks, render without Link wrapper

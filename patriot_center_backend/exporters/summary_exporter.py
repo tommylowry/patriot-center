@@ -64,3 +64,5 @@ def get_manager_summary(
     }
 
     return deepcopy(return_dict)
+
+get_manager_summary(manager="Jay")

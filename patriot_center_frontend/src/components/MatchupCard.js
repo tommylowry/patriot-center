@@ -155,10 +155,14 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false, i
                 </div>
               </div>
               {/* All Players */}
-              {manager1Players?.map((player, i) => (
-                <Link
+              {manager1Players?.map((player, i) => {
+                const shouldLink = player.provide_link !== false;
+                const Tag = shouldLink ? Link : 'div';
+                const linkProps = shouldLink ? { to: `/player/${player.player_id}` } : {};
+                return (
+                <Tag
                   key={i}
-                  to={`/player/${player.player_id}`}
+                  {...linkProps}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -260,8 +264,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false, i
                   }}>
                     {player.score?.toFixed(2)}
                   </div>
-                </Link>
-              ))}
+                </Tag>
+                );
+              })}
             </div>
 
             {/* Vertical Divider */}
@@ -354,10 +359,14 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false, i
                 </div>
               </div>
               {/* All Players */}
-              {manager2Players?.map((player, i) => (
-                <Link
+              {manager2Players?.map((player, i) => {
+                const shouldLink = player.provide_link !== false;
+                const Tag = shouldLink ? Link : 'div';
+                const linkProps = shouldLink ? { to: `/player/${player.player_id}` } : {};
+                return (
+                <Tag
                   key={i}
-                  to={`/player/${player.player_id}`}
+                  {...linkProps}
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -459,8 +468,9 @@ export function MatchupCard({ matchup, showMargin = false, hideHeader = false, i
                       }}
                     />
                   )}
-                </Link>
-              ))}
+                </Tag>
+                );
+              })}
             </div>
           </div>
         )}

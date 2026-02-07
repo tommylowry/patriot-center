@@ -63,13 +63,13 @@ def update_weekly_data_caches() -> None:
         )
 
         for week in weeks_to_update:
-            # Assign playoff placements
-            if week == max(weeks_to_update) and season_complete:
-                assign_placements_retroactively(year)
 
             manager_updater.cache_week_data(str(year), str(week))
             FFWARCalculator(year, week).calculate_and_set_ffwar_for_week()
 
+            # Assign playoff placements
+            if week == max(weeks_to_update) and season_complete:
+                assign_placements_retroactively(year)
 
             log_cache_update(year, week, "Weekly Data")
 

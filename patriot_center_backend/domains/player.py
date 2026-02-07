@@ -403,6 +403,9 @@ class Player:
         Returns:
             The player's summary
         """
+        from patriot_center_backend.calculations.ffwar_calculator import (
+            FFWARCalculator,
+        )
         if not self._is_real_player:
             return {}
 
@@ -425,8 +428,24 @@ class Player:
 
         # Add up the total points, ffWAR, and number of games started
         for match in matches:
-            raw_dict["total_points"] += match["points"]
-            raw_dict["ffWAR"] += match["ffwar"]
+            points = match.get("points")
+            ffwar = match.get("ffwar")
+
+            # If a manager started a player but player didn't play in real life
+            if points is None:
+                points = 0.0
+
+                # The player was technically started in fantasy so their ffWAR
+                # needs to be calculated and shared for the scoring summary but
+                # not stored in the database as an actual ffWAR value set
+                # against them.
+                ffwar_calculator = FFWARCalculator(match["year"], match["week"])
+                ffwar = ffwar_calculator.calculate_ffwar_for_player(
+                    0.0, self.position
+                )
+
+            raw_dict["total_points"] += points
+            raw_dict["ffWAR"] += ffwar
             raw_dict["num_games_started"] += 1
 
             # Add playoff placement if available

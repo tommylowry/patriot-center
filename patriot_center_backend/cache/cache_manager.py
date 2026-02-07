@@ -6,7 +6,7 @@ import sys
 from copy import deepcopy
 from datetime import datetime, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 module = sys.modules[__name__]
 
@@ -119,6 +119,15 @@ class CacheManager:
         with open(file_path, "w") as file:
             json.dump(data, file, indent=4)
 
+    def _delete_cache(self, file_path: str) -> None:
+        """Delete cache file.
+
+        Args:
+            file_path: Target path.
+        """
+        if os.path.exists(file_path):
+            os.remove(file_path)
+
     # ===== MANAGER METADATA CACHE =====
     def get_manager_cache(
         self, force_reload: bool = False, copy: bool = False
@@ -157,6 +166,11 @@ class CacheManager:
 
         self._save_cache(_MANAGER_METADATA_CACHE_FILE, data_to_save)
         self._manager_cache = data_to_save
+
+    def _delete_manager_cache(self) -> None:
+        """Delete manager metadata cache file."""
+        self._delete_cache(_MANAGER_METADATA_CACHE_FILE)
+        self._manager_cache = None
 
     # ===== TRANSACTION IDS CACHE =====
     def get_transaction_ids_cache(
@@ -201,6 +215,11 @@ class CacheManager:
         self._save_cache(_TRANSACTION_IDS_FILE, data_to_save)
         self._transaction_ids_cache = data_to_save
 
+    def _delete_transaction_ids_cache(self) -> None:
+        """Delete transaction IDs cache file."""
+        self._delete_cache(_TRANSACTION_IDS_FILE)
+        self._transaction_ids_cache = None
+
     # ===== PLAYER IDS CACHE =====
     def get_player_ids_cache(
         self, force_reload: bool = False, copy: bool = False
@@ -240,6 +259,11 @@ class CacheManager:
         self._save_cache(_PLAYER_IDS_CACHE_FILE, data_to_save)
         self._player_ids_cache = data_to_save
 
+    def _delete_player_ids_cache(self) -> None:
+        """Delete player IDs cache file."""
+        self._delete_cache(_PLAYER_IDS_CACHE_FILE)
+        self._player_ids_cache = None
+
     # ===== STARTERS CACHE =====
     def get_starters_cache(
         self, force_reload: bool = False, copy: bool = False
@@ -276,6 +300,11 @@ class CacheManager:
 
         self._save_cache(_STARTERS_CACHE_FILE, data_to_save)
         self._starters_cache = data_to_save
+
+    def _delete_starters_cache(self) -> None:
+        """Delete starters cache file."""
+        self._delete_cache(_STARTERS_CACHE_FILE)
+        self._starters_cache = None
 
     # ===== REPLACEMENT SCORE CACHE =====
     def get_replacement_score_cache(
@@ -320,6 +349,11 @@ class CacheManager:
         self._save_cache(_REPLACEMENT_SCORE_CACHE_FILE, data_to_save)
         self._replacement_score_cache = data_to_save
 
+    def _delete_replacement_score_cache(self) -> None:
+        """Delete replacement score cache file."""
+        self._delete_cache(_REPLACEMENT_SCORE_CACHE_FILE)
+        self._replacement_score_cache = None
+
     # ===== VALID OPTIONS CACHE =====
     def get_valid_options_cache(
         self, force_reload: bool = False, copy: bool = False
@@ -361,6 +395,12 @@ class CacheManager:
         self._save_cache(_VALID_OPTIONS_CACHE_FILE, data_to_save)
         self._valid_options_cache = data_to_save
 
+    def _delete_valid_options_cache(self) -> None:
+        """Delete valid options cache file."""
+        self._delete_cache(_VALID_OPTIONS_CACHE_FILE)
+        self._valid_options_cache = None
+
+    # ===== IMAGE URLS CACHE =====
     def get_image_urls_cache(
         self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
@@ -399,6 +439,12 @@ class CacheManager:
         self._save_cache(_IMAGE_URLS_CACHE_FILE, data_to_save)
         self._image_urls_cache = data_to_save
 
+    def _delete_image_urls_cache(self) -> None:
+        """Delete image urls cache file."""
+        self._delete_cache(_IMAGE_URLS_CACHE_FILE)
+        self._image_urls_cache = None
+
+    # ===== WEEKLY DATA PROGRESS TRACKER =====
     def get_weekly_data_progress_tracker(
         self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, Any]:
@@ -441,6 +487,12 @@ class CacheManager:
         self._save_cache(_WEEKLY_DATA_PROGRESS_TRACKER_FILE, data_to_save)
         self._weekly_data_progress_tracker = data_to_save
 
+    def _delete_weekly_data_progress_tracker(self) -> None:
+        """Delete weekly data progress tracker file."""
+        self._delete_cache(_WEEKLY_DATA_PROGRESS_TRACKER_FILE)
+        self._weekly_data_progress_tracker = None
+
+    # ===== PLAYER CACHE =====
     def get_player_cache(
         self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
@@ -478,6 +530,11 @@ class CacheManager:
 
         self._save_cache(_PLAYER_CACHE_FILE, data_to_save)
         self._player_cache = data_to_save
+
+    def _delete_player_cache(self) -> None:
+        """Delete player cache file."""
+        self._delete_cache(_PLAYER_CACHE_FILE)
+        self._player_cache = None
 
     # ===== UTILITY METHODS =====
     def is_cache_stale(
@@ -548,6 +605,27 @@ class CacheManager:
         if self._player_cache is not None:
             self.save_player_cache()
 
+    def restart_all_caches(
+        self, restart: Literal["partial", "full"]
+    ) -> None:
+        """Restart all caches except player ids if partial, or all if full.
+
+        Args:
+            restart: If "partial", only restart weekly data caches. If "full",
+                restart all.
+        """
+        self._delete_manager_cache()
+        self._delete_transaction_ids_cache()
+        self._delete_starters_cache()
+        self._delete_replacement_score_cache()
+        self._delete_valid_options_cache()
+        self._delete_image_urls_cache()
+        self._delete_weekly_data_progress_tracker()
+        self._delete_player_cache()
+        if restart == "full":
+            self._delete_player_ids_cache()
+
+        self.reload_all_caches()
 
 # ===== SINGLETON INSTANCE =====
 # Create a single instance to be imported throughout the repo

@@ -68,7 +68,7 @@ def update_weekly_data_caches() -> None:
                 assign_placements_retroactively(year)
 
             manager_updater.cache_week_data(str(year), str(week))
-            FFWARCalculator(year, week).calculate_ffwar()
+            FFWARCalculator(year, week).calculate_and_set_ffwar_for_week()
 
 
             log_cache_update(year, week, "Weekly Data")

@@ -141,10 +141,10 @@ def find_valid_managers(
     # Set years to check to year if set, otherwise all
     years_to_check = [year] if year else valid_options_cache.keys()
 
-    weeks_to_check = _get_weeks_to_check(year, week)
-
     for yr in years_to_check:
         year_data = valid_options_cache.get(yr, {})
+
+        weeks_to_check = _get_weeks_to_check(yr, week)
 
         if not weeks_to_check:
             weeks_to_check = year_data.get("weeks", [])

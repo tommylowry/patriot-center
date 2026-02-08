@@ -2,13 +2,13 @@
 
 from flask import Blueprint, Response, jsonify, request
 
-from patriot_center_backend.domains import Player
 from patriot_center_backend.exporters.dynamic_filter_exporter import (
     get_dynamic_filter_options,
 )
 from patriot_center_backend.exporters.options_exporter import (
     get_options_list,
 )
+from patriot_center_backend.models import Player
 from patriot_center_backend.utils.data_formatters import to_records
 
 bp = Blueprint("options", __name__)

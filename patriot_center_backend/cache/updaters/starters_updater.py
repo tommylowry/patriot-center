@@ -4,7 +4,7 @@ import logging
 from decimal import Decimal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.domains import Player
+from patriot_center_backend.models import Player
 
 logger = logging.getLogger(__name__)
 

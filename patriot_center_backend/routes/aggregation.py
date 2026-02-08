@@ -2,12 +2,12 @@
 
 from flask import Blueprint, Response, jsonify, request
 
-from patriot_center_backend.domains import Player
 from patriot_center_backend.exporters.aggregation_exporter import (
     get_aggregated_managers,
     get_aggregated_players,
     get_player_manager_aggregation,
 )
+from patriot_center_backend.models import Player
 from patriot_center_backend.utils.argument_parser import parse_arguments
 from patriot_center_backend.utils.data_formatters import to_records
 
@@ -42,9 +42,9 @@ def get_aggregated_players_route(
     aggregation or flattened record list.
 
     Args:
-        arg1 (str | None): Season (year) or week number or manager name.
-        arg2 (str | None): Season (year) or week number or manager name.
-        arg3 (str | None): Season (year) or week number or manager name.
+        arg1: Year or week number or manager name.
+        arg2: Year or week number or manager name.
+        arg3: Year or week number or manager name.
 
     Returns:
         Response in JSON format and status code.
@@ -95,8 +95,8 @@ def get_aggregated_managers_route(
 
     Args:
         player_id: Player name key.
-        arg2: Season (year) or week number.
-        arg3: Season (year) or week number.
+        arg2: Year or week number.
+        arg3: Year or week number.
 
     Returns:
         Response in JSON format and status code.
@@ -152,8 +152,8 @@ def get_player_manager_aggregation_route(
     Args:
         player_id: The player_id to filter.
         manager: The manager to filter.
-        year: Season (year) or week number.
-        week: Season (year) or week number.
+        year: Year or week number.
+        week: Year or week number.
 
     Returns:
         Response in JSON format (aggregated stats or error) and status code.

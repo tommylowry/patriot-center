@@ -108,7 +108,7 @@ class TestValidateMatchupData:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
 
         Args:
             mock_manager_cache: A mock manager cache.
@@ -119,7 +119,7 @@ class TestValidateMatchupData:
         with (
             patch(
                 "patriot_center_backend.cache.updaters._validators"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
         ):
             self.mock_manager_cache = mock_manager_cache

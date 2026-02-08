@@ -214,7 +214,7 @@ def add_trade_details_to_cache(
         use_faab: Whether FAAB was involved in this trade
             and in a year where FAAB was used
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     player_initial_dict = {
         "total": 0,
@@ -332,7 +332,7 @@ def revert_trade_transaction(
             - This list is updated to remove the reverted transaction IDs.
     """
     transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     transaction = deepcopy(transaction_ids_cache[transaction_id1])
 

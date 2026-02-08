@@ -205,9 +205,9 @@ class TestAssignPlacementsRetroactively:
         """
         assign_placements_retroactively(2024)
 
-        player_data = (
-            self.mock_starters_cache["2024"]["15"]["Tommy"]["Patrick Mahomes"]
-        )
+        player_data = self.mock_starters_cache["2024"]["15"]["Tommy"][
+            "Patrick Mahomes"
+        ]
         assert player_data["placement"] == 1
 
     def test_calls_manager_cache_set_playoff_placements(self):
@@ -226,9 +226,9 @@ class TestAssignPlacementsRetroactively:
 
     def test_returns_early_when_placement_already_assigned(self):
         """Test returns early when placement already assigned."""
-        player = (
-            self.mock_starters_cache["2024"]["15"]["Tommy"]["Patrick Mahomes"]
-        )
+        player = self.mock_starters_cache["2024"]["15"]["Tommy"][
+            "Patrick Mahomes"
+        ]
         player["placement"] = 1
 
         assign_placements_retroactively(2024)
@@ -249,9 +249,9 @@ class TestAssignPlacementsRetroactively:
 
         assign_placements_retroactively(2020)
 
-        player_data = (
-            self.mock_starters_cache["2020"]["14"]["Tommy"]["Patrick Mahomes"]
-        )
+        player_data = self.mock_starters_cache["2020"]["14"]["Tommy"][
+            "Patrick Mahomes"
+        ]
         assert player_data["placement"] == 1
 
 
@@ -264,7 +264,7 @@ class TestManagerCacheSetPlayoffPlacements:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager`
 
         Yields:
             None
@@ -272,7 +272,7 @@ class TestManagerCacheSetPlayoffPlacements:
         with (
             patch(
                 "patriot_center_backend.playoffs.playoff_tracker"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager,
         ):
             self.mock_manager_cache = {}

@@ -49,6 +49,9 @@ _REPLACEMENT_SCORE_CACHE_FILE = os.path.join(
 _PLAYER_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "player_cache.json"
 )
+_MANAGER_CACHE_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "manager_cache.json"
+)
 
 
 class CacheManager:
@@ -63,11 +66,11 @@ class CacheManager:
         cache_mgr = CacheManager()
 
         # Load caches
-        manager_cache = cache_mgr.get_manager_cache()
+        manager_metadata_cache = cache_mgr.get_manager_metadata_cache()
         starters = cache_mgr.get_starters_cache()
 
         # Save caches
-        cache_mgr.save_manager_cache(manager_cache)
+        cache_mgr.save_manager_metadata_cache(manager_metadata_cache)
         cache_mgr.save_starters_cache(starters)
     """
 
@@ -78,7 +81,7 @@ class CacheManager:
         only when accessed for the first time.
         """
         # In-memory cache storage (loaded lazily)
-        self._manager_cache: dict | None = None
+        self._manager_metadata_cache: dict | None = None
         self._transaction_ids_cache: dict | None = None
         self._player_ids_cache: dict | None = None
         self._starters_cache: dict | None = None
@@ -87,6 +90,7 @@ class CacheManager:
         self._image_urls_cache: dict | None = None
         self._weekly_data_progress_tracker: dict | None = None
         self._player_cache: dict | None = None
+        self._manager_cache: dict | None = None
 
     # ===== LOADER AND SAVER =====
     def _load_cache(self, file_path: str) -> dict[str, Any]:
@@ -129,7 +133,7 @@ class CacheManager:
             os.remove(file_path)
 
     # ===== MANAGER METADATA CACHE =====
-    def get_manager_cache(
+    def get_manager_metadata_cache(
         self, force_reload: bool = False, copy: bool = False
     ) -> dict[str, dict[str, Any]]:
         """Get manager metadata cache.
@@ -141,8 +145,56 @@ class CacheManager:
         Returns:
             Manager metadata cache dictionary
         """
+        if self._manager_metadata_cache is None or force_reload:
+            self._manager_metadata_cache = self._load_cache(
+                _MANAGER_METADATA_CACHE_FILE
+            )
+
+        if copy:
+            return deepcopy(self._manager_metadata_cache)
+        return self._manager_metadata_cache
+
+    def save_manager_metadata_cache(
+        self, cache: dict[str, dict[str, Any]] | None = None
+    ) -> None:
+        """Save manager metadata cache to disk.
+
+        Args:
+            cache: Cache to save (uses in-memory cache if not provided)
+
+        Raises:
+            ValueError: If no manager cache data to save
+        """
+        data_to_save = (
+            cache if cache is not None else self._manager_metadata_cache
+        )
+
+        if data_to_save is None:
+            raise ValueError("No manager cache data to save")
+
+        self._save_cache(_MANAGER_METADATA_CACHE_FILE, data_to_save)
+        self._manager_metadata_cache = data_to_save
+
+    def _delete_manager_metadata_cache(self) -> None:
+        """Delete manager metadata cache file."""
+        self._delete_cache(_MANAGER_METADATA_CACHE_FILE)
+        self._manager_metadata_cache = None
+
+    # ===== MANAGER CACHE =====
+    def get_manager_cache(
+        self, force_reload: bool = False, copy: bool = False
+    ) -> dict[str, dict[str, Any]]:
+        """Get manager cache.
+
+        Args:
+            force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
+
+        Returns:
+            Manager cache dictionary
+        """
         if self._manager_cache is None or force_reload:
-            self._manager_cache = self._load_cache(_MANAGER_METADATA_CACHE_FILE)
+            self._manager_cache = self._load_cache(_MANAGER_CACHE_FILE)
 
         if copy:
             return deepcopy(self._manager_cache)
@@ -151,7 +203,7 @@ class CacheManager:
     def save_manager_cache(
         self, cache: dict[str, dict[str, Any]] | None = None
     ) -> None:
-        """Save manager metadata cache to disk.
+        """Save manager cache to disk.
 
         Args:
             cache: Cache to save (uses in-memory cache if not provided)
@@ -164,12 +216,12 @@ class CacheManager:
         if data_to_save is None:
             raise ValueError("No manager cache data to save")
 
-        self._save_cache(_MANAGER_METADATA_CACHE_FILE, data_to_save)
+        self._save_cache(_MANAGER_CACHE_FILE, data_to_save)
         self._manager_cache = data_to_save
 
     def _delete_manager_cache(self) -> None:
-        """Delete manager metadata cache file."""
-        self._delete_cache(_MANAGER_METADATA_CACHE_FILE)
+        """Delete manager cache file."""
+        self._delete_cache(_MANAGER_CACHE_FILE)
         self._manager_cache = None
 
     # ===== TRANSACTION IDS CACHE =====
@@ -574,7 +626,7 @@ class CacheManager:
 
         Clearing the cache forces a reload from disk on next access.
         """
-        self._manager_cache = None
+        self._manager_metadata_cache = None
         self._transaction_ids_cache = None
         self._player_ids_cache = None
         self._starters_cache = None
@@ -583,11 +635,12 @@ class CacheManager:
         self._image_urls_cache = None
         self._weekly_data_progress_tracker = None
         self._player_cache = None
+        self._manager_cache = None
 
     def save_all_caches(self) -> None:
         """Save all loaded caches to disk."""
-        if self._manager_cache is not None:
-            self.save_manager_cache()
+        if self._manager_metadata_cache is not None:
+            self.save_manager_metadata_cache()
         if self._transaction_ids_cache is not None:
             self.save_transaction_ids_cache()
         if self._player_ids_cache is not None:
@@ -604,6 +657,8 @@ class CacheManager:
             self.save_weekly_data_progress_tracker()
         if self._player_cache is not None:
             self.save_player_cache()
+        if self._manager_cache is not None:
+            self.save_manager_cache()
 
     def restart_all_caches(
         self, restart: Literal["partial", "full"]
@@ -614,7 +669,7 @@ class CacheManager:
             restart: If "partial", only restart weekly data caches. If "full",
                 restart all.
         """
-        self._delete_manager_cache()
+        self._delete_manager_metadata_cache()
         self._delete_transaction_ids_cache()
         self._delete_starters_cache()
         self._delete_replacement_score_cache()
@@ -622,6 +677,7 @@ class CacheManager:
         self._delete_image_urls_cache()
         self._delete_weekly_data_progress_tracker()
         self._delete_player_cache()
+        self._delete_manager_cache()
         if restart == "full":
             self._delete_player_ids_cache()
 

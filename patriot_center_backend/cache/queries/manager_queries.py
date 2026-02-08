@@ -22,7 +22,7 @@ def get_manager_summary_from_cache(manager_name: str) -> dict[str, Any]:
     Raises:
         ValueError: If the manager is not found in the cache.
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     return_summary = deepcopy(
         manager_cache.get(manager_name, {}).get("summary", {})
     )
@@ -42,7 +42,7 @@ def get_list_of_managers_from_cache(active_only: bool) -> list[str]:
     Returns:
         A list of manager names.
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
     current_year = str(max(LEAGUE_IDS.keys()))
@@ -65,7 +65,7 @@ def get_manager_years_active_from_cache(manager_name: str) -> list[str]:
     Raises:
         ValueError: If the manager is not found in the cache.
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     manager_data = deepcopy(main_manager_cache[manager_name])
 
     if "years" not in manager_data:

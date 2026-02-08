@@ -167,7 +167,7 @@ def add_add_or_drop_details_to_cache(
     if free_agent_type not in ["add", "drop"]:
         return
 
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     if transaction_id in (
         manager_cache.get(manager, {})
@@ -256,7 +256,7 @@ def revert_add_drop_transaction(
         return None  # Returns None to signal failure
 
     transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     transaction = deepcopy(transaction_ids_cache[transaction_id])
 

@@ -27,7 +27,7 @@ def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
     Returns:
         Dictionary with all awards and achievements
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     awards = {}
 
@@ -81,9 +81,9 @@ def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
                 )
                 for player_id in weekly_faab_bids:
                     player = Player(player_id)
-                    bid_amount = (
-                        weekly_faab_bids[str(player)]["total_faab_spent"]
-                    )
+                    bid_amount = weekly_faab_bids[str(player)][
+                        "total_faab_spent"
+                    ]
                     if bid_amount > biggest_faab_bid["amount"]:
                         biggest_faab_bid["player"] = player.get_metadata()
                         biggest_faab_bid["amount"] = bid_amount
@@ -113,7 +113,7 @@ def get_manager_score_awards_from_cache(
     Returns:
         Dictionary with all scoring records
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     score_awards = {}
 

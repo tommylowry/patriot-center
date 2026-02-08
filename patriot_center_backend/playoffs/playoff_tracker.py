@@ -133,7 +133,7 @@ def _manager_cache_set_playoff_placements(
             {"Tommy: 1, "Mike": 2, "Bob": 3}
         year: Season year
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     for manager in placement_dict:
         if manager not in manager_cache:

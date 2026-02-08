@@ -19,14 +19,14 @@ class TestGetUserId:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`:
+        - `CACHE_MANAGER.get_manager_metadata_cache`:
             `mock_get_manager_cache`
 
         Yields:
             None
         """
         with patch(
-            f"{MODULE_PATH}.CACHE_MANAGER.get_manager_cache"
+            f"{MODULE_PATH}.CACHE_MANAGER.get_manager_metadata_cache"
         ) as mock_get_manager_cache:
             self.mock_manager_cache: dict[str, Any] = {
                 "Tommy": {

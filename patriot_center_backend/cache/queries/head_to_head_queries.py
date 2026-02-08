@@ -35,17 +35,13 @@ def get_head_to_head_details_from_cache(
         Single opponent dict if opponent specified,
             otherwise list of all opponent dicts
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     manager_data = deepcopy(main_manager_cache[manager])
 
     head_to_head_data = []
 
-    matchup_data = deepcopy(
-        manager_data["summary"]["matchup_data"]["overall"]
-    )
-    trade_data = deepcopy(
-        manager_data["summary"]["transactions"]["trades"]
-    )
+    matchup_data = deepcopy(manager_data["summary"]["matchup_data"]["overall"])
+    trade_data = deepcopy(manager_data["summary"]["transactions"]["trades"])
     if year:
         year_cache = manager_data["years"][year]
         matchup_data = deepcopy(
@@ -114,7 +110,7 @@ def get_head_to_head_overall_from_cache(
         ValueError: If get_head_to_head_details_from_cache fails
             to return expected data type
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     # Only for list_all_matchups = False
     head_to_head_overall = {}

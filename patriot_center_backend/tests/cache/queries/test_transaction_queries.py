@@ -42,7 +42,7 @@ class TestGetTradeHistoryBetweenTwoManagers:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `CACHE_MANAGER.get_transaction_ids_cache`: `mock_get_trans_ids`
         - `get_trade_card`: `mock_get_trade_card`
 
@@ -56,7 +56,7 @@ class TestGetTradeHistoryBetweenTwoManagers:
         with (
             patch(
                 "patriot_center_backend.cache.queries"
-                ".transaction_queries.CACHE_MANAGER.get_manager_cache"
+                ".transaction_queries.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.queries"
@@ -109,7 +109,7 @@ class TestGetTransactionDetailsFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `extract_dict_data`: `mock_extract_dict_data`
 
         Args:
@@ -121,7 +121,7 @@ class TestGetTransactionDetailsFromCache:
         with (
             patch(
                 "patriot_center_backend.cache.queries"
-                ".transaction_queries.CACHE_MANAGER.get_manager_cache"
+                ".transaction_queries.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.queries"

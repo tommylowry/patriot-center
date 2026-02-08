@@ -21,7 +21,7 @@ class TestAddTradeDetailsToCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `add_to_transaction_ids`: `mock_add_to_transaction_ids`
 
         Args:
@@ -33,7 +33,7 @@ class TestAddTradeDetailsToCache:
         with (
             patch(
                 "patriot_center_backend.cache.updaters.processors.transactions"
-                ".trade_processor.CACHE_MANAGER.get_manager_cache"
+                ".trade_processor.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.updaters.processors.transactions"
@@ -305,7 +305,7 @@ class TestRevertTradeTransaction:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `CACHE_MANAGER.get_transaction_ids_cache`: `mock_get_trans_ids`
 
         Args:
@@ -318,7 +318,7 @@ class TestRevertTradeTransaction:
         with (
             patch(
                 "patriot_center_backend.cache.updaters.processors.transactions"
-                ".trade_processor.CACHE_MANAGER.get_manager_cache"
+                ".trade_processor.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.updaters.processors.transactions"

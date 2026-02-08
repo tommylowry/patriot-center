@@ -46,7 +46,7 @@ class TestInitializeFaabTemplate:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
 
         Yields:
             None
@@ -54,7 +54,7 @@ class TestInitializeFaabTemplate:
         with (
             patch(
                 "patriot_center_backend.cache.updaters._templates"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
         ):
             self.mock_manager_cache = {}
@@ -250,16 +250,16 @@ class TestInitializeFaabTemplate:
         mgr_level = self.mock_manager_cache[manager]
 
         assert (
-            "transaction_ids" in
-            mgr_level["years"][year]["weeks"][week]["transactions"]["faab"]
+            "transaction_ids"
+            in mgr_level["years"][year]["weeks"][week]["transactions"]["faab"]
         )
         assert (
-            "transaction_ids" not in
-            mgr_level["summary"]["transactions"]["faab"]
+            "transaction_ids"
+            not in mgr_level["summary"]["transactions"]["faab"]
         )
         assert (
-            "transaction_ids" not in
-            mgr_level["years"][year]["summary"]["transactions"]["faab"]
+            "transaction_ids"
+            not in mgr_level["years"][year]["summary"]["transactions"]["faab"]
         )
 
 
@@ -344,9 +344,9 @@ class TestInitializeSummaryTemplates:
     def test_weekly_not_in_playoffs_structure(self):
         """Test weekly not-in-playoffs template structure."""
         templates = initialize_summary_templates(use_faab=True)
-        weekly_not_playoffs = (
-            templates["weekly_summary_not_in_playoffs_template"]
-        )
+        weekly_not_playoffs = templates[
+            "weekly_summary_not_in_playoffs_template"
+        ]
 
         # Should have empty matchup data
         assert "matchup_data" in weekly_not_playoffs

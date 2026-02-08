@@ -38,7 +38,7 @@ def get_ranking_details_from_cache(
         Dict of rankings by category
         or dict with 'values' and 'ranks' if manager_summary_usage=True
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
 
@@ -119,8 +119,7 @@ def get_ranking_details_from_cache(
 
         num_trades = summary_section["transactions"]["trades"]["total"]
         num_playoffs = len(
-            manager_data
-            .get("summary", {})
+            manager_data.get("summary", {})
             .get("overall_data", {})
             .get("playoff_appearances", [])
         )

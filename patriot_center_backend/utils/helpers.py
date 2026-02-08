@@ -14,14 +14,12 @@ def get_user_id(manager_name: str) -> str | None:
     Returns:
         The user ID if found, otherwise None.
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     return manager_cache.get(manager_name, {}).get("summary", {}).get("user_id")
 
 
-def fetch_manager_scores(
-    year: int, week: int
-) -> dict[str, dict[str, Any]]:
+def fetch_manager_scores(year: int, week: int) -> dict[str, dict[str, Any]]:
     """Fetch the starters for each position for a given week.
 
     Args:
@@ -46,9 +44,8 @@ def fetch_manager_scores(
             "players": [],
             "scores": [],
             "managers": {
-                manager: {
-                    "total_points": 0, "scores": []
-                } for manager in managers
+                manager: {"total_points": 0, "scores": []}
+                for manager in managers
             },
         }
 

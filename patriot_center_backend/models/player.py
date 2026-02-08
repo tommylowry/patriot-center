@@ -39,13 +39,15 @@ class Player:
             player_id: The player ID
             apply: Whether to apply the player to the player cache
         """
-        self._apply: bool = apply
+        self._apply = apply
 
         if hasattr(self, '_initialized'):
             return  # Already initialized
         self._initialized = True
 
-        self.player_id: str = player_id
+        self.player_id = player_id
+
+        self._set_image_url()
 
         if " faab" in player_id.lower():
             self._is_real_player = False
@@ -492,12 +494,14 @@ class Player:
             raise ValueError(f"Player with ID {self.player_id} not found")
 
         # Required Metadata
-        self.full_name: str = metadata["full_name"]
         self.first_name: str = metadata["first_name"]
         self.last_name: str = metadata["last_name"]
         self.position: str = metadata["position"]
-        self.image_url: str = metadata["image_url"]
         self.fantasy_positions: list[str] = metadata["fantasy_positions"]
+
+        self.full_name: str = metadata.get("full_name", "")
+        if not self.full_name:
+            self.full_name = f"{self.first_name} {self.last_name}"
 
         # Optional Metadata
         self.age: int | None = metadata.get("age")
@@ -523,9 +527,6 @@ class Player:
         self.full_name = self.player_id
         self.first_name = self.player_id.split(" ")[0]
         self.last_name = self.player_id.split(" ")[1]
-        self.image_url = (
-            "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
-        )
 
     def _initialize_draft_pick(self) -> None:
         """Initialize draft pick player."""
@@ -539,6 +540,27 @@ class Player:
             "https://upload.wikimedia.org/wikipedia/en/thumb/8/80"
             "/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
         )
+
+    def _set_image_url(self) -> None:
+        if "faab" in self.player_id.lower():
+            self.image_url = (
+                "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
+            )
+        elif "draft pick" in self.player_id.lower():
+            self.image_url = (
+                "https://upload.wikimedia.org/wikipedia/en/thumb/8/80"
+                "/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
+            )
+        elif self.player_id.isnumeric():
+            self.image_url = (
+                f"https://sleepercdn.com/content/nfl"
+                f"/players/{self.player_id}.jpg"
+            )
+        else:
+            self.image_url = (
+                f"https://sleepercdn.com/images/team_logos"
+                f"/nfl/{self.player_id.lower()}.png"
+            )
 
     def _apply_to_cache(self) -> None:
         """Applies the player data to the cache."""
@@ -561,8 +583,8 @@ class Player:
                 "number": self.number,
                 "image_url": self.image_url,
             },
-            "data": self._data,
-            "transactions": self._transactions,
+            "data": deepcopy(self._data),
+            "transactions": deepcopy(self._transactions),
         }
 
     def _get_matching_data(

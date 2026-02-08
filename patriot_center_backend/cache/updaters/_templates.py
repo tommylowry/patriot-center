@@ -40,7 +40,7 @@ def initialize_faab_template(manager: str, year: str, week: str) -> None:
         year: Season year as string
         week: Week number as string
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     if "faab" not in manager_cache[manager]["summary"]["transactions"]:
         manager_cache[manager]["summary"]["transactions"]["faab"] = deepcopy(

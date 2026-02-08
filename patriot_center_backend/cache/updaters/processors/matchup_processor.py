@@ -110,7 +110,6 @@ class MatchupProcessor:
         if isinstance(manager_matchup_data, dict):
             raise ValueError("No matchup data found for week.")
 
-
         for manager_1_data in manager_matchup_data:
             manager_1_roster_id = manager_1_data.get("roster_id")
             if (
@@ -187,16 +186,16 @@ class MatchupProcessor:
         if not already present. This is used for awards and playoff streak
         tracking.
         """
-        manager_cache = CACHE_MANAGER.get_manager_cache()
+        manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
         for roster_ids in self._playoff_roster_ids:
             manager = self._weekly_roster_ids.get(roster_ids, None)
             if not manager:
                 continue
 
-            manager_overall_data = (
-                manager_cache[manager]["summary"]["overall_data"]
-            )
+            manager_overall_data = manager_cache[manager]["summary"][
+                "overall_data"
+            ]
 
             # Mark week as playoff week in the weekly summary
             if self._year not in manager_overall_data["playoff_appearances"]:
@@ -239,7 +238,7 @@ class MatchupProcessor:
                 "Playoff week start not set. Cannot process matchups."
             )
 
-        manager_cache = CACHE_MANAGER.get_manager_cache()
+        manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
         manager = matchup_data.get("manager")
         opponent_manager = matchup_data.get("opponent_manager")
@@ -264,19 +263,19 @@ class MatchupProcessor:
             self._year, self._week, self._playoff_week_start
         )
 
-        yearly_overall_summary = (
-            year_level["summary"]["matchup_data"]["overall"]
-        )
-        yearly_season_state_summary = (
-            year_level["summary"]["matchup_data"][season_state]
-        )
+        yearly_overall_summary = year_level["summary"]["matchup_data"][
+            "overall"
+        ]
+        yearly_season_state_summary = year_level["summary"]["matchup_data"][
+            season_state
+        ]
 
-        top_level_overall_summary = (
-            manager_cache[manager]["summary"]["matchup_data"]["overall"]
-        )
-        top_level_season_state_summary = (
-            manager_cache[manager]["summary"]["matchup_data"][season_state]
-        )
+        top_level_overall_summary = manager_cache[manager]["summary"][
+            "matchup_data"
+        ]["overall"]
+        top_level_season_state_summary = manager_cache[manager]["summary"][
+            "matchup_data"
+        ][season_state]
 
         summaries = [
             yearly_overall_summary,

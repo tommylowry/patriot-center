@@ -122,10 +122,7 @@ class TestCacheWeekData:
             manager.cache_week_data("2024", "5")
 
         (
-            manager
-            ._transaction_processor
-            .scrub_transaction_data
-            .assert_called_once()
+            manager._transaction_processor.scrub_transaction_data.assert_called_once()
         )
 
     def test_scrubs_matchup_data(self):
@@ -186,7 +183,7 @@ class TestSetDefaultsIfMissing:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`:
+        - `CACHE_MANAGER.get_manager_metadata_cache`:
             `mock_get_manager_cache`
         - `CACHE_MANAGER.get_image_urls_cache`:
             `mock_get_image_urls_cache`
@@ -205,7 +202,7 @@ class TestSetDefaultsIfMissing:
         """
         with (
             patch(
-                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_cache"
+                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 f"{MODULE_PATH}.CACHE_MANAGER.get_image_urls_cache"
@@ -332,8 +329,8 @@ class TestSetDefaultsIfMissing:
 
         manager._set_defaults_if_missing()
 
-        assert "1" in (
-            self.mock_manager_cache["Tommy"]["years"]["2024"]["weeks"]
+        assert (
+            "1" in (self.mock_manager_cache["Tommy"]["years"]["2024"]["weeks"])
         )
 
     def test_raises_when_roster_id_has_no_manager(self):
@@ -361,7 +358,7 @@ class TestUpdateUserId:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`:
+        - `CACHE_MANAGER.get_manager_metadata_cache`:
             `mock_get_manager_cache`
         - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
         - `update_image_urls_cache`:
@@ -373,7 +370,7 @@ class TestUpdateUserId:
         """
         with (
             patch(
-                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_cache"
+                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 f"{MODULE_PATH}.fetch_sleeper_data"

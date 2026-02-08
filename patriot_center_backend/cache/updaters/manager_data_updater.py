@@ -103,9 +103,7 @@ class ManagerMetadataManager:
             week: Week number as string
         """
         self._weekly_roster_ids = get_roster_ids(
-            int(year),
-            int(week),
-            ignore_playoffs=True
+            int(year), int(week), ignore_playoffs=True
         )
 
         validate_caching_preconditions(self._weekly_roster_ids, year, week)
@@ -181,7 +179,7 @@ class ManagerMetadataManager:
                 "Week and year must be set before setting week data."
             )
 
-        manager_cache = CACHE_MANAGER.get_manager_cache()
+        manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
         if not self._templates:
             self._templates = initialize_summary_templates(
@@ -244,7 +242,7 @@ class ManagerMetadataManager:
                 self._update_user_id(manager)
 
     def _update_user_id(self, manager: str) -> None:
-        manager_cache = CACHE_MANAGER.get_manager_cache()
+        manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
         username = NAME_TO_MANAGER_USERNAME.get(manager, "")
         if not username:  # No username mapping
             raise ValueError(

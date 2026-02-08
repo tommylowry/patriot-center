@@ -21,7 +21,7 @@ class TestAddAddOrDropDetailsToCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `add_to_transaction_ids`: (not evaluated)
 
         Args:
@@ -33,7 +33,7 @@ class TestAddAddOrDropDetailsToCache:
         with (
             patch(
                 "patriot_center_backend.cache.updaters.processors.transactions"
-                ".add_drop_processor.CACHE_MANAGER.get_manager_cache"
+                ".add_drop_processor.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.updaters.processors.transactions"
@@ -116,7 +116,7 @@ class TestRevertAddDropTransaction:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `CACHE_MANAGER.get_transaction_ids_cache`: `mock_get_transaction_ids`
 
         Args:
@@ -128,7 +128,7 @@ class TestRevertAddDropTransaction:
         with (
             patch(
                 "patriot_center_backend.cache.updaters.processors.transactions"
-                ".add_drop_processor.CACHE_MANAGER.get_manager_cache"
+                ".add_drop_processor.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.updaters.processors.transactions"

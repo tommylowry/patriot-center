@@ -30,15 +30,13 @@ def get_matchup_details_from_cache(
     Returns:
         Dictionary with matchup stats for overall, regular_season, and playoffs
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     manager_data = deepcopy(main_manager_cache[manager])
 
     matchup_data = {"overall": {}, "regular_season": {}, "playoffs": {}}
 
     # Get all-time stats by default, or single season stats if year specified
-    cached_matchup_data = deepcopy(
-        manager_data["summary"]["matchup_data"]
-    )
+    cached_matchup_data = deepcopy(manager_data["summary"]["matchup_data"])
     if year:
         cached_matchup_data = deepcopy(
             manager_data["years"][year]["summary"]["matchup_data"]
@@ -48,15 +46,13 @@ def get_matchup_details_from_cache(
 
     # Check if manager has playoff appearances
     playoff_appearances = (
-        manager_data
-        .get("summary", {})
+        manager_data.get("summary", {})
         .get("overall_data", {})
         .get("playoff_appearances", [])
     )
 
-    has_playoff_data = (
-        len(playoff_appearances) > 0
-        and (not year or year in playoff_appearances)
+    has_playoff_data = len(playoff_appearances) > 0 and (
+        not year or year in playoff_appearances
     )
 
     if has_playoff_data:
@@ -145,7 +141,7 @@ def get_overall_data_details_from_cache(
     Returns:
         Dictionary with playoff_appearances count and list of placements by year
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     manager_data = deepcopy(main_manager_cache[manager])
 
     cached_overall_data = manager_data["summary"]["overall_data"]
@@ -164,8 +160,7 @@ def get_overall_data_details_from_cache(
             week = "16"
 
         opponent = (
-            manager_data
-            .get("years", {})
+            manager_data.get("years", {})
             .get(year, {})
             .get("weeks", {})
             .get(week, {})

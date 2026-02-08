@@ -21,7 +21,7 @@ class TestGetMatchupDetailsFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
 
         Args:
             mock_manager_cache: A mock manager cache.
@@ -32,7 +32,7 @@ class TestGetMatchupDetailsFromCache:
         with (
             patch(
                 "patriot_center_backend.cache.queries.matchup_queries"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
         ):
             self.mock_manager_cache = mock_manager_cache
@@ -187,7 +187,7 @@ class TestGetOverallDataDetailsFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `get_matchup_card`: `mock_get_matchup_card`
 
         Args:
@@ -199,7 +199,7 @@ class TestGetOverallDataDetailsFromCache:
         with (
             patch(
                 "patriot_center_backend.cache.queries.matchup_queries"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.queries.matchup_queries"

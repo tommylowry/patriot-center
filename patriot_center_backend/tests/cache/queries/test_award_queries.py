@@ -20,7 +20,7 @@ class TestGetManagerAwardsFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `get_image_url`: `mock_get_image_url`
 
         Args:
@@ -32,7 +32,7 @@ class TestGetManagerAwardsFromCache:
         with (
             patch(
                 "patriot_center_backend.cache.queries.award_queries"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.queries.award_queries"
@@ -66,7 +66,7 @@ class TestGetManagerScoreAwardsFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `get_matchup_card`: `mock_get_matchup_card`
         - `validate_matchup_data`: `mock_validate`
 
@@ -79,7 +79,7 @@ class TestGetManagerScoreAwardsFromCache:
         with (
             patch(
                 "patriot_center_backend.cache.queries.award_queries"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.queries.award_queries"

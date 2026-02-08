@@ -29,7 +29,7 @@ def get_transaction_details_from_cache(
     Returns:
         Dictionary with trades, adds, drops, and faab summaries
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     manager_data = deepcopy(main_manager_cache[manager])
 
     transaction_summary = {"trades": {}, "adds": {}, "drops": {}, "faab": {}}
@@ -141,7 +141,7 @@ def get_trade_history_between_two_managers(
     Returns:
         List of trade cards in reverse chronological order (newest first)
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     manager_1_data = deepcopy(main_manager_cache.get(manager1, {}))
 
     transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
@@ -194,7 +194,7 @@ def get_manager_transaction_history_from_cache(
     Raises:
         ValueError: If the manager or year is not found in the cache.
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_cache()
+    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     if manager_name not in main_manager_cache:
         raise ValueError(f"Manager {manager_name} not found in cache.")
@@ -219,12 +219,7 @@ def get_manager_transaction_history_from_cache(
         for w in list(manager_data["years"][y]["weeks"]):
             return_data[manager_name]["years"][y]["weeks"][w] = {
                 "transactions": (
-                    manager_data
-                    ["years"]
-                    [y]
-                    ["weeks"]
-                    [w]
-                    ["transactions"]
+                    manager_data["years"][y]["weeks"][w]["transactions"]
                 )
             }
 

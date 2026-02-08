@@ -33,7 +33,7 @@ class TestGetRankingDetailsFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `CACHE_MANAGER.get_valid_options_cache`:
             `mock_get_valid_options_cache`
 
@@ -47,7 +47,7 @@ class TestGetRankingDetailsFromCache:
         with (
             patch(
                 "patriot_center_backend.cache.queries.ranking_queries"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.queries.ranking_queries"

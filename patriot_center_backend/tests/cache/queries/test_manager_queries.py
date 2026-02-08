@@ -23,7 +23,7 @@ class TestGetManagerSummaryFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`:
+        - `CACHE_MANAGER.get_manager_metadata_cache`:
             `mock_get_manager_cache`
 
         Args:
@@ -34,7 +34,7 @@ class TestGetManagerSummaryFromCache:
         """
         with (
             patch(
-                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_cache"
+                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
         ):
             mock_get_manager_cache.return_value = mock_manager_cache
@@ -69,7 +69,7 @@ class TestGetListOfManagersFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`:
+        - `CACHE_MANAGER.get_manager_metadata_cache`:
             `mock_get_manager_cache`
         - `CACHE_MANAGER.get_valid_options_cache`:
             `mock_get_valid_options_cache`
@@ -83,7 +83,7 @@ class TestGetListOfManagersFromCache:
         """
         with (
             patch(
-                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_cache"
+                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 f"{MODULE_PATH}.CACHE_MANAGER.get_valid_options_cache"
@@ -128,7 +128,7 @@ class TestGetManagerYearsActiveFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`:
+        - `CACHE_MANAGER.get_manager_metadata_cache`:
             `mock_get_manager_cache`
 
         Args:
@@ -139,7 +139,7 @@ class TestGetManagerYearsActiveFromCache:
         """
         with (
             patch(
-                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_cache"
+                f"{MODULE_PATH}.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
         ):
             mock_get_manager_cache.return_value = mock_manager_cache

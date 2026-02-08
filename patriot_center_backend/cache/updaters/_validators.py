@@ -73,7 +73,7 @@ def validate_matchup_data(matchup_data: dict[str, Any] | None) -> str:
     if not matchup_data:
         return "Empty"
 
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     opponent_manager = matchup_data.get("opponent_manager", "")
     result = matchup_data.get("result", "")
@@ -203,7 +203,7 @@ def validate_manager_query(manager: str, year: str | None) -> None:
     Raises:
         ValueError: If manager or year is not found in cache
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     # Validate manager
     if manager not in manager_cache:

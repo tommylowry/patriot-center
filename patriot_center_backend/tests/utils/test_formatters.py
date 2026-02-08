@@ -354,7 +354,7 @@ class TestGetMatchupCard:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `get_top_3_scorers_from_matchup_data`: `mock_get_top_3`
         - `get_image_url`: `mock_get_image_url`
 
@@ -364,7 +364,7 @@ class TestGetMatchupCard:
         with (
             patch(
                 "patriot_center_backend.utils.formatters"
-                ".CACHE_MANAGER.get_manager_cache"
+                ".CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.utils.formatters"

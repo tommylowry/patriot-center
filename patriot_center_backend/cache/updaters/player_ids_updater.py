@@ -9,10 +9,6 @@ import logging
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters._helpers import (
-    get_full_name,
-    get_image_url,
-)
 from patriot_center_backend.utils.defense_helper import get_defense_entries
 from patriot_center_backend.utils.sleeper_helpers import fetch_all_player_ids
 
@@ -73,15 +69,9 @@ def _add_player_id_entry(
         player_info: The player info
         new_player_ids_cache: The new player IDs cache
     """
-    if "full_name" not in player_info:
-        new_player_ids_cache[player_id]["full_name"] = get_full_name(
-            player_info
-        )
-
     new_player_ids_cache[player_id] = {
         key: player_info.get(key) for key in FIELDS_TO_KEEP
     }
-    new_player_ids_cache[player_id]["image_url"] = get_image_url(player_id)
 
 
 def _fill_missing_defenses(

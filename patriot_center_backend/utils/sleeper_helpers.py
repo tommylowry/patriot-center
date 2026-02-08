@@ -356,32 +356,28 @@ def get_league_info(year: int) -> dict[str, Any]:
 
 
 def fetch_user_metadata(
-    manager_name: str, bypass_cache: bool = False
+    user_identifier: str, bypass_cache: bool = False
 ) -> dict[str, Any]:
-    """Retrieves the user metadata for a given manager name.
+    """Retrieves the user metadata for a given user identifier.
 
     Args:
-        manager_name: The name of the manager.
+        user_identifier: User identifier (user ID or username).
         bypass_cache: Whether to bypass the cache.
 
     Returns:
         The user metadata.
 
     Raises:
-        ValueError: If no user ID is found for the given manager name.
+        ValueError: If no user ID is found for the given user identifier.
     """
-    user_id = get_user_id(manager_name)
-    if not user_id:
-        raise ValueError(f"No user ID found for manager {manager_name}.")
-
     # Query Sleeper API for user metadata
     sleeper_response = fetch_sleeper_data(
-        f"user/{user_id}", bypass_cache=bypass_cache
+        f"user/{user_identifier}", bypass_cache=bypass_cache
     )
     if not sleeper_response or not isinstance(sleeper_response, dict):
         raise ValueError(
             f"Sleeper API call failed to retrieve user info "
-            f"for user ID {user_id}"
+            f"for user {user_identifier}"
         )
 
     return sleeper_response
@@ -476,3 +472,6 @@ def fetch_players(year: int, week: int) -> list[Player]:
             )
 
     return players
+
+for manager_username in USERNAME_TO_REAL_NAME:
+    fetch_user_metadata(manager_username)

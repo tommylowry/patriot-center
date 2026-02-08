@@ -25,7 +25,7 @@ class TestGetHeadToHeadDetailsFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `get_image_url`: `mock_get_image_url`
 
         Args:
@@ -37,7 +37,7 @@ class TestGetHeadToHeadDetailsFromCache:
         with (
             patch(
                 "patriot_center_backend.cache.queries"
-                ".head_to_head_queries.CACHE_MANAGER.get_manager_cache"
+                ".head_to_head_queries.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.queries"
@@ -74,7 +74,7 @@ class TestGetHeadToHeadOverallFromCache:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `CACHE_MANAGER.get_manager_cache`: `mock_get_manager_cache`
+        - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `get_matchup_card`: `mock_get_matchup_card`
 
         Args:
@@ -86,7 +86,7 @@ class TestGetHeadToHeadOverallFromCache:
         with (
             patch(
                 "patriot_center_backend.cache.queries"
-                ".head_to_head_queries.CACHE_MANAGER.get_manager_cache"
+                ".head_to_head_queries.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
                 "patriot_center_backend.cache.queries"

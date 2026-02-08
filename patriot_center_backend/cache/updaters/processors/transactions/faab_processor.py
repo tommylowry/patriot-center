@@ -47,7 +47,7 @@ def add_faab_details_to_cache(
         )
         return
 
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     mgr = manager_cache[manager]
     yr_lvl = mgr["years"][year]

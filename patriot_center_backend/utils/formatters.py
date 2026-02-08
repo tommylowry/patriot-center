@@ -124,7 +124,7 @@ def get_matchup_card(
         Dictionary containing matchup details, scores, winner, and top
             performers. Empty dict if matchup data incomplete
     """
-    manager_cache = CACHE_MANAGER.get_manager_cache()
+    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     years_level = manager_cache.get(manager_1, {}).get("years", {})
     weeks_level = years_level.get(year, {}).get("weeks", {})

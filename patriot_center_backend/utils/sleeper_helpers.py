@@ -14,7 +14,6 @@ from patriot_center_backend.constants import (
     Position,
 )
 from patriot_center_backend.models import Player
-from patriot_center_backend.utils.helpers import get_user_id
 from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
 
 logger = logging.getLogger(__name__)
@@ -473,5 +472,5 @@ def fetch_players(year: int, week: int) -> list[Player]:
 
     return players
 
-for manager_username in USERNAME_TO_REAL_NAME:
-    fetch_user_metadata(manager_username)
+# for manager_username in USERNAME_TO_REAL_NAME:
+#     fetch_user_metadata(manager_username)

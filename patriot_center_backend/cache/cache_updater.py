@@ -45,5 +45,4 @@ def update_all_caches(restart: Literal["partial", "full", None] = None) -> None:
     logger.info(
         f"Cache update completed in {int(elapsed // 60)}:{elapsed % 60:05.2f}"
     )
-
-update_all_caches(restart="partial")
+# update_all_caches(restart="partial")

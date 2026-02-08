@@ -13,7 +13,7 @@ from patriot_center_backend.constants import (
     USERNAME_TO_REAL_NAME,
     Position,
 )
-from patriot_center_backend.domains import Player
+from patriot_center_backend.models import Player
 from patriot_center_backend.utils.helpers import get_user_id
 from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
 

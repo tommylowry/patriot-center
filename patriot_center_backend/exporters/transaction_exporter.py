@@ -7,7 +7,7 @@ from patriot_center_backend.cache.queries.transaction_queries import (
     get_manager_transaction_history_from_cache,
     get_transaction_from_ids_cache,
 )
-from patriot_center_backend.domains import Player
+from patriot_center_backend.models import Player
 from patriot_center_backend.utils.formatters import get_trade_card
 from patriot_center_backend.utils.image_url_handler import get_image_url
 

@@ -8,7 +8,7 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._validators import (
     validate_matchup_data,
 )
-from patriot_center_backend.domains import Player
+from patriot_center_backend.models import Player
 from patriot_center_backend.utils.formatters import get_matchup_card
 
 

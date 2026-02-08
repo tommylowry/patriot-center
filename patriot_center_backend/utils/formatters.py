@@ -5,7 +5,7 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.domains import Player
+from patriot_center_backend.models import Player
 from patriot_center_backend.utils.image_url_handler import get_image_url
 
 logger = logging.getLogger(__name__)

@@ -3,6 +3,7 @@
 import logging
 from time import time
 
+from patriot_center_backend.constants import NAME_TO_MANAGER_USERNAME
 from patriot_center_backend.utils.sleeper_helpers import fetch_user_metadata
 
 logger = logging.getLogger(__name__)
@@ -17,7 +18,9 @@ def build_manager_url(manager_name: str) -> dict[str, str]:
     Returns:
         A dictionary containing the name, image URL, and timestamp.
     """
-    user_metadata = fetch_user_metadata(manager_name, bypass_cache=True)
+    user_metadata = fetch_user_metadata(
+        NAME_TO_MANAGER_USERNAME[manager_name]
+    )
 
     avatar = user_metadata.get("avatar")
     if not avatar:

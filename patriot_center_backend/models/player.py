@@ -3,20 +3,25 @@
 This module defines the Player class, which represents a player in the game.
 """
 
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
+
+if TYPE_CHECKING:
+    from patriot_center_backend.models.manager import Manager
 
 logger = logging.getLogger(__name__)
 
 
 class Player:
     """Player class."""
-    _instances: ClassVar[dict[str, "Player"]] = {}
+    _instances: ClassVar[dict[str, Player]] = {}
 
-    def __new__(cls, player_id: str, apply: bool = True) -> "Player":
+    def __new__(cls, player_id: str, apply: bool = True) -> Player:
         """Create a new player instance or return the existing one.
 
         Args:
@@ -72,8 +77,8 @@ class Player:
         cls,
         year: str | None = None,
         week: str | None = None,
-        manager: str | None = None,
-    ) -> list["Player"]:
+        manager: Manager | None = None,
+    ) -> list[Player]:
         """Get players who have started at least one game matching filters.
 
         Args:
@@ -125,7 +130,7 @@ class Player:
         week: str,
         points: float | None = None,
         ffwar: float | None = None,
-        manager: str | None = "",
+        manager: Manager | None = None,
         started: bool | None = None,
         playoff_placement: int | None = None,
     ) -> None:
@@ -153,8 +158,8 @@ class Player:
             self._data[f"{year}_{week}"]["points"] = points
         if ffwar is not None:
             self._data[f"{year}_{week}"]["ffwar"] = ffwar
-        if manager != "":
-            self._data[f"{year}_{week}"]["manager"] = manager
+        if manager is not None:
+            self._data[f"{year}_{week}"]["manager"] = str(manager)
         if started is not None:
             self._data[f"{year}_{week}"]["started"] = started
         if playoff_placement is not None:
@@ -197,7 +202,7 @@ class Player:
         self,
         year: str | None = None,
         week: str | None = None,
-        manager: str | None = None,
+        manager: Manager | None = None,
         only_started: bool = True,
         only_rostered: bool = True,
     ) -> float:
@@ -231,7 +236,7 @@ class Player:
         self,
         year: str | None = None,
         week: str | None = None,
-        manager: str | None = None,
+        manager: Manager | None = None,
         only_started: bool = True,
         only_rostered: bool = True,
     ) -> float:
@@ -267,7 +272,7 @@ class Player:
         week: str | None = None,
         only_started: bool = True,
         only_rostered: bool = True
-    ) -> list[str]:
+    ) -> list[Manager]:
         """Get the player's managers for matching weeks.
 
         Args:
@@ -279,6 +284,7 @@ class Player:
         Returns:
             The player's managers
         """
+        from patriot_center_backend.models.manager import Manager
         if not self._is_real_player:
             return []
 
@@ -291,13 +297,13 @@ class Player:
                 f"does not have data for the given parameters."
             )
             return []
-        return [d["manager"] for d in matches]
+        return [Manager(d["manager"]) for d in matches]
 
     def get_num_games(
         self,
         year: str | None = None,
         week: str | None = None,
-        manager: str | None = None,
+        manager: Manager | None = None,
         only_started: bool = True,
         only_rostered: bool = True,
     ) -> int:
@@ -324,7 +330,7 @@ class Player:
         group_by: Literal["manager", "year"] = "manager",
         year: str | None = None,
         week: str | None = None,
-        manager: str | None = None,
+        manager: Manager | None = None,
         only_started: bool = True,
         only_rostered: bool = True,
     ) -> dict[str, Any]:
@@ -365,7 +371,7 @@ class Player:
         self,
         year: str | None = None,
         week: str | None = None,
-        manager: str | None = None,
+        manager: Manager | None = None,
     ) -> bool:
         """Check if player has started at least one game matching filters.
 
@@ -391,7 +397,7 @@ class Player:
         self,
         year: str | None = None,
         week: str | None = None,
-        manager: str | None = None,
+        manager: Manager | None = None,
         only_started: bool = True,
         only_rostered: bool = True,
     ) -> dict[str, Any]:
@@ -542,7 +548,12 @@ class Player:
         )
 
     def _set_image_url(self) -> None:
-        if "faab" in self.player_id.lower():
+        if self.player_id.isnumeric():
+            self.image_url = (
+                f"https://sleepercdn.com/content/nfl"
+                f"/players/{self.player_id}.jpg"
+            )
+        elif "faab" in self.player_id.lower():
             self.image_url = (
                 "https://www.pngmart.com/files/23/Mario-Coin-PNG-Clipart.png"
             )
@@ -550,11 +561,6 @@ class Player:
             self.image_url = (
                 "https://upload.wikimedia.org/wikipedia/en/thumb/8/80"
                 "/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
-            )
-        elif self.player_id.isnumeric():
-            self.image_url = (
-                f"https://sleepercdn.com/content/nfl"
-                f"/players/{self.player_id}.jpg"
             )
         else:
             self.image_url = (
@@ -593,7 +599,7 @@ class Player:
         week: str | None,
         only_started: bool,
         only_rostered: bool,
-        manager: str | None = None,
+        manager: Manager | None = None,
     ) -> list[dict[str, Any]]:
         """Get all data entries matching the given filters.
 
@@ -613,7 +619,7 @@ class Player:
             data = self._data.get(f"{year}_{week}")
             if not data:
                 return []
-            if manager and data["manager"] != manager:
+            if manager and data["manager"] != str(manager):
                 return []
             if only_started and not data["started"]:
                 return []
@@ -630,7 +636,7 @@ class Player:
                 continue
             if week and data_week != week:
                 continue
-            if manager and data["manager"] != manager:
+            if manager and data["manager"] != str(manager):
                 continue
             if only_started and not data["started"]:
                 continue

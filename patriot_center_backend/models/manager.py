@@ -1,12 +1,14 @@
 """Manager class."""
 
+import logging
 from copy import deepcopy
 from time import time
 from typing import Any, ClassVar, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import USERNAME_TO_REAL_NAME
-from patriot_center_backend.utils.sleeper_helpers import fetch_user_metadata
+
+logger = logging.getLogger(__name__)
 
 
 class Manager:
@@ -51,6 +53,32 @@ class Manager:
         """
         return self.user_id
 
+    @classmethod
+    def get_all_managers(
+        cls,
+        year: str | None = None,
+        week: str | None = None,
+    ) -> list["Manager"]:
+        """Get players who have started at least one game matching filters.
+
+        Args:
+            year: Filter by year
+            week: Filter by week
+            manager: Filter by manager
+
+        Returns:
+            List of players who have started at least one game matching filters
+        """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
+        managers = []
+        for user_id in manager_cache:
+            manager = cls(user_id)
+            if manager.participates_in_season(year, week):
+                managers.append(manager)
+
+        return managers
+
     def _load_from_cache(self) -> None:
         """Loads manager data from cache."""
         manager_cache = CACHE_MANAGER.get_manager_cache()
@@ -67,7 +95,7 @@ class Manager:
         self._week_data: dict[str, dict[str, Any]] = manager_data.get(
             "week_data", {}
         )
-        self._transactions: dict[str, list[Any]] = manager_data.get(
+        self._transactions: dict[str, list[str]] = manager_data.get(
             "transactions", {}
         )
         self._transactions.setdefault("trade", [])
@@ -95,7 +123,9 @@ class Manager:
 
     def _fetch_and_apply_user_metadata(self) -> None:
         """Fetches and applies user metadata to the manager."""
-        # If manager has been updated within the last hour, skip
+        from patriot_center_backend.utils.sleeper_helpers import (
+            fetch_user_metadata,
+        )
         user_metadata = fetch_user_metadata(self.user_id, bypass_cache=True)
 
         self.username = user_metadata["display_name"]
@@ -129,32 +159,52 @@ class Manager:
     def set_season_data(
         self,
         year: str,
+        week: str,
         team_image_url: str,
         team_name: str,
         season_complete: bool,
         roster_id: int,
-        playoff_placement: int | None = None,
     ) -> None:
         """Set manager season data.
 
         Args:
             year: The year.
+            week: The week.
             league_id: The league ID.
             team_image_url: The team image URL.
             team_name: The team name.
             season_complete: Whether the season is complete.
             roster_id: The roster ID.
-            playoff_placement: The playoff placement.
         """
+        if (  # If season already set and complete
+            self._season_data.get(year)
+            and self._season_data[year]["season_complete"]
+        ):
+            if week not in self._season_data[year]["weeks"]:
+                self._season_data[year]["weeks"].append(week)
+            return
+
         self._season_data[year] = {
             "team_image_url": team_image_url,
             "team_name": team_name,
             "season_complete": season_complete,
             "roster_id": roster_id,
+            "weeks": [week],
         }
-        if playoff_placement is not None:
-            self._season_data[year]["playoff_placement"] = playoff_placement
 
+        if "playoff_placement" not in self._season_data[year]:
+            self._season_data[year]["playoff_placement"] = None
+
+        self._apply_to_cache()
+
+    def set_playoff_placement(self, year: str, playoff_placement: int) -> None:
+        """Set manager playoff placement.
+
+        Args:
+            year: The year.
+            playoff_placement: The playoff placement.
+        """
+        self._season_data[year]["playoff_placement"] = playoff_placement
         self._apply_to_cache()
 
     def set_week_data(
@@ -208,3 +258,54 @@ class Manager:
             self._transactions["add_or_drop"].append(transaction_id)
 
         self._apply_to_cache()
+
+    def get_roster_id(self, year: str) -> int | None:
+        """Get the roster ID for a manager.
+
+        Args:
+            year: The year.
+
+        Returns:
+            The roster ID.
+        """
+        roster_id = self._season_data.get(year, {}).get("roster_id")
+        if roster_id is None:
+            logger.warning(
+                f"Roster ID not found for manager {self.real_name} in "
+                f"year {year}"
+            )
+        return roster_id
+
+    def participates_in_season(
+        self, year: str | None = None, week: str | None = None
+    ) -> bool:
+        """Check if a manager participates in a given season and week.
+
+        Args:
+            year: The year.
+            week: The week.
+
+        Returns:
+            True if the manager participates in the given season and week,
+            False otherwise.
+        """
+        if not self._season_data:
+            return False
+
+        if week and not year:
+            logger.warning(
+                f"Week {week} provided without year for "
+                f"manager {self.real_name}"
+            )
+            return False
+
+        if not year:
+            return True
+
+        if year not in self._season_data:
+            return False
+
+        if not week:
+            return True
+
+        return week in self._season_data[year]["weeks"]

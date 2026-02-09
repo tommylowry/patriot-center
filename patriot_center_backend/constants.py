@@ -60,6 +60,9 @@ USER_IDS = [
     "982457322809151488",
 ]
 
+# User ID for Tommy, used as a historical reference
+TOMMY_USER_ID = "399258572535365632"
+
 # Enum for player positions
 class Position(StrEnum):
     """Enum for player positions."""

@@ -1,6 +1,7 @@
 """This module provides utility for interacting with the Sleeper API."""
 
 import logging
+from copy import deepcopy
 from math import ceil
 from typing import Any, Literal
 
@@ -10,10 +11,11 @@ from patriot_center_backend.calculations.player_score_calculator import (
 )
 from patriot_center_backend.constants import (
     LEAGUE_IDS,
+    TOMMY_USER_ID,
     USERNAME_TO_REAL_NAME,
     Position,
 )
-from patriot_center_backend.models import Player
+from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
 
 logger = logging.getLogger(__name__)
@@ -115,12 +117,12 @@ def get_roster_ids(
     """
     user_ids = {}
 
-    sleeper_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/users")
+    sleeper_users_response = fetch_sleeper_data(
+        f"league/{LEAGUE_IDS[year]}/users"
+    )
 
     # Make sure the users data is in list form
-    if isinstance(sleeper_response, list):
-        sleeper_users_response = sleeper_response
-    else:
+    if not isinstance(sleeper_users_response, list):
         raise ValueError(
             f"Sleeper API call failed to retrieve users in "
             f"list form for year {year}"
@@ -133,12 +135,12 @@ def get_roster_ids(
     roster_ids = {}
 
     # Fetch the rosters data from the Sleeper API
-    sleeper_response = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/rosters")
+    sleeper_rosters_response = fetch_sleeper_data(
+        f"league/{LEAGUE_IDS[year]}/rosters"
+    )
 
     # Make sure the rosters data is in list form
-    if isinstance(sleeper_response, list):
-        sleeper_rosters_response = sleeper_response
-    else:
+    if not isinstance(sleeper_rosters_response, list):
         raise ValueError(
             f"Sleeper API call failed to retrieve rosters in "
             f"list form for year {year}"
@@ -353,6 +355,24 @@ def get_league_info(year: int) -> dict[str, Any]:
 
     return league_info
 
+def fetch_matchups(year: int, week: int) -> list[dict[str, Any]]:
+    """Retrieves the matchup data for a given year and week.
+
+    Args:
+        year: The year for which to retrieve matchup data.
+        week: The week for which to retrieve matchup data.
+
+    Returns:
+        A list of matchup data dictionaries.
+    """
+    matchups = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/matchups/{week}")
+    if not isinstance(matchups, list):
+        raise ValueError(
+            f"Sleeper API call failed to retrieve matchup data "
+            f"for year {year}, week {week}"
+        )
+    return matchups
+
 
 def fetch_user_metadata(
     user_identifier: str, bypass_cache: bool = False
@@ -445,16 +465,10 @@ def fetch_players(year: int, week: int) -> list[Player]:
 
         players.append(player)
 
-    matchup_data_response = fetch_sleeper_data(
-        f"league/{LEAGUE_IDS[year]}/matchups/{week}"
-    )
-    if not isinstance(matchup_data_response, list):
-        raise Exception(
-            f"Could not fetch matchup data for season {year} week {week}"
-        )
+    matchups = fetch_matchups(year, week)
     roster_ids = get_roster_ids(year, week)
 
-    for matchup in matchup_data_response:
+    for matchup in matchups:
         # Playoffs, skip that manager as the player
         # didn't start in a matchup that matters.
         if matchup["roster_id"] not in roster_ids:
@@ -472,5 +486,125 @@ def fetch_players(year: int, week: int) -> list[Player]:
 
     return players
 
+def set_managers_season_data(year: int, week: int) -> None:
+    """Sets the season data for all managers for a given year and week.
+
+    This function retreives manager metadata from the Sleeper API for the
+    specified year and week, then sets the season data for each manager.
+
+    Args:
+        year: The year for which to set the season data.
+        week: The week for which to set the season data.
+
+    Raises:
+        ValueError: If the Sleeper API call fails to retrieve the managers.
+    """
+    managers = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/users")
+    if not isinstance(managers, list):
+        raise ValueError(
+            f"Sleeper API call failed to retrieve managers for year {year}"
+        )
+
+    league_info = get_league_info(year)
+    season_complete = league_info["status"] == "complete"
+
+    roster_ids = get_roster_ids(year, week)
+
+    orphaned_manager_data = {}
+    roster_ids_that_have_been_set = []
+
+    for manager_data in managers:
+        roster_id = get_roster_id(manager_data["user_id"], year)
+
+        # Handle Davey's case where he's not in the rosters in 2024
+        if roster_id is None:
+            orphaned_manager_data = deepcopy(manager_data)
+            continue
+        roster_ids_that_have_been_set.append(roster_id)
+
+        manager = Manager(manager_data["user_id"])
+
+        team_image_url = manager_data["metadata"]["avatar"]
+        team_name = manager_data["metadata"]["team_name"]
+
+        # Handle Tommy's case where he's not in the users in 2019 for weeks 1-3
+        if manager.real_name == "Cody" and year == 2019 and week <= 3:
+            manager = Manager(TOMMY_USER_ID)
+            team_image_url = manager.image_url
+            team_name = "Tommy's 2019 Weeks 1-3 Team"
+
+        manager.set_season_data(
+            str(year),
+            str(week),
+            team_image_url,
+            team_name,
+            season_complete,
+            roster_id
+        )
+
+    # Set the roster ID for anyone who wasn't in the rosters (Davey's case)
+    if orphaned_manager_data:
+        for id in roster_ids:
+            if id not in roster_ids_that_have_been_set:
+                manager = Manager(orphaned_manager_data["user_id"])
+
+                team_image_url = orphaned_manager_data["metadata"]["avatar"]
+                team_name = orphaned_manager_data["metadata"]["team_name"]
+
+                manager.set_season_data(
+                    str(year),
+                    str(week),
+                    team_image_url,
+                    team_name,
+                    season_complete,
+                    roster_id=id,
+                )
+                return
+
+
+def set_managers_week_data(year: int, week: int) -> None:
+    """Sets the week data for all managers for a given year and week.
+
+    This function retreives manager metadata from the Sleeper API for the
+    specified year and week, then sets the week data for each manager.
+
+    Args:
+        year: The year for which to set the week data.
+        week: The week for which to set the week data.
+
+    Raises:
+        ValueError: If the Sleeper API call fails to retrieve the managers.
+    """
+    matchups = fetch_matchups(year, week)
+
+
+    
+    # Create a mapping of matchup IDs to matchup data
+    matchup_mapping: dict[int, dict[str, Any]] = {}
+
+    managers = Manager.get_all_managers(str(year), str(week))
+    for manager in managers:
+
+
+    for manager_data in matchups:
+        if manager_data["matchup_id"] not in matchup_mapping:
+            matchup_mapping[manager_data["matchup_id"]] = manager_data
+            continue
+        
+        other_manager_data = matchup_mapping[manager_data["matchup_id"]]
+        
+        manager = Manager(manager_data["owner_id"])
+        other_manager = Manager(other_manager_data["owner_id"])
+    
+
+        
+
+
 # for manager_username in USERNAME_TO_REAL_NAME:
 #     fetch_user_metadata(manager_username)
+
+# s = fetch_sleeper_data(f"league/{LEAGUE_IDS[2020]}/users")
+# print()
+
+set_managers_week_data(2024, 2)
+print("")

@@ -110,6 +110,8 @@ class MatchupProcessor:
         if isinstance(manager_matchup_data, dict):
             raise ValueError("No matchup data found for week.")
 
+        # SET WEEK DATA FOR MANAGER HERE
+
         for manager_1_data in manager_matchup_data:
             manager_1_roster_id = manager_1_data.get("roster_id")
             if (

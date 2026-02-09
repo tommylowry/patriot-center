@@ -1,12 +1,17 @@
 """Manager class."""
 
+from __future__ import annotations
+
 import logging
 from copy import deepcopy
 from time import time
-from typing import Any, ClassVar, Literal
+from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import USERNAME_TO_REAL_NAME
+
+if TYPE_CHECKING:
+    from patriot_center_backend.models.player import Player
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +19,9 @@ logger = logging.getLogger(__name__)
 class Manager:
     """Manager class."""
 
-    _instances: ClassVar[dict[str, "Manager"]] = {}
+    _instances: ClassVar[dict[str, Manager]] = {}
 
-    def __new__(cls, user_id: str) -> "Manager":
+    def __new__(cls, user_id: str) -> Manager:
         """Create a new manager instance or return the existing one.
 
         Args:
@@ -58,7 +63,7 @@ class Manager:
         cls,
         year: str | None = None,
         week: str | None = None,
-    ) -> list["Manager"]:
+    ) -> list[Manager]:
         """Get players who have started at least one game matching filters.
 
         Args:
@@ -74,7 +79,7 @@ class Manager:
         managers = []
         for user_id in manager_cache:
             manager = cls(user_id)
-            if manager.participates_in_season(year, week):
+            if manager.check_participation(year, week):
                 managers.append(manager)
 
         return managers
@@ -159,7 +164,6 @@ class Manager:
     def set_season_data(
         self,
         year: str,
-        week: str,
         team_image_url: str,
         team_name: str,
         season_complete: bool,
@@ -180,8 +184,6 @@ class Manager:
             self._season_data.get(year)
             and self._season_data[year]["season_complete"]
         ):
-            if week not in self._season_data[year]["weeks"]:
-                self._season_data[year]["weeks"].append(week)
             return
 
         self._season_data[year] = {
@@ -189,7 +191,6 @@ class Manager:
             "team_name": team_name,
             "season_complete": season_complete,
             "roster_id": roster_id,
-            "weeks": [week],
         }
 
         if "playoff_placement" not in self._season_data[year]:
@@ -211,12 +212,12 @@ class Manager:
         self,
         year: str,
         week: str,
-        opponent: str,
-        result: str,
+        opponent: Manager,
+        result: Literal["win", "loss", "tie"],
         points_for: float,
         points_against: float,
-        starters: list[str],
-        rostered_players: list[str]
+        starters: list[Player],
+        rostered_players: list[Player]
     ) -> None:
         """Set manager week data.
 
@@ -230,13 +231,13 @@ class Manager:
             starters: The starters.
             rostered_players: The rostered players.
         """
-        self._week_data[year][week] = {
-            "opponent": opponent,
+        self._week_data[f"{year}_{week}"] = {
+            "opponent": str(opponent),
             "result": result,
             "points_for": points_for,
             "points_against": points_against,
-            "starters": starters,
-            "rostered_players": rostered_players,
+            "starters": [str(p) for p in starters],
+            "rostered_players": [str(p) for p in rostered_players],
         }
 
         self._apply_to_cache()
@@ -276,17 +277,19 @@ class Manager:
             )
         return roster_id
 
-    def participates_in_season(
+    def check_participation(
         self, year: str | None = None, week: str | None = None
     ) -> bool:
-        """Check if a manager participates in a given season and week.
+        """Check if a manager participates in a given season.
+
+        Checks if the manager has started at least one game matching filters.
 
         Args:
-            year: The year.
-            week: The week.
+            year: Filter by year.
+            week: Filter by week.
 
         Returns:
-            True if the manager participates in the given season and week,
+            True if the manager participates in the given parameters,
             False otherwise.
         """
         if not self._season_data:
@@ -302,10 +305,10 @@ class Manager:
         if not year:
             return True
 
-        if year not in self._season_data:
+        if not self._season_data.get(year):
             return False
 
         if not week:
             return True
 
-        return week in self._season_data[year]["weeks"]
+        return f"{year}_{week}" in self._week_data

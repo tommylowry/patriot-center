@@ -36,7 +36,7 @@ from patriot_center_backend.playoffs.playoff_tracker import (
 )
 from patriot_center_backend.utils.sleeper_helpers import (
     set_managers_season_data,
-    set_managers_week_data,
+    set_matchup_data,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,9 +68,9 @@ def update_weekly_data_caches() -> None:
 
         for week in weeks_to_update:
 
-            set_managers_season_data(year, week)
+            managers = set_managers_season_data(year, week)
 
-            set_managers_week_data(year, week)
+            set_matchup_data(year, week, managers=managers)
 
             manager_updater.cache_week_data(str(year), str(week))
             FFWARCalculator(year, week).calculate_and_set_ffwar_for_week()

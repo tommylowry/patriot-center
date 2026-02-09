@@ -59,22 +59,27 @@ def get_roster_id(
             the rosters in list form.
     """
     if not sleeper_rosters_response:
-        sleeper_response = fetch_sleeper_data(
+        response = fetch_sleeper_data(
             f"league/{LEAGUE_IDS[year]}/rosters"
         )
 
         # Make sure the rosters data is in list form
-        if isinstance(sleeper_response, list):
-            sleeper_rosters_response = sleeper_response
-        else:
+        if not isinstance(response, list):
             raise ValueError(
                 f"Sleeper API call failed to retrieve rosters in "
                 f"list form for year {year}"
             )
+        else:
+            sleeper_rosters_response = response
 
     # Iterate over the rosters data and find the roster ID for the given user ID
     skipped_roster_id = None
     for user in sleeper_rosters_response:
+
+        # If the user is a co-owner, skip them
+        if user["co_owners"] and user_id in user["co_owners"]:
+            return
+
         if user["owner_id"] == user_id:
             return user["roster_id"]
 
@@ -465,28 +470,9 @@ def fetch_players(year: int, week: int) -> list[Player]:
 
         players.append(player)
 
-    matchups = fetch_matchups(year, week)
-    roster_ids = get_roster_ids(year, week)
-
-    for matchup in matchups:
-        # Playoffs, skip that manager as the player
-        # didn't start in a matchup that matters.
-        if matchup["roster_id"] not in roster_ids:
-            continue
-
-        manager = roster_ids[matchup["roster_id"]]
-        for player_id in matchup["players"]:
-            player = Player(player_id)
-
-            started = player_id in matchup["starters"]
-
-            player.set_week_data(
-                str(year), str(week), manager=manager, started=started
-            )
-
     return players
 
-def set_managers_season_data(year: int, week: int) -> None:
+def set_managers_season_data(year: int, week: int) -> list[Manager]:
     """Sets the season data for all managers for a given year and week.
 
     This function retreives manager metadata from the Sleeper API for the
@@ -513,6 +499,8 @@ def set_managers_season_data(year: int, week: int) -> None:
     orphaned_manager_data = {}
     roster_ids_that_have_been_set = []
 
+    returning_managers = []
+
     for manager_data in managers:
         roster_id = get_roster_id(manager_data["user_id"], year)
 
@@ -524,8 +512,15 @@ def set_managers_season_data(year: int, week: int) -> None:
 
         manager = Manager(manager_data["user_id"])
 
-        team_image_url = manager_data["metadata"]["avatar"]
-        team_name = manager_data["metadata"]["team_name"]
+        team_image_url = manager_data.get("metadata", {}).get("avatar")
+        # For older leagues, team_image didn't exist
+        if not team_image_url:
+            team_image_url = manager.image_url
+
+        team_name = manager_data.get("metadata", {}).get("team_name")
+        # team_name is an optional field, so if it doesn't exist, use username
+        if not team_name:
+            team_name = manager.username
 
         # Handle Tommy's case where he's not in the users in 2019 for weeks 1-3
         if manager.real_name == "Cody" and year == 2019 and week <= 3:
@@ -535,12 +530,13 @@ def set_managers_season_data(year: int, week: int) -> None:
 
         manager.set_season_data(
             str(year),
-            str(week),
             team_image_url,
             team_name,
             season_complete,
             roster_id
         )
+
+        returning_managers.append(manager)
 
     # Set the roster ID for anyone who wasn't in the rosters (Davey's case)
     if orphaned_manager_data:
@@ -553,16 +549,19 @@ def set_managers_season_data(year: int, week: int) -> None:
 
                 manager.set_season_data(
                     str(year),
-                    str(week),
                     team_image_url,
                     team_name,
                     season_complete,
-                    roster_id=id,
+                    id,  # Roster ID
                 )
-                return
+                returning_managers.append(manager)
+
+    return returning_managers
 
 
-def set_managers_week_data(year: int, week: int) -> None:
+def set_matchup_data(
+    year: int, week: int, managers: list[Manager]
+) -> None:
     """Sets the week data for all managers for a given year and week.
 
     This function retreives manager metadata from the Sleeper API for the
@@ -571,33 +570,108 @@ def set_managers_week_data(year: int, week: int) -> None:
     Args:
         year: The year for which to set the week data.
         week: The week for which to set the week data.
+        managers: A list of managers to set the week data for.
 
     Raises:
         ValueError: If the Sleeper API call fails to retrieve the managers.
     """
     matchups = fetch_matchups(year, week)
+    roster_ids = get_roster_ids(year, week)
 
-
-    
     # Create a mapping of matchup IDs to matchup data
     matchup_mapping: dict[int, dict[str, Any]] = {}
+    roster_id_to_manager: dict[int, Manager] = {}
 
-    managers = Manager.get_all_managers(str(year), str(week))
-    for manager in managers:
+    # Create a mapping of roster IDs to managers
+    for roster_id in list(roster_ids.keys()):
+        for manager in managers:
+            if manager.get_roster_id(str(year)) == roster_id:
+                roster_id_to_manager[roster_id] = manager
+                break
 
+    # Loop through all matchups
+    for manager_a_data in matchups:
 
-    for manager_data in matchups:
-        if manager_data["matchup_id"] not in matchup_mapping:
-            matchup_mapping[manager_data["matchup_id"]] = manager_data
+        # Matchups that don't matter (consoluation bracket, etc.) are skipped
+        if manager_a_data["roster_id"] not in roster_id_to_manager:
             continue
-        
-        other_manager_data = matchup_mapping[manager_data["matchup_id"]]
-        
-        manager = Manager(manager_data["owner_id"])
-        other_manager = Manager(other_manager_data["owner_id"])
-    
 
-        
+        # Set the Player data for each player that played and was rostered
+        manager = roster_id_to_manager[manager_a_data["roster_id"]]
+        starters = []
+        rostered_players = []
+        for player_id in manager_a_data["players"]:
+            player = Player(player_id)
+            rostered_players.append(player)
+
+            started = player_id in manager_a_data["starters"]
+            if started:
+                starters.append(player)
+
+            player.set_week_data(
+                str(year), str(week), manager=manager, started=started
+            )
+
+        # Change the matchup data to include the Player objects
+        manager_a_data["starters_objects"] = starters
+        manager_a_data["players_objects"] = rostered_players
+
+        # If we don't yet have matchup data for the other
+        # manager wait until we do
+        if manager_a_data["matchup_id"] not in matchup_mapping:
+            matchup_mapping[manager_a_data["matchup_id"]] = manager_a_data
+            continue
+
+        # This manager's matchup data and their opponent's matchup data can now
+        # be compared with the same matchup ID
+        manager_b_data = matchup_mapping[manager_a_data["matchup_id"]]
+
+        manager_a = roster_id_to_manager[manager_a_data["roster_id"]]
+        manager_b = roster_id_to_manager[manager_b_data["roster_id"]]
+
+        _set_individual_manager_week_data(
+            year, week, manager_a, manager_a_data, manager_b, manager_b_data
+        )
+        _set_individual_manager_week_data(
+            year, week, manager_b, manager_b_data, manager_a, manager_a_data
+        )
+
+
+def _set_individual_manager_week_data(
+    year: int,
+    week: int,
+    manager: Manager,
+    manager_data: dict[str, Any],
+    opponent: Manager,
+    opponent_data: dict[str, Any],
+) -> None:
+    """Sets the week data for a manager.
+
+    Args:
+        year: The year for which to set the week data.
+        week: The week for which to set the week data.
+        manager: The manager to set the week data for
+        manager_data: The matchup data for the manager
+        opponent: The opponent manager
+        opponent_data: The matchup data for the opponent
+    """
+    if manager_data["points"] > opponent_data["points"]:
+        result = "win"
+    elif manager_data["points"] < opponent_data["points"]:
+        result = "loss"
+    else:
+        result = "tie"
+
+    manager.set_week_data(
+        str(year),
+        str(week),
+        opponent,  # Opponent
+        result,  # Result
+        manager_data["points"],  # Points for
+        opponent_data["points"],  # Points against
+        manager_data["starters_objects"],  # Starters
+        manager_data["players_objects"],  # Rostered players
+    )
 
 
 # for manager_username in USERNAME_TO_REAL_NAME:
@@ -605,6 +679,5 @@ def set_managers_week_data(year: int, week: int) -> None:
 
 # s = fetch_sleeper_data(f"league/{LEAGUE_IDS[2020]}/users")
 # print()
-
-set_managers_week_data(2024, 2)
-print("")
+if __name__ == "__main__":
+    get_roster_id("607421766062637056", 2025)

@@ -3,6 +3,7 @@
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.constants import Position
 
 
 def get_user_id(manager_name: str) -> str | None:
@@ -19,7 +20,9 @@ def get_user_id(manager_name: str) -> str | None:
     return manager_cache.get(manager_name, {}).get("summary", {}).get("user_id")
 
 
-def fetch_manager_scores(year: int, week: int) -> dict[str, dict[str, Any]]:
+def fetch_manager_scores(
+    year: int, week: int
+) -> dict[Position, dict[str, Any]]:
     """Fetch the starters for each position for a given week.
 
     Args:
@@ -27,12 +30,16 @@ def fetch_manager_scores(year: int, week: int) -> dict[str, dict[str, Any]]:
         week (int): The week number (1-17).
 
     Returns:
-        A dictionary where keys are positions and values are dictionaries
+        A dictionary where keys are Positions and values are dictionaries
         containing the total points and scores for each manager in list form.
     """
     valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
     managers = valid_options_cache[str(year)][str(week)]["managers"]
-    positions = valid_options_cache[str(year)][str(week)]["positions"]
+    positions = [
+        Position(p)
+        for p
+        in valid_options_cache[str(year)][str(week)]["positions"]
+    ]
 
     starters_cache = CACHE_MANAGER.get_starters_cache()
     weekly_starters = starters_cache[str(year)][str(week)]
@@ -41,7 +48,6 @@ def fetch_manager_scores(year: int, week: int) -> dict[str, dict[str, Any]]:
     scores = {}
     for position in positions:
         scores[position] = {
-            "players": [],
             "scores": [],
             "managers": {
                 manager: {"total_points": 0, "scores": []}

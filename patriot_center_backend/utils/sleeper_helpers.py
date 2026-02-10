@@ -59,9 +59,7 @@ def get_roster_id(
             the rosters in list form.
     """
     if not sleeper_rosters_response:
-        response = fetch_sleeper_data(
-            f"league/{LEAGUE_IDS[year]}/rosters"
-        )
+        response = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}/rosters")
 
         # Make sure the rosters data is in list form
         if not isinstance(response, list):
@@ -75,7 +73,6 @@ def get_roster_id(
     # Iterate over the rosters data and find the roster ID for the given user ID
     skipped_roster_id = None
     for user in sleeper_rosters_response:
-
         # If the user is a co-owner, skip them
         if user["co_owners"] and user_id in user["co_owners"]:
             return
@@ -260,13 +257,12 @@ def get_playoff_roster_ids(year: int, week: int) -> list[int]:
     else:
         logger.warning(
             f"Playoff type {playoff_type} not supported. "
-            f"Returning empty playoff roster IDs.")
+            f"Returning empty playoff roster IDs."
+        )
         return []
 
     if round > rounds_needed:
         return []
-
-
 
     sleeper_response_playoff_bracket = fetch_sleeper_data(
         f"league/{LEAGUE_IDS[year]}/winners_bracket"
@@ -287,6 +283,7 @@ def get_playoff_roster_ids(year: int, week: int) -> list[int]:
         raise ValueError("Cannot get playoff roster IDs for the given week")
 
     return relevant_roster_ids
+
 
 def get_playoff_weeks(year: int) -> list[int]:
     """Retrieves the week when playoffs start for a given year.
@@ -374,6 +371,7 @@ def get_league_info(year: int) -> dict[str, Any]:
         )
 
     return league_info
+
 
 def fetch_matchups(year: int, week: int) -> list[dict[str, Any]]:
     """Retrieves the matchup data for a given year and week.
@@ -487,6 +485,7 @@ def fetch_players(year: int, week: int) -> list[Player]:
 
     return players
 
+
 def set_managers_season_data(year: int, week: int) -> list[Manager]:
     """Sets the season data for all managers for a given year and week.
 
@@ -544,11 +543,7 @@ def set_managers_season_data(year: int, week: int) -> list[Manager]:
             team_name = "Tommy's 2019 Weeks 1-3 Team"
 
         manager.set_season_data(
-            str(year),
-            team_image_url,
-            team_name,
-            season_complete,
-            roster_id
+            str(year), team_image_url, team_name, season_complete, roster_id
         )
 
         returning_managers.append(manager)
@@ -574,9 +569,7 @@ def set_managers_season_data(year: int, week: int) -> list[Manager]:
     return returning_managers
 
 
-def set_matchup_data(
-    year: int, week: int, managers: list[Manager]
-) -> None:
+def set_matchup_data(year: int, week: int, managers: list[Manager]) -> None:
     """Sets the week data for all managers for a given year and week.
 
     This function retreives manager metadata from the Sleeper API for the
@@ -606,7 +599,6 @@ def set_matchup_data(
 
     # Loop through all matchups
     for manager_a_data in matchups:
-
         # Matchups that don't matter (consoluation bracket, etc.) are skipped
         if manager_a_data["roster_id"] not in roster_id_to_manager:
             continue

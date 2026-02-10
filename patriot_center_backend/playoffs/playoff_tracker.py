@@ -79,8 +79,6 @@ def assign_placements_retroactively(year: int) -> None:
         - Iterates over starters cache and assigns placements for each manager
         - Only logs the first occurrence of a year's placements
     """
-    starters_cache = CACHE_MANAGER.get_starters_cache()
-
     placements = get_playoff_placements(year)
     if not placements:
         return
@@ -97,8 +95,14 @@ def assign_placements_retroactively(year: int) -> None:
             # Get all starters for the manager in the playoff weeks
             players: list[Player] = []
             for week in weeks:
-                manager.get_starters(str(year), str(week))
-                players.extend(manager.get_starters(str(year), str(week)))
+                players.extend(
+                    manager.get_players(
+                        str(year),
+                        str(week),
+                        only_starters=True,
+                        suppress_warnings=True,
+                    )
+                )
 
             for player in players:
                 player.set_placement(
@@ -107,32 +111,6 @@ def assign_placements_retroactively(year: int) -> None:
 
 
     _manager_cache_set_playoff_placements(placements, year)
-
-    need_to_log = True
-    year_str = str(year)
-    for week in weeks:
-        for manager in starters_cache.get(year_str, {}).get(week, {}):
-            if manager in placements:
-                manager_lvl = starters_cache[year_str][week][manager]
-                for player_id in manager_lvl:
-                    if player_id == "Total_Points":
-                        continue
-
-                    player = Player(player_id)
-                    player.set_placement(year_str, manager, placements[manager])
-
-                    # placement already assigned
-                    if "placement" in manager_lvl[str(player)]:
-                        return
-
-                    if need_to_log:
-                        logger.info(
-                            f"New placements found: {placements}, "
-                            f"retroactively applying placements."
-                        )
-                        need_to_log = False
-
-                    manager_lvl[str(player)]["placement"] = placements[manager]
 
 
 def _manager_cache_set_playoff_placements(

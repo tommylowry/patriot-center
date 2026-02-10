@@ -4,11 +4,12 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from statistics import mean
 from time import time
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import USERNAME_TO_REAL_NAME
+from patriot_center_backend.constants import USERNAME_TO_REAL_NAME, Position
 
 if TYPE_CHECKING:
     from patriot_center_backend.models.player import Player
@@ -316,59 +317,7 @@ class Manager:
 
         return f"{year}_{week}" in self._week_data
 
-    def get_rostered(
-        self,
-        year: str | None = None,
-        week: str | None = None,
-        suppress_warnings: bool = False
-    ) -> list[Player]:
-        """Get players who were rostered for a given year and week.
-
-        If the manager does not have matching data, return an empty list.
-        Defaults to returning all rostered players.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-            suppress_warnings: Whether to suppress warnings.
-
-        Returns:
-            List of players who have started at least one game matching filters
-        """
-        return self._get_players(
-            year=year,
-            week=week,
-            only_starters=False,
-            suppress_warnings=suppress_warnings
-        )
-
-    def get_starters(
-        self,
-        year: str | None = None,
-        week: str | None = None,
-        suppress_warnings: bool = False
-    ) -> list[Player]:
-        """Get players who started the week for a given year and week.
-
-        If the manager does not have matching data, return an empty list.
-        Defaults to returning all started players.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-            suppress_warnings: Whether to suppress warnings.
-
-        Returns:
-            List of players who have started at least one game matching filters
-        """
-        return self._get_players(
-            year=year,
-            week=week,
-            only_starters=True,
-            suppress_warnings=suppress_warnings,
-        )
-
-    def _get_players(
+    def get_players(
         self,
         year: str | None = None,
         week: str | None = None,
@@ -388,8 +337,15 @@ class Manager:
         """
         from patriot_center_backend.models.player import Player
 
+        if week and not year:
+            logger.warning(
+                f"Week {week} provided without year for "
+                f"manager {self.real_name}"
+            )
+            return []
+
         matches = self._get_matching_data(
-            year, week, only_starters=only_starters
+            year, week, only_starters
         )
         if not matches:
             if suppress_warnings:
@@ -418,21 +374,78 @@ class Manager:
 
         return [Player(p) for p in players]
 
+    def get_points_for(
+        self, year: str | None = None, week: str | None = None
+    ) -> float:
+        """Get the points scored by the manager.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+
+        Returns:
+            The points scored by the manager.
+        """
+        matches = self._get_matching_data(year, week)
+
+        points_for = 0.0
+        for match in matches:
+            points_for += match["points_for"]
+
+        return round(points_for, 2)
+
+
+    def get_positional_scores_for_starters(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+    ) -> dict[Position, list[float]]:
+        """Get the positional scores for a given list of players.
+
+        Args:
+            players: A list of players.
+            year: The year (defaults to all years).
+            week: The week (defaults to all weeks).
+
+        Returns:
+            A dictionary where keys are Positions and values are positional
+            scores for each position.
+        """
+        if week and not year:
+            logger.warning(
+                f"Week {week} provided without year for "
+                f"manager {self.real_name}"
+            )
+            return {}
+
+        starters = self.get_players(
+            year=year, week=week,
+            only_starters=True, suppress_warnings=True,
+        )
+
+        pos_scores: dict[Position, list[float]] = {}
+        for player in starters:
+            pos_scores.setdefault(player.position, []).append(
+                player.get_points(year=year, week=week)
+            )
+
+        return pos_scores
+
 
     def _get_matching_data(
         self,
         year: str | None,
         week: str | None,
+        only_starters: bool = True,
         player: Player | None = None,
-        only_starters: bool = False,
     ) -> list[dict[str, Any]]:
         """Get all data entries matching the given filters.
 
         Args:
             year: Filter by year.
             week: Filter by week.
-            player: Filter by player.
             only_starters: Only include players who started the week.
+            player: Filter by player.
 
         Returns:
             List of matching data entries.

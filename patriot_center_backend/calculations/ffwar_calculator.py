@@ -2,7 +2,11 @@
 
 from statistics import mean
 
-from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.cache.queries.replacement_score_queries import (
+    get_replacement_scores,
+)
+from patriot_center_backend.constants import Position
+from patriot_center_backend.models import Manager
 from patriot_center_backend.utils.helpers import fetch_manager_scores
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_players,
@@ -26,21 +30,15 @@ class FFWARCalculator:
         self.year = year
         self.week = week
 
+        self._dynamic_vars_set = False
+
         self.season_state = get_season_state(str(year), str(week))
 
-        self.starter_scores = fetch_manager_scores(self.year, self.week)
+        self.managers = Manager.get_all_managers(str(year), str(week))
 
-        self.managers = []
-
-        self.replacement_scores = dict.fromkeys(self.starter_scores, 0.0)
-        self.baseline_scores = {
-            position: {} for position in self.starter_scores
-        }
-        self.weighted_scores = {
-            position: {} for position in self.starter_scores
-        }
-
-        self._dynamic_vars_set = False
+        self.replacement_scores = dict.fromkeys(Position, 0.0)
+        self.baseline_scores = {position: {} for position in Position}
+        self.weighted_scores = {position: {} for position in Position}
 
     # ==========================================================================
     # ============================= Public Methods =============================
@@ -55,7 +53,6 @@ class FFWARCalculator:
             - This function assumes that the player data has already been
             populated with the necessary information.
         """
-        # Simulate all possible manager pairings
         self._apply_dynamic_vars()
 
         # Get all the players that played that week
@@ -73,14 +70,10 @@ class FFWARCalculator:
                 position=player.position,
             )
 
-            player.set_week_data(
-                str(self.year),
-                str(self.week),
-                ffwar=ffwar
-            )
+            player.set_week_data(str(self.year), str(self.week), ffwar=ffwar)
 
     def calculate_ffwar_for_player(
-        self, player_points: float, position: str
+        self, player_points: float, position: Position
     ) -> float:
         """Simulates all possible manager pairings with a specific player.
 
@@ -109,8 +102,7 @@ class FFWARCalculator:
             by 1/3. This is because only 4 of 12 teams play each week in the
             playoffs.
         """
-        if not self._dynamic_vars_set:
-            self._apply_dynamic_vars()
+        self._apply_dynamic_vars()
 
         replacement_score = self.replacement_scores[position]
 
@@ -118,9 +110,7 @@ class FFWARCalculator:
         num_simulated_games = 0
 
         for manager_playing in self.baseline_scores[position]:
-            baseline = self.baseline_scores[position][
-                manager_playing
-            ]
+            baseline = self.baseline_scores[position][manager_playing]
 
             # Manager's score with THIS player at this position
             simulated_player_score = baseline + player_points
@@ -135,17 +125,13 @@ class FFWARCalculator:
                 # Opponent's score with the week's positional average
                 # applied instead of the average of all players with this
                 # position
-                simulated_opponent_score = (
-                    self.weighted_scores[position][manager_opposing]
-                )
+                simulated_opponent_score = self.weighted_scores[position][
+                    manager_opposing
+                ]
 
                 # Determine if the player would win or lose the matchup
-                player_wins = (
-                    simulated_player_score > simulated_opponent_score
-                )
-                player_loses = (
-                    simulated_player_score < simulated_opponent_score
-                )
+                player_wins = simulated_player_score > simulated_opponent_score
+                player_loses = simulated_player_score < simulated_opponent_score
 
                 # Determine if the replacement would win or lose the matchup
                 replacement_wins = (
@@ -183,39 +169,18 @@ class FFWARCalculator:
     # =========================================================================
     # ============================ Private Methods ============================
     # =========================================================================
-    def _apply_dynamic_vars(self):
+    def _apply_dynamic_vars(self) -> None:
         """Applies the dynamic variables to the calculator."""
-        # Fetch all managers for the given week
-        self._apply_managers()
-
         # Calculate the prerequisites for calculating ffWAR
+        if self._dynamic_vars_set:
+            return
+
         self._apply_replacement_scores()
-        self._apply_baseline_and_weighted_scores()
+        self._calculate_and_apply_baseline_and_weighted_scores()
 
         self._dynamic_vars_set = True
 
-    def _apply_managers(self) -> None:
-        """Fetches valid manager options for the given year and week.
-
-        Raises:
-            ValueError: If no valid options are found for the given year and
-                week.
-        """
-        valid_options_cache = CACHE_MANAGER.get_valid_options_cache()
-
-        managers = (
-            valid_options_cache.get(str(self.year), {})
-            .get(str(self.week), {})
-            .get("managers", [])
-        )
-        if not managers:
-            raise ValueError(
-                f"No valid options found for year={self.year}, week={self.week}"
-            )
-
-        self.managers = managers
-
-    def _apply_baseline_and_weighted_scores(self) -> None:
+    def _calculate_and_apply_baseline_and_weighted_scores(self) -> None:
         """Calculates the baseline and weighted scores for each position.
 
         The baseline score is the manager's total points minus their positional
@@ -223,65 +188,68 @@ class FFWARCalculator:
         positional average, plus the average of all other managers at this
         position.
         """
-        for position in self.starter_scores:
-            position_scores = self.starter_scores[position]
+        managers = Manager.get_all_managers(
+            year=str(self.year), week=str(self.week)
+        )
 
-            pos_average = mean(position_scores["scores"])
+        league_pos_scores = {p: [] for p in Position}
 
-            # Pre-compute normalized scores for each manager
-            # These values are used in the simulation to isolate positional
-            #   impact
-            managers_with_scores = position_scores["managers"]
-            for manager in managers_with_scores:
-                manager_position_scores = managers_with_scores[manager]
+        for manager in managers:
+            points_for = manager.get_points_for(
+                year=str(self.year), week=str(self.week)
+            )
 
-                # The manager has no players at this position, so no
-                # baseline should be used and the weighted score is simply
-                # the manager's total points
-                if len(manager_position_scores["scores"]) == 0:
-                    self.weighted_scores[position][manager] = (
-                        manager_position_scores["total_points"] + pos_average
-                    )
+            # Group scores by position in one pass
+            pos_scores = manager.get_positional_scores_for_starters(
+                year=str(self.year), week=str(self.week)
+            )
 
+            for pos, scores in pos_scores.items():
+
+                league_pos_scores[pos].extend(scores)
+
+                if not scores:
+                    continue  # No starters at this position
+
+                points_for = manager.get_points_for(
+                    year=str(self.year), week=str(self.week)
+                )
+                self.baseline_scores[pos][str(manager)] = points_for - mean(
+                    scores
+                )
+
+        # Now compute weighted scores
+        for pos, scores in league_pos_scores.items():
+            pos_average = mean(scores)
+
+            for manager in managers:
+
+                # Use baseline if it exists, otherwise use total.
+                if str(manager) in self.baseline_scores[pos]:
+                    baseline = self.baseline_scores[pos][str(manager)]
                 else:
-                    # Calculate this manager's average score at this position
-                    mgr_average = mean(manager_position_scores["scores"])
-
-                    # Store manager's total points minus their positional
-                    #   contribution
-                    # This represents the manager's "baseline" without this
-                    #   position's impact
-                    self.baseline_scores[position][manager] = (
-                        manager_position_scores["total_points"] - mgr_average
+                    # No players at this position — use total + avg
+                    baseline = manager.get_points_for(
+                        year=str(self.year), week=str(self.week)
                     )
 
-                    # Store normalized weighted score (baseline + league
-                    #   average at position)
-                    # Used as opponent's score in simulations
-                    self.weighted_scores[position][manager] = (
-                        manager_position_scores["total_points"]
-                        - mgr_average
-                        + pos_average
-                    )
+                self.weighted_scores[pos][str(manager)] = baseline + pos_average
 
-    def _apply_replacement_scores(self):
+    def _apply_replacement_scores(self) -> None:
         """Fetches replacement scores for every positinon in the given week.
 
         Raises:
             ValueError: If no replacement scores are found for the given year
                 and week.
         """
-        replacement_scores_cache = CACHE_MANAGER.get_replacement_score_cache()
+        weekly_replacement_scores = get_replacement_scores(self.year, self.week)
 
-        weekly_replacement_scores = replacement_scores_cache.get(
-            str(self.year), {}
-        ).get(str(self.week), {})
         if not weekly_replacement_scores:
             raise ValueError(
                 f"No replacement scores found for {self.year}-{self.week}"
             )
 
-        for position in self.replacement_scores:
+        for position in Position:
             replacement_score = weekly_replacement_scores.get(
                 f"{position}_3yr_avg"
             )
@@ -304,3 +272,6 @@ class FFWARCalculator:
             The adjusted ffwar if season is playoffs, otherwise the unadjusted
         """
         return ffwar / 3 if self.season_state == "playoffs" else ffwar
+
+
+FFWARCalculator(2023, 1)

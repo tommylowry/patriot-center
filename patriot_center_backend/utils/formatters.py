@@ -56,7 +56,7 @@ def get_top_3_scorers_from_matchup_data(
         top_scorers = []
 
         manager = Manager(manager_user_id)
-        starters = manager.get_starters(year=year, week=week)
+        starters = manager.get_players(year=year, week=week, only_starters=True)
 
         for player in starters:
             player_score = player.get_points(year=year, week=week)

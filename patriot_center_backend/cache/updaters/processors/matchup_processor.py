@@ -5,9 +5,6 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.starters_updater import (
-    update_starters_cache,
-)
 from patriot_center_backend.cache.updaters.valid_options_updater import (
     update_valid_options_cache,
 )
@@ -368,13 +365,4 @@ class MatchupProcessor:
 
             update_valid_options_cache(
                 int(self._year), int(self._week), manager, player_id
-            )
-
-            player_score = matchup["players_points"].get(player_id, 0.0)
-            update_starters_cache(
-                int(self._year),
-                int(self._week),
-                manager,
-                player_id,
-                player_score,
             )

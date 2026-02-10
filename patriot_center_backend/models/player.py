@@ -10,6 +10,7 @@ from copy import deepcopy
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.constants import Position
 
 if TYPE_CHECKING:
     from patriot_center_backend.models.manager import Manager
@@ -19,6 +20,7 @@ logger = logging.getLogger(__name__)
 
 class Player:
     """Player class."""
+
     _instances: ClassVar[dict[str, Player]] = {}
 
     def __new__(cls, player_id: str, apply: bool = True) -> Player:
@@ -46,7 +48,7 @@ class Player:
         """
         self._apply = apply
 
-        if hasattr(self, '_initialized'):
+        if hasattr(self, "_initialized"):
             return  # Already initialized
         self._initialized = True
 
@@ -283,7 +285,7 @@ class Player:
         year: str | None = None,
         week: str | None = None,
         only_started: bool = True,
-        only_rostered: bool = True
+        only_rostered: bool = True,
     ) -> list[Manager]:
         """Get the player's managers for matching weeks.
 
@@ -297,6 +299,7 @@ class Player:
             The player's managers
         """
         from patriot_center_backend.models.manager import Manager
+
         if not self._is_real_player:
             return []
 
@@ -416,7 +419,6 @@ class Player:
 
         return placements
 
-
     def has_started(
         self,
         year: str | None = None,
@@ -435,13 +437,16 @@ class Player:
         """
         if not self._is_real_player:
             return False
-        return self.get_num_games(
-            year=year,
-            week=week,
-            manager=manager,
-            only_started=True,
-            only_rostered=True,
-        ) > 0
+        return (
+            self.get_num_games(
+                year=year,
+                week=week,
+                manager=manager,
+                only_started=True,
+                only_rostered=True,
+            )
+            > 0
+        )
 
     def get_scoring_summary(
         self,
@@ -466,6 +471,7 @@ class Player:
         from patriot_center_backend.calculations.ffwar_calculator import (
             FFWARCalculator,
         )
+
         if not self._is_real_player:
             return {}
 
@@ -502,9 +508,7 @@ class Player:
             raw_dict["num_games_started"] += 1
 
         # Round total_points to 2 decimal places and ffWAR to 3
-        raw_dict["total_points"] = round(
-            raw_dict["total_points"], 2
-        )
+        raw_dict["total_points"] = round(raw_dict["total_points"], 2)
         raw_dict["ffWAR"] = round(raw_dict["ffWAR"], 3)
 
         if raw_dict["num_games_started"] == 0:
@@ -521,10 +525,9 @@ class Player:
             placement_year, placement_user_id = key.split("_")
 
             (
-                raw_dict
-                .setdefault("playoff_placement", {})
-                .setdefault(Manager(placement_user_id).real_name, {})
-                [placement_year]
+                raw_dict.setdefault("playoff_placement", {}).setdefault(
+                    Manager(placement_user_id).real_name, {}
+                )[placement_year]
             ) = placement
 
         return raw_dict
@@ -545,7 +548,6 @@ class Player:
         # there is an update to the metadata
         metadata_from_player_ids_cache = False
         if self.player_id in player_ids_cache:
-
             # TODO: pop not get for the future
             metadata = deepcopy(player_ids_cache.get(self.player_id))
             metadata_from_player_ids_cache = True
@@ -557,8 +559,10 @@ class Player:
         # Required Metadata
         self.first_name: str = metadata["first_name"]
         self.last_name: str = metadata["last_name"]
-        self.position: str = metadata["position"]
-        self.fantasy_positions: list[str] = metadata["fantasy_positions"]
+        self.position: Position = Position(metadata["position"])
+        self.fantasy_positions: list[Position] = [
+            Position(p) for p in metadata["fantasy_positions"]
+        ]
 
         self.full_name: str = metadata.get("full_name", "")
         if not self.full_name:
@@ -569,16 +573,16 @@ class Player:
         self.years_exp: int | None = metadata.get("years_exp")
         self.college: str | None = metadata.get("college")
         self.team: str | None = metadata.get("team")
-        self.depth_chart_position: str | None = metadata.get(
-            "depth_chart_position"
+        self.depth_chart_position: Position | None = (
+            Position(metadata.get("depth_chart_position"))
+            if metadata.get("depth_chart_position")
+            else None
         )
         self.number: int | None = metadata.get("number")
         self._placements: dict[str, int] = metadata.get("placements", {})
 
         # Set data and transactions
-        self._data: dict[str, dict[str, Any]] = player_data.get(
-            "data", {}
-        )
+        self._data: dict[str, dict[str, Any]] = player_data.get("data", {})
         self._transactions: list[str] = player_data.get("transactions", [])
 
         if metadata_from_player_ids_cache:
@@ -736,8 +740,7 @@ class Player:
             # Add manager placement if available
             manager = Manager(match["manager"])
             if (  # If manager placement is already set, skip
-                key_level
-                .get("playoff_placement")
+                key_level.get("playoff_placement")
                 .get(manager.real_name)
                 .get(match["year"])
                 is not None
@@ -752,18 +755,15 @@ class Player:
                 continue
 
             (
-                key_level
-                .setdefault("playoff_placement", {})
-                .setdefault(Manager(match["manager"]).real_name, {})
-                [match["year"]]
+                key_level.setdefault("playoff_placement", {}).setdefault(
+                    Manager(match["manager"]).real_name, {}
+                )[match["year"]]
             ) = placement
 
         for key_value in list(grouped.keys()):
             key_level = grouped[key_value]
 
-            key_level["total_points"] = round(
-                key_level["total_points"], 2
-            )
+            key_level["total_points"] = round(key_level["total_points"], 2)
             key_level["ffWAR"] = round(key_level["ffWAR"], 3)
 
             if key_level["num_games_started"] == 0:

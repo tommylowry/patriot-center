@@ -5,7 +5,8 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.models import Player
+from patriot_center_backend.models import Manager, Player
+from patriot_center_backend.utils.helpers import get_user_id
 from patriot_center_backend.utils.image_url_handler import get_image_url
 
 logger = logging.getLogger(__name__)
@@ -13,8 +14,8 @@ logger = logging.getLogger(__name__)
 
 def get_top_3_scorers_from_matchup_data(
     matchup_data: dict[str, Any],
-    manager_1: str,
-    manager_2: str,
+    manager_1_real_name: str,
+    manager_2_real_name: str,
 ) -> None:
     """Extract top 3 and lowest scorers from matchup data for both managers.
 
@@ -23,19 +24,12 @@ def get_top_3_scorers_from_matchup_data(
 
     Args:
         matchup_data: Matchup data dictionary (modified in-place)
-        manager_1: First manager name
-        manager_2: Second manager name
+        manager_1_real_name: First manager name
+        manager_2_real_name: Second manager name
 
     Raises:
         ValueError: If get_image_url fails to retrieve output in dict form
     """
-    starters_cache = CACHE_MANAGER.get_starters_cache()
-
-    matchup_data["manager_1_top_3_scorers"] = []
-    matchup_data["manager_2_top_3_scorers"] = []
-    matchup_data["manager_1_lowest_scorer"] = []
-    matchup_data["manager_2_lowest_scorer"] = []
-
     week = matchup_data.get("week")
     year = matchup_data.get("year")
 
@@ -46,31 +40,25 @@ def get_top_3_scorers_from_matchup_data(
         )
         return
 
-    # Validate that starter data exists for both managers
-    year_data = starters_cache.get(year, {})
-    week_data = year_data.get(week, {})
-    if manager_1 not in week_data or manager_2 not in week_data:
-        logger.warning(
-            f"WARNING: Starter data missing for week {week}, year {year}. "
-            f"Cannot get top 3 scorers for {manager_1} vs {manager_2}."
-        )
-        return
-
-    var_map = {manager_1: "manager_1", manager_2: "manager_2"}
-    for manager in [manager_1, manager_2]:
-        manager_starters = deepcopy(week_data[manager])
-        # Remove total points aggregate, we only want individual players
-        if "Total_Points" in manager_starters:
-            manager_starters.pop("Total_Points")
+    for manager_cnt, manager_name in enumerate(
+        [manager_1_real_name, manager_2_real_name], start=1
+    ):
+        manager_user_id = get_user_id(manager_name)
+        if not manager_user_id:
+            logger.warning(
+                f"Manager {manager_name} not found in manager cache."
+            )
+            return
 
         # Initialize with high value to find minimum
         lowest_scorer = {"score": 10000.0}
-
         # Iterate over starters
         top_scorers = []
-        for player_id in manager_starters:
-            player = Player(player_id)
 
+        manager = Manager(manager_user_id)
+        starters = manager.get_starters(year=year, week=week)
+
+        for player in starters:
             player_score = player.get_points(year=year, week=week)
 
             player_dict = player.get_metadata()
@@ -99,8 +87,8 @@ def get_top_3_scorers_from_matchup_data(
                 if not inserted and len(top_scorers) < 3:
                     top_scorers.append(player_dict)
 
-            matchup_data[f"{var_map[manager]}_top_3_scorers"] = top_scorers
-            matchup_data[f"{var_map[manager]}_lowest_scorer"] = lowest_scorer
+            matchup_data[f"manager_{manager_cnt}_top_3_scorers"] = top_scorers
+            matchup_data[f"manager_{manager_cnt}_lowest_scorer"] = lowest_scorer
 
 
 def get_matchup_card(

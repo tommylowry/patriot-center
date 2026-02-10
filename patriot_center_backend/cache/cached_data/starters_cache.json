@@ -7538,56 +7538,47 @@
                 "3294": {
                     "points": 17.46,
                     "position": "QB",
-                    "player_id": "3294",
-                    "placement": 3
+                    "player_id": "3294"
                 },
                 "3164": {
                     "points": 22.3,
                     "position": "RB",
-                    "player_id": "3164",
-                    "placement": 3
+                    "player_id": "3164"
                 },
                 "4152": {
                     "points": 9.8,
                     "position": "RB",
-                    "player_id": "4152",
-                    "placement": 3
+                    "player_id": "4152"
                 },
                 "4131": {
                     "points": 14.8,
                     "position": "WR",
-                    "player_id": "4131",
-                    "placement": 3
+                    "player_id": "4131"
                 },
                 "2319": {
                     "points": 3.8,
                     "position": "WR",
-                    "player_id": "2319",
-                    "placement": 3
+                    "player_id": "2319"
                 },
                 "1425": {
                     "points": 1.3,
                     "position": "TE",
-                    "player_id": "1425",
-                    "placement": 3
+                    "player_id": "1425"
                 },
                 "1992": {
                     "points": 19.3,
                     "position": "WR",
-                    "player_id": "1992",
-                    "placement": 3
+                    "player_id": "1992"
                 },
                 "2671": {
                     "points": 1.5,
                     "position": "K",
-                    "player_id": "2671",
-                    "placement": 3
+                    "player_id": "2671"
                 },
                 "PIT": {
                     "points": 29.0,
                     "position": "DEF",
-                    "player_id": "PIT",
-                    "placement": 3
+                    "player_id": "PIT"
                 }
             },
             "Owen": {
@@ -7693,56 +7684,47 @@
                 "1234": {
                     "points": 19.34,
                     "position": "QB",
-                    "player_id": "1234",
-                    "placement": 2
+                    "player_id": "1234"
                 },
                 "3969": {
                     "points": 9.8,
                     "position": "RB",
-                    "player_id": "3969",
-                    "placement": 2
+                    "player_id": "3969"
                 },
                 "4034": {
                     "points": 33.5,
                     "position": "RB",
-                    "player_id": "4034",
-                    "placement": 2
+                    "player_id": "4034"
                 },
                 "5859": {
                     "points": 21.4,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 2
+                    "player_id": "5859"
                 },
                 "5045": {
                     "points": 9.9,
                     "position": "WR",
-                    "player_id": "5045",
-                    "placement": 2
+                    "player_id": "5045"
                 },
                 "4995": {
                     "points": 3.3,
                     "position": "TE",
-                    "player_id": "4995",
-                    "placement": 2
+                    "player_id": "4995"
                 },
                 "2315": {
                     "points": 19.3,
                     "position": "RB",
-                    "player_id": "2315",
-                    "placement": 2
+                    "player_id": "2315"
                 },
                 "3678": {
                     "points": 4.0,
                     "position": "K",
-                    "player_id": "3678",
-                    "placement": 2
+                    "player_id": "3678"
                 },
                 "NE": {
                     "points": 27.5,
                     "position": "DEF",
-                    "player_id": "NE",
-                    "placement": 2
+                    "player_id": "NE"
                 }
             },
             "Christian": {
@@ -7750,56 +7732,47 @@
                 "3294": {
                     "points": 16.68,
                     "position": "QB",
-                    "player_id": "3294",
-                    "placement": 3
+                    "player_id": "3294"
                 },
                 "3164": {
                     "points": 29.5,
                     "position": "RB",
-                    "player_id": "3164",
-                    "placement": 3
+                    "player_id": "3164"
                 },
                 "4152": {
                     "points": 1.9,
                     "position": "RB",
-                    "player_id": "4152",
-                    "placement": 3
+                    "player_id": "4152"
                 },
                 "4131": {
                     "points": 5.9,
                     "position": "WR",
-                    "player_id": "4131",
-                    "placement": 3
+                    "player_id": "4131"
                 },
                 "1992": {
                     "points": 16.0,
                     "position": "WR",
-                    "player_id": "1992",
-                    "placement": 3
+                    "player_id": "1992"
                 },
                 "4993": {
                     "points": 6.7,
                     "position": "TE",
-                    "player_id": "4993",
-                    "placement": 3
+                    "player_id": "4993"
                 },
                 "2319": {
                     "points": 21.2,
                     "position": "WR",
-                    "player_id": "2319",
-                    "placement": 3
+                    "player_id": "2319"
                 },
                 "2671": {
                     "points": 5.0,
                     "position": "K",
-                    "player_id": "2671",
-                    "placement": 3
+                    "player_id": "2671"
                 },
                 "PIT": {
                     "points": 17.0,
                     "position": "DEF",
-                    "player_id": "PIT",
-                    "placement": 3
+                    "player_id": "PIT"
                 }
             },
             "Jay": {
@@ -7807,56 +7780,47 @@
                 "4017": {
                     "points": 15.92,
                     "position": "QB",
-                    "player_id": "4017",
-                    "placement": 1
+                    "player_id": "4017"
                 },
                 "4035": {
                     "points": 11.4,
                     "position": "RB",
-                    "player_id": "4035",
-                    "placement": 1
+                    "player_id": "4035"
                 },
                 "5850": {
                     "points": 11.9,
                     "position": "RB",
-                    "player_id": "5850",
-                    "placement": 1
+                    "player_id": "5850"
                 },
                 "3199": {
                     "points": 24.8,
                     "position": "WR",
-                    "player_id": "3199",
-                    "placement": 1
+                    "player_id": "3199"
                 },
                 "1426": {
                     "points": 14.9,
                     "position": "WR",
-                    "player_id": "1426",
-                    "placement": 1
+                    "player_id": "1426"
                 },
                 "4217": {
                     "points": 18.9,
                     "position": "TE",
-                    "player_id": "4217",
-                    "placement": 1
+                    "player_id": "4217"
                 },
                 "4273": {
                     "points": 26.2,
                     "position": "RB",
-                    "player_id": "4273",
-                    "placement": 1
+                    "player_id": "4273"
                 },
                 "3451": {
                     "points": 2.5,
                     "position": "K",
-                    "player_id": "3451",
-                    "placement": 1
+                    "player_id": "3451"
                 },
                 "KC": {
                     "points": 15.0,
                     "position": "DEF",
-                    "player_id": "KC",
-                    "placement": 1
+                    "player_id": "KC"
                 }
             },
             "Jack": {
@@ -7914,56 +7878,47 @@
                 "1234": {
                     "points": 9.96,
                     "position": "QB",
-                    "player_id": "1234",
-                    "placement": 2
+                    "player_id": "1234"
                 },
                 "3969": {
                     "points": 12.0,
                     "position": "RB",
-                    "player_id": "3969",
-                    "placement": 2
+                    "player_id": "3969"
                 },
                 "4034": {
                     "points": 24.8,
                     "position": "RB",
-                    "player_id": "4034",
-                    "placement": 2
+                    "player_id": "4034"
                 },
                 "2374": {
                     "points": 1.7,
                     "position": "WR",
-                    "player_id": "2374",
-                    "placement": 2
+                    "player_id": "2374"
                 },
                 "5859": {
                     "points": 14.8,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 2
+                    "player_id": "5859"
                 },
                 "5022": {
                     "points": 19.6,
                     "position": "TE",
-                    "player_id": "5022",
-                    "placement": 2
+                    "player_id": "5022"
                 },
                 "5045": {
                     "points": 6.6,
                     "position": "WR",
-                    "player_id": "5045",
-                    "placement": 2
+                    "player_id": "5045"
                 },
                 "3678": {
                     "points": 5.5,
                     "position": "K",
-                    "player_id": "3678",
-                    "placement": 2
+                    "player_id": "3678"
                 },
                 "NE": {
                     "points": 13.0,
                     "position": "DEF",
-                    "player_id": "NE",
-                    "placement": 2
+                    "player_id": "NE"
                 }
             },
             "Jay": {
@@ -7971,50 +7926,42 @@
                 "4017": {
                     "points": 8.06,
                     "position": "QB",
-                    "player_id": "4017",
-                    "placement": 1
+                    "player_id": "4017"
                 },
                 "4035": {
                     "points": 26.0,
                     "position": "RB",
-                    "player_id": "4035",
-                    "placement": 1
+                    "player_id": "4035"
                 },
                 "4273": {
                     "points": 6.5,
                     "position": "RB",
-                    "player_id": "4273",
-                    "placement": 1
+                    "player_id": "4273"
                 },
                 "3199": {
                     "points": 25.6,
                     "position": "WR",
-                    "player_id": "3199",
-                    "placement": 1
+                    "player_id": "3199"
                 },
                 "1426": {
                     "points": 4.8,
                     "position": "WR",
-                    "player_id": "1426",
-                    "placement": 1
+                    "player_id": "1426"
                 },
                 "4217": {
                     "points": 16.4,
                     "position": "TE",
-                    "player_id": "4217",
-                    "placement": 1
+                    "player_id": "4217"
                 },
                 "3300": {
                     "points": 17.6,
                     "position": "RB",
-                    "player_id": "3300",
-                    "placement": 1
+                    "player_id": "3300"
                 },
                 "2747": {
                     "points": 6.5,
                     "position": "K",
-                    "player_id": "2747",
-                    "placement": 1
+                    "player_id": "2747"
                 }
             },
             "Jack": {
@@ -8070,56 +8017,47 @@
                 "3294": {
                     "points": 11.3,
                     "position": "QB",
-                    "player_id": "3294",
-                    "placement": 3
+                    "player_id": "3294"
                 },
                 "3164": {
                     "points": 11.9,
                     "position": "RB",
-                    "player_id": "3164",
-                    "placement": 3
+                    "player_id": "3164"
                 },
                 "4152": {
                     "points": 17.1,
                     "position": "RB",
-                    "player_id": "4152",
-                    "placement": 3
+                    "player_id": "4152"
                 },
                 "4131": {
                     "points": 15.6,
                     "position": "WR",
-                    "player_id": "4131",
-                    "placement": 3
+                    "player_id": "4131"
                 },
                 "1992": {
                     "points": 8.3,
                     "position": "WR",
-                    "player_id": "1992",
-                    "placement": 3
+                    "player_id": "1992"
                 },
                 "4993": {
                     "points": 23.2,
                     "position": "TE",
-                    "player_id": "4993",
-                    "placement": 3
+                    "player_id": "4993"
                 },
                 "2319": {
                     "points": 19.6,
                     "position": "WR",
-                    "player_id": "2319",
-                    "placement": 3
+                    "player_id": "2319"
                 },
                 "2671": {
                     "points": 4.0,
                     "position": "K",
-                    "player_id": "2671",
-                    "placement": 3
+                    "player_id": "2671"
                 },
                 "PIT": {
                     "points": 14.0,
                     "position": "DEF",
-                    "player_id": "PIT",
-                    "placement": 3
+                    "player_id": "PIT"
                 }
             }
         }
@@ -15693,56 +15631,47 @@
                 "4017": {
                     "points": 16.56,
                     "position": "QB",
-                    "player_id": "4017",
-                    "placement": 3
+                    "player_id": "4017"
                 },
                 "3198": {
                     "points": 35.2,
                     "position": "RB",
-                    "player_id": "3198",
-                    "placement": 3
+                    "player_id": "3198"
                 },
                 "2315": {
                     "points": 4.1,
                     "position": "RB",
-                    "player_id": "2315",
-                    "placement": 3
+                    "player_id": "2315"
                 },
                 "2133": {
                     "points": 21.0,
                     "position": "WR",
-                    "player_id": "2133",
-                    "placement": 3
+                    "player_id": "2133"
                 },
                 "1825": {
                     "points": 6.68,
                     "position": "WR",
-                    "player_id": "1825",
-                    "placement": 3
+                    "player_id": "1825"
                 },
                 "515": {
                     "points": 6.7,
                     "position": "TE",
-                    "player_id": "515",
-                    "placement": 3
+                    "player_id": "515"
                 },
                 "1067": {
                     "points": 6.8,
                     "position": "WR",
-                    "player_id": "1067",
-                    "placement": 3
+                    "player_id": "1067"
                 },
                 "391": {
                     "points": 4.0,
                     "position": "K",
-                    "player_id": "391",
-                    "placement": 3
+                    "player_id": "391"
                 },
                 "PIT": {
                     "points": 14.0,
                     "position": "DEF",
-                    "player_id": "PIT",
-                    "placement": 3
+                    "player_id": "PIT"
                 }
             },
             "Soup": {
@@ -15848,56 +15777,47 @@
                 "4881": {
                     "points": 27.22,
                     "position": "QB",
-                    "player_id": "4881",
-                    "placement": 2
+                    "player_id": "4881"
                 },
                 "4988": {
                     "points": 13.6,
                     "position": "RB",
-                    "player_id": "4988",
-                    "placement": 2
+                    "player_id": "4988"
                 },
                 "4663": {
                     "points": 9.9,
                     "position": "RB",
-                    "player_id": "4663",
-                    "placement": 2
+                    "player_id": "4663"
                 },
                 "3321": {
                     "points": 14.4,
                     "position": "WR",
-                    "player_id": "3321",
-                    "placement": 2
+                    "player_id": "3321"
                 },
                 "538": {
                     "points": 9.6,
                     "position": "WR",
-                    "player_id": "538",
-                    "placement": 2
+                    "player_id": "538"
                 },
                 "1466": {
                     "points": 18.8,
                     "position": "TE",
-                    "player_id": "1466",
-                    "placement": 2
+                    "player_id": "1466"
                 },
                 "6790": {
                     "points": 20.2,
                     "position": "RB",
-                    "player_id": "6790",
-                    "placement": 2
+                    "player_id": "6790"
                 },
                 "4227": {
                     "points": 3.0,
                     "position": "K",
-                    "player_id": "4227",
-                    "placement": 2
+                    "player_id": "4227"
                 },
                 "CLE": {
                     "points": 12.0,
                     "position": "DEF",
-                    "player_id": "CLE",
-                    "placement": 2
+                    "player_id": "CLE"
                 }
             },
             "Billiam": {
@@ -15905,56 +15825,47 @@
                 "4017": {
                     "points": 23.42,
                     "position": "QB",
-                    "player_id": "4017",
-                    "placement": 3
+                    "player_id": "4017"
                 },
                 "3198": {
                     "points": 24.2,
                     "position": "RB",
-                    "player_id": "3198",
-                    "placement": 3
+                    "player_id": "3198"
                 },
                 "6909": {
                     "points": 7.6,
                     "position": "WR",
-                    "player_id": "6909",
-                    "placement": 3
+                    "player_id": "6909"
                 },
                 "2133": {
                     "points": 7.7,
                     "position": "WR",
-                    "player_id": "2133",
-                    "placement": 3
+                    "player_id": "2133"
                 },
                 "1825": {
                     "points": 15.6,
                     "position": "WR",
-                    "player_id": "1825",
-                    "placement": 3
+                    "player_id": "1825"
                 },
                 "515": {
                     "points": 4.4,
                     "position": "TE",
-                    "player_id": "515",
-                    "placement": 3
+                    "player_id": "515"
                 },
                 "1110": {
                     "points": 9.1,
                     "position": "WR",
-                    "player_id": "1110",
-                    "placement": 3
+                    "player_id": "1110"
                 },
                 "7062": {
                     "points": 8.0,
                     "position": "K",
-                    "player_id": "7062",
-                    "placement": 3
+                    "player_id": "7062"
                 },
                 "PIT": {
                     "points": 8.5,
                     "position": "DEF",
-                    "player_id": "PIT",
-                    "placement": 3
+                    "player_id": "PIT"
                 }
             },
             "Mitch": {
@@ -15962,56 +15873,47 @@
                 "96": {
                     "points": 18.32,
                     "position": "QB",
-                    "player_id": "96",
-                    "placement": 1
+                    "player_id": "96"
                 },
                 "6806": {
                     "points": 13.6,
                     "position": "RB",
-                    "player_id": "6806",
-                    "placement": 1
+                    "player_id": "6806"
                 },
                 "2749": {
                     "points": 6.8,
                     "position": "RB",
-                    "player_id": "2749",
-                    "placement": 1
+                    "player_id": "2749"
                 },
                 "1352": {
                     "points": 18.6,
                     "position": "WR",
-                    "player_id": "1352",
-                    "placement": 1
+                    "player_id": "1352"
                 },
                 "5927": {
                     "points": 11.2,
                     "position": "WR",
-                    "player_id": "5927",
-                    "placement": 1
+                    "player_id": "5927"
                 },
                 "6126": {
                     "points": 5.2,
                     "position": "TE",
-                    "player_id": "6126",
-                    "placement": 1
+                    "player_id": "6126"
                 },
                 "6820": {
                     "points": 8.8,
                     "position": "RB",
-                    "player_id": "6820",
-                    "placement": 1
+                    "player_id": "6820"
                 },
                 "5119": {
                     "points": 1.0,
                     "position": "K",
-                    "player_id": "5119",
-                    "placement": 1
+                    "player_id": "5119"
                 },
                 "BUF": {
                     "points": 21.0,
                     "position": "DEF",
-                    "player_id": "BUF",
-                    "placement": 1
+                    "player_id": "BUF"
                 }
             },
             "Luke": {
@@ -16069,56 +15971,47 @@
                 "4881": {
                     "points": 21.32,
                     "position": "QB",
-                    "player_id": "4881",
-                    "placement": 2
+                    "player_id": "4881"
                 },
                 "4988": {
                     "points": 15.1,
                     "position": "RB",
-                    "player_id": "4988",
-                    "placement": 2
+                    "player_id": "4988"
                 },
                 "4663": {
                     "points": 14.3,
                     "position": "RB",
-                    "player_id": "4663",
-                    "placement": 2
+                    "player_id": "4663"
                 },
                 "3321": {
                     "points": 8.5,
                     "position": "WR",
-                    "player_id": "3321",
-                    "placement": 2
+                    "player_id": "3321"
                 },
                 "538": {
                     "points": 11.5,
                     "position": "WR",
-                    "player_id": "538",
-                    "placement": 2
+                    "player_id": "538"
                 },
                 "1466": {
                     "points": 19.3,
                     "position": "TE",
-                    "player_id": "1466",
-                    "placement": 2
+                    "player_id": "1466"
                 },
                 "6790": {
                     "points": 7.0,
                     "position": "RB",
-                    "player_id": "6790",
-                    "placement": 2
+                    "player_id": "6790"
                 },
                 "4227": {
                     "points": 5.5,
                     "position": "K",
-                    "player_id": "4227",
-                    "placement": 2
+                    "player_id": "4227"
                 },
                 "HOU": {
                     "points": -10.0,
                     "position": "DEF",
-                    "player_id": "HOU",
-                    "placement": 2
+                    "player_id": "HOU"
                 }
             },
             "Mitch": {
@@ -16126,56 +16019,47 @@
                 "96": {
                     "points": 24.14,
                     "position": "QB",
-                    "player_id": "96",
-                    "placement": 1
+                    "player_id": "96"
                 },
                 "6806": {
                     "points": 13.7,
                     "position": "RB",
-                    "player_id": "6806",
-                    "placement": 1
+                    "player_id": "6806"
                 },
                 "1408": {
                     "points": 4.4,
                     "position": "RB",
-                    "player_id": "1408",
-                    "placement": 1
+                    "player_id": "1408"
                 },
                 "1352": {
                     "points": 6.9,
                     "position": "WR",
-                    "player_id": "1352",
-                    "placement": 1
+                    "player_id": "1352"
                 },
                 "2319": {
                     "points": 0.0,
                     "position": "WR",
-                    "player_id": "2319",
-                    "placement": 1
+                    "player_id": "2319"
                 },
                 "4993": {
                     "points": 7.4,
                     "position": "TE",
-                    "player_id": "4993",
-                    "placement": 1
+                    "player_id": "4993"
                 },
                 "830": {
                     "points": 8.4,
                     "position": "WR",
-                    "player_id": "830",
-                    "placement": 1
+                    "player_id": "830"
                 },
                 "5119": {
                     "points": 9.5,
                     "position": "K",
-                    "player_id": "5119",
-                    "placement": 1
+                    "player_id": "5119"
                 },
                 "WAS": {
                     "points": 20.0,
                     "position": "DEF",
-                    "player_id": "WAS",
-                    "placement": 1
+                    "player_id": "WAS"
                 }
             },
             "Luke": {
@@ -16231,56 +16115,47 @@
                 "4017": {
                     "points": 25.76,
                     "position": "QB",
-                    "player_id": "4017",
-                    "placement": 3
+                    "player_id": "4017"
                 },
                 "3198": {
                     "points": 9.8,
                     "position": "RB",
-                    "player_id": "3198",
-                    "placement": 3
+                    "player_id": "3198"
                 },
                 "6909": {
                     "points": 2.6,
                     "position": "WR",
-                    "player_id": "6909",
-                    "placement": 3
+                    "player_id": "6909"
                 },
                 "2133": {
                     "points": 37.7,
                     "position": "WR",
-                    "player_id": "2133",
-                    "placement": 3
+                    "player_id": "2133"
                 },
                 "1110": {
                     "points": 7.5,
                     "position": "WR",
-                    "player_id": "1110",
-                    "placement": 3
+                    "player_id": "1110"
                 },
                 "515": {
                     "points": 18.8,
                     "position": "TE",
-                    "player_id": "515",
-                    "placement": 3
+                    "player_id": "515"
                 },
                 "1067": {
                     "points": 3.4,
                     "position": "WR",
-                    "player_id": "1067",
-                    "placement": 3
+                    "player_id": "1067"
                 },
                 "7062": {
                     "points": 3.0,
                     "position": "K",
-                    "player_id": "7062",
-                    "placement": 3
+                    "player_id": "7062"
                 },
                 "PIT": {
                     "points": 12.5,
                     "position": "DEF",
-                    "player_id": "PIT",
-                    "placement": 3
+                    "player_id": "PIT"
                 }
             }
         }
@@ -24427,56 +24302,47 @@
                 "5849": {
                     "points": 11.58,
                     "position": "QB",
-                    "player_id": "5849",
-                    "placement": 1
+                    "player_id": "5849"
                 },
                 "4866": {
                     "points": 7.4,
                     "position": "RB",
-                    "player_id": "4866",
-                    "placement": 1
+                    "player_id": "4866"
                 },
                 "4029": {
                     "points": 10.1,
                     "position": "RB",
-                    "player_id": "4029",
-                    "placement": 1
+                    "player_id": "4029"
                 },
                 "5937": {
                     "points": 7.3,
                     "position": "WR",
-                    "player_id": "5937",
-                    "placement": 1
+                    "player_id": "5937"
                 },
                 "5848": {
                     "points": 9.3,
                     "position": "WR",
-                    "player_id": "5848",
-                    "placement": 1
+                    "player_id": "5848"
                 },
                 "7553": {
                     "points": 9.7,
                     "position": "TE",
-                    "player_id": "7553",
-                    "placement": 1
+                    "player_id": "7553"
                 },
                 "6945": {
                     "points": 15.5,
                     "position": "RB",
-                    "player_id": "6945",
-                    "placement": 1
+                    "player_id": "6945"
                 },
                 "5119": {
                     "points": 3.5,
                     "position": "K",
-                    "player_id": "5119",
-                    "placement": 1
+                    "player_id": "5119"
                 },
                 "PHI": {
                     "points": 11.75,
                     "position": "DEF",
-                    "player_id": "PHI",
-                    "placement": 1
+                    "player_id": "PHI"
                 }
             },
             "Mitch": {
@@ -24484,56 +24350,47 @@
                 "1837": {
                     "points": 12.8,
                     "position": "QB",
-                    "player_id": "1837",
-                    "placement": 2
+                    "player_id": "1837"
                 },
                 "5916": {
                     "points": 3.7,
                     "position": "RB",
-                    "player_id": "5916",
-                    "placement": 2
+                    "player_id": "5916"
                 },
                 "4663": {
                     "points": 16.2,
                     "position": "RB",
-                    "player_id": "4663",
-                    "placement": 2
+                    "player_id": "4663"
                 },
                 "2133": {
                     "points": 13.4,
                     "position": "WR",
-                    "player_id": "2133",
-                    "placement": 2
+                    "player_id": "2133"
                 },
                 "6803": {
                     "points": 4.1,
                     "position": "WR",
-                    "player_id": "6803",
-                    "placement": 2
+                    "player_id": "6803"
                 },
                 "5985": {
                     "points": 10.0,
                     "position": "TE",
-                    "player_id": "5985",
-                    "placement": 2
+                    "player_id": "5985"
                 },
                 "6794": {
                     "points": 12.7,
                     "position": "WR",
-                    "player_id": "6794",
-                    "placement": 2
+                    "player_id": "6794"
                 },
                 "1348": {
                     "points": 2.0,
                     "position": "K",
-                    "player_id": "1348",
-                    "placement": 2
+                    "player_id": "1348"
                 },
                 "MIA": {
                     "points": 15.75,
                     "position": "DEF",
-                    "player_id": "MIA",
-                    "placement": 2
+                    "player_id": "MIA"
                 }
             },
             "Dheeraj": {
@@ -24639,56 +24496,47 @@
                 "5849": {
                     "points": 19.9,
                     "position": "QB",
-                    "player_id": "5849",
-                    "placement": 1
+                    "player_id": "5849"
                 },
                 "4866": {
                     "points": 3.3,
                     "position": "RB",
-                    "player_id": "4866",
-                    "placement": 1
+                    "player_id": "4866"
                 },
                 "5987": {
                     "points": 14.5,
                     "position": "RB",
-                    "player_id": "5987",
-                    "placement": 1
+                    "player_id": "5987"
                 },
                 "5937": {
                     "points": 12.1,
                     "position": "WR",
-                    "player_id": "5937",
-                    "placement": 1
+                    "player_id": "5937"
                 },
                 "536": {
                     "points": 15.1,
                     "position": "WR",
-                    "player_id": "536",
-                    "placement": 1
+                    "player_id": "536"
                 },
                 "7553": {
                     "points": 13.2,
                     "position": "TE",
-                    "player_id": "7553",
-                    "placement": 1
+                    "player_id": "7553"
                 },
                 "6945": {
                     "points": 12.8,
                     "position": "RB",
-                    "player_id": "6945",
-                    "placement": 1
+                    "player_id": "6945"
                 },
                 "7839": {
                     "points": 6.5,
                     "position": "K",
-                    "player_id": "7839",
-                    "placement": 1
+                    "player_id": "7839"
                 },
                 "PHI": {
                     "points": 23.5,
                     "position": "DEF",
-                    "player_id": "PHI",
-                    "placement": 1
+                    "player_id": "PHI"
                 }
             },
             "Davey": {
@@ -24696,56 +24544,47 @@
                 "7538": {
                     "points": 23.18,
                     "position": "QB",
-                    "player_id": "7538",
-                    "placement": 3
+                    "player_id": "7538"
                 },
                 "6813": {
                     "points": 10.8,
                     "position": "RB",
-                    "player_id": "6813",
-                    "placement": 3
+                    "player_id": "6813"
                 },
                 "5892": {
                     "points": 20.1,
                     "position": "RB",
-                    "player_id": "5892",
-                    "placement": 3
+                    "player_id": "5892"
                 },
                 "7564": {
                     "points": 16.0,
                     "position": "WR",
-                    "player_id": "7564",
-                    "placement": 3
+                    "player_id": "7564"
                 },
                 "3321": {
                     "points": 2.9,
                     "position": "WR",
-                    "player_id": "3321",
-                    "placement": 3
+                    "player_id": "3321"
                 },
                 "5857": {
                     "points": 4.5,
                     "position": "TE",
-                    "player_id": "5857",
-                    "placement": 3
+                    "player_id": "5857"
                 },
                 "7670": {
                     "points": 12.8,
                     "position": "WR",
-                    "player_id": "7670",
-                    "placement": 3
+                    "player_id": "7670"
                 },
                 "6083": {
                     "points": 7.0,
                     "position": "K",
-                    "player_id": "6083",
-                    "placement": 3
+                    "player_id": "6083"
                 },
                 "CIN": {
                     "points": 7.0,
                     "position": "DEF",
-                    "player_id": "CIN",
-                    "placement": 3
+                    "player_id": "CIN"
                 }
             },
             "Mitch": {
@@ -24753,50 +24592,42 @@
                 "24": {
                     "points": 13.1,
                     "position": "QB",
-                    "player_id": "24",
-                    "placement": 2
+                    "player_id": "24"
                 },
                 "5916": {
                     "points": 1.7,
                     "position": "RB",
-                    "player_id": "5916",
-                    "placement": 2
+                    "player_id": "5916"
                 },
                 "4962": {
                     "points": 20.0,
                     "position": "RB",
-                    "player_id": "4962",
-                    "placement": 2
+                    "player_id": "4962"
                 },
                 "2133": {
                     "points": 28.4,
                     "position": "WR",
-                    "player_id": "2133",
-                    "placement": 2
+                    "player_id": "2133"
                 },
                 "5859": {
                     "points": 26.0,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 2
+                    "player_id": "5859"
                 },
                 "5985": {
                     "points": 8.7,
                     "position": "TE",
-                    "player_id": "5985",
-                    "placement": 2
+                    "player_id": "5985"
                 },
                 "6794": {
                     "points": 15.6,
                     "position": "WR",
-                    "player_id": "6794",
-                    "placement": 2
+                    "player_id": "6794"
                 },
                 "4195": {
                     "points": 4.5,
                     "position": "K",
-                    "player_id": "4195",
-                    "placement": 2
+                    "player_id": "4195"
                 }
             }
         },
@@ -24854,56 +24685,47 @@
                 "7610": {
                     "points": 19.06,
                     "position": "QB",
-                    "player_id": "7610",
-                    "placement": 3
+                    "player_id": "7610"
                 },
                 "6813": {
                     "points": 17.9,
                     "position": "RB",
-                    "player_id": "6813",
-                    "placement": 3
+                    "player_id": "6813"
                 },
                 "5892": {
                     "points": 19.1,
                     "position": "RB",
-                    "player_id": "5892",
-                    "placement": 3
+                    "player_id": "5892"
                 },
                 "7564": {
                     "points": 50.1,
                     "position": "WR",
-                    "player_id": "7564",
-                    "placement": 3
+                    "player_id": "7564"
                 },
                 "3321": {
                     "points": 7.2,
                     "position": "WR",
-                    "player_id": "3321",
-                    "placement": 3
+                    "player_id": "3321"
                 },
                 "5857": {
                     "points": 18.2,
                     "position": "TE",
-                    "player_id": "5857",
-                    "placement": 3
+                    "player_id": "5857"
                 },
                 "4068": {
                     "points": 13.8,
                     "position": "WR",
-                    "player_id": "4068",
-                    "placement": 3
+                    "player_id": "4068"
                 },
                 "6083": {
                     "points": 1.0,
                     "position": "K",
-                    "player_id": "6083",
-                    "placement": 3
+                    "player_id": "6083"
                 },
                 "TEN": {
                     "points": 16.75,
                     "position": "DEF",
-                    "player_id": "TEN",
-                    "placement": 3
+                    "player_id": "TEN"
                 }
             },
             "Mitch": {
@@ -24911,56 +24733,47 @@
                 "7083": {
                     "points": 11.28,
                     "position": "QB",
-                    "player_id": "7083",
-                    "placement": 2
+                    "player_id": "7083"
                 },
                 "4663": {
                     "points": 18.7,
                     "position": "RB",
-                    "player_id": "4663",
-                    "placement": 2
+                    "player_id": "4663"
                 },
                 "4962": {
                     "points": 17.4,
                     "position": "RB",
-                    "player_id": "4962",
-                    "placement": 2
+                    "player_id": "4962"
                 },
                 "2133": {
                     "points": 25.1,
                     "position": "WR",
-                    "player_id": "2133",
-                    "placement": 2
+                    "player_id": "2133"
                 },
                 "5859": {
                     "points": 5.1,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 2
+                    "player_id": "5859"
                 },
                 "5985": {
                     "points": 1.4,
                     "position": "TE",
-                    "player_id": "5985",
-                    "placement": 2
+                    "player_id": "5985"
                 },
                 "6794": {
                     "points": 8.8,
                     "position": "WR",
-                    "player_id": "6794",
-                    "placement": 2
+                    "player_id": "6794"
                 },
                 "4195": {
                     "points": 7.0,
                     "position": "K",
-                    "player_id": "4195",
-                    "placement": 2
+                    "player_id": "4195"
                 },
                 "MIA": {
                     "points": 2.5,
                     "position": "DEF",
-                    "player_id": "MIA",
-                    "placement": 2
+                    "player_id": "MIA"
                 }
             },
             "Tommy": {
@@ -24968,56 +24781,47 @@
                 "5849": {
                     "points": 22.92,
                     "position": "QB",
-                    "player_id": "5849",
-                    "placement": 1
+                    "player_id": "5849"
                 },
                 "4866": {
                     "points": 10.2,
                     "position": "RB",
-                    "player_id": "4866",
-                    "placement": 1
+                    "player_id": "4866"
                 },
                 "4029": {
                     "points": 2.8,
                     "position": "RB",
-                    "player_id": "4029",
-                    "placement": 1
+                    "player_id": "4029"
                 },
                 "7547": {
                     "points": 31.4,
                     "position": "WR",
-                    "player_id": "7547",
-                    "placement": 1
+                    "player_id": "7547"
                 },
                 "536": {
                     "points": 4.1,
                     "position": "WR",
-                    "player_id": "536",
-                    "placement": 1
+                    "player_id": "536"
                 },
                 "7553": {
                     "points": 7.9,
                     "position": "TE",
-                    "player_id": "7553",
-                    "placement": 1
+                    "player_id": "7553"
                 },
                 "5937": {
                     "points": 13.1,
                     "position": "WR",
-                    "player_id": "5937",
-                    "placement": 1
+                    "player_id": "5937"
                 },
                 "5230": {
                     "points": 7.0,
                     "position": "K",
-                    "player_id": "5230",
-                    "placement": 1
+                    "player_id": "5230"
                 },
                 "IND": {
                     "points": 11.0,
                     "position": "DEF",
-                    "player_id": "IND",
-                    "placement": 1
+                    "player_id": "IND"
                 }
             }
         }
@@ -33255,56 +33059,47 @@
                 "6770": {
                     "points": 23.8,
                     "position": "QB",
-                    "player_id": "6770",
-                    "placement": 1
+                    "player_id": "6770"
                 },
                 "6813": {
                     "points": 1.8,
                     "position": "RB",
-                    "player_id": "6813",
-                    "placement": 1
+                    "player_id": "6813"
                 },
                 "4035": {
                     "points": 11.4,
                     "position": "RB",
-                    "player_id": "4035",
-                    "placement": 1
+                    "player_id": "4035"
                 },
                 "8167": {
                     "points": 6.6,
                     "position": "WR",
-                    "player_id": "8167",
-                    "placement": 1
+                    "player_id": "8167"
                 },
                 "8146": {
                     "points": 11.8,
                     "position": "WR",
-                    "player_id": "8146",
-                    "placement": 1
+                    "player_id": "8146"
                 },
                 "5001": {
                     "points": 2.5,
                     "position": "TE",
-                    "player_id": "5001",
-                    "placement": 1
+                    "player_id": "5001"
                 },
                 "8205": {
                     "points": 8.2,
                     "position": "RB",
-                    "player_id": "8205",
-                    "placement": 1
+                    "player_id": "8205"
                 },
                 "4958": {
                     "points": 8.0,
                     "position": "K",
-                    "player_id": "4958",
-                    "placement": 1
+                    "player_id": "4958"
                 },
                 "BAL": {
                     "points": 11.25,
                     "position": "DEF",
-                    "player_id": "BAL",
-                    "placement": 1
+                    "player_id": "BAL"
                 }
             }
         },
@@ -33362,56 +33157,47 @@
                 "167": {
                     "points": 11.34,
                     "position": "QB",
-                    "player_id": "167",
-                    "placement": 2
+                    "player_id": "167"
                 },
                 "3198": {
                     "points": 17.6,
                     "position": "RB",
-                    "player_id": "3198",
-                    "placement": 2
+                    "player_id": "3198"
                 },
                 "5850": {
                     "points": 5.5,
                     "position": "RB",
-                    "player_id": "5850",
-                    "placement": 2
+                    "player_id": "5850"
                 },
                 "3321": {
                     "points": 12.3,
                     "position": "WR",
-                    "player_id": "3321",
-                    "placement": 2
+                    "player_id": "3321"
                 },
                 "7525": {
                     "points": 27.3,
                     "position": "WR",
-                    "player_id": "7525",
-                    "placement": 2
+                    "player_id": "7525"
                 },
                 "5022": {
                     "points": 8.2,
                     "position": "TE",
-                    "player_id": "5022",
-                    "placement": 2
+                    "player_id": "5022"
                 },
                 "6130": {
                     "points": 19.5,
                     "position": "RB",
-                    "player_id": "6130",
-                    "placement": 2
+                    "player_id": "6130"
                 },
                 "5230": {
                     "points": 3.0,
                     "position": "K",
-                    "player_id": "5230",
-                    "placement": 2
+                    "player_id": "5230"
                 },
                 "TB": {
                     "points": 11.5,
                     "position": "DEF",
-                    "player_id": "TB",
-                    "placement": 2
+                    "player_id": "TB"
                 }
             },
             "Soup": {
@@ -33419,56 +33205,47 @@
                 "4984": {
                     "points": 21.98,
                     "position": "QB",
-                    "player_id": "4984",
-                    "placement": 3
+                    "player_id": "4984"
                 },
                 "6806": {
                     "points": 5.9,
                     "position": "RB",
-                    "player_id": "6806",
-                    "placement": 3
+                    "player_id": "6806"
                 },
                 "4988": {
                     "points": 10.7,
                     "position": "RB",
-                    "player_id": "4988",
-                    "placement": 3
+                    "player_id": "4988"
                 },
                 "6786": {
                     "points": 29.0,
                     "position": "WR",
-                    "player_id": "6786",
-                    "placement": 3
+                    "player_id": "6786"
                 },
                 "4037": {
                     "points": 10.3,
                     "position": "WR",
-                    "player_id": "4037",
-                    "placement": 3
+                    "player_id": "4037"
                 },
                 "2505": {
                     "points": 7.8,
                     "position": "TE",
-                    "player_id": "2505",
-                    "placement": 3
+                    "player_id": "2505"
                 },
                 "1476": {
                     "points": 6.5,
                     "position": "RB",
-                    "player_id": "1476",
-                    "placement": 3
+                    "player_id": "1476"
                 },
                 "7839": {
                     "points": 0.0,
                     "position": "K",
-                    "player_id": "7839",
-                    "placement": 3
+                    "player_id": "7839"
                 },
                 "CLE": {
                     "points": 9.75,
                     "position": "DEF",
-                    "player_id": "CLE",
-                    "placement": 3
+                    "player_id": "CLE"
                 }
             },
             "Tommy": {
@@ -33476,56 +33253,47 @@
                 "6770": {
                     "points": 23.5,
                     "position": "QB",
-                    "player_id": "6770",
-                    "placement": 1
+                    "player_id": "6770"
                 },
                 "2161": {
                     "points": 11.3,
                     "position": "RB",
-                    "player_id": "2161",
-                    "placement": 1
+                    "player_id": "2161"
                 },
                 "4035": {
                     "points": 18.0,
                     "position": "RB",
-                    "player_id": "4035",
-                    "placement": 1
+                    "player_id": "4035"
                 },
                 "8146": {
                     "points": 3.0,
                     "position": "WR",
-                    "player_id": "8146",
-                    "placement": 1
+                    "player_id": "8146"
                 },
                 "6801": {
                     "points": 22.8,
                     "position": "WR",
-                    "player_id": "6801",
-                    "placement": 1
+                    "player_id": "6801"
                 },
                 "4381": {
                     "points": 11.6,
                     "position": "TE",
-                    "player_id": "4381",
-                    "placement": 1
+                    "player_id": "4381"
                 },
                 "8167": {
                     "points": 7.9,
                     "position": "WR",
-                    "player_id": "8167",
-                    "placement": 1
+                    "player_id": "8167"
                 },
                 "4958": {
                     "points": 11.0,
                     "position": "K",
-                    "player_id": "4958",
-                    "placement": 1
+                    "player_id": "4958"
                 },
                 "BAL": {
                     "points": 10.0,
                     "position": "DEF",
-                    "player_id": "BAL",
-                    "placement": 1
+                    "player_id": "BAL"
                 }
             }
         },
@@ -33583,56 +33351,47 @@
                 "4984": {
                     "points": 2.72,
                     "position": "QB",
-                    "player_id": "4984",
-                    "placement": 3
+                    "player_id": "4984"
                 },
                 "6806": {
                     "points": 9.3,
                     "position": "RB",
-                    "player_id": "6806",
-                    "placement": 3
+                    "player_id": "6806"
                 },
                 "4988": {
                     "points": 12.1,
                     "position": "RB",
-                    "player_id": "4988",
-                    "placement": 3
+                    "player_id": "4988"
                 },
                 "6786": {
                     "points": 15.5,
                     "position": "WR",
-                    "player_id": "6786",
-                    "placement": 3
+                    "player_id": "6786"
                 },
                 "4037": {
                     "points": 16.5,
                     "position": "WR",
-                    "player_id": "4037",
-                    "placement": 3
+                    "player_id": "4037"
                 },
                 "2505": {
                     "points": 14.7,
                     "position": "TE",
-                    "player_id": "2505",
-                    "placement": 3
+                    "player_id": "2505"
                 },
                 "1476": {
                     "points": 9.2,
                     "position": "RB",
-                    "player_id": "1476",
-                    "placement": 3
+                    "player_id": "1476"
                 },
                 "7839": {
                     "points": 0.5,
                     "position": "K",
-                    "player_id": "7839",
-                    "placement": 3
+                    "player_id": "7839"
                 },
                 "DAL": {
                     "points": 13.0,
                     "position": "DEF",
-                    "player_id": "DAL",
-                    "placement": 3
+                    "player_id": "DAL"
                 }
             },
             "Tommy": {
@@ -33640,56 +33399,47 @@
                 "6770": {
                     "points": 6.28,
                     "position": "QB",
-                    "player_id": "6770",
-                    "placement": 1
+                    "player_id": "6770"
                 },
                 "2161": {
                     "points": 20.1,
                     "position": "RB",
-                    "player_id": "2161",
-                    "placement": 1
+                    "player_id": "2161"
                 },
                 "4035": {
                     "points": 8.5,
                     "position": "RB",
-                    "player_id": "4035",
-                    "placement": 1
+                    "player_id": "4035"
                 },
                 "8146": {
                     "points": 3.3,
                     "position": "WR",
-                    "player_id": "8146",
-                    "placement": 1
+                    "player_id": "8146"
                 },
                 "6801": {
                     "points": 1.8,
                     "position": "WR",
-                    "player_id": "6801",
-                    "placement": 1
+                    "player_id": "6801"
                 },
                 "5001": {
                     "points": 21.1,
                     "position": "TE",
-                    "player_id": "5001",
-                    "placement": 1
+                    "player_id": "5001"
                 },
                 "8205": {
                     "points": 11.9,
                     "position": "RB",
-                    "player_id": "8205",
-                    "placement": 1
+                    "player_id": "8205"
                 },
                 "5230": {
                     "points": 7.0,
                     "position": "K",
-                    "player_id": "5230",
-                    "placement": 1
+                    "player_id": "5230"
                 },
                 "NYG": {
                     "points": 18.25,
                     "position": "DEF",
-                    "player_id": "NYG",
-                    "placement": 1
+                    "player_id": "NYG"
                 }
             },
             "Benz": {
@@ -33697,56 +33447,47 @@
                 "6011": {
                     "points": 10.96,
                     "position": "QB",
-                    "player_id": "6011",
-                    "placement": 2
+                    "player_id": "6011"
                 },
                 "8123": {
                     "points": 6.3,
                     "position": "RB",
-                    "player_id": "8123",
-                    "placement": 2
+                    "player_id": "8123"
                 },
                 "5850": {
                     "points": 17.5,
                     "position": "RB",
-                    "player_id": "5850",
-                    "placement": 2
+                    "player_id": "5850"
                 },
                 "3321": {
                     "points": 13.7,
                     "position": "WR",
-                    "player_id": "3321",
-                    "placement": 2
+                    "player_id": "3321"
                 },
                 "7525": {
                     "points": 16.0,
                     "position": "WR",
-                    "player_id": "7525",
-                    "placement": 2
+                    "player_id": "7525"
                 },
                 "5022": {
                     "points": 6.0,
                     "position": "TE",
-                    "player_id": "5022",
-                    "placement": 2
+                    "player_id": "5022"
                 },
                 "6783": {
                     "points": 7.3,
                     "position": "WR",
-                    "player_id": "6783",
-                    "placement": 2
+                    "player_id": "6783"
                 },
                 "503": {
                     "points": 4.5,
                     "position": "K",
-                    "player_id": "503",
-                    "placement": 2
+                    "player_id": "503"
                 },
                 "TB": {
                     "points": 9.5,
                     "position": "DEF",
-                    "player_id": "TB",
-                    "placement": 2
+                    "player_id": "TB"
                 }
             }
         }
@@ -41893,56 +41634,47 @@
                 "4984": {
                     "points": 16.16,
                     "position": "QB",
-                    "player_id": "4984",
-                    "placement": 3
+                    "player_id": "4984"
                 },
                 "9511": {
                     "points": 9.8,
                     "position": "RB",
-                    "player_id": "9511",
-                    "placement": 3
+                    "player_id": "9511"
                 },
                 "9226": {
                     "points": 7.7,
                     "position": "RB",
-                    "player_id": "9226",
-                    "placement": 3
+                    "player_id": "9226"
                 },
                 "5859": {
                     "points": 8.1,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 3
+                    "player_id": "5859"
                 },
                 "6803": {
                     "points": 5.2,
                     "position": "WR",
-                    "player_id": "6803",
-                    "placement": 3
+                    "player_id": "6803"
                 },
                 "5844": {
                     "points": 9.3,
                     "position": "TE",
-                    "player_id": "5844",
-                    "placement": 3
+                    "player_id": "5844"
                 },
                 "6790": {
                     "points": 8.5,
                     "position": "RB",
-                    "player_id": "6790",
-                    "placement": 3
+                    "player_id": "6790"
                 },
                 "4195": {
                     "points": 2.5,
                     "position": "K",
-                    "player_id": "4195",
-                    "placement": 3
+                    "player_id": "4195"
                 },
                 "MIA": {
                     "points": 28.0,
                     "position": "DEF",
-                    "player_id": "MIA",
-                    "placement": 3
+                    "player_id": "MIA"
                 }
             },
             "Tommy": {
@@ -41950,56 +41682,47 @@
                 "6904": {
                     "points": 21.92,
                     "position": "QB",
-                    "player_id": "6904",
-                    "placement": 1
+                    "player_id": "6904"
                 },
                 "8139": {
                     "points": 16.0,
                     "position": "RB",
-                    "player_id": "8139",
-                    "placement": 1
+                    "player_id": "8139"
                 },
                 "4137": {
                     "points": 16.4,
                     "position": "RB",
-                    "player_id": "4137",
-                    "placement": 1
+                    "player_id": "4137"
                 },
                 "7547": {
                     "points": 20.7,
                     "position": "WR",
-                    "player_id": "7547",
-                    "placement": 1
+                    "player_id": "7547"
                 },
                 "10222": {
                     "points": 14.2,
                     "position": "WR",
-                    "player_id": "10222",
-                    "placement": 1
+                    "player_id": "10222"
                 },
                 "1466": {
                     "points": 5.3,
                     "position": "TE",
-                    "player_id": "1466",
-                    "placement": 1
+                    "player_id": "1466"
                 },
                 "8138": {
                     "points": 35.1,
                     "position": "RB",
-                    "player_id": "8138",
-                    "placement": 1
+                    "player_id": "8138"
                 },
                 "11058": {
                     "points": 6.0,
                     "position": "K",
-                    "player_id": "11058",
-                    "placement": 1
+                    "player_id": "11058"
                 },
                 "KC": {
                     "points": 14.75,
                     "position": "DEF",
-                    "player_id": "KC",
-                    "placement": 1
+                    "player_id": "KC"
                 }
             },
             "Benz": {
@@ -42057,56 +41780,47 @@
                 "4046": {
                     "points": 15.2,
                     "position": "QB",
-                    "player_id": "4046",
-                    "placement": 2
+                    "player_id": "4046"
                 },
                 "5967": {
                     "points": 4.8,
                     "position": "RB",
-                    "player_id": "5967",
-                    "placement": 2
+                    "player_id": "5967"
                 },
                 "4663": {
                     "points": 10.1,
                     "position": "RB",
-                    "player_id": "4663",
-                    "placement": 2
+                    "player_id": "4663"
                 },
                 "4981": {
                     "points": 22.8,
                     "position": "WR",
-                    "player_id": "4981",
-                    "placement": 2
+                    "player_id": "4981"
                 },
                 "6794": {
                     "points": 23.1,
                     "position": "WR",
-                    "player_id": "6794",
-                    "placement": 2
+                    "player_id": "6794"
                 },
                 "4217": {
                     "points": 16.1,
                     "position": "TE",
-                    "player_id": "4217",
-                    "placement": 2
+                    "player_id": "4217"
                 },
                 "8205": {
                     "points": 9.1,
                     "position": "RB",
-                    "player_id": "8205",
-                    "placement": 2
+                    "player_id": "8205"
                 },
                 "1264": {
                     "points": 9.0,
                     "position": "K",
-                    "player_id": "1264",
-                    "placement": 2
+                    "player_id": "1264"
                 },
                 "NYJ": {
                     "points": 12.75,
                     "position": "DEF",
-                    "player_id": "NYJ",
-                    "placement": 2
+                    "player_id": "NYJ"
                 }
             },
             "Ty": {
@@ -42114,56 +41828,47 @@
                 "4984": {
                     "points": 24.98,
                     "position": "QB",
-                    "player_id": "4984",
-                    "placement": 3
+                    "player_id": "4984"
                 },
                 "6790": {
                     "points": 15.2,
                     "position": "RB",
-                    "player_id": "6790",
-                    "placement": 3
+                    "player_id": "6790"
                 },
                 "9226": {
                     "points": 3.6,
                     "position": "RB",
-                    "player_id": "9226",
-                    "placement": 3
+                    "player_id": "9226"
                 },
                 "5859": {
                     "points": 11.0,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 3
+                    "player_id": "5859"
                 },
                 "6803": {
                     "points": 14.3,
                     "position": "WR",
-                    "player_id": "6803",
-                    "placement": 3
+                    "player_id": "6803"
                 },
                 "5844": {
                     "points": 7.8,
                     "position": "TE",
-                    "player_id": "5844",
-                    "placement": 3
+                    "player_id": "5844"
                 },
                 "5248": {
                     "points": 13.5,
                     "position": "RB",
-                    "player_id": "5248",
-                    "placement": 3
+                    "player_id": "5248"
                 },
                 "4195": {
                     "points": 10.5,
                     "position": "K",
-                    "player_id": "4195",
-                    "placement": 3
+                    "player_id": "4195"
                 },
                 "PHI": {
                     "points": 11.75,
                     "position": "DEF",
-                    "player_id": "PHI",
-                    "placement": 3
+                    "player_id": "PHI"
                 }
             },
             "Sam": {
@@ -42219,56 +41924,47 @@
                 "6904": {
                     "points": 21.94,
                     "position": "QB",
-                    "player_id": "6904",
-                    "placement": 1
+                    "player_id": "6904"
                 },
                 "8138": {
                     "points": 4.0,
                     "position": "RB",
-                    "player_id": "8138",
-                    "placement": 1
+                    "player_id": "8138"
                 },
                 "6813": {
                     "points": 10.3,
                     "position": "RB",
-                    "player_id": "6813",
-                    "placement": 1
+                    "player_id": "6813"
                 },
                 "8144": {
                     "points": 18.8,
                     "position": "WR",
-                    "player_id": "8144",
-                    "placement": 1
+                    "player_id": "8144"
                 },
                 "7547": {
                     "points": 22.6,
                     "position": "WR",
-                    "player_id": "7547",
-                    "placement": 1
+                    "player_id": "7547"
                 },
                 "1466": {
                     "points": 6.9,
                     "position": "TE",
-                    "player_id": "1466",
-                    "placement": 1
+                    "player_id": "1466"
                 },
                 "4137": {
                     "points": 19.7,
                     "position": "RB",
-                    "player_id": "4137",
-                    "placement": 1
+                    "player_id": "4137"
                 },
                 "3451": {
                     "points": 1.0,
                     "position": "K",
-                    "player_id": "3451",
-                    "placement": 1
+                    "player_id": "3451"
                 },
                 "KC": {
                     "points": 10.25,
                     "position": "DEF",
-                    "player_id": "KC",
-                    "placement": 1
+                    "player_id": "KC"
                 }
             }
         },
@@ -42278,56 +41974,47 @@
                 "4046": {
                     "points": 12.5,
                     "position": "QB",
-                    "player_id": "4046",
-                    "placement": 2
+                    "player_id": "4046"
                 },
                 "5967": {
                     "points": 5.4,
                     "position": "RB",
-                    "player_id": "5967",
-                    "placement": 2
+                    "player_id": "5967"
                 },
                 "4663": {
                     "points": 4.0,
                     "position": "RB",
-                    "player_id": "4663",
-                    "placement": 2
+                    "player_id": "4663"
                 },
                 "4981": {
                     "points": 5.9,
                     "position": "WR",
-                    "player_id": "4981",
-                    "placement": 2
+                    "player_id": "4981"
                 },
                 "6794": {
                     "points": 8.4,
                     "position": "WR",
-                    "player_id": "6794",
-                    "placement": 2
+                    "player_id": "6794"
                 },
                 "4217": {
                     "points": 4.4,
                     "position": "TE",
-                    "player_id": "4217",
-                    "placement": 2
+                    "player_id": "4217"
                 },
                 "8205": {
                     "points": 26.0,
                     "position": "RB",
-                    "player_id": "8205",
-                    "placement": 2
+                    "player_id": "8205"
                 },
                 "1264": {
                     "points": 4.0,
                     "position": "K",
-                    "player_id": "1264",
-                    "placement": 2
+                    "player_id": "1264"
                 },
                 "NYJ": {
                     "points": 11.0,
                     "position": "DEF",
-                    "player_id": "NYJ",
-                    "placement": 2
+                    "player_id": "NYJ"
                 }
             },
             "Tommy": {
@@ -42335,56 +42022,47 @@
                 "6904": {
                     "points": 19.18,
                     "position": "QB",
-                    "player_id": "6904",
-                    "placement": 1
+                    "player_id": "6904"
                 },
                 "8138": {
                     "points": 4.9,
                     "position": "RB",
-                    "player_id": "8138",
-                    "placement": 1
+                    "player_id": "8138"
                 },
                 "6813": {
                     "points": 15.4,
                     "position": "RB",
-                    "player_id": "6813",
-                    "placement": 1
+                    "player_id": "6813"
                 },
                 "7547": {
                     "points": 19.1,
                     "position": "WR",
-                    "player_id": "7547",
-                    "placement": 1
+                    "player_id": "7547"
                 },
                 "8144": {
                     "points": 4.1,
                     "position": "WR",
-                    "player_id": "8144",
-                    "placement": 1
+                    "player_id": "8144"
                 },
                 "1466": {
                     "points": 3.1,
                     "position": "TE",
-                    "player_id": "1466",
-                    "placement": 1
+                    "player_id": "1466"
                 },
                 "8139": {
                     "points": 13.1,
                     "position": "RB",
-                    "player_id": "8139",
-                    "placement": 1
+                    "player_id": "8139"
                 },
                 "6083": {
                     "points": 8.0,
                     "position": "K",
-                    "player_id": "6083",
-                    "placement": 1
+                    "player_id": "6083"
                 },
                 "KC": {
                     "points": 13.75,
                     "position": "DEF",
-                    "player_id": "KC",
-                    "placement": 1
+                    "player_id": "KC"
                 }
             },
             "Sam": {
@@ -42440,56 +42118,47 @@
                 "4984": {
                     "points": 18.16,
                     "position": "QB",
-                    "player_id": "4984",
-                    "placement": 3
+                    "player_id": "4984"
                 },
                 "6790": {
                     "points": 7.1,
                     "position": "RB",
-                    "player_id": "6790",
-                    "placement": 3
+                    "player_id": "6790"
                 },
                 "9226": {
                     "points": 21.7,
                     "position": "RB",
-                    "player_id": "9226",
-                    "placement": 3
+                    "player_id": "9226"
                 },
                 "5859": {
                     "points": 7.3,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 3
+                    "player_id": "5859"
                 },
                 "6803": {
                     "points": 20.9,
                     "position": "WR",
-                    "player_id": "6803",
-                    "placement": 3
+                    "player_id": "6803"
                 },
                 "9484": {
                     "points": 7.8,
                     "position": "TE",
-                    "player_id": "9484",
-                    "placement": 3
+                    "player_id": "9484"
                 },
                 "7608": {
                     "points": 19.9,
                     "position": "RB",
-                    "player_id": "7608",
-                    "placement": 3
+                    "player_id": "7608"
                 },
                 "4195": {
                     "points": 5.0,
                     "position": "K",
-                    "player_id": "4195",
-                    "placement": 3
+                    "player_id": "4195"
                 },
                 "PHI": {
                     "points": 8.0,
                     "position": "DEF",
-                    "player_id": "PHI",
-                    "placement": 3
+                    "player_id": "PHI"
                 }
             }
         }
@@ -50732,56 +50401,47 @@
                 "4881": {
                     "points": 36.6,
                     "position": "QB",
-                    "player_id": "4881",
-                    "placement": 3
+                    "player_id": "4881"
                 },
                 "4035": {
                     "points": 15.0,
                     "position": "RB",
-                    "player_id": "4035",
-                    "placement": 3
+                    "player_id": "4035"
                 },
                 "11651": {
                     "points": 9.5,
                     "position": "RB",
-                    "player_id": "11651",
-                    "placement": 3
+                    "player_id": "11651"
                 },
                 "3321": {
                     "points": 4.6,
                     "position": "WR",
-                    "player_id": "3321",
-                    "placement": 3
+                    "player_id": "3321"
                 },
                 "9488": {
                     "points": 13.3,
                     "position": "WR",
-                    "player_id": "9488",
-                    "placement": 3
+                    "player_id": "9488"
                 },
                 "4144": {
                     "points": 15.3,
                     "position": "TE",
-                    "player_id": "4144",
-                    "placement": 3
+                    "player_id": "4144"
                 },
                 "8136": {
                     "points": 13.6,
                     "position": "RB",
-                    "player_id": "8136",
-                    "placement": 3
+                    "player_id": "8136"
                 },
                 "8259": {
                     "points": 4.0,
                     "position": "K",
-                    "player_id": "8259",
-                    "placement": 3
+                    "player_id": "8259"
                 },
                 "DEN": {
                     "points": 22.0,
                     "position": "DEF",
-                    "player_id": "DEN",
-                    "placement": 3
+                    "player_id": "DEN"
                 }
             }
         },
@@ -50791,56 +50451,47 @@
                 "6770": {
                     "points": 22.48,
                     "position": "QB",
-                    "player_id": "6770",
-                    "placement": 2
+                    "player_id": "6770"
                 },
                 "8150": {
                     "points": 19.4,
                     "position": "RB",
-                    "player_id": "8150",
-                    "placement": 2
+                    "player_id": "8150"
                 },
                 "4137": {
                     "points": 24.6,
                     "position": "RB",
-                    "player_id": "4137",
-                    "placement": 2
+                    "player_id": "4137"
                 },
                 "7564": {
                     "points": 19.4,
                     "position": "WR",
-                    "player_id": "7564",
-                    "placement": 2
+                    "player_id": "7564"
                 },
                 "8112": {
                     "points": 8.4,
                     "position": "WR",
-                    "player_id": "8112",
-                    "placement": 2
+                    "player_id": "8112"
                 },
                 "5012": {
                     "points": 11.8,
                     "position": "TE",
-                    "player_id": "5012",
-                    "placement": 2
+                    "player_id": "5012"
                 },
                 "5927": {
                     "points": 14.5,
                     "position": "WR",
-                    "player_id": "5927",
-                    "placement": 2
+                    "player_id": "5927"
                 },
                 "1945": {
                     "points": 5.5,
                     "position": "K",
-                    "player_id": "1945",
-                    "placement": 2
+                    "player_id": "1945"
                 },
                 "LAC": {
                     "points": 3.5,
                     "position": "DEF",
-                    "player_id": "LAC",
-                    "placement": 2
+                    "player_id": "LAC"
                 }
             },
             "Benz": {
@@ -50848,56 +50499,47 @@
                 "4881": {
                     "points": 18.98,
                     "position": "QB",
-                    "player_id": "4881",
-                    "placement": 3
+                    "player_id": "4881"
                 },
                 "8143": {
                     "points": 21.6,
                     "position": "RB",
-                    "player_id": "8143",
-                    "placement": 3
+                    "player_id": "8143"
                 },
                 "8136": {
                     "points": 8.0,
                     "position": "RB",
-                    "player_id": "8136",
-                    "placement": 3
+                    "player_id": "8136"
                 },
                 "4981": {
                     "points": 15.3,
                     "position": "WR",
-                    "player_id": "4981",
-                    "placement": 3
+                    "player_id": "4981"
                 },
                 "9488": {
                     "points": 20.0,
                     "position": "WR",
-                    "player_id": "9488",
-                    "placement": 3
+                    "player_id": "9488"
                 },
                 "4144": {
                     "points": 9.2,
                     "position": "TE",
-                    "player_id": "4144",
-                    "placement": 3
+                    "player_id": "4144"
                 },
                 "3321": {
                     "points": 10.4,
                     "position": "WR",
-                    "player_id": "3321",
-                    "placement": 3
+                    "player_id": "3321"
                 },
                 "8259": {
                     "points": 7.5,
                     "position": "K",
-                    "player_id": "8259",
-                    "placement": 3
+                    "player_id": "8259"
                 },
                 "PHI": {
                     "points": 11.0,
                     "position": "DEF",
-                    "player_id": "PHI",
-                    "placement": 3
+                    "player_id": "PHI"
                 }
             },
             "Anthony": {
@@ -50953,56 +50595,47 @@
                 "6904": {
                     "points": 4.54,
                     "position": "QB",
-                    "player_id": "6904",
-                    "placement": 1
+                    "player_id": "6904"
                 },
                 "6813": {
                     "points": 39.8,
                     "position": "RB",
-                    "player_id": "6813",
-                    "placement": 1
+                    "player_id": "6813"
                 },
                 "4199": {
                     "points": 10.8,
                     "position": "RB",
-                    "player_id": "4199",
-                    "placement": 1
+                    "player_id": "4199"
                 },
                 "9493": {
                     "points": 9.6,
                     "position": "WR",
-                    "player_id": "9493",
-                    "placement": 1
+                    "player_id": "9493"
                 },
                 "5045": {
                     "points": 7.5,
                     "position": "WR",
-                    "player_id": "5045",
-                    "placement": 1
+                    "player_id": "5045"
                 },
                 "4217": {
                     "points": 14.6,
                     "position": "TE",
-                    "player_id": "4217",
-                    "placement": 1
+                    "player_id": "4217"
                 },
                 "7594": {
                     "points": 30.5,
                     "position": "RB",
-                    "player_id": "7594",
-                    "placement": 1
+                    "player_id": "7594"
                 },
                 "10937": {
                     "points": 1.5,
                     "position": "K",
-                    "player_id": "10937",
-                    "placement": 1
+                    "player_id": "10937"
                 },
                 "DET": {
                     "points": 9.0,
                     "position": "DEF",
-                    "player_id": "DET",
-                    "placement": 1
+                    "player_id": "DET"
                 }
             }
         },
@@ -51012,56 +50645,47 @@
                 "6770": {
                     "points": 36.98,
                     "position": "QB",
-                    "player_id": "6770",
-                    "placement": 2
+                    "player_id": "6770"
                 },
                 "8150": {
                     "points": 14.7,
                     "position": "RB",
-                    "player_id": "8150",
-                    "placement": 2
+                    "player_id": "8150"
                 },
                 "4137": {
                     "points": 1.8,
                     "position": "RB",
-                    "player_id": "4137",
-                    "placement": 2
+                    "player_id": "4137"
                 },
                 "7564": {
                     "points": 14.7,
                     "position": "WR",
-                    "player_id": "7564",
-                    "placement": 2
+                    "player_id": "7564"
                 },
                 "5927": {
                     "points": 1.0,
                     "position": "WR",
-                    "player_id": "5927",
-                    "placement": 2
+                    "player_id": "5927"
                 },
                 "5012": {
                     "points": 13.8,
                     "position": "TE",
-                    "player_id": "5012",
-                    "placement": 2
+                    "player_id": "5012"
                 },
                 "8112": {
                     "points": 14.1,
                     "position": "WR",
-                    "player_id": "8112",
-                    "placement": 2
+                    "player_id": "8112"
                 },
                 "1945": {
                     "points": 2.5,
                     "position": "K",
-                    "player_id": "1945",
-                    "placement": 2
+                    "player_id": "1945"
                 },
                 "LAC": {
                     "points": 15.5,
                     "position": "DEF",
-                    "player_id": "LAC",
-                    "placement": 2
+                    "player_id": "LAC"
                 }
             },
             "Sach": {
@@ -51069,44 +50693,37 @@
                 "421": {
                     "points": 9.16,
                     "position": "QB",
-                    "player_id": "421",
-                    "placement": 1
+                    "player_id": "421"
                 },
                 "6813": {
                     "points": 26.6,
                     "position": "RB",
-                    "player_id": "6813",
-                    "placement": 1
+                    "player_id": "6813"
                 },
                 "4199": {
                     "points": 9.7,
                     "position": "RB",
-                    "player_id": "4199",
-                    "placement": 1
+                    "player_id": "4199"
                 },
                 "9493": {
                     "points": 17.9,
                     "position": "WR",
-                    "player_id": "9493",
-                    "placement": 1
+                    "player_id": "9493"
                 },
                 "5045": {
                     "points": 14.0,
                     "position": "WR",
-                    "player_id": "5045",
-                    "placement": 1
+                    "player_id": "5045"
                 },
                 "6801": {
                     "points": 35.1,
                     "position": "WR",
-                    "player_id": "6801",
-                    "placement": 1
+                    "player_id": "6801"
                 },
                 "MIA": {
                     "points": 13.75,
                     "position": "DEF",
-                    "player_id": "MIA",
-                    "placement": 1
+                    "player_id": "MIA"
                 }
             },
             "Anthony": {
@@ -51162,56 +50779,47 @@
                 "4881": {
                     "points": 29.42,
                     "position": "QB",
-                    "player_id": "4881",
-                    "placement": 3
+                    "player_id": "4881"
                 },
                 "8136": {
                     "points": 3.9,
                     "position": "RB",
-                    "player_id": "8136",
-                    "placement": 3
+                    "player_id": "8136"
                 },
                 "8143": {
                     "points": 2.2,
                     "position": "RB",
-                    "player_id": "8143",
-                    "placement": 3
+                    "player_id": "8143"
                 },
                 "4981": {
                     "points": 11.6,
                     "position": "WR",
-                    "player_id": "4981",
-                    "placement": 3
+                    "player_id": "4981"
                 },
                 "9488": {
                     "points": 4.7,
                     "position": "WR",
-                    "player_id": "9488",
-                    "placement": 3
+                    "player_id": "9488"
                 },
                 "4144": {
                     "points": 10.1,
                     "position": "TE",
-                    "player_id": "4144",
-                    "placement": 3
+                    "player_id": "4144"
                 },
                 "11651": {
                     "points": 11.9,
                     "position": "RB",
-                    "player_id": "11651",
-                    "placement": 3
+                    "player_id": "11651"
                 },
                 "8259": {
                     "points": 10.5,
                     "position": "K",
-                    "player_id": "8259",
-                    "placement": 3
+                    "player_id": "8259"
                 },
                 "PHI": {
                     "points": 23.25,
                     "position": "DEF",
-                    "player_id": "PHI",
-                    "placement": 3
+                    "player_id": "PHI"
                 }
             }
         }
@@ -60155,62 +59763,52 @@
                 "4892": {
                     "points": 19.18,
                     "position": "QB",
-                    "player_id": "4892",
-                    "placement": 3
+                    "player_id": "4892"
                 },
                 "9226": {
                     "points": 15.7,
                     "position": "RB",
-                    "player_id": "9226",
-                    "placement": 3
+                    "player_id": "9226"
                 },
                 "8150": {
                     "points": 21.3,
                     "position": "RB",
-                    "player_id": "8150",
-                    "placement": 3
+                    "player_id": "8150"
                 },
                 "9488": {
                     "points": 14.8,
                     "position": "WR",
-                    "player_id": "9488",
-                    "placement": 3
+                    "player_id": "9488"
                 },
                 "2216": {
                     "points": 16.2,
                     "position": "WR",
-                    "player_id": "2216",
-                    "placement": 3
+                    "player_id": "2216"
                 },
                 "8110": {
                     "points": 2.6,
                     "position": "TE",
-                    "player_id": "8110",
-                    "placement": 3
+                    "player_id": "8110"
                 },
                 "11586": {
                     "points": 13.1,
                     "position": "RB",
-                    "player_id": "11586",
-                    "placement": 3
+                    "player_id": "11586"
                 },
                 "10232": {
                     "points": 13.9,
                     "position": "WR",
-                    "player_id": "10232",
-                    "placement": 3
+                    "player_id": "10232"
                 },
                 "11539": {
                     "points": 5.5,
                     "position": "K",
-                    "player_id": "11539",
-                    "placement": 3
+                    "player_id": "11539"
                 },
                 "DAL": {
                     "points": 3.5,
                     "position": "DEF",
-                    "player_id": "DAL",
-                    "placement": 3
+                    "player_id": "DAL"
                 }
             },
             "Benz": {
@@ -60379,62 +59977,52 @@
                 "4892": {
                     "points": 12.7,
                     "position": "QB",
-                    "player_id": "4892",
-                    "placement": 3
+                    "player_id": "4892"
                 },
                 "9226": {
                     "points": 16.5,
                     "position": "RB",
-                    "player_id": "9226",
-                    "placement": 3
+                    "player_id": "9226"
                 },
                 "8150": {
                     "points": 10.0,
                     "position": "RB",
-                    "player_id": "8150",
-                    "placement": 3
+                    "player_id": "8150"
                 },
                 "9488": {
                     "points": 19.6,
                     "position": "WR",
-                    "player_id": "9488",
-                    "placement": 3
+                    "player_id": "9488"
                 },
                 "2216": {
                     "points": 11.6,
                     "position": "WR",
-                    "player_id": "2216",
-                    "placement": 3
+                    "player_id": "2216"
                 },
                 "6865": {
                     "points": 3.1,
                     "position": "TE",
-                    "player_id": "6865",
-                    "placement": 3
+                    "player_id": "6865"
                 },
                 "11628": {
                     "points": 1.9,
                     "position": "WR",
-                    "player_id": "11628",
-                    "placement": 3
+                    "player_id": "11628"
                 },
                 "10232": {
                     "points": 12.2,
                     "position": "WR",
-                    "player_id": "10232",
-                    "placement": 3
+                    "player_id": "10232"
                 },
                 "11539": {
                     "points": 3.5,
                     "position": "K",
-                    "player_id": "11539",
-                    "placement": 3
+                    "player_id": "11539"
                 },
                 "CHI": {
                     "points": 8.0,
                     "position": "DEF",
-                    "player_id": "CHI",
-                    "placement": 3
+                    "player_id": "CHI"
                 }
             },
             "Ty": {
@@ -60442,62 +60030,52 @@
                 "6804": {
                     "points": 2.28,
                     "position": "QB",
-                    "player_id": "6804",
-                    "placement": 1
+                    "player_id": "6804"
                 },
                 "7543": {
                     "points": 14.6,
                     "position": "RB",
-                    "player_id": "7543",
-                    "placement": 1
+                    "player_id": "7543"
                 },
                 "12512": {
                     "points": 7.6,
                     "position": "RB",
-                    "player_id": "12512",
-                    "placement": 1
+                    "player_id": "12512"
                 },
                 "6786": {
                     "points": 8.1,
                     "position": "WR",
-                    "player_id": "6786",
-                    "placement": 1
+                    "player_id": "6786"
                 },
                 "7564": {
                     "points": 15.4,
                     "position": "WR",
-                    "player_id": "7564",
-                    "placement": 1
+                    "player_id": "7564"
                 },
                 "5012": {
                     "points": 3.4,
                     "position": "TE",
-                    "player_id": "5012",
-                    "placement": 1
+                    "player_id": "5012"
                 },
                 "12527": {
                     "points": 31.3,
                     "position": "RB",
-                    "player_id": "12527",
-                    "placement": 1
+                    "player_id": "12527"
                 },
                 "7569": {
                     "points": 7.9,
                     "position": "WR",
-                    "player_id": "7569",
-                    "placement": 1
+                    "player_id": "7569"
                 },
                 "11533": {
                     "points": 3.0,
                     "position": "K",
-                    "player_id": "11533",
-                    "placement": 1
+                    "player_id": "11533"
                 },
                 "NO": {
                     "points": 23.0,
                     "position": "DEF",
-                    "player_id": "NO",
-                    "placement": 1
+                    "player_id": "NO"
                 }
             },
             "Sach": {
@@ -60505,62 +60083,52 @@
                 "3294": {
                     "points": 19.16,
                     "position": "QB",
-                    "player_id": "3294",
-                    "placement": 2
+                    "player_id": "3294"
                 },
                 "9221": {
                     "points": 16.3,
                     "position": "RB",
-                    "player_id": "9221",
-                    "placement": 2
+                    "player_id": "9221"
                 },
                 "8138": {
                     "points": 25.9,
                     "position": "RB",
-                    "player_id": "8138",
-                    "placement": 2
+                    "player_id": "8138"
                 },
                 "5859": {
                     "points": 14.0,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 2
+                    "player_id": "5859"
                 },
                 "8144": {
                     "points": 31.8,
                     "position": "WR",
-                    "player_id": "8144",
-                    "placement": 2
+                    "player_id": "8144"
                 },
                 "1466": {
                     "points": 1.1,
                     "position": "TE",
-                    "player_id": "1466",
-                    "placement": 2
+                    "player_id": "1466"
                 },
                 "4098": {
                     "points": 0.2,
                     "position": "RB",
-                    "player_id": "4098",
-                    "placement": 2
+                    "player_id": "4098"
                 },
                 "2449": {
                     "points": 18.3,
                     "position": "WR",
-                    "player_id": "2449",
-                    "placement": 2
+                    "player_id": "2449"
                 },
                 "1945": {
                     "points": 6.5,
                     "position": "K",
-                    "player_id": "1945",
-                    "placement": 2
+                    "player_id": "1945"
                 },
                 "BUF": {
                     "points": 14.75,
                     "position": "DEF",
-                    "player_id": "BUF",
-                    "placement": 2
+                    "player_id": "BUF"
                 }
             },
             "Christian": {
@@ -60623,62 +60191,52 @@
                 "4892": {
                     "points": 16.44,
                     "position": "QB",
-                    "player_id": "4892",
-                    "placement": 3
+                    "player_id": "4892"
                 },
                 "9226": {
                     "points": 12.7,
                     "position": "RB",
-                    "player_id": "9226",
-                    "placement": 3
+                    "player_id": "9226"
                 },
                 "8150": {
                     "points": 14.5,
                     "position": "RB",
-                    "player_id": "8150",
-                    "placement": 3
+                    "player_id": "8150"
                 },
                 "9488": {
                     "points": 11.7,
                     "position": "WR",
-                    "player_id": "9488",
-                    "placement": 3
+                    "player_id": "9488"
                 },
                 "2216": {
                     "points": 10.6,
                     "position": "WR",
-                    "player_id": "2216",
-                    "placement": 3
+                    "player_id": "2216"
                 },
                 "8110": {
                     "points": 7.1,
                     "position": "TE",
-                    "player_id": "8110",
-                    "placement": 3
+                    "player_id": "8110"
                 },
                 "11586": {
                     "points": 1.8,
                     "position": "RB",
-                    "player_id": "11586",
-                    "placement": 3
+                    "player_id": "11586"
                 },
                 "10232": {
                     "points": 17.4,
                     "position": "WR",
-                    "player_id": "10232",
-                    "placement": 3
+                    "player_id": "10232"
                 },
                 "11539": {
                     "points": 3.5,
                     "position": "K",
-                    "player_id": "11539",
-                    "placement": 3
+                    "player_id": "11539"
                 },
                 "CHI": {
                     "points": 6.39,
                     "position": "DEF",
-                    "player_id": "CHI",
-                    "placement": 3
+                    "player_id": "CHI"
                 }
             },
             "Christian": {
@@ -60739,62 +60297,52 @@
                 "3294": {
                     "points": 22.68,
                     "position": "QB",
-                    "player_id": "3294",
-                    "placement": 2
+                    "player_id": "3294"
                 },
                 "9221": {
                     "points": 5.9,
                     "position": "RB",
-                    "player_id": "9221",
-                    "placement": 2
+                    "player_id": "9221"
                 },
                 "8138": {
                     "points": 8.2,
                     "position": "RB",
-                    "player_id": "8138",
-                    "placement": 2
+                    "player_id": "8138"
                 },
                 "5859": {
                     "points": 9.3,
                     "position": "WR",
-                    "player_id": "5859",
-                    "placement": 2
+                    "player_id": "5859"
                 },
                 "8144": {
                     "points": 21.9,
                     "position": "WR",
-                    "player_id": "8144",
-                    "placement": 2
+                    "player_id": "8144"
                 },
                 "1466": {
                     "points": 6.1,
                     "position": "TE",
-                    "player_id": "1466",
-                    "placement": 2
+                    "player_id": "1466"
                 },
                 "4039": {
                     "points": 1.1,
                     "position": "WR",
-                    "player_id": "4039",
-                    "placement": 2
+                    "player_id": "4039"
                 },
                 "2449": {
                     "points": 19.1,
                     "position": "WR",
-                    "player_id": "2449",
-                    "placement": 2
+                    "player_id": "2449"
                 },
                 "1945": {
                     "points": 6.0,
                     "position": "K",
-                    "player_id": "1945",
-                    "placement": 2
+                    "player_id": "1945"
                 },
                 "LAC": {
                     "points": 9.0,
                     "position": "DEF",
-                    "player_id": "LAC",
-                    "placement": 2
+                    "player_id": "LAC"
                 }
             },
             "Ty": {
@@ -60802,62 +60350,52 @@
                 "12545": {
                     "points": 20.42,
                     "position": "QB",
-                    "player_id": "12545",
-                    "placement": 1
+                    "player_id": "12545"
                 },
                 "7543": {
                     "points": 10.2,
                     "position": "RB",
-                    "player_id": "7543",
-                    "placement": 1
+                    "player_id": "7543"
                 },
                 "12527": {
                     "points": 8.3,
                     "position": "RB",
-                    "player_id": "12527",
-                    "placement": 1
+                    "player_id": "12527"
                 },
                 "6786": {
                     "points": 7.1,
                     "position": "WR",
-                    "player_id": "6786",
-                    "placement": 1
+                    "player_id": "6786"
                 },
                 "7569": {
                     "points": 7.2,
                     "position": "WR",
-                    "player_id": "7569",
-                    "placement": 1
+                    "player_id": "7569"
                 },
                 "4381": {
                     "points": 0.0,
                     "position": "TE",
-                    "player_id": "4381",
-                    "placement": 1
+                    "player_id": "4381"
                 },
                 "7049": {
                     "points": 11.2,
                     "position": "WR",
-                    "player_id": "7049",
-                    "placement": 1
+                    "player_id": "7049"
                 },
                 "7564": {
                     "points": 21.5,
                     "position": "WR",
-                    "player_id": "7564",
-                    "placement": 1
+                    "player_id": "7564"
                 },
                 "11533": {
                     "points": 13.5,
                     "position": "K",
-                    "player_id": "11533",
-                    "placement": 1
+                    "player_id": "11533"
                 },
                 "PIT": {
                     "points": 14.25,
                     "position": "DEF",
-                    "player_id": "PIT",
-                    "placement": 1
+                    "player_id": "PIT"
                 }
             }
         }

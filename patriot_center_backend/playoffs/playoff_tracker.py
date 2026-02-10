@@ -5,7 +5,10 @@ import logging
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
 from patriot_center_backend.models import Manager, Player
-from patriot_center_backend.utils.sleeper_helpers import fetch_sleeper_data
+from patriot_center_backend.utils.sleeper_helpers import (
+    fetch_sleeper_data,
+    get_playoff_weeks,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -82,6 +85,8 @@ def assign_placements_retroactively(year: int) -> None:
     if not placements:
         return
 
+    weeks = get_playoff_weeks(year)
+
     managers = Manager.get_all_managers(str(year))
     for manager in managers:
         if manager.real_name in placements:
@@ -89,11 +94,19 @@ def assign_placements_retroactively(year: int) -> None:
                 str(year), placements[manager.real_name]
             )
 
-    _manager_cache_set_playoff_placements(placements, year)
+            # Get all starters for the manager in the playoff weeks
+            players: list[Player] = []
+            for week in weeks:
+                manager.get_starters(str(year), str(week))
+                players.extend(manager.get_starters(str(year), str(week)))
 
-    weeks = ["15", "16", "17"]
-    if year <= 2020:
-        weeks = ["14", "15", "16"]
+            for player in players:
+                player.set_placement(
+                    str(year), manager, placements[manager.real_name]
+                )
+
+
+    _manager_cache_set_playoff_placements(placements, year)
 
     need_to_log = True
     year_str = str(year)
@@ -106,11 +119,7 @@ def assign_placements_retroactively(year: int) -> None:
                         continue
 
                     player = Player(player_id)
-                    player.set_week_data(
-                        year_str,
-                        week,
-                        playoff_placement=placements[manager],
-                    )
+                    player.set_placement(year_str, manager, placements[manager])
 
                     # placement already assigned
                     if "placement" in manager_lvl[str(player)]:

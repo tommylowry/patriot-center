@@ -132,7 +132,6 @@ class Player:
         ffwar: float | None = None,
         manager: Manager | None = None,
         started: bool | None = None,
-        playoff_placement: int | None = None,
     ) -> None:
         """Set player data for a given week.
 
@@ -143,7 +142,6 @@ class Player:
             ffwar: The ffWAR.
             manager: The manager.
             started: Whether the player started the week.
-            playoff_placement: The playoff placement.
         """
         if not self._is_real_player:
             return
@@ -162,10 +160,23 @@ class Player:
             self._data[f"{year}_{week}"]["manager"] = str(manager)
         if started is not None:
             self._data[f"{year}_{week}"]["started"] = started
-        if playoff_placement is not None:
-            self._data[f"{year}_{week}"]["playoff_placement"] = (
-                playoff_placement
-            )
+
+        self._apply_to_cache()
+
+    def set_placement(
+        self, year: str, manager: Manager, placement: int
+    ) -> None:
+        """Set player placement for a given manager.
+
+        Args:
+            year: The year.
+            manager: The manager.
+            placement: The placement.
+        """
+        if not self._is_real_player:
+            return
+
+        self._placements[f"{year}_{manager!s}"] = placement
 
         self._apply_to_cache()
 
@@ -181,6 +192,7 @@ class Player:
             return
 
         self._transactions.append(transaction_id)
+
         self._apply_to_cache()
 
     def remove_transaction(self, transaction_id: str) -> None:
@@ -367,6 +379,44 @@ class Player:
 
         return self._group_matches(group_by, matches)
 
+    def get_placement(
+        self, year: str | None = None, manager: Manager | None = None
+    ) -> dict[str, int]:
+        """Get the player's placement for a given year.
+
+        Args:
+            year: Filter by year.
+            manager: Filter by manager.
+
+        Returns:
+            The player's placement or a dictionary of placements for each
+            manager if manager is provided.
+        """
+        if not self._is_real_player:
+            return {}
+
+        if not year and not manager:
+            return self._placements
+
+        if year and manager:
+            placement = self._placements.get(f"{year}_{manager!s}")
+            if placement is None:
+                return {}
+            else:
+                return {f"{year}_{manager!s}": placement}
+
+        placements = {}
+        for key, placement in self._placements.items():
+            placement_year, placement_manager = key.split("_")
+            if year and placement_year != year:
+                continue
+            if manager and placement_manager != str(manager):
+                continue
+            placements[key] = placement
+
+        return placements
+
+
     def has_started(
         self,
         year: str | None = None,
@@ -451,14 +501,6 @@ class Player:
             raw_dict["ffWAR"] += ffwar
             raw_dict["num_games_started"] += 1
 
-            # Add playoff placement if available
-            if "playoff_placement" in match:
-                (
-                    raw_dict
-                    .setdefault("playoff_placement", {})
-                    .setdefault(match["manager"], {})
-                )[match["year"]] = match["playoff_placement"]
-
         # Round total_points to 2 decimal places and ffWAR to 3
         raw_dict["total_points"] = round(
             raw_dict["total_points"], 2
@@ -471,6 +513,19 @@ class Player:
             raw_dict["ffWAR_per_game"] = round(
                 raw_dict["ffWAR"] / raw_dict["num_games_started"], 3
             )
+
+        placements = self.get_placement(year, manager)
+        if not placements:
+            return raw_dict
+        for key, placement in placements.items():
+            placement_year, placement_user_id = key.split("_")
+
+            (
+                raw_dict
+                .setdefault("playoff_placement", {})
+                .setdefault(Manager(placement_user_id).real_name, {})
+                [placement_year]
+            ) = placement
 
         return raw_dict
 
@@ -518,8 +573,9 @@ class Player:
             "depth_chart_position"
         )
         self.number: int | None = metadata.get("number")
+        self._placements: dict[str, int] = metadata.get("placements", {})
 
-        # Set data, data_map, and transactions
+        # Set data and transactions
         self._data: dict[str, dict[str, Any]] = player_data.get(
             "data", {}
         )
@@ -588,6 +644,7 @@ class Player:
                 "position": self.position,
                 "number": self.number,
                 "image_url": self.image_url,
+                "placements": self._placements,
             },
             "data": deepcopy(self._data),
             "transactions": deepcopy(self._transactions),
@@ -676,12 +733,30 @@ class Player:
             key_level["ffWAR"] += match["ffwar"]
             key_level["num_games_started"] += 1
 
-            if "playoff_placement" in match:
-                (
-                    key_level
-                    .setdefault("playoff_placement", {})
-                    .setdefault(match["manager"], {})
-                )[match["year"]] = match["playoff_placement"]
+            # Add manager placement if available
+            manager = Manager(match["manager"])
+            if (  # If manager placement is already set, skip
+                key_level
+                .get("playoff_placement")
+                .get(manager.real_name)
+                .get(match["year"])
+                is not None
+            ):
+                continue
+
+            placements = self.get_placement(
+                match["year"], Manager(match["manager"])
+            )
+            placement = placements.get(f"{match['year']}_{match['manager']}")
+            if not placement:
+                continue
+
+            (
+                key_level
+                .setdefault("playoff_placement", {})
+                .setdefault(Manager(match["manager"]).real_name, {})
+                [match["year"]]
+            ) = placement
 
         for key_value in list(grouped.keys()):
             key_level = grouped[key_value]

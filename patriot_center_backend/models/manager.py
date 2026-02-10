@@ -64,7 +64,10 @@ class Manager:
         year: str | None = None,
         week: str | None = None,
     ) -> list[Manager]:
-        """Get players who have started at least one game matching filters.
+        """Get players who have participated in the given year and week.
+
+        If the manager does not have matching data, return an empty list.
+        Defaults to returning all participants.
 
         Args:
             year: Filter by year
@@ -72,7 +75,7 @@ class Manager:
             manager: Filter by manager
 
         Returns:
-            List of players who have started at least one game matching filters
+            List of managers who have participated in the given year and week.
         """
         manager_cache = CACHE_MANAGER.get_manager_cache()
 
@@ -217,7 +220,7 @@ class Manager:
         points_for: float,
         points_against: float,
         starters: list[Player],
-        rostered_players: list[Player]
+        rostered: list[Player]
     ) -> None:
         """Set manager week data.
 
@@ -228,8 +231,8 @@ class Manager:
             result: The result.
             points_for: The points for.
             points_against: The points against.
-            starters: The starters.
-            rostered_players: The rostered players.
+            starters: The started players.
+            rostered: The rostered players.
         """
         self._week_data[f"{year}_{week}"] = {
             "opponent": str(opponent),
@@ -237,7 +240,7 @@ class Manager:
             "points_for": points_for,
             "points_against": points_against,
             "starters": [str(p) for p in starters],
-            "rostered_players": [str(p) for p in rostered_players],
+            "rostered": [str(p) for p in rostered],
         }
 
         self._apply_to_cache()
@@ -280,16 +283,16 @@ class Manager:
     def check_participation(
         self, year: str | None = None, week: str | None = None
     ) -> bool:
-        """Check if a manager participates in a given season.
+        """Check if a manager participates in a given year and week.
 
-        Checks if the manager has started at least one game matching filters.
+        If year or week is not provided, defaults to all years or all weeks.
 
         Args:
             year: Filter by year.
             week: Filter by week.
 
         Returns:
-            True if the manager participates in the given parameters,
+            True if the manager participated in the given parameters,
             False otherwise.
         """
         if not self._season_data:
@@ -312,3 +315,157 @@ class Manager:
             return True
 
         return f"{year}_{week}" in self._week_data
+
+    def get_rostered(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        suppress_warnings: bool = False
+    ) -> list[Player]:
+        """Get players who were rostered for a given year and week.
+
+        If the manager does not have matching data, return an empty list.
+        Defaults to returning all rostered players.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            suppress_warnings: Whether to suppress warnings.
+
+        Returns:
+            List of players who have started at least one game matching filters
+        """
+        return self._get_players(
+            year=year,
+            week=week,
+            only_starters=False,
+            suppress_warnings=suppress_warnings
+        )
+
+    def get_starters(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        suppress_warnings: bool = False
+    ) -> list[Player]:
+        """Get players who started the week for a given year and week.
+
+        If the manager does not have matching data, return an empty list.
+        Defaults to returning all started players.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            suppress_warnings: Whether to suppress warnings.
+
+        Returns:
+            List of players who have started at least one game matching filters
+        """
+        return self._get_players(
+            year=year,
+            week=week,
+            only_starters=True,
+            suppress_warnings=suppress_warnings,
+        )
+
+    def _get_players(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        only_starters: bool = False,
+        suppress_warnings: bool = False,
+    ) -> list[Player]:
+        """Get players for a given year and week.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            only_starters: Only include players who started the week.
+            suppress_warnings: Whether to suppress warnings.
+
+        Returns:
+            List of players.
+        """
+        from patriot_center_backend.models.player import Player
+
+        matches = self._get_matching_data(
+            year, week, only_starters=only_starters
+        )
+        if not matches:
+            if suppress_warnings:
+                return []
+            logger.warning(
+                f"Manager {self.real_name} ({self.user_id}) "
+                f"does not have data for the given parameters."
+            )
+            return []
+
+        players = []
+        for match in matches:
+            if only_starters:
+                players.extend(match["starters"])
+            else:
+                players.extend(match["rostered"])
+
+        if not players:
+            if suppress_warnings:
+                return []
+            logger.warning(
+                f"Manager {self.real_name} ({self.user_id}) "
+                f"does not have data for the given parameters."
+            )
+            return []
+
+        return [Player(p) for p in players]
+
+
+    def _get_matching_data(
+        self,
+        year: str | None,
+        week: str | None,
+        player: Player | None = None,
+        only_starters: bool = False,
+    ) -> list[dict[str, Any]]:
+        """Get all data entries matching the given filters.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            player: Filter by player.
+            only_starters: Only include players who started the week.
+
+        Returns:
+            List of matching data entries.
+        """
+        if not self._week_data:
+            return []
+        if year and week:
+            data = self._week_data.get(f"{year}_{week}")
+            if not data:
+                return []
+            if player:
+                if str(player) not in data["rostered"]:
+                    return []
+                if only_starters and str(player) not in data["starters"]:
+                    return []
+            data["year"] = year
+            data["week"] = week
+            return [data]
+
+        matches = []
+        for key, data in self._week_data.items():
+            data_year, data_week = key.split("_")
+            if year and data_year != year:
+                continue
+            if week and data_week != week:
+                continue
+            if player:
+                if str(player) not in data["rostered"]:
+                    continue
+                if only_starters and str(player) not in data["starters"]:
+                    continue
+            data["year"] = data_year
+            data["week"] = data_week
+            matches.append(data)
+
+        return matches

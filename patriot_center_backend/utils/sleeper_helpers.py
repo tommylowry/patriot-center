@@ -288,6 +288,21 @@ def get_playoff_roster_ids(year: int, week: int) -> list[int]:
 
     return relevant_roster_ids
 
+def get_playoff_weeks(year: int) -> list[int]:
+    """Retrieves the week when playoffs start for a given year.
+
+    Args:
+        year: The year for which to retrieve the playoff week start.
+
+    Returns:
+        The playoff week start or None if no playoff week start is found.
+    """
+    league_info = get_league_info(year)
+    start = league_info["settings"]["playoff_week_start"]
+    end = league_info["settings"]["last_scored_leg"]
+
+    return list(range(start, end + 1))
+
 
 def get_season_state(
     year: str, week: str, playoff_week_start: int | None = None
@@ -679,5 +694,5 @@ def _set_individual_manager_week_data(
 
 # s = fetch_sleeper_data(f"league/{LEAGUE_IDS[2020]}/users")
 # print()
-if __name__ == "__main__":
-    get_roster_id("607421766062637056", 2025)
+# if __name__ == "__main__":
+#     get_roster_id("607421766062637056", 2025)

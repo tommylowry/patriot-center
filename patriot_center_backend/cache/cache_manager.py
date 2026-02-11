@@ -18,9 +18,6 @@ _PLAYER_IDS_CACHE_FILE = os.path.join(
 )
 
 # ===== STEP 2: WEEKLY DATA =====
-_STARTERS_CACHE_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "starters_cache.json"
-)
 _VALID_OPTIONS_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "valid_options_cache.json"
 )
@@ -63,15 +60,15 @@ class CacheManager:
     - Consistent interface for all caches
 
     Usage:
-        cache_mgr = CacheManager()
+        from patriot_center_backend.cache import CACHE_MANAGER
 
         # Load caches
-        manager_metadata_cache = cache_mgr.get_manager_metadata_cache()
-        starters = cache_mgr.get_starters_cache()
+        player_ids_cache = cache_mgr.get_player_ids_cache()
 
         # Save caches
-        cache_mgr.save_manager_metadata_cache(manager_metadata_cache)
-        cache_mgr.save_starters_cache(starters)
+        CACHE_MANAGER.save_player_ids_cache(player_ids_cache)
+        or
+        CACHE_MANAGER.save_player_ids_cache()
     """
 
     def __init__(self):
@@ -84,7 +81,6 @@ class CacheManager:
         self._manager_metadata_cache: dict | None = None
         self._transaction_ids_cache: dict | None = None
         self._player_ids_cache: dict | None = None
-        self._starters_cache: dict | None = None
         self._replacement_score_cache: dict | None = None
         self._valid_options_cache: dict | None = None
         self._image_urls_cache: dict | None = None
@@ -315,48 +311,6 @@ class CacheManager:
         """Delete player IDs cache file."""
         self._delete_cache(_PLAYER_IDS_CACHE_FILE)
         self._player_ids_cache = None
-
-    # ===== STARTERS CACHE =====
-    def get_starters_cache(
-        self, force_reload: bool = False, copy: bool = False
-    ) -> dict[str, Any]:
-        """Get starters cache.
-
-        Args:
-            force_reload: If True, reload from disk
-            copy: If True, return a copy of the cache
-
-        Returns:
-            Starters cache dictionary
-        """
-        if self._starters_cache is None or force_reload:
-            self._starters_cache = self._load_cache(_STARTERS_CACHE_FILE)
-
-        if copy:
-            return deepcopy(self._starters_cache)
-        return self._starters_cache
-
-    def save_starters_cache(self, cache: dict[str, Any] | None = None) -> None:
-        """Save starters cache to disk.
-
-        Args:
-            cache: Cache to save (uses in-memory cache if not provided)
-
-        Raises:
-            ValueError: If no starters cache data to save
-        """
-        data_to_save = cache if cache is not None else self._starters_cache
-
-        if data_to_save is None:
-            raise ValueError("No starters cache data to save")
-
-        self._save_cache(_STARTERS_CACHE_FILE, data_to_save)
-        self._starters_cache = data_to_save
-
-    def _delete_starters_cache(self) -> None:
-        """Delete starters cache file."""
-        self._delete_cache(_STARTERS_CACHE_FILE)
-        self._starters_cache = None
 
     # ===== REPLACEMENT SCORE CACHE =====
     def get_replacement_score_cache(
@@ -629,7 +583,6 @@ class CacheManager:
         self._manager_metadata_cache = None
         self._transaction_ids_cache = None
         self._player_ids_cache = None
-        self._starters_cache = None
         self._replacement_score_cache = None
         self._valid_options_cache = None
         self._image_urls_cache = None
@@ -645,8 +598,6 @@ class CacheManager:
             self.save_transaction_ids_cache()
         if self._player_ids_cache is not None:
             self.save_player_ids_cache()
-        if self._starters_cache is not None:
-            self.save_starters_cache()
         if self._replacement_score_cache is not None:
             self.save_replacement_score_cache()
         if self._valid_options_cache is not None:
@@ -671,7 +622,6 @@ class CacheManager:
         """
         self._delete_manager_metadata_cache()
         self._delete_transaction_ids_cache()
-        self._delete_starters_cache()
         self._delete_replacement_score_cache()
         self._delete_valid_options_cache()
         self._delete_image_urls_cache()

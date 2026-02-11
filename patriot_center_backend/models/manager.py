@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
-from statistics import mean
 from time import time
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
@@ -345,7 +344,7 @@ class Manager:
             return []
 
         matches = self._get_matching_data(
-            year, week, only_starters
+            year, week, only_starters=only_starters
         )
         if not matches:
             if suppress_warnings:

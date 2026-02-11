@@ -198,18 +198,11 @@ class ReplacementScoreCacheBuilder:
                         final_week_scores["byes"] -= 1
                     continue
 
-                # Weird edge case with Zach Ertz traded, his stats show twice
-                # and one is 1339z
-                if player_id == "1339z":
-                    continue
-
                 player = Player(player_id, apply=False)
-
-                if player.position not in Position:
+                if not player._is_real_player:
                     continue
 
                 player_data = self.week_data[str(player)]
-
                 if player_data.get("gp", 0.0) == 0.0:
                     continue
 
@@ -218,7 +211,7 @@ class ReplacementScoreCacheBuilder:
                 )
 
                 # Add the player's points to the appropriate position list
-                week_scores[Position(player.position)].append(player_score)
+                week_scores[player.position].append(player_score)
 
             # Set first to false after first iteration
             # since we have the number of byes

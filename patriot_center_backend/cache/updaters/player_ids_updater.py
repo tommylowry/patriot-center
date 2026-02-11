@@ -23,7 +23,6 @@ FIELDS_TO_KEEP = [
     "years_exp",
     "college",
     "team",
-    "depth_chart_position",
     "fantasy_positions",
     "position",
     "number",

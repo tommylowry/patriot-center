@@ -88,6 +88,10 @@ def assign_placements_retroactively(year: int) -> None:
     managers = Manager.get_all_managers(str(year))
     for manager in managers:
         if manager.real_name in placements:
+            logger.info(
+                f"Applying playoff placements for manager {manager!s} "
+                f"placement: {placements[manager.real_name]}"
+            )
             manager.set_playoff_placement(
                 str(year), placements[manager.real_name]
             )

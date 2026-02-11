@@ -5,15 +5,10 @@ from copy import deepcopy
 from math import ceil
 from typing import Any, Literal
 
-from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.calculations.player_score_calculator import (
-    calculate_player_score,
-)
 from patriot_center_backend.constants import (
     LEAGUE_IDS,
     TOMMY_USER_ID,
     USERNAME_TO_REAL_NAME,
-    Position,
 )
 from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
@@ -434,56 +429,6 @@ def fetch_all_player_ids() -> dict[str, Any]:
         raise ValueError("Sleeper API call failed to retrieve player info")
 
     return sleeper_response
-
-
-def fetch_players(year: int, week: int) -> list[Player]:
-    """Retrieves the player data for a given year and week.
-
-    This function retrieves raw stats from the Sleeper API for the specified
-    year and week, then calculates each player's fantasy score, their manager,
-    and if they are a starter based on the league's scoring settings.
-
-    Args:
-        year: The year for which to retrieve player metadata.
-        week: The week for which to retrieve player metadata.
-
-    Returns:
-        A list of Player objects.
-
-    Raises:
-        ValueError: If Sleeper API call returns invalid data.
-    """
-    week_data = fetch_sleeper_data(f"stats/nfl/regular/{year}/{week}")
-    if not isinstance(week_data, dict):
-        raise ValueError(
-            f"Sleeper API call failed for year {year}, week {week}"
-        )
-
-    settings = fetch_sleeper_data(f"league/{LEAGUE_IDS[year]}")
-    if not isinstance(settings, dict):
-        raise ValueError(
-            f"Sleeper API call failed to retrieve "
-            f"scoring settings for year {year}"
-        )
-    scoring_settings = settings["scoring_settings"]
-
-    players = []
-
-    player_ids_cache = CACHE_MANAGER.get_player_ids_cache()
-    for player_id in week_data:
-        if "TEAM_" in player_id:
-            continue
-
-        if player_ids_cache.get(player_id, {}).get("position") not in Position:
-            continue
-
-        player = Player(player_id)
-        points = calculate_player_score(week_data[player_id], scoring_settings)
-        player.set_week_data(str(year), str(week), points=points)
-
-        players.append(player)
-
-    return players
 
 
 def set_managers_season_data(year: int, week: int) -> list[Manager]:

@@ -6,12 +6,8 @@ from patriot_center_backend.cache.queries.replacement_score_queries import (
     get_replacement_scores,
 )
 from patriot_center_backend.constants import Position
-from patriot_center_backend.models import Manager
-from patriot_center_backend.utils.helpers import fetch_manager_scores
-from patriot_center_backend.utils.sleeper_helpers import (
-    fetch_players,
-    get_season_state,
-)
+from patriot_center_backend.models import Manager, Player
+from patriot_center_backend.utils.sleeper_helpers import get_season_state
 
 
 class FFWARCalculator:
@@ -43,7 +39,7 @@ class FFWARCalculator:
     # ==========================================================================
     # ============================= Public Methods =============================
     # ==========================================================================
-    def calculate_and_set_ffwar_for_week(self) -> None:
+    def calculate_and_set_ffwar_for_week(self, players: list[Player]) -> None:
         """Calculates the ffWAR for a given week.
 
         Returns:
@@ -56,7 +52,6 @@ class FFWARCalculator:
         self._apply_dynamic_vars()
 
         # Get all the players that played that week
-        players = fetch_players(self.year, self.week)
         for player in players:
             points = player.get_points(
                 year=str(self.year),

@@ -46,6 +46,12 @@ class Player:
             player_id: The player ID
             apply: Whether to apply the player to the player cache
         """
+        # Weird edge case with Zach Ertz traded, his player_id shows twice in
+        # 2021 week 6, and one is 1339z
+        if player_id == "1339z":
+            self._is_real_player = False
+            return
+
         self._apply = apply
 
         if hasattr(self, "_initialized"):
@@ -244,7 +250,7 @@ class Player:
                 f"does not have data for the given parameters."
             )
             return 0.0
-        return round(sum(d["points"] for d in matches), 2)
+        return round(sum(d.get("points", 0.0) for d in matches), 2)
 
     def get_ffwar(
         self,
@@ -556,14 +562,16 @@ class Player:
         if not metadata:
             raise ValueError(f"Player with ID {self.player_id} not found")
 
+        # Position
+        try:  # If a position isn't in Position, it will make position None
+            self.position = Position(metadata["position"])
+        except ValueError:
+            self._is_real_player = False
+            return
+
         # Required Metadata
         self.first_name: str = metadata["first_name"]
         self.last_name: str = metadata["last_name"]
-        self.position: Position = Position(metadata["position"])
-        self.fantasy_positions: list[Position] = [
-            Position(p) for p in metadata["fantasy_positions"]
-        ]
-
         self.full_name: str = metadata.get("full_name", "")
         if not self.full_name:
             self.full_name = f"{self.first_name} {self.last_name}"
@@ -573,11 +581,6 @@ class Player:
         self.years_exp: int | None = metadata.get("years_exp")
         self.college: str | None = metadata.get("college")
         self.team: str | None = metadata.get("team")
-        self.depth_chart_position: Position | None = (
-            Position(metadata.get("depth_chart_position"))
-            if metadata.get("depth_chart_position")
-            else None
-        )
         self.number: int | None = metadata.get("number")
         self._placements: dict[str, int] = metadata.get("placements", {})
 
@@ -643,8 +646,6 @@ class Player:
                 "years_exp": self.years_exp,
                 "college": self.college,
                 "team": self.team,
-                "depth_chart_position": self.depth_chart_position,
-                "fantasy_positions": self.fantasy_positions,
                 "position": self.position,
                 "number": self.number,
                 "image_url": self.image_url,

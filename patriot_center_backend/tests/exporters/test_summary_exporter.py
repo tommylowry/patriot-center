@@ -21,7 +21,6 @@ class TestGetManagerSummary:
         The mocks are set up to return a pre-defined
         set of values when accessed.
         - `validate_manager_query`: (returns nothing)
-        - `get_image_url`: `mock_get_image_url`
         - `get_manager_years_active_from_cache`:
             `mock_get_manager_years_active`
         - `get_matchup_details_from_cache`: `mock_get_matchup`
@@ -37,7 +36,6 @@ class TestGetManagerSummary:
             patch(
                 f"{MODULE_PATH}.validate_manager_query"
             ) as mock_validate_manager_query,
-            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(
                 f"{MODULE_PATH}.get_manager_years_active_from_cache"
             ) as mock_get_manager_years_active,
@@ -58,11 +56,6 @@ class TestGetManagerSummary:
             ) as mock_get_h2h,
         ):
             self.mock_validate_manager_query = mock_validate_manager_query
-
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = (
-                "https://sleepercdn.com/avatars/abc123"
-            )
 
             self.mock_get_manager_years_active = mock_get_manager_years_active
             self.mock_get_manager_years_active.return_value = ["2023", "2022"]

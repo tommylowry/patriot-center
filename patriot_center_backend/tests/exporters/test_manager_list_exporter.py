@@ -27,7 +27,6 @@ class TestGetManagersList:
         - `get_list_of_managers_from_cache`: `mock_get_list_of_managers`
         - `get_manager_summary_from_cache`: `mock_get_manager_summary`
         - `get_ranking_details_from_cache`: `mock_get_ranking_details`
-        - `get_image_url`: `mock_get_image_url`
         - `get_manager_years_active_from_cache`: `mock_get_manager_years_active`
 
         Args:
@@ -46,7 +45,6 @@ class TestGetManagersList:
             patch(
                 f"{MODULE_PATH}.get_ranking_details_from_cache"
             ) as mock_get_ranking_details,
-            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(
                 f"{MODULE_PATH}.get_manager_years_active_from_cache"
             ) as mock_get_manager_years_active,
@@ -65,11 +63,6 @@ class TestGetManagersList:
 
             self.mock_get_ranking_details = mock_get_ranking_details
             self.mock_get_ranking_details.return_value = {}
-
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = (
-                "http://example.com/manager.jpg"
-            )
 
             self.mock_get_manager_years_active = mock_get_manager_years_active
             self.mock_get_manager_years_active.return_value = ["2023"]

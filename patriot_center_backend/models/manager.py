@@ -485,7 +485,7 @@ class Manager:
             )
             return []
 
-        return [Player(p) for p in players]
+        return players
 
     def get_matchup_data_summary(
         self,
@@ -565,8 +565,10 @@ class Manager:
             return {}
 
         starters = self.get_players(
-            year=year, week=week,
-            only_starters=True, suppress_warnings=True,
+            year=year,
+            week=week,
+            only_starters=True,
+            suppress_warnings=True,
         )
 
         pos_scores: dict[Position, list[float]] = {}
@@ -591,16 +593,21 @@ class Manager:
         Args:
             year: The year of the matchup.
             week: The week of the matchup.
+            player_output_type: Whether to return player IDs or objects
 
         Returns:
             A dictionary containing the matchup data.
         """
+        from patriot_center_backend.models.player import Player
+
         data = self._week_data.get(f"{year}_{week}", {})
         if not data:
             return {}
 
         data = deepcopy(data)
         data["opponent"] = Manager(data["opponent"])
+
+
         data["starters"] = [Player(p) for p in data["starters"]]
         data["rostered"] = [Player(p) for p in data["rostered"]]
 
@@ -700,10 +707,9 @@ class Manager:
                 return []
             if result and data["result"] != result:
                 return []
-            return_data = deepcopy(data)
-            return_data["year"] = year
-            return_data["week"] = week
-            return [return_data]
+            data["year"] = year
+            data["week"] = week
+            return [data]
 
         matches = []
         for key in self._week_data:

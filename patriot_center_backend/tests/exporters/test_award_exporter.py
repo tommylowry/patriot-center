@@ -20,7 +20,6 @@ class TestGetManagerAwards:
 
         The mocks are set up to return a pre-defined
         set of values when accessed.
-        - `get_image_url`: `mock_get_image_url`
         - `get_manager_awards_from_cache`: `mock_get_awards`
         - `get_manager_score_awards_from_cache`:
             `mock_get_score_awards`
@@ -29,7 +28,6 @@ class TestGetManagerAwards:
             None
         """
         with (
-            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(
                 f"{MODULE_PATH}.get_manager_awards_from_cache"
             ) as mock_get_awards,
@@ -37,16 +35,6 @@ class TestGetManagerAwards:
                 f"{MODULE_PATH}.get_manager_score_awards_from_cache"
             ) as mock_get_score_awards,
         ):
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.side_effect = lambda m, dictionary=False: (
-                {
-                    "name": m,
-                    "image_url": "https://sleepercdn.com/avatars/abc123",
-                }
-                if dictionary
-                else "https://sleepercdn.com/avatars/abc123"
-            )
-
             self.mock_get_awards = mock_get_awards
             self.mock_get_awards.return_value = {}
 

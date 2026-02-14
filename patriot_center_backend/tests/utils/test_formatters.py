@@ -26,7 +26,6 @@ class TestGetTop3ScorersFromMatchupData:
         - `CACHE_MANAGER.get_player_ids_cache`: `mock_get_player_ids`
         - `CACHE_MANAGER.get_players_cache`: `mock_get_players_cache`
         - `CACHE_MANAGER.get_starters_cache`: `mock_get_starters_cache`
-        - `get_image_url`: `mock_get_image_url`
 
         Yields:
             None
@@ -44,9 +43,6 @@ class TestGetTop3ScorersFromMatchupData:
                 "patriot_center_backend.utils.formatters"
                 ".CACHE_MANAGER.get_starters_cache"
             ) as mock_get_starters_cache,
-            patch(
-                "patriot_center_backend.utils.formatters.get_image_url"
-            ) as mock_get_image_url,
         ):
             self.mock_get_player_ids = mock_get_player_ids
             self.mock_get_player_ids.return_value = {}
@@ -57,16 +53,10 @@ class TestGetTop3ScorersFromMatchupData:
             self.mock_get_starters_cache = mock_get_starters_cache
             self.mock_get_starters_cache.return_value = {}
 
-            self.mock_get_image_url = mock_get_image_url
-
             yield
 
     def test_valid_matchup_data(self):
         """Test with valid matchup data and starters."""
-        self.mock_get_image_url.side_effect = lambda *args, **kwargs: {
-            "name": "Player",
-            "image_url": "http://example.com/image.jpg",
-        }
         self.mock_get_players_cache.return_value = {
             "Player A": {"player_id": "1"},
             "Player B": {"player_id": "2"},
@@ -242,10 +232,6 @@ class TestGetTop3ScorersFromMatchupData:
 
     def test_fewer_than_3_players(self):
         """Test with fewer than 3 starters."""
-        self.mock_get_image_url.side_effect = lambda *args, **kwargs: {
-            "name": "Player",
-            "image_url": "http://example.com/image.jpg",
-        }
         self.mock_get_players_cache.return_value = {
             "Player A": {"player_id": "1"},
             "Player B": {"player_id": "2"},
@@ -287,10 +273,6 @@ class TestGetTop3ScorersFromMatchupData:
 
     def test_insertion_sort_ordering(self):
         """Test that top scorers are properly sorted."""
-        self.mock_get_image_url.side_effect = lambda *args, **kwargs: {
-            "name": "Player",
-            "image_url": "http://example.com/image.jpg",
-        }
         self.mock_get_players_cache.return_value = {
             "Player A": {"player_id": "1"},
             "Player B": {"player_id": "2"},
@@ -356,7 +338,6 @@ class TestGetMatchupCard:
         set of values when accessed.
         - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
         - `get_top_3_scorers_from_matchup_data`: `mock_get_top_3`
-        - `get_image_url`: `mock_get_image_url`
 
         Yields:
             None
@@ -370,9 +351,6 @@ class TestGetMatchupCard:
                 "patriot_center_backend.utils.formatters"
                 ".get_top_3_scorers_from_matchup_data"
             ) as mock_get_top_3,
-            patch(
-                "patriot_center_backend.utils.formatters.get_image_url"
-            ) as mock_get_image_url,
         ):
             self.mock_get_manager_cache = mock_get_manager_cache
             self.mock_get_manager_cache.return_value = {}
@@ -380,13 +358,10 @@ class TestGetMatchupCard:
             self.mock_get_top_3 = mock_get_top_3
             self.mock_get_top_3.return_value = {}
 
-            self.mock_get_image_url = mock_get_image_url
-
             yield
 
     def test_valid_matchup_card_win(self):
         """Test generating matchup card for a win."""
-        self.mock_get_image_url.return_value = "http://example.com/image.jpg"
         self.mock_get_top_3.return_value = {
             "manager_1_top_3_scorers": [],
             "manager_2_top_3_scorers": [],
@@ -425,7 +400,6 @@ class TestGetMatchupCard:
 
     def test_valid_matchup_card_loss(self):
         """Test generating matchup card for a loss."""
-        self.mock_get_image_url.return_value = "http://example.com/image.jpg"
         self.mock_get_top_3.return_value = {
             "manager_1_top_3_scorers": [],
             "manager_2_top_3_scorers": [],
@@ -460,7 +434,6 @@ class TestGetMatchupCard:
 
     def test_valid_matchup_card_tie(self):
         """Test generating matchup card for a tie."""
-        self.mock_get_image_url.return_value = "http://example.com/image.jpg"
         self.mock_get_top_3.return_value = {
             "manager_1_top_3_scorers": [],
             "manager_2_top_3_scorers": [],
@@ -602,7 +575,6 @@ class TestGetTradeCard:
         The mocks are set up to return a pre-defined
         set of values when accessed.
         - `CACHE_MANAGER.get_transaction_ids_cache`: `mock_get_trans_ids`
-        - `get_image_url`: `mock_get_image_url`
 
         Yields:
             None
@@ -612,25 +584,14 @@ class TestGetTradeCard:
                 "patriot_center_backend.utils.formatters"
                 ".CACHE_MANAGER.get_transaction_ids_cache"
             ) as mock_get_trans_ids,
-            patch(
-                "patriot_center_backend.utils.formatters.get_image_url"
-            ) as mock_get_image_url,
         ):
             self.mock_get_trans_ids = mock_get_trans_ids
             self.mock_get_trans_ids.return_value = {}
-
-            self.mock_get_image_url = mock_get_image_url
 
             yield
 
     def test_simple_two_team_trade(self):
         """Test generating trade card for simple two-team trade."""
-        self.mock_get_image_url.side_effect = [
-            {"name": "Manager 1", "image_url": "http://example.com/m1.jpg"},
-            {"name": "Manager 2", "image_url": "http://example.com/m2.jpg"},
-            {"name": "Player A", "image_url": "http://example.com/pa.jpg"},
-            {"name": "Player B", "image_url": "http://example.com/pb.jpg"},
-        ]
         self.mock_get_trans_ids.return_value = {
             "trade123": {
                 "year": "2023",
@@ -664,10 +625,6 @@ class TestGetTradeCard:
 
     def test_three_team_trade(self):
         """Test generating trade card for three-team trade."""
-        self.mock_get_image_url.return_value = {
-            "name": "Test",
-            "image_url": "http://example.com/test.jpg",
-        }
         self.mock_get_trans_ids.return_value = {
             "trade456": {
                 "year": "2023",
@@ -705,10 +662,6 @@ class TestGetTradeCard:
 
     def test_uneven_trade(self):
         """Test trade where one manager sends multiple players."""
-        self.mock_get_image_url.return_value = {
-            "name": "Test",
-            "image_url": "http://example.com/test.jpg",
-        }
         self.mock_get_trans_ids.return_value = {
             "trade789": {
                 "year": "2023",
@@ -744,10 +697,6 @@ class TestGetTradeCard:
 
     def test_manager_name_with_spaces(self):
         """Test handling manager names with spaces."""
-        self.mock_get_image_url.return_value = {
-            "name": "Test",
-            "image_url": "http://example.com/test.jpg",
-        }
         self.mock_get_trans_ids.return_value = {
             "trade999": {
                 "year": "2023",
@@ -775,29 +724,6 @@ class TestGetTradeCard:
 
 class TestExtractDictData:
     """Test extract_dict_data function."""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup common mocks for all tests.
-
-        The mocks are set up to return a pre-defined
-        set of values when accessed.
-        - `get_image_url`: `mock_get_image_url`
-
-        Yields:
-            None
-        """
-        with (
-            patch(
-                "patriot_center_backend.utils.formatters.get_image_url"
-            ) as mock_get_image_url,
-        ):
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = (
-                "http://example.com/image.jpg"
-            )
-
-            yield
 
     def test_top_3_simple_dict(self):
         """Test with simple dictionary (no nested totals)."""
@@ -876,24 +802,6 @@ class TestExtractDictData:
 
 class TestDraftPickDecipher:
     """Test draft_pick_decipher function."""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup common mocks for all tests.
-
-        The mocks are set up to return a pre-defined
-        set of values when accessed.
-        - `update_image_urls_cache`: `mock_update_image_urls_cache`
-
-        Yields:
-            None
-        """
-        with patch(
-            "patriot_center_backend.utils.formatters.update_image_urls_cache"
-        ) as mock_update_image_urls_cache:
-            self.mock_update_image_urls_cache = mock_update_image_urls_cache
-
-            yield
 
     def test_valid_draft_pick(self):
         """Test with valid draft pick dictionary."""

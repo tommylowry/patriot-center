@@ -187,7 +187,8 @@ class FFWARCalculator:
 
         for manager in self.managers:
             matchup_data = manager.get_matchup_data(
-                year=str(self.year), week=str(self.week)
+                year=str(self.year),
+                week=str(self.week),
             )
             points_for = matchup_data.get("points_for", 0.0)
 

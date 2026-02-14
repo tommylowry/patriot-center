@@ -834,48 +834,6 @@ class TestSaveValidOptionsCache:
         assert "No valid options cache to save" in str(exc_info.value)
 
 
-class TestSaveImageUrlsCache:
-    """Test CacheManager.save_image_urls_cache method."""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup common mocks for all tests.
-
-        The mocks are set up to return a pre-defined
-        set of values when accessed.
-        - `CacheManager._save_cache`: `mock_save_cache`
-
-        Yields:
-            None
-        """
-        with patch.object(CacheManager, "_save_cache") as mock_save_cache:
-            self.mock_save_cache = mock_save_cache
-            self.manager = CacheManager()
-
-            yield
-
-    def test_saves_provided_cache(self):
-        """Test saves explicitly provided cache data."""
-        self.manager.save_image_urls_cache({"Tommy": {}})
-
-        self.mock_save_cache.assert_called_once()
-
-    def test_saves_in_memory_cache(self):
-        """Test saves in-memory cache when no arg provided."""
-        self.manager._image_urls_cache = {"Tommy": {}}
-
-        self.manager.save_image_urls_cache()
-
-        self.mock_save_cache.assert_called_once()
-
-    def test_raises_when_no_data(self):
-        """Test raises ValueError when no data to save."""
-        with pytest.raises(ValueError) as exc_info:
-            self.manager.save_image_urls_cache()
-
-        assert "No image urls cache to save" in str(exc_info.value)
-
-
 class TestGetWeeklyDataProgressTracker:
     """Test CacheManager.get_weekly_data_progress_tracker method."""
 
@@ -975,7 +933,6 @@ class TestReloadAllCaches:
         manager._player_data_cache = {"data": True}
         manager._replacement_score_cache = {"data": True}
         manager._valid_options_cache = {"data": True}
-        manager._image_urls_cache = {"data": True}
         manager._weekly_data_progress_tracker = {"data": True}
 
         manager.reload_all_caches()
@@ -988,7 +945,6 @@ class TestReloadAllCaches:
         assert manager._player_data_cache is None
         assert manager._replacement_score_cache is None
         assert manager._valid_options_cache is None
-        assert manager._image_urls_cache is None
         assert manager._weekly_data_progress_tracker is None
 
 
@@ -1022,7 +978,6 @@ class TestSaveAllCaches:
         self.manager._player_data_cache = {"2024": {}}
         self.manager._replacement_score_cache = {"2024": {}}
         self.manager._valid_options_cache = {"2024": {}}
-        self.manager._image_urls_cache = {"Tommy": {}}
         self.manager._weekly_data_progress_tracker = {"2024": {}}
 
         self.manager.save_all_caches()

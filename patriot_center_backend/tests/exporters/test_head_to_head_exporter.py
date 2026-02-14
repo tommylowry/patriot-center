@@ -21,7 +21,6 @@ class TestGetHeadToHead:
         The mocks are set up to return a pre-defined
         set of values when accessed.
         - `validate_manager_query`: (returns nothing)
-        - `get_image_url`: `mock_get_image_url`
         - `get_head_to_head_overall_from_cache`: `mock_get_h2h`
         - `get_trade_history_between_two_managers`:
             `mock_get_trade_history`
@@ -33,7 +32,6 @@ class TestGetHeadToHead:
             patch(
                 f"{MODULE_PATH}.validate_manager_query"
             ) as mock_validate_manager_query,
-            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(
                 f"{MODULE_PATH}.get_head_to_head_overall_from_cache"
             ) as mock_get_h2h,
@@ -42,12 +40,6 @@ class TestGetHeadToHead:
             ) as mock_get_trade_history,
         ):
             self.mock_validate_manager_query = mock_validate_manager_query
-
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = {
-                "name": "Tommy",
-                "image_url": "https://sleepercdn.com/avatars/abc123",
-            }
 
             self.mock_get_h2h = mock_get_h2h
             self.mock_get_h2h.return_value = {}
@@ -110,15 +102,6 @@ class TestGetHeadToHead:
 
         assert result["trades_between"]["total"] == 2
         assert len(result["trades_between"]["trade_history"]) == 2
-
-    def test_get_image_url_called_with_dictionary_true(self):
-        """Test that get_image_url is called with dictionary=True."""
-        get_head_to_head("Tommy", "Benz")
-
-        calls = self.mock_get_image_url.call_args_list
-        assert len(calls) == 2
-        assert calls[0] == (("Tommy",), {"dictionary": True})
-        assert calls[1] == (("Benz",), {"dictionary": True})
 
     def test_get_h2h_validates_both_managers(self):
         """Test that validate_manager_query is called for both managers."""

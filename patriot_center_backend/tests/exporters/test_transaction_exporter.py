@@ -24,7 +24,6 @@ class TestGetManagerTransactions:
             `mock_get_transaction_history`
         - `get_transaction_from_ids_cache`:
             `mock_get_transaction_from_ids`
-        - `get_image_url`: `mock_get_image_url`
         - `get_trade_card`: `mock_get_trade_card`
 
         Yields:
@@ -37,7 +36,6 @@ class TestGetManagerTransactions:
             patch(
                 f"{MODULE_PATH}.get_transaction_from_ids_cache"
             ) as mock_get_transaction_from_ids,
-            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(f"{MODULE_PATH}.get_trade_card") as mock_get_trade_card,
         ):
             self.mock_manager_transactions = {
@@ -60,12 +58,6 @@ class TestGetManagerTransactions:
 
             self.mock_get_transaction_from_ids = mock_get_transaction_from_ids
             self.mock_get_transaction_from_ids.return_value = {}
-
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = {
-                "name": "Tommy",
-                "image_url": "https://sleepercdn.com/avatars/abc123",
-            }
 
             self.mock_get_trade_card = mock_get_trade_card
             self.mock_get_trade_card.return_value = {}
@@ -128,10 +120,6 @@ class TestGetManagerTransactions:
             "add": "Jayden Daniels",
             "faab_spent": 50,
         }
-        self.mock_get_image_url.return_value = {
-            "name": "Jayden Daniels",
-            "image_url": "https://sleepercdn.com/content/abc123",
-        }
 
         result = get_manager_transactions("Tommy", year="2023")
 
@@ -147,10 +135,6 @@ class TestGetManagerTransactions:
         self.mock_get_transaction_from_ids.return_value = {
             "types": ["drop"],
             "drop": "Sam Howell",
-        }
-        self.mock_get_image_url.return_value = {
-            "name": "Sam Howell",
-            "image_url": "https://sleepercdn.com/content/def456",
         }
 
         result = get_manager_transactions("Tommy", year="2023")
@@ -178,8 +162,6 @@ class TestGetManagerTransactions:
                     "image_url": f"https://sleepercdn.com/{player}",
                 }
             return f"https://sleepercdn.com/{player}"
-
-        self.mock_get_image_url.side_effect = image_url_side_effect
 
         result = get_manager_transactions("Tommy", year="2023")
 

@@ -188,8 +188,6 @@ class TestSetDefaultsIfMissing:
         - `initialize_summary_templates`:
             `mock_initialize_templates`
         - `get_season_state`: `mock_get_season_state`
-        - `update_image_urls_cache`:
-            `mock_update_image_urls_cache`
         - `initialize_faab_template`:
             `mock_initialize_faab_template`
         - `TransactionProcessor`: mocked constructor
@@ -207,9 +205,6 @@ class TestSetDefaultsIfMissing:
             ) as mock_initialize_templates,
             patch(f"{MODULE_PATH}.get_season_state") as mock_get_season_state,
             patch(
-                f"{MODULE_PATH}.update_image_urls_cache"
-            ) as mock_update_image_urls_cache,
-            patch(
                 f"{MODULE_PATH}.initialize_faab_template"
             ) as mock_initialize_faab_template,
             patch(f"{MODULE_PATH}.TransactionProcessor"),
@@ -217,8 +212,6 @@ class TestSetDefaultsIfMissing:
         ):
             self.mock_manager_cache: dict[str, Any] = {}
             mock_get_manager_cache.return_value = self.mock_manager_cache
-
-            self.mock_image_urls_cache: dict[str, Any] = {}
 
             self.mock_initialize_templates = mock_initialize_templates
             self.mock_initialize_templates.return_value = {
@@ -237,7 +230,6 @@ class TestSetDefaultsIfMissing:
             self.mock_get_season_state = mock_get_season_state
             self.mock_get_season_state.return_value = "regular_season"
 
-            self.mock_update_image_urls_cache = mock_update_image_urls_cache
             self.mock_initialize_faab_template = mock_initialize_faab_template
 
             yield
@@ -355,8 +347,6 @@ class TestUpdateUserId:
         - `CACHE_MANAGER.get_manager_metadata_cache`:
             `mock_get_manager_cache`
         - `fetch_sleeper_data`: `mock_fetch_sleeper_data`
-        - `update_image_urls_cache`:
-            `mock_update_image_urls_cache`
         - `NAME_TO_MANAGER_USERNAME`: mock mapping
 
         Yields:
@@ -369,9 +359,6 @@ class TestUpdateUserId:
             patch(
                 f"{MODULE_PATH}.fetch_sleeper_data"
             ) as mock_fetch_sleeper_data,
-            patch(
-                f"{MODULE_PATH}.update_image_urls_cache"
-            ) as mock_update_image_urls_cache,
             patch(
                 f"{MODULE_PATH}.NAME_TO_MANAGER_USERNAME",
                 {"Tommy": "tommylowry", "Jay": "Jrazzam"},
@@ -389,8 +376,6 @@ class TestUpdateUserId:
                 "user_id": "123456789",
             }
 
-            self.mock_update_image_urls_cache = mock_update_image_urls_cache
-
             yield
 
     def test_sets_user_id_in_manager_cache(self):
@@ -403,14 +388,6 @@ class TestUpdateUserId:
             self.mock_manager_cache["Tommy"]["summary"]["user_id"]
             == "123456789"
         )
-
-    def test_calls_update_image_urls_cache(self):
-        """Test calls update_image_urls_cache for manager."""
-        manager = ManagerMetadataManager()
-
-        manager._update_user_id("Tommy")
-
-        self.mock_update_image_urls_cache.assert_called_once_with("Tommy")
 
     def test_raises_when_no_username_mapping(self):
         """Test raises ValueError when no username mapping found."""

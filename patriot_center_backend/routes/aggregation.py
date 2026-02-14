@@ -7,7 +7,7 @@ from patriot_center_backend.exporters.aggregation_exporter import (
     get_aggregated_players,
     get_player_manager_aggregation,
 )
-from patriot_center_backend.models import Player
+from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.argument_parser import parse_arguments
 from patriot_center_backend.utils.data_formatters import to_records
 
@@ -54,7 +54,7 @@ def get_aggregated_players_route(
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
 
-    data = get_aggregated_players(manager=manager, year=year, week=week)
+    data = get_aggregated_players(manager, year, week)
     if request.args.get("format") == "json":
         response = jsonify(data)
 
@@ -139,7 +139,7 @@ def get_aggregated_managers_route(
 )
 def get_player_manager_aggregation_route(
     player_id: str,
-    manager: str,
+    user_id: str,
     year: str | None,
     week: str | None,
 ) -> tuple[Response, int]:
@@ -151,15 +151,16 @@ def get_player_manager_aggregation_route(
 
     Args:
         player_id: The player_id to filter.
-        manager: The manager to filter.
+        user_id: The user_id to filter.
         year: Year or week number.
         week: Year or week number.
 
     Returns:
         Response in JSON format (aggregated stats or error) and status code.
     """
+    manager = Manager(user_id)
     data = get_player_manager_aggregation(
-        Player(player_id), manager, year=year, week=week
+        Player(player_id), manager, year=year, week=week,
     )
     if request.args.get("format") == "json":
         response = jsonify(data)
@@ -168,7 +169,9 @@ def get_player_manager_aggregation_route(
         response.headers["Cache-Control"] = "public, max-age=3600"
         return response, 200
 
-    response = jsonify(to_records({manager: data}, key_name="manager"))
+    response = jsonify(
+        to_records({manager.real_name: data}, key_name="manager")
+    )
 
 
     # Cache for 1 hour

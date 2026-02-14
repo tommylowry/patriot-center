@@ -13,6 +13,8 @@ from patriot_center_backend.constants import USERNAME_TO_REAL_NAME, Position
 if TYPE_CHECKING:
     from patriot_center_backend.models.player import Player
 
+MatchupType = Literal["regular_season", "playoffs"]
+
 logger = logging.getLogger(__name__)
 
 
@@ -162,6 +164,7 @@ class Manager:
             "image_url": self.image_url,
             "user_id": self.user_id,
             "username": self.username,
+            "provide_link": True,
         }
 
     def set_season_data(
@@ -171,6 +174,7 @@ class Manager:
         team_name: str,
         season_complete: bool,
         roster_id: int,
+        playoff_appearance: bool = False,
     ) -> None:
         """Set manager season data.
 
@@ -182,6 +186,7 @@ class Manager:
             team_name: The team name.
             season_complete: Whether the season is complete.
             roster_id: The roster ID.
+            playoff_appearance: Whether the manager appeared in the playoffs.
         """
         if (  # If season already set and complete
             self._season_data.get(year)
@@ -194,6 +199,7 @@ class Manager:
             "team_name": team_name,
             "season_complete": season_complete,
             "roster_id": roster_id,
+            "playoff_appearance": playoff_appearance,
         }
 
         if "playoff_placement" not in self._season_data[year]:
@@ -211,6 +217,15 @@ class Manager:
         self._season_data[year]["playoff_placement"] = playoff_placement
         self._apply_to_cache()
 
+    def set_playoff_appearance(self, year: str) -> None:
+        """Set manager playoff appearance.
+
+        Args:
+            year: The year.
+        """
+        self._season_data[year]["playoff_appearance"] = True
+        self._apply_to_cache()
+
     def set_week_data(
         self,
         year: str,
@@ -220,7 +235,8 @@ class Manager:
         points_for: float,
         points_against: float,
         starters: list[Player],
-        rostered: list[Player]
+        rostered: list[Player],
+        matchup_type: Literal["regular_season", "playoffs"],
     ) -> None:
         """Set manager week data.
 
@@ -233,6 +249,7 @@ class Manager:
             points_against: The points against.
             starters: The started players.
             rostered: The rostered players.
+            matchup_type: The matchup type.
         """
         self._week_data[f"{year}_{week}"] = {
             "opponent": str(opponent),
@@ -241,6 +258,7 @@ class Manager:
             "points_against": points_against,
             "starters": [str(p) for p in starters],
             "rostered": [str(p) for p in rostered],
+            "matchup_type": matchup_type,
         }
 
         self._apply_to_cache()
@@ -344,7 +362,7 @@ class Manager:
             return []
 
         matches = self._get_matching_data(
-            year, week, only_starters=only_starters
+            year=year, week=week, only_starters=only_starters
         )
         if not matches:
             if suppress_warnings:
@@ -373,26 +391,59 @@ class Manager:
 
         return [Player(p) for p in players]
 
-    def get_points_for(
-        self, year: str | None = None, week: str | None = None
-    ) -> float:
+    def get_matchup_data_summary(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        only_starters: bool = True,
+        player: Player | None = None,
+        matchup_type: MatchupType | None = None,
+        opponent: Manager | None = None,
+    ) -> dict[str, int | float]:
         """Get the points scored by the manager.
 
         Args:
             year: Filter by year.
             week: Filter by week.
+            only_starters: Whether to filter by player if they started the week.
+            player: Filter by player.
+            matchup_type: Filter by matchup type.
+            opponent: Filter by opponent.
 
         Returns:
             The points scored by the manager.
         """
-        matches = self._get_matching_data(year, week)
+        matches = self._get_matching_data(
+            year=year,
+            week=week,
+            only_starters=only_starters,
+            player=player,
+            matchup_type=matchup_type,
+            opponent=opponent,
+        )
 
+        wins = 0
+        losses = 0
+        ties = 0
         points_for = 0.0
+        points_against = 0.0
         for match in matches:
+            wins += match["result"] == "win"
+            losses += match["result"] == "loss"
+            ties += match["result"] == "tie"
             points_for += match["points_for"]
+            points_against += match["points_against"]
 
-        return round(points_for, 2)
+        if wins + losses + ties == 0:
+            return {}
 
+        return {
+            "wins": wins,
+            "losses": losses,
+            "ties": ties,
+            "points_for": round(points_for, 2),
+            "points_against": round(points_against, 2),
+        }
 
     def get_positional_scores_for_starters(
         self,
@@ -430,13 +481,96 @@ class Manager:
 
         return pos_scores
 
+    def get_years_active(self) -> list[str]:
+        """Get a list of years the manager has been active.
+
+        Returns:
+            A list of years the manager has been active.
+        """
+        return list(self._season_data.keys())
+
+    def get_matchup_data(self, year: str, week: str) -> dict[str, Any]:
+        """Get matchup data for a given year and week.
+
+        Args:
+            year: The year of the matchup.
+            week: The week of the matchup.
+
+        Returns:
+            A dictionary containing the matchup data.
+        """
+        data = self._week_data.get(f"{year}_{week}", {})
+        if not data:
+            return {}
+
+        data = deepcopy(data)
+        data["opponent"] = Manager(data["opponent"])
+        data["starters"] = [Player(p) for p in data["starters"]]
+        data["rostered"] = [Player(p) for p in data["rostered"]]
+
+        return data
+
+    def get_playoff_appearances_list(self) -> list[int]:
+        """Get the years in which the manager appeared in the playoffs."""
+        years = []
+        for year, data in self._season_data.items():
+            if data["playoff_appearance"]:
+                years.append(int(year))
+
+        return years
+
+    def get_playoff_placements(self, year: str | None = None) -> dict[str, int]:
+        """Get the manager's placement in the playoffs.
+
+        Args:
+            year: The year.
+        """
+        placements = {}
+        for yr, data in self._season_data.items():
+            if data.get("playoff_placement") is not None:
+                placements[yr] = data.get("playoff_placement")
+
+        if year is not None:
+            return placements.get(year, {})
+
+        return placements
+
+    def get_last_matchup(
+        self,
+        year: str | None = None,
+        result: Literal["win", "loss", "tie"] | None = None,
+        opponent: Manager | None = None,
+    ) -> dict[str, Any]:
+        """Get the last matchup for a given year and result.
+
+        Args:
+            year: Filter by year.
+            result: Filter by result.
+            opponent: Filter by opponent.
+
+        Returns:
+            A dictionary containing the matchup data.
+        """
+        matchups = self._get_matching_data(
+            year=year,
+            result=result,
+            opponent=opponent
+        )
+        if not matchups:
+            return {}
+        last_matchup = matchups[-1]
+
+        return self.get_matchup_data(last_matchup["year"], last_matchup["week"])
 
     def _get_matching_data(
         self,
-        year: str | None,
-        week: str | None,
+        year: str | None = None,
+        week: str | None = None,
         only_starters: bool = True,
         player: Player | None = None,
+        result: Literal["win", "loss", "tie"] | None = None,
+        matchup_type: MatchupType | None = None,
+        opponent: Manager | None = None,
     ) -> list[dict[str, Any]]:
         """Get all data entries matching the given filters.
 
@@ -445,14 +579,18 @@ class Manager:
             week: Filter by week.
             only_starters: Only include players who started the week.
             player: Filter by player.
+            result: Filter by result.
+            matchup_type: Filter by matchup type.
+            opponent: Filter by opponent.
 
         Returns:
             List of matching data entries.
         """
         if not self._week_data:
             return []
+
         if year and week:
-            data = self._week_data.get(f"{year}_{week}")
+            data = self.get_matchup_data(year, week)
             if not data:
                 return []
             if player:
@@ -460,24 +598,33 @@ class Manager:
                     return []
                 if only_starters and str(player) not in data["starters"]:
                     return []
-            data["year"] = year
-            data["week"] = week
-            return [data]
+            if matchup_type and data["matchup_type"] != matchup_type:
+                return []
+            if opponent and data["opponent"] != str(opponent):
+                return []
+            if result and data["result"] != result:
+                return []
+            return_data = deepcopy(data)
+            return_data["year"] = year
+            return_data["week"] = week
+            return [return_data]
 
         matches = []
-        for key, data in self._week_data.items():
+        for key in self._week_data:
             data_year, data_week = key.split("_")
             if year and data_year != year:
                 continue
             if week and data_week != week:
                 continue
-            if player:
-                if str(player) not in data["rostered"]:
-                    continue
-                if only_starters and str(player) not in data["starters"]:
-                    continue
-            data["year"] = data_year
-            data["week"] = data_week
-            matches.append(data)
+            recursive_matches = self._get_matching_data(
+                year=data_year,
+                week=data_week,
+                only_starters=only_starters,
+                player=player,
+                result=result,
+                matchup_type=matchup_type,
+                opponent=opponent,
+            )
+            matches.extend(recursive_matches)
 
         return matches

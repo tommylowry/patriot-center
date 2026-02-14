@@ -2,13 +2,12 @@
 
 from typing import Any
 
-from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.models import Player
+from patriot_center_backend.models import Manager, Player
 
 
 def get_player_manager_aggregation(
     player: Player,
-    manager: str,
+    manager: Manager,
     year: str | None,
     week: str | None,
 ) -> dict[str, Any]:
@@ -33,7 +32,7 @@ def get_player_manager_aggregation(
 
 
 def get_aggregated_players(
-    manager: str | None,
+    manager: Manager | None,
     year: str | None,
     week: str | None,
 ) -> dict[str, dict[str, Any]]:
@@ -49,14 +48,16 @@ def get_aggregated_players(
     """
     players_dict_to_return = {}
 
-    players = _get_players(manager, year, week)
+    players = Player.get_all_starters(year, week, manager)
 
     for player in players:
-        scoring_summary = player.get_scoring_summary(year, week, manager)
+        scoring_summary = player.get_scoring_summary(
+            year=year, week=week, manager=manager
+        )
 
         _populate_scoring_summary(scoring_summary, player)
 
-        players_dict_to_return[player.player_id] = scoring_summary
+        players_dict_to_return[str(player)] = scoring_summary
 
     return players_dict_to_return
 
@@ -101,49 +102,3 @@ def _populate_scoring_summary(
     scoring_summary["position"] = player.position
     scoring_summary["player_image_endpoint"] = player.image_url
     scoring_summary["team"] = player.team
-
-
-def _get_players(
-    manager: str | None,
-    year: str | None,
-    week: str | None,
-) -> set[Player]:
-    """Get players for aggregation.
-
-    Args:
-        manager: Optional manager restriction.
-        year: Optional year restriction.
-        week: Optional week restriction.
-
-    Returns:
-        A set of player objects
-    """
-    valid_options_cache = CACHE_MANAGER.get_valid_options_cache(copy=True)
-
-    player_ids = set()
-    years = [year] if year else list(valid_options_cache.keys())
-    for y in years:
-        if not week and not manager:
-            player_ids = player_ids.union(
-                set(valid_options_cache[y]["players"])
-            )
-            continue
-
-        weeks = [week] if week else list(valid_options_cache[y]["weeks"])
-        for w in weeks:
-            if not manager:
-                player_ids = player_ids.union(
-                    set(valid_options_cache[y][w]["players"])
-                )
-                continue
-            if manager in valid_options_cache[y][w]["managers"]:
-                player_ids = player_ids.union(
-                    set(valid_options_cache[y][w][manager]["players"])
-                )
-
-    players = set()
-    for player_id in player_ids:
-        player = Player(player_id)
-        players.add(player)
-
-    return players

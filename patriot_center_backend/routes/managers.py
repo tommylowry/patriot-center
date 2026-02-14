@@ -19,6 +19,7 @@ from patriot_center_backend.exporters.summary_exporter import (
 from patriot_center_backend.exporters.transaction_exporter import (
     get_manager_transactions,
 )
+from patriot_center_backend.models import Manager
 
 bp = Blueprint("managers", __name__)
 
@@ -59,27 +60,28 @@ def get_managers_list_route(
 
 
 @bp.route(
-    "/api/managers/<string:manager_name>/summary",
+    "/api/managers/<string:user_id>/summary",
     defaults={"year": None},
     methods=["GET"],
 )
 @bp.route(
-    "/api/managers/<string:manager_name>/summary/<string:year>", methods=["GET"]
+    "/api/managers/<string:user_id>/summary/<string:year>", methods=["GET"]
 )
 def get_manager_summary_route(
-    manager_name: str, year: str | None
+    user_id: str, year: str | None
 ) -> tuple[Response, int]:
     """Endpoint to get summary statistics for a specific manager.
 
     Args:
-        manager_name: The name of the manager.
+        user_id: The name of the manager.
         year: Optional year to filter the summary stats. Defaults to all-time.
 
     Returns:
         Flask Response: JSON payload (manager summary or error) and status code.
     """
+    manager = Manager(user_id)
     try:
-        data = get_manager_summary(manager_name, year)
+        data = get_manager_summary(manager, year)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

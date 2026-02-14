@@ -2,18 +2,17 @@
 
 import logging
 from copy import deepcopy
-from decimal import Decimal
 from typing import Any
 
-from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.models import Manager
 from patriot_center_backend.utils.formatters import get_matchup_card
 
 logger = logging.getLogger(__name__)
 
 
-def get_matchup_details_from_cache(
-    manager: str, year: str | None = None
-) -> dict[str, dict[str, int | float]]:
+def get_overall_matchup_details(
+    manager: Manager, year: str | None = None
+) -> dict[str, dict[str, Any]]:
     """Get comprehensive matchup statistics broken down by season state.
 
     Extracts wins, losses, ties, win percentage, and point averages for:
@@ -30,109 +29,59 @@ def get_matchup_details_from_cache(
     Returns:
         Dictionary with matchup stats for overall, regular_season, and playoffs
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
-    manager_data = deepcopy(main_manager_cache[manager])
-
-    matchup_data = {"overall": {}, "regular_season": {}, "playoffs": {}}
-
-    # Get all-time stats by default, or single season stats if year specified
-    cached_matchup_data = deepcopy(manager_data["summary"]["matchup_data"])
-    if year:
-        cached_matchup_data = deepcopy(
-            manager_data["years"][year]["summary"]["matchup_data"]
-        )
-
-    season_states = ["overall", "regular_season"]
-
-    # Check if manager has playoff appearances
-    playoff_appearances = (
-        manager_data.get("summary", {})
-        .get("overall_data", {})
-        .get("playoff_appearances", [])
+    regular_season_data = manager.get_matchup_data_summary(
+        year=year, matchup_type="regular_season"
+    )
+    playoff_data = manager.get_matchup_data_summary(
+        year=year, matchup_type="playoffs"
     )
 
-    has_playoff_data = len(playoff_appearances) > 0 and (
-        not year or year in playoff_appearances
-    )
-
-    if has_playoff_data:
-        season_states.append("playoffs")
-
-    else:  # Manager has no playoff appearances
-        matchup_data["playoffs"] = {
-            "wins": 0,
-            "losses": 0,
-            "ties": 0,
-            "win_percentage": 0.0,
-            "average_points_for": 0.0,
-            "average_points_against": 0.0,
-            "average_point_differential": 0.0,
+    if not playoff_data:
+        overall_data = deepcopy(regular_season_data)
+        matchup_data = {"overall": overall_data, "regular_season": overall_data}
+    else:
+        overall_data = {}
+        for key in regular_season_data:
+            overall_data[key] = regular_season_data[key] + playoff_data[key]
+        matchup_data = {
+            "overall": overall_data,
+            "regular_season": regular_season_data,
+            "playoffs": playoff_data,
         }
 
-    for season_state in season_states:
-        # Extract win-loss-tie record
-        num_wins = cached_matchup_data[season_state]["wins"]["total"]
-        num_losses = cached_matchup_data[season_state]["losses"]["total"]
-        num_ties = cached_matchup_data[season_state]["ties"]["total"]
-
-        matchup_data[season_state]["wins"] = num_wins
-        matchup_data[season_state]["losses"] = num_losses
-        matchup_data[season_state]["ties"] = num_ties
-
-        # Calculate win percentage (rounded to 1 decimal place)
-        num_matchups = num_wins + num_losses + num_ties
-
-        win_percentage = 0.0
-        if num_matchups != 0:
-            win_percentage = (num_wins / num_matchups) * 100
-            win_percentage = float(
-                Decimal(win_percentage).quantize(Decimal("0.1"))
-            )
-
-        matchup_data[season_state]["win_percentage"] = win_percentage
-
-        # Calculate point averages (rounded to 2 decimal places)
-        total_points_for = (
-            cached_matchup_data.get(season_state, {})
-            .get("points_for", {})
-            .get("total", 0.0)
+    keys_to_remove = []
+    for matchup_key, matchup_value in matchup_data.items():
+        num_games = (
+            matchup_value["wins"]
+            + matchup_value["losses"]
+            + matchup_value["ties"]
         )
-        total_points_against = (
-            cached_matchup_data.get(season_state, {})
-            .get("points_against", {})
-            .get("total", 0.0)
+        if num_games == 0:
+            keys_to_remove.append(matchup_key)
+            continue
+
+        matchup_value["win_percentage"] = round(
+            matchup_value["wins"] / num_games, 1
+        )
+        matchup_value["average_points_for"] = round(
+            matchup_value["points_for"] / num_games, 2
+        )
+        matchup_value["average_points_against"] = round(
+            matchup_value["points_against"] / num_games, 2
+        )
+        matchup_value["average_point_differential"] = round(
+            matchup_value.pop("points_for")
+            - matchup_value.pop("points_against"),
+            2,
         )
 
-        point_diff = total_points_for - total_points_against
-        total_point_differential = float(
-            Decimal(point_diff).quantize(Decimal("0.01"))
-        )
+    for key in keys_to_remove:
+        matchup_data.pop(key)
 
-        if num_matchups != 0:
-            avg_pf = total_points_for / num_matchups
-            avg_pf = float(Decimal(avg_pf).quantize(Decimal("0.01")))
-
-            avg_pa = total_points_against / num_matchups
-            avg_pa = float(Decimal(avg_pa).quantize(Decimal("0.01")))
-
-            avg_pd = total_point_differential / num_matchups
-            avg_pd = float(Decimal(avg_pd).quantize(Decimal("0.01")))
-
-        else:  # No matchups
-            avg_pf = 0.0
-            avg_pa = 0.0
-            avg_pd = 0.0
-
-        matchup_data[season_state]["average_points_for"] = avg_pf
-        matchup_data[season_state]["average_points_against"] = avg_pa
-        matchup_data[season_state]["average_point_differential"] = avg_pd
-
-    return deepcopy(matchup_data)
+    return matchup_data
 
 
-def get_overall_data_details_from_cache(
-    manager: str,
-) -> dict[str, int | list[Any]]:
+def get_overall_data_details(manager: Manager) -> dict[str, Any]:
     """Get career achievements with playoff appearances & season placements.
 
     Args:
@@ -141,49 +90,29 @@ def get_overall_data_details_from_cache(
     Returns:
         Dictionary with playoff_appearances count and list of placements by year
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
-    manager_data = deepcopy(main_manager_cache[manager])
-
-    cached_overall_data = manager_data["summary"]["overall_data"]
-
     overall_data: dict[str, int | list[Any]] = {
-        "playoff_appearances": len(
-            cached_overall_data.get("playoff_appearances", [])
-        ),
+        "playoff_appearances": len(manager.get_playoff_appearances_list()),
     }
 
+    playoff_placements = manager.get_playoff_placements()
+
     # ----- Other Overall Data -----
-    placements = []
-    for year in list(cached_overall_data.get("placement", {})):
-        week = "17"
-        if int(year) <= 2020:
-            week = "16"
+    placements_list = []
+    for year in playoff_placements:
+        last_matchup = manager.get_last_matchup(year=year)
 
-        opponent = (
-            manager_data.get("years", {})
-            .get(year, {})
-            .get("weeks", {})
-            .get(week, {})
-            .get("matchup_data", {})
-            .get("opponent_manager", "")
-        )
+        opponent = last_matchup["opponent"]
+        week = last_matchup["week"]
 
-        matchup_card = {}
-        if opponent == "":
-            logger.warning(
-                f"Unable to retreive opponent for "
-                f"matchup card for year {year} week {week}"
-            )
-        else:
-            matchup_card = get_matchup_card(manager, opponent, year, week)
+        matchup_card = get_matchup_card((manager, opponent), year, week)
 
         placement_item = {
             "year": year,
-            "placement": cached_overall_data["placement"][year],
+            "placement": playoff_placements[year],
             "matchup_card": matchup_card,
         }
-        placements.append(placement_item)
+        placements_list.append(placement_item)
 
-    overall_data["placements"] = placements
+    overall_data["placements"] = placements_list
 
     return deepcopy(overall_data)

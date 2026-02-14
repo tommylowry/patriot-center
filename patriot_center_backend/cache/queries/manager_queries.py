@@ -51,23 +51,3 @@ def get_list_of_managers_from_cache(active_only: bool) -> list[str]:
         return valid_options_cache[current_year]["managers"]
     if not active_only:
         return list(manager_cache.keys())
-
-
-def get_manager_years_active_from_cache(manager_name: str) -> list[str]:
-    """Get a list of years a manager has been active.
-
-    Args:
-        manager_name: The name of the manager.
-
-    Returns:
-        A list of years the manager has been active.
-
-    Raises:
-        ValueError: If the manager is not found in the cache.
-    """
-    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
-    manager_data = deepcopy(main_manager_cache[manager_name])
-
-    if "years" not in manager_data:
-        raise ValueError(f"Manager {manager_name} not found in cache.")
-    return list(manager_data["years"].keys())

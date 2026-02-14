@@ -190,9 +190,10 @@ class FFWARCalculator:
         league_pos_scores = {p: [] for p in Position}
 
         for manager in managers:
-            points_for = manager.get_points_for(
+            matchup_data = manager.get_matchup_data(
                 year=str(self.year), week=str(self.week)
             )
+            points_for = matchup_data.get("points_for", 0.0)
 
             # Group scores by position in one pass
             pos_scores = manager.get_positional_scores_for_starters(
@@ -200,15 +201,11 @@ class FFWARCalculator:
             )
 
             for pos, scores in pos_scores.items():
-
                 league_pos_scores[pos].extend(scores)
 
                 if not scores:
                     continue  # No starters at this position
 
-                points_for = manager.get_points_for(
-                    year=str(self.year), week=str(self.week)
-                )
                 self.baseline_scores[pos][str(manager)] = points_for - mean(
                     scores
                 )
@@ -224,9 +221,10 @@ class FFWARCalculator:
                     baseline = self.baseline_scores[pos][str(manager)]
                 else:
                     # No players at this position — use total + avg
-                    baseline = manager.get_points_for(
+                    matchup_data = manager.get_matchup_data(
                         year=str(self.year), week=str(self.week)
                     )
+                    baseline = matchup_data.get("points_for", 0.0)
 
                 self.weighted_scores[pos][str(manager)] = baseline + pos_average
 

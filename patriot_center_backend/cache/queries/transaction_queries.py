@@ -4,6 +4,7 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.formatters import (
     extract_dict_data,
     get_trade_card,
@@ -11,7 +12,7 @@ from patriot_center_backend.utils.formatters import (
 
 
 def get_transaction_details_from_cache(
-    manager: str, year: str | None = None
+    manager_obj: Manager, year: str | None = None
 ) -> dict[str, dict[str, Any]]:
     """Get comprehensive transaction summary with formatted data and image URLs.
 
@@ -23,12 +24,14 @@ def get_transaction_details_from_cache(
     All player/manager names enriched with image URLs.
 
     Args:
+        manager_obj: Manager object
         year: Season year (optional - defaults to all-time stats)
-        manager: Manager name
 
     Returns:
         Dictionary with trades, adds, drops, and faab summaries
     """
+    manager = manager_obj.real_name  # TODO: use manager object
+
     main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     manager_data = deepcopy(main_manager_cache[manager])
 
@@ -48,29 +51,32 @@ def get_transaction_details_from_cache(
     trades = {
         "total": trans_cache["trades"]["total"],
         "top_trade_partners": extract_dict_data(
-            deepcopy(trans_cache["trades"]["trade_partners"])
+            deepcopy(trans_cache["trades"]["trade_partners"]), Manager
         ),
     }
 
     # ---- Trades Summary ----
     # Most Aquired Players
     trade_players_acquired = trans_cache["trades"]["trade_players_acquired"]
-    most_acquired_players = extract_dict_data(deepcopy(trade_players_acquired))
+    most_acquired_players = extract_dict_data(
+        deepcopy(trade_players_acquired), Player
+    )
     for player in most_acquired_players:
         player_details = deepcopy(trade_players_acquired[player["name"]])
         player["from"] = extract_dict_data(
             deepcopy(player_details.get("trade_partners", {})),
+            Manager,
             cutoff=0,
         )
     trades["most_acquired_players"] = most_acquired_players
 
     # Most Sent Players
     trade_players_sent = trans_cache["trades"]["trade_players_sent"]
-    most_sent_players = extract_dict_data(deepcopy(trade_players_sent))
+    most_sent_players = extract_dict_data(deepcopy(trade_players_sent), Player)
     for player in most_sent_players:
         player_details = deepcopy(trade_players_sent.get(player["name"], {}))
         player["to"] = extract_dict_data(
-            player_details.get("trade_partners", {}), cutoff=0
+            player_details.get("trade_partners", {}), Manager, cutoff=0
         )
     trades["most_sent_players"] = most_sent_players
 
@@ -80,7 +86,7 @@ def get_transaction_details_from_cache(
     adds = {
         "total": trans_cache["adds"]["total"],
         "top_players_added": extract_dict_data(
-            deepcopy(trans_cache["adds"]["players"])
+            deepcopy(trans_cache["adds"]["players"]), Player
         ),
     }
     transaction_summary["adds"] = adds
@@ -89,7 +95,7 @@ def get_transaction_details_from_cache(
     drops = {
         "total": trans_cache["drops"]["total"],
         "top_players_dropped": extract_dict_data(
-            deepcopy(trans_cache["drops"]["players"])
+            deepcopy(trans_cache["drops"]["players"]), Player
         ),
     }
     transaction_summary["drops"] = drops
@@ -102,6 +108,7 @@ def get_transaction_details_from_cache(
             "total_spent": abs(trans_cache["faab"]["total_lost_or_gained"]),
             "biggest_acquisitions": extract_dict_data(
                 deepcopy(trans_cache["faab"]["players"]),
+                Player,
                 value_name="amount",
             ),
         }

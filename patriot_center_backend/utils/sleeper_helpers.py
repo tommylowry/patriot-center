@@ -530,6 +530,7 @@ def set_matchup_data(year: int, week: int, managers: list[Manager]) -> None:
     """
     matchups = fetch_matchups(year, week)
     roster_ids = get_roster_ids(year, week)
+    season_state = get_season_state(str(year), str(week))
 
     # Create a mapping of matchup IDs to matchup data
     matchup_mapping: dict[int, dict[str, Any]] = {}
@@ -582,10 +583,22 @@ def set_matchup_data(year: int, week: int, managers: list[Manager]) -> None:
         manager_b = roster_id_to_manager[manager_b_data["roster_id"]]
 
         _set_individual_manager_week_data(
-            year, week, manager_a, manager_a_data, manager_b, manager_b_data
+            year,
+            week,
+            manager_a,
+            manager_a_data,
+            manager_b,
+            manager_b_data,
+            season_state,
         )
         _set_individual_manager_week_data(
-            year, week, manager_b, manager_b_data, manager_a, manager_a_data
+            year,
+            week,
+            manager_b,
+            manager_b_data,
+            manager_a,
+            manager_a_data,
+            season_state,
         )
 
 
@@ -596,6 +609,7 @@ def _set_individual_manager_week_data(
     manager_data: dict[str, Any],
     opponent: Manager,
     opponent_data: dict[str, Any],
+    season_state: Literal["regular_season", "playoffs"],
 ) -> None:
     """Sets the week data for a manager.
 
@@ -606,7 +620,11 @@ def _set_individual_manager_week_data(
         manager_data: The matchup data for the manager
         opponent: The opponent manager
         opponent_data: The matchup data for the opponent
+        season_state: The season state
     """
+    if season_state == "playoffs":
+        manager.set_playoff_appearance(str(year))
+
     if manager_data["points"] > opponent_data["points"]:
         result = "win"
     elif manager_data["points"] < opponent_data["points"]:
@@ -623,6 +641,7 @@ def _set_individual_manager_week_data(
         opponent_data["points"],  # Points against
         manager_data["starters_objects"],  # Starters
         manager_data["players_objects"],  # Rostered players
+        matchup_type=season_state,
     )
 
 

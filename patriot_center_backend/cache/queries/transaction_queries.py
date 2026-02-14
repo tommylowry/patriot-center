@@ -132,8 +132,8 @@ def get_transaction_details_from_cache(
 
 
 def get_trade_history_between_two_managers(
-    manager1: str,
-    manager2: str,
+    manager1_obj: Manager,
+    manager2_obj: Manager,
     year: str | None = None,
 ) -> list[dict[str, Any]]:
     """Get complete trade history between two managers.
@@ -141,13 +141,17 @@ def get_trade_history_between_two_managers(
     Finds all trades involving both managers and returns formatted trade cards.
 
     Args:
-        manager1: First manager name
-        manager2: Second manager name
+        manager1_obj: First manager object
+        manager2_obj: Second manager object
         year: Season year (optional - defaults to all-time if None)
 
     Returns:
         List of trade cards in reverse chronological order (newest first)
     """
+    # TODO: remove this once managers are stored in cache
+    manager1 = manager1_obj.real_name
+    manager2 = manager2_obj.real_name
+    # END TODO
     main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
     manager_1_data = deepcopy(main_manager_cache.get(manager1, {}))
 

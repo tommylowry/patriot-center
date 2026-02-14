@@ -1,18 +1,14 @@
 """Cache query helpers for reading award related manager metadata."""
 
 from copy import deepcopy
-from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters._validators import (
-    validate_matchup_data,
-)
-from patriot_center_backend.models import Player
+from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.formatters import get_matchup_card
 
 
-def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
+def get_manager_awards_from_cache(manager_obj: Manager) -> dict[str, Any]:
     """Get manager career achievements and awards.
 
     Extracts:
@@ -22,11 +18,14 @@ def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
     - Biggest FAAB bid
 
     Args:
-        manager: Manager name
+        manager_obj: Manager object
 
     Returns:
         Dictionary with all awards and achievements
     """
+    # TODO: remove this once managers are stored in cache
+    manager = manager_obj.real_name
+    # END TODO
     manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     awards = {}
@@ -95,7 +94,7 @@ def get_manager_awards_from_cache(manager: str) -> dict[str, Any]:
 
 
 def get_manager_score_awards_from_cache(
-    manager: str,
+    maanager: Manager,
 ) -> dict[str, dict[str, Any]]:
     """Get manager scoring records and extremes.
 
@@ -108,85 +107,21 @@ def get_manager_score_awards_from_cache(
     Each record includes full matchup card with top/lowest scorers.
 
     Args:
-        manager: Manager name
+        maanager: Manager object
 
     Returns:
         Dictionary with all scoring records
     """
-    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
-
     score_awards = {}
 
-    highest_weekly_score = {}
-    lowest_weekly_score = {}
-    biggest_blowout_win = {}
-    biggest_blowout_loss = {}
+    matchups = maanager.get_score_awards()
 
-    for year in list(manager_cache[manager].get("years", {})):
-        weeks = deepcopy(manager_cache[manager]["years"][year]["weeks"])
-        for week in weeks:
-            matchup_data = deepcopy(weeks.get(week, {}).get("matchup_data", {}))
-
-            validation = validate_matchup_data(matchup_data)
-            if "Warning" in validation:
-                print(f"{validation} {manager}, year {year}, week {week}")
-                continue
-            if validation == "Empty":
-                continue
-
-            points_for = matchup_data.get("points_for", 0.0)
-            points_against = matchup_data.get("points_against", 0.0)
-            point_differential = float(
-                Decimal(points_for - points_against).quantize(Decimal("0.01"))
-            )
-
-            # Highest Weekly Score
-            if points_for > highest_weekly_score.get("manager_1_score", 0.0):
-                highest_weekly_score = get_matchup_card(
-                    manager,
-                    matchup_data.get("opponent_manager", ""),
-                    year,
-                    week,
-                )
-
-            # Lowest Weekly Score
-            if points_for < lowest_weekly_score.get(
-                "manager_1_score", float("inf")
-            ):
-                lowest_weekly_score = get_matchup_card(
-                    manager,
-                    matchup_data.get("opponent_manager", ""),
-                    year,
-                    week,
-                )
-
-            # Biggest Blowout Win
-            if point_differential > biggest_blowout_win.get(
-                "differential", 0.0
-            ):
-                biggest_blowout_win = get_matchup_card(
-                    manager,
-                    matchup_data.get("opponent_manager", ""),
-                    year,
-                    week,
-                )
-                biggest_blowout_win["differential"] = point_differential
-
-            # Biggest Blowout Loss
-            if point_differential < biggest_blowout_loss.get(
-                "differential", 0.0
-            ):
-                biggest_blowout_loss = get_matchup_card(
-                    manager,
-                    matchup_data.get("opponent_manager", ""),
-                    year,
-                    week,
-                )
-                biggest_blowout_loss["differential"] = point_differential
-
-    score_awards["highest_weekly_score"] = deepcopy(highest_weekly_score)
-    score_awards["lowest_weekly_score"] = deepcopy(lowest_weekly_score)
-    score_awards["biggest_blowout_win"] = deepcopy(biggest_blowout_win)
-    score_awards["biggest_blowout_loss"] = deepcopy(biggest_blowout_loss)
+    for key in matchups:
+        score_awards[key] = get_matchup_card(
+            maanager,
+            matchups[key]["opponent"],
+            matchups[key]["year"],
+            matchups[key]["week"],
+        )
 
     return deepcopy(score_awards)

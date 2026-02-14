@@ -130,6 +130,7 @@ class Player:
             "position": self.position,
             "team": self.team,
             "provide_link": self.has_started(),
+            "type": "player",
         }
 
     def set_week_data(

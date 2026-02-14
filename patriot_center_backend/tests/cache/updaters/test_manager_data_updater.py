@@ -185,8 +185,6 @@ class TestSetDefaultsIfMissing:
         set of values when accessed.
         - `CACHE_MANAGER.get_manager_metadata_cache`:
             `mock_get_manager_cache`
-        - `CACHE_MANAGER.get_image_urls_cache`:
-            `mock_get_image_urls_cache`
         - `initialize_summary_templates`:
             `mock_initialize_templates`
         - `get_season_state`: `mock_get_season_state`
@@ -205,9 +203,6 @@ class TestSetDefaultsIfMissing:
                 f"{MODULE_PATH}.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
             patch(
-                f"{MODULE_PATH}.CACHE_MANAGER.get_image_urls_cache"
-            ) as mock_get_image_urls_cache,
-            patch(
                 f"{MODULE_PATH}.initialize_summary_templates"
             ) as mock_initialize_templates,
             patch(f"{MODULE_PATH}.get_season_state") as mock_get_season_state,
@@ -224,7 +219,6 @@ class TestSetDefaultsIfMissing:
             mock_get_manager_cache.return_value = self.mock_manager_cache
 
             self.mock_image_urls_cache: dict[str, Any] = {}
-            mock_get_image_urls_cache.return_value = self.mock_image_urls_cache
 
             self.mock_initialize_templates = mock_initialize_templates
             self.mock_initialize_templates.return_value = {

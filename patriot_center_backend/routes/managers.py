@@ -101,17 +101,17 @@ def get_manager_summary_route(
 )
 @bp.route(
     "/api/managers/"
-    "<string:manager_name>/head-to-head/<string:opponent_name>/<string:year>",
+    "<string:user_id>/head-to-head/<string:opponent_user_id>/<string:year>",
     methods=["GET"],
 )
 def get_head_to_head_route(
-    manager_name: str, opponent_name: str, year: str | None
+    user_id: str, opponent_user_id: str, year: str | None
 ) -> tuple[Response, int]:
     """Endpoint to get head-to-head statistics between two managers.
 
     Args:
-        manager_name: The name of the first manager.
-        opponent_name: The name of the opponent manager.
+        user_id: The name of the first manager.
+        opponent_user_id: The name of the opponent manager.
         year: Optional year to filter the head-to-head stats.
             Defaults to all-time.
 
@@ -120,7 +120,9 @@ def get_head_to_head_route(
         and status code.
     """
     try:
-        data = get_head_to_head(manager_name, opponent_name, year)
+        data = get_head_to_head(
+            Manager(user_id), Manager(opponent_user_id), year
+        )
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -173,18 +175,18 @@ def get_manager_transactions_route(
     return response, 200
 
 
-@bp.route("/api/managers/<string:manager_name>/awards", methods=["GET"])
-def get_manager_awards_route(manager_name: str) -> tuple[Response, int]:
+@bp.route("/api/managers/<string:user_id>/awards", methods=["GET"])
+def get_manager_awards_route(user_id: str) -> tuple[Response, int]:
     """Endpoint to get awards and recognitions for a specific manager.
 
     Args:
-        manager_name: The name of the manager.
+        user_id: The name of the manager.
 
     Returns:
         Flask Response: JSON payload (manager awards or error) and status code.
     """
     try:
-        data = get_manager_awards(manager_name)
+        data = get_manager_awards(Manager(user_id))
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

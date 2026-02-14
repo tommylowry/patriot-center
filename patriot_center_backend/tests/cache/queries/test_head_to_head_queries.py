@@ -26,7 +26,6 @@ class TestGetHeadToHeadDetailsFromCache:
         The mocks are set up to return a pre-defined
         set of values when accessed.
         - `CACHE_MANAGER.get_manager_metadata_cache`: `mock_get_manager_cache`
-        - `get_image_url`: `mock_get_image_url`
 
         Args:
             mock_manager_cache: Sample manager cache
@@ -39,13 +38,8 @@ class TestGetHeadToHeadDetailsFromCache:
                 "patriot_center_backend.cache.queries"
                 ".head_to_head_queries.CACHE_MANAGER.get_manager_metadata_cache"
             ) as mock_get_manager_cache,
-            patch(
-                "patriot_center_backend.cache.queries"
-                ".head_to_head_queries.get_image_url",
-            ) as mock_get_image_url,
         ):
             mock_get_manager_cache.return_value = mock_manager_cache
-            mock_get_image_url.return_value = {"data": "data"}
 
             yield
 

@@ -1,17 +1,18 @@
 """Manager list exporter for manager metadata."""
 
+import logging
 from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache.queries.manager_queries import (
-    get_list_of_managers_from_cache,
     get_manager_summary_from_cache,
-    get_manager_years_active_from_cache,
 )
 from patriot_center_backend.cache.queries.ranking_queries import (
     get_ranking_details_from_cache,
 )
-from patriot_center_backend.utils.image_url_handler import get_image_url
+from patriot_center_backend.models import Manager
+
+logger = logging.getLogger(__name__)
 
 
 def get_managers_list(active_only: bool) -> dict[str, Any]:
@@ -44,11 +45,14 @@ def get_managers_list(active_only: bool) -> dict[str, Any]:
             rankings: A dictionary containing the manager's rankings in
                 different categories.
     """
-    managers_to_traverse = get_list_of_managers_from_cache(active_only)
+    managers_to_traverse = Manager.get_all_managers(active_only=active_only)
 
     managers_list = []
 
-    for manager in managers_to_traverse:
+    for manager_obj in managers_to_traverse:
+        # TODO: change to manager
+        manager = manager_obj.real_name
+        # END TODO
         manager_summary = get_manager_summary_from_cache(manager)
 
         overall_matchup_data = manager_summary["matchup_data"]["overall"]
@@ -62,18 +66,30 @@ def get_managers_list(active_only: bool) -> dict[str, Any]:
             manager, manager_summary_usage=True, active_only=active_only
         )
 
-        manager_item = {
-            "name": manager,
-            "image_url": get_image_url(manager),
-            "years_active": get_manager_years_active_from_cache(manager),
-            "total_trades": (
-                manager_summary["transactions"]["trades"]["total"]
-            ),
-            "wins": wins,
-            "losses": losses,
-            "ties": ties,
-            "win_percentage": ranking_details["values"]["win_percentage"],
-        }
+        manager_item = manager_obj.get_metadata()
+        manager_item["years_active"] = manager_obj.get_years_active()
+
+        matchup_data_summary = manager_obj.get_matchup_data_summary()
+        wins = matchup_data_summary["wins"]
+        losses = matchup_data_summary["losses"]
+        ties = matchup_data_summary["ties"]
+        if wins + losses + ties == 0:
+            logger.warning(
+                f"Manager {manager_obj.real_name} has no matchup data."
+            )
+            continue
+        win_percentage = round(
+            wins / (wins + losses + ties) * 100, 1
+        )
+
+        manager_item["wins"] = wins
+        manager_item["losses"] = losses
+        manager_item["ties"] = ties
+        manager_item["win_percentage"] = win_percentage
+
+        manager_item["total_trades"] = (
+            manager_summary["transactions"]["trades"]["total"]
+        )
 
         placements = {"first_place": 0, "second_place": 0, "third_place": 0}
 

@@ -834,51 +834,6 @@ class TestSaveValidOptionsCache:
         assert "No valid options cache to save" in str(exc_info.value)
 
 
-class TestGetImageUrlsCache:
-    """Test CacheManager.get_image_urls_cache method."""
-
-    @pytest.fixture(autouse=True)
-    def setup(self):
-        """Setup common mocks for all tests.
-
-        The mocks are set up to return a pre-defined
-        set of values when accessed.
-        - `CacheManager._load_cache`: `mock_load_cache`
-
-        Yields:
-            None
-        """
-        with patch.object(CacheManager, "_load_cache") as mock_load_cache:
-            self.mock_load_cache = mock_load_cache
-            self.mock_load_cache.return_value = {
-                "Tommy": {"image_url": "https://example.com/tommy.jpg"},
-            }
-            self.manager = CacheManager()
-
-            yield
-
-    def test_loads_on_first_access(self):
-        """Test loads cache from disk on first access."""
-        result = self.manager.get_image_urls_cache()
-
-        self.mock_load_cache.assert_called_once()
-        assert "Tommy" in result
-
-    def test_returns_cached_on_second_access(self):
-        """Test returns in-memory cache on second access."""
-        self.manager.get_image_urls_cache()
-        self.manager.get_image_urls_cache()
-
-        self.mock_load_cache.assert_called_once()
-
-    def test_force_reload(self):
-        """Test force_reload reloads from disk."""
-        self.manager.get_image_urls_cache()
-        self.manager.get_image_urls_cache(force_reload=True)
-
-        assert self.mock_load_cache.call_count == 2
-
-
 class TestSaveImageUrlsCache:
     """Test CacheManager.save_image_urls_cache method."""
 

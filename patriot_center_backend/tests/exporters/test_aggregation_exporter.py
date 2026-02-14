@@ -24,7 +24,6 @@ class TestGetAggregatedPlayers:
         set of values when accessed.
         - `get_starters_from_cache`: `mock_get_starters`
         - `get_ffwar_from_cache`: `mock_get_ffwar`
-        - `get_image_url`: `mock_get_image_url`
         - `slugify`: `mock_slugify`
         - `get_team`: `mock_get_team`
 
@@ -36,7 +35,6 @@ class TestGetAggregatedPlayers:
                 f"{MODULE_PATH}.get_starters_from_cache"
             ) as mock_get_starters,
             patch(f"{MODULE_PATH}.get_ffwar_from_cache") as mock_get_ffwar,
-            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(f"{MODULE_PATH}.slugify") as mock_slugify,
             patch(f"{MODULE_PATH}.get_team") as mock_get_team,
         ):
@@ -45,11 +43,6 @@ class TestGetAggregatedPlayers:
 
             self.mock_get_ffwar = mock_get_ffwar
             self.mock_get_ffwar.return_value = 0.0
-
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = (
-                "https://sleepercdn.com/content/abc123"
-            )
 
             self.mock_slugify = mock_slugify
             self.mock_slugify.side_effect = (
@@ -187,7 +180,6 @@ class TestGetAggregatedManagers:
         set of values when accessed.
         - `get_starters_from_cache`: `mock_get_starters`
         - `get_ffwar_from_cache`: `mock_get_ffwar`
-        - `get_image_url`: `mock_get_image_url`
         - `slugify`: `mock_slugify`
         - `get_team`: `mock_get_team`
 
@@ -199,7 +191,6 @@ class TestGetAggregatedManagers:
                 f"{MODULE_PATH}.get_starters_from_cache"
             ) as mock_get_starters,
             patch(f"{MODULE_PATH}.get_ffwar_from_cache") as mock_get_ffwar,
-            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(f"{MODULE_PATH}.slugify") as mock_slugify,
             patch(f"{MODULE_PATH}.get_team") as mock_get_team,
         ):
@@ -208,11 +199,6 @@ class TestGetAggregatedManagers:
 
             self.mock_get_ffwar = mock_get_ffwar
             self.mock_get_ffwar.return_value = 0.0
-
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = (
-                "https://sleepercdn.com/content/abc123"
-            )
 
             self.mock_slugify = mock_slugify
             self.mock_slugify.side_effect = (
@@ -316,7 +302,6 @@ class TestGetPlayerManagerAggregation:
         set of values when accessed.
         - `get_starters_from_cache`: `mock_get_starters`
         - `get_ffwar_from_cache`: `mock_get_ffwar`
-        - `get_image_url`: `mock_get_image_url`
         - `slugify`: `mock_slugify`
         - `get_team`: `mock_get_team`
 
@@ -328,7 +313,6 @@ class TestGetPlayerManagerAggregation:
                 f"{MODULE_PATH}.get_starters_from_cache"
             ) as mock_get_starters,
             patch(f"{MODULE_PATH}.get_ffwar_from_cache") as mock_get_ffwar,
-            patch(f"{MODULE_PATH}.get_image_url") as mock_get_image_url,
             patch(f"{MODULE_PATH}.slugify") as mock_slugify,
             patch(f"{MODULE_PATH}.get_team") as mock_get_team,
         ):
@@ -348,11 +332,6 @@ class TestGetPlayerManagerAggregation:
 
             self.mock_get_ffwar = mock_get_ffwar
             self.mock_get_ffwar.return_value = 1.5
-
-            self.mock_get_image_url = mock_get_image_url
-            self.mock_get_image_url.return_value = (
-                "https://sleepercdn.com/content/abc123"
-            )
 
             self.mock_slugify = mock_slugify
             self.mock_slugify.side_effect = (

@@ -7,9 +7,9 @@ from patriot_center_backend.cache.queries.transaction_queries import (
     get_manager_transaction_history_from_cache,
     get_transaction_from_ids_cache,
 )
-from patriot_center_backend.models import Player
+from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.formatters import get_trade_card
-from patriot_center_backend.utils.image_url_handler import get_image_url
+from patriot_center_backend.utils.helpers import get_user_id
 
 
 def get_manager_transactions(
@@ -24,15 +24,19 @@ def get_manager_transactions(
     Returns:
         dictionary with manager transaction history.
     """
+    # TODO: remove this once managers are stored in cache
+    user_id = get_user_id(manager_name)
+    if not user_id:
+        raise ValueError(f"Manager {manager_name} not found in cache.")
+    manager_obj = Manager(user_id)
+    # END TODO
     manager_transactions = get_manager_transaction_history_from_cache(
         manager_name, year
     )
 
-    transaction_history = {
-        "name": get_image_url(manager_name, dictionary=True),
-        "total_count": 0,
-        "transactions": [],
-    }
+    transaction_history = manager_obj.get_metadata()
+    transaction_history["total_count"] = 0
+    transaction_history["transactions"] = []
 
     # Gather transactions based on filters
     filtered_transactions = []

@@ -11,9 +11,6 @@ from patriot_center_backend.cache.updaters._templates import (
 from patriot_center_backend.cache.updaters._validators import (
     validate_caching_preconditions,
 )
-from patriot_center_backend.cache.updaters.image_urls_updater import (
-    update_image_urls_cache,
-)
 from patriot_center_backend.cache.updaters.processors.matchup_processor import (
     MatchupProcessor,
 )
@@ -258,8 +255,6 @@ class ManagerMetadataManager:
 
         # Add user_id to manager cache
         manager_cache[manager]["summary"]["user_id"] = user_payload["user_id"]
-
-        update_image_urls_cache(manager)
 
     def _setup_league_settings(self) -> None:
         # Fetch league settings to determine FAAB usage at start of

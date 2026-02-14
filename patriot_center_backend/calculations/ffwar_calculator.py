@@ -183,13 +183,9 @@ class FFWARCalculator:
         positional average, plus the average of all other managers at this
         position.
         """
-        managers = Manager.get_all_managers(
-            year=str(self.year), week=str(self.week)
-        )
-
         league_pos_scores = {p: [] for p in Position}
 
-        for manager in managers:
+        for manager in self.managers:
             matchup_data = manager.get_matchup_data(
                 year=str(self.year), week=str(self.week)
             )
@@ -214,7 +210,7 @@ class FFWARCalculator:
         for pos, scores in league_pos_scores.items():
             pos_average = mean(scores)
 
-            for manager in managers:
+            for manager in self.managers:
 
                 # Use baseline if it exists, otherwise use total.
                 if str(manager) in self.baseline_scores[pos]:

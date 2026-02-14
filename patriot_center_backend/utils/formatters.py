@@ -7,7 +7,6 @@ from typing import Any
 from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.helpers import get_user_id
-from patriot_center_backend.utils.image_url_handler import get_image_url
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +65,7 @@ def _get_top_three_and_lowest_scorers(
 
 
 def get_matchup_card(
-    managers: tuple[Manager, Manager], year: str, week: str
+    manager_1: Manager, manager_2: Manager, year: str, week: str
 ) -> dict[str, Any]:
     """Generate complete matchup card with scores, winner, and top performers.
 
@@ -74,7 +73,8 @@ def get_matchup_card(
     the winner determination, and top 3/lowest scorers for each team.
 
     Args:
-        managers: Tuple of two managers
+        manager_1: First manager
+        manager_2: Second manager
         year: Season year as string
         week: Week number as string
 
@@ -82,10 +82,10 @@ def get_matchup_card(
         Dictionary containing matchup details, scores, winner, and top
             performers. Empty dict if matchup data incomplete
     """
-    manager_1_matchup_data = managers[0].get_matchup_data(
+    manager_1_matchup_data = manager_1.get_matchup_data(
         year=year, week=week
     )
-    manager_2_matchup_data = managers[1].get_matchup_data(
+    manager_2_matchup_data = manager_2.get_matchup_data(
         year=year, week=week
     )
 
@@ -94,16 +94,16 @@ def get_matchup_card(
 
     if not manager_1_score or not manager_2_score:
         logger.warning(
-            f"Incomplete matchup data for {managers[0].real_name} vs "
-            f"{managers[1].real_name} in year {year}, week {week}."
+            f"Incomplete matchup data for {manager_1.real_name} vs "
+            f"{manager_2.real_name} in year {year}, week {week}."
         )
         return {}
 
     # Determine winner based on point differential
     if manager_1_score > manager_2_score:
-        winner = managers[0]
+        winner = manager_1
     elif manager_2_score > manager_1_score:
-        winner = managers[1]
+        winner = manager_2
     else:
         winner = "Tie"
 
@@ -121,8 +121,8 @@ def get_matchup_card(
     matchup = {
         "year": year,
         "week": week,
-        "manager_1": managers[0].get_metadata(),
-        "manager_2": managers[1].get_metadata(),
+        "manager_1": manager_1.get_metadata(),
+        "manager_2": manager_2.get_metadata(),
         "manager_1_score": manager_1_score,
         "manager_2_score": manager_2_score,
         "winner": winner,
@@ -180,10 +180,17 @@ def get_trade_card(transaction_id: str) -> dict[str, Any]:
                 f"Manager {m} in transaction {transaction_id} is not a string."
             )
 
+        # TODO: remove this once managers are stored in cache
+        user_id = get_user_id(m)
+        if not user_id:
+            raise ValueError(f"Manager {m} not found in cache.")
+        manager_obj = Manager(user_id)
+        # END TODO
+
         trade_item[f"{m.lower().replace(' ', '_')}_received"] = []
         trade_item[f"{m.lower().replace(' ', '_')}_sent"] = []
         trade_item["managers_involved"].append(
-            get_image_url(m, dictionary=True)
+            manager_obj.get_metadata()
         )
 
     # Populate sent/received arrays with players/assets

@@ -9,8 +9,9 @@ from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.cache.updaters._validators import (
     validate_matchup_data,
 )
+from patriot_center_backend.models import Manager
 from patriot_center_backend.utils.formatters import get_matchup_card
-from patriot_center_backend.utils.image_url_handler import get_image_url
+from patriot_center_backend.utils.helpers import get_user_id
 
 logger = logging.getLogger(__name__)
 
@@ -56,11 +57,18 @@ def get_head_to_head_details_from_cache(
         opponents = [opponent]
 
     for opponent in opponents:
-        if not opponent:
+        if opponent is None:
             continue
 
+        user_id = get_user_id(opponent)
+
+        if user_id is None:
+            continue
+
+        opponent_obj = Manager(user_id)
+
         opponent_data = {
-            "opponent": get_image_url(opponent, dictionary=True),
+            "opponent": opponent_obj.get_metadata(),
             "wins": matchup_data["wins"]["opponents"].get(opponent, 0),
             "losses": matchup_data["losses"]["opponents"].get(opponent, 0),
             "ties": matchup_data["ties"]["opponents"].get(opponent, 0),
@@ -81,8 +89,8 @@ def get_head_to_head_details_from_cache(
 
 
 def get_head_to_head_overall_from_cache(
-    manager1: str,
-    manager2: str,
+    manager1_obj: Manager,
+    manager2_obj: Manager,
     year: str | None = None,
     list_all_matchups: bool = False,
 ) -> list[dict[str, Any]] | dict[str, Any]:
@@ -95,8 +103,8 @@ def get_head_to_head_overall_from_cache(
     - Biggest blowout for each manager
 
     Args:
-        manager1: First manager name
-        manager2: Second manager name
+        manager1_obj: First manager object
+        manager2_obj: Second manager object
         year: Season year (optional - defaults to all-time if None)
         list_all_matchups: If True, returns list with all
             matchup cards instead of dict with head-to-head data
@@ -110,6 +118,10 @@ def get_head_to_head_overall_from_cache(
         ValueError: If get_head_to_head_details_from_cache fails
             to return expected data type
     """
+    # TODO: remove this once managers are stored in cache
+    manager1 = manager1_obj.real_name
+    manager2 = manager2_obj.real_name
+    # END TODO
     manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     # Only for list_all_matchups = False
@@ -228,7 +240,7 @@ def get_head_to_head_overall_from_cache(
                 )
                 continue
 
-            matchup_card = get_matchup_card(manager1, manager2, y, w)
+            matchup_card = get_matchup_card(manager1_obj, manager2_obj, y, w)
 
             if list_all_matchups:
                 matchup_history.append(matchup_card)

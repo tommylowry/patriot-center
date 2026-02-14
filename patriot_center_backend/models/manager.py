@@ -8,7 +8,11 @@ from time import time
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import USERNAME_TO_REAL_NAME, Position
+from patriot_center_backend.constants import (
+    LEAGUE_IDS,
+    USERNAME_TO_REAL_NAME,
+    Position,
+)
 
 if TYPE_CHECKING:
     from patriot_center_backend.models.player import Player
@@ -65,6 +69,7 @@ class Manager:
         cls,
         year: str | None = None,
         week: str | None = None,
+        active_only: bool = False,
     ) -> list[Manager]:
         """Get players who have participated in the given year and week.
 
@@ -74,12 +79,18 @@ class Manager:
         Args:
             year: Filter by year
             week: Filter by week
-            manager: Filter by manager
+            active_only: Filter by active managers only
 
         Returns:
             List of managers who have participated in the given year and week.
         """
         manager_cache = CACHE_MANAGER.get_manager_cache()
+
+        if active_only:
+            # TODO: change when seasons are implemented
+            year = str(max(LEAGUE_IDS.keys()))
+            week = None
+            # END TODO
 
         managers = []
         for user_id in manager_cache:
@@ -159,12 +170,14 @@ class Manager:
         """
         return {
             "name": self.real_name,
+            "full_name": self.real_name,
             "first_name": self.real_name,
             "last_name": "",
             "image_url": self.image_url,
             "user_id": self.user_id,
             "username": self.username,
             "provide_link": True,
+            "type": "manager",
         }
 
     def set_season_data(
@@ -297,6 +310,89 @@ class Manager:
                 f"year {year}"
             )
         return roster_id
+
+    def get_score_awards(
+        self, year: str | None = None, opponent: Manager | None = None
+    ) -> dict[str, Any]:
+        """Get manager scoring records and extremes.
+
+        Iterates through all matchups to find:
+        - Highest weekly score
+        - Lowest weekly score
+        - Biggest blowout win
+        - Biggest blowout loss
+
+        Each record includes full matchup card with top/lowest scorers.
+
+        Args:
+            year: Season year (optional - defaults to all-time)
+            opponent: Filter by opponent (optional - defaults to all opponents)
+
+        Returns:
+            Dictionary with all scoring records
+        """
+        matches = self._get_matching_data(year=year, opponent=opponent)
+
+        highest_weekly_score = (0.0, "", "")
+        lowest_weekly_score = (float("inf"), "", "")
+        biggest_blowout_win = (0.0, "", "")
+        biggest_blowout_loss = (0.0, "", "")
+
+        for match in matches:
+            if match["points_for"] > highest_weekly_score[0]:
+                highest_weekly_score = (
+                    match["points_for"],
+                    match["year"],
+                    match["week"],
+                )
+            if match["points_for"] < lowest_weekly_score[0]:
+                lowest_weekly_score = (
+                    match["points_for"],
+                    match["year"],
+                    match["week"],
+                )
+            if (
+                match["points_for"] - match["points_against"]
+                > biggest_blowout_win[0]
+            ):
+                biggest_blowout_win = (
+                    match["points_for"] - match["points_against"],
+                    match["year"],
+                    match["week"],
+                )
+            if (
+                match["points_for"] - match["points_against"]
+                < biggest_blowout_loss[0]
+            ):
+                biggest_blowout_loss = (
+                    match["points_for"] - match["points_against"],
+                    match["year"],
+                    match["week"],
+                )
+
+        returning_dictionary = {}
+        if highest_weekly_score[0] != 0.0:
+            returning_dictionary["highest_weekly_score"] = (
+                self.get_matchup_data(
+                    highest_weekly_score[1], highest_weekly_score[2]
+                )
+            )
+        if lowest_weekly_score[0] != float("inf"):
+            returning_dictionary["lowest_weekly_score"] = self.get_matchup_data(
+                lowest_weekly_score[1], lowest_weekly_score[2]
+            )
+        if biggest_blowout_win[0] != 0.0:
+            returning_dictionary["biggest_blowout_win"] = self.get_matchup_data(
+                biggest_blowout_win[1], biggest_blowout_win[2]
+            )
+        if biggest_blowout_loss[0] != 0.0:
+            returning_dictionary["biggest_blowout_loss"] = (
+                self.get_matchup_data(
+                    biggest_blowout_loss[1], biggest_blowout_loss[2]
+                )
+            )
+
+        return returning_dictionary
 
     def check_participation(
         self, year: str | None = None, week: str | None = None

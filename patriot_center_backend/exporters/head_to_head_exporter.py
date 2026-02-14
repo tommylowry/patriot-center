@@ -9,14 +9,11 @@ from patriot_center_backend.cache.queries.head_to_head_queries import (
 from patriot_center_backend.cache.queries.transaction_queries import (
     get_trade_history_between_two_managers,
 )
-from patriot_center_backend.cache.updaters._validators import (
-    validate_manager_query,
-)
-from patriot_center_backend.utils.image_url_handler import get_image_url
+from patriot_center_backend.models import Manager
 
 
 def get_head_to_head(
-    manager1: str, manager2: str, year: str | None = None
+    manager1: Manager, manager2: Manager, year: str | None = None
 ) -> dict[str, Any]:
     """Get comprehensive head-to-head analysis between two managers.
 
@@ -35,16 +32,18 @@ def get_head_to_head(
         dictionary with all head-to-head data, including overall data,
             matchup history, and trades between the two managers
     """
-    validate_manager_query(manager1, year)
-    validate_manager_query(manager2, year)
+    if not manager1.check_participation(year):
+        raise ValueError(f"Manager {manager1} is not active in {year}.")
+    if not manager2.check_participation(year):
+        raise ValueError(f"Manager {manager2} is not active in {year}.")
 
     trades_between = get_trade_history_between_two_managers(
         manager1, manager2, year=year
     )
 
     return_dict = {
-        "manager_1": get_image_url(manager1, dictionary=True),
-        "manager_2": get_image_url(manager2, dictionary=True),
+        "manager_1": manager1.get_metadata(),
+        "manager_2": manager2.get_metadata(),
         "overall": get_head_to_head_overall_from_cache(
             manager1, manager2, year=year
         ),

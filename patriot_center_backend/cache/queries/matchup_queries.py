@@ -104,7 +104,7 @@ def get_overall_data_details(manager: Manager) -> dict[str, Any]:
         opponent = last_matchup["opponent"]
         week = last_matchup["week"]
 
-        matchup_card = get_matchup_card((manager, opponent), year, week)
+        matchup_card = get_matchup_card(manager, opponent, year, week)
 
         placement_item = {
             "year": year,

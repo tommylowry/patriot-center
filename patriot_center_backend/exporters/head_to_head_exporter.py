@@ -32,9 +32,9 @@ def get_head_to_head(
         dictionary with all head-to-head data, including overall data,
             matchup history, and trades between the two managers
     """
-    if not manager1.check_participation(year):
+    if not manager1.participated(year):
         raise ValueError(f"Manager {manager1} is not active in {year}.")
-    if not manager2.check_participation(year):
+    if not manager2.participated(year):
         raise ValueError(f"Manager {manager2} is not active in {year}.")
 
     trades_between = get_trade_history_between_two_managers(

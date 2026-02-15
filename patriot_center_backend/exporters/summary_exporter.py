@@ -44,7 +44,7 @@ def get_manager_summary(
     Returns:
         dictionary with all manager summary data
     """
-    if not manager.check_participation(year):
+    if not manager.participated(year):
         raise ValueError(f"Manager {manager} is not active in {year}.")
 
     return_dict = {

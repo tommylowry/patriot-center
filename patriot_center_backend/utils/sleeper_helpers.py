@@ -514,6 +514,36 @@ def set_managers_season_data(year: int, week: int) -> list[Manager]:
     return returning_managers
 
 
+def get_roster_ids_map(
+    year: int, week: int, ignore_playoffs: bool = False
+) -> dict[int, Manager]:
+    """Get a mapping of roster IDs to managers for a given year and week.
+
+    Args:
+        year: The year for which to retrieve the roster IDs.
+        week: The week for which to retrieve the roster IDs.
+        ignore_playoffs: Whether to return roster IDs for the playoffs only or
+            for all weeks. Defaults to False, which returns roster IDs for the
+            playoffs only if playoffs have started.
+
+    Returns:
+        A dictionary mapping roster IDs to managers.
+    """
+    roster_ids: dict[int, str] = get_roster_ids(year, week, ignore_playoffs)
+    roster_id_to_manager: dict[int, Manager] = {}
+
+    managers = Manager.get_all_managers(str(year), str(week))
+
+    # Create a mapping of roster IDs to managers
+    for roster_id in list(roster_ids.keys()):
+        for manager in managers:
+            if manager.get_roster_id(str(year)) == roster_id:
+                roster_id_to_manager[roster_id] = manager
+                break
+
+    return roster_id_to_manager
+
+
 def set_matchup_data(year: int, week: int, managers: list[Manager]) -> None:
     """Sets the week data for all managers for a given year and week.
 
@@ -529,19 +559,11 @@ def set_matchup_data(year: int, week: int, managers: list[Manager]) -> None:
         ValueError: If the Sleeper API call fails to retrieve the managers.
     """
     matchups = fetch_matchups(year, week)
-    roster_ids = get_roster_ids(year, week)
     season_state = get_season_state(str(year), str(week))
 
     # Create a mapping of matchup IDs to matchup data
     matchup_mapping: dict[int, dict[str, Any]] = {}
-    roster_id_to_manager: dict[int, Manager] = {}
-
-    # Create a mapping of roster IDs to managers
-    for roster_id in list(roster_ids.keys()):
-        for manager in managers:
-            if manager.get_roster_id(str(year)) == roster_id:
-                roster_id_to_manager[roster_id] = manager
-                break
+    roster_id_to_manager: dict[int, Manager] = get_roster_ids_map(year, week)
 
     # Loop through all matchups
     for manager_a_data in matchups:
@@ -602,6 +624,19 @@ def set_matchup_data(year: int, week: int, managers: list[Manager]) -> None:
         )
 
 
+def is_faab_used(year: int) -> bool:
+    """Check if FAAB is used in the given year.
+
+    Args:
+        year: The year to check.
+
+    Returns:
+        True if FAAB is used, False otherwise.
+    """
+    league_info = get_league_info(year)
+    return league_info["settings"]["waiver_type"] == 2
+
+
 def _set_individual_manager_week_data(
     year: int,
     week: int,
@@ -632,7 +667,7 @@ def _set_individual_manager_week_data(
     else:
         result = "tie"
 
-    manager.set_week_data(
+    manager.set_matchup_data(
         str(year),
         str(week),
         opponent,  # Opponent

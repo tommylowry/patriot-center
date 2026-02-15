@@ -1,9 +1,10 @@
 """Validation functions for manager metadata processing."""
 
 import logging
-from typing import Any
+from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.models import Manager
 
 logger = logging.getLogger(__name__)
 
@@ -122,8 +123,8 @@ def validate_matchup_data(matchup_data: dict[str, Any] | None) -> str:
 
 def validate_transaction(
     transaction: dict[str, Any],
-    transaction_type: str,
-    roster_ids: dict[int, str],
+    transaction_type: Literal["trade", "add_or_drop"],
+    roster_ids: dict[int, Manager],
 ) -> bool:
     """Validate if transaction should be processed.
 

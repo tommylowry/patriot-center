@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.models import Player
+from patriot_center_backend.models import Manager, Player
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +151,9 @@ def add_to_transaction_ids(
                     "old_manager": manager,
                     "new_manager": players_sent[player_id],
                 }
-
+        for manager_obj in transaction_info["managers_involved"]:
+            manager_obj: Manager
+            manager_obj.set_transaction(year, week, transaction_id, "trade")
         for player_obj in transaction_info["players"]:
             player_obj: Player
             player_obj.set_transaction(transaction_id)

@@ -95,90 +95,46 @@ class Manager:
         managers = []
         for user_id in manager_cache:
             manager = cls(user_id)
-            if manager.check_participation(year, week):
+            if manager.participated(year, week):
                 managers.append(manager)
 
         return managers
 
-    def _load_from_cache(self) -> None:
-        """Loads manager data from cache."""
-        manager_cache = CACHE_MANAGER.get_manager_cache()
+    def participated(
+        self, year: str | None = None, week: str | None = None
+    ) -> bool:
+        """Check if a manager participated in a given year and week.
 
-        # Get manager data
-        manager_data = deepcopy(manager_cache.get(self.user_id, {}))
+        If year or week is not provided, defaults to all years or all weeks.
 
-        self._overall_data: dict[str, Any] = manager_data.get(
-            "overall_data", {}
-        )
-        self._season_data: dict[str, dict[str, Any]] = manager_data.get(
-            "season_data", {}
-        )
-        self._week_data: dict[str, dict[str, Any]] = manager_data.get(
-            "week_data", {}
-        )
-        self._transactions: dict[str, list[str]] = manager_data.get(
-            "transactions", {}
-        )
-        self._transactions.setdefault("trade", [])
-        self._transactions.setdefault("add_or_drop", [])
-
-        self._summary: dict[str, Any] = manager_data.get("summary", {})
-
-        self._fetch_and_apply_user_metadata()
-
-        self._apply_to_cache()
-
-
-    def _apply_to_cache(self) -> None:
-        """Applies the manager data to the cache."""
-        manager_cache = CACHE_MANAGER.get_manager_cache()
-
-        manager_cache[self.user_id] = {
-            "real_name": self.real_name,  # Not read but used for display
-            "overall_data": deepcopy(self._overall_data),
-            "season_data": deepcopy(self._season_data),
-            "week_data": deepcopy(self._week_data),
-            "transactions": deepcopy(self._transactions),
-            "summary": deepcopy(self._summary),
-        }
-
-    def _fetch_and_apply_user_metadata(self) -> None:
-        """Fetches and applies user metadata to the manager."""
-        from patriot_center_backend.utils.sleeper_helpers import (
-            fetch_user_metadata,
-        )
-        user_metadata = fetch_user_metadata(self.user_id, bypass_cache=True)
-
-        self.username = user_metadata["display_name"]
-        self.image_url = (
-            f"https://sleepercdn.com/avatars/{user_metadata['avatar']}"
-        )
-
-        # TODO: change to cached data and make dynamic with user entry
-        if self.username in USERNAME_TO_REAL_NAME:
-            self.real_name = USERNAME_TO_REAL_NAME[self.username]
-        else:
-            self.real_name = self.username
-
-        self._time_updated = time()
-
-    def get_metadata(self) -> dict[str, Any]:
-        """Get manager metadata.
+        Args:
+            year: Filter by year.
+            week: Filter by week.
 
         Returns:
-            Manager metadata
+            True if the manager participated in the given parameters,
+            False otherwise.
         """
-        return {
-            "name": self.real_name,
-            "full_name": self.real_name,
-            "first_name": self.real_name,
-            "last_name": "",
-            "image_url": self.image_url,
-            "user_id": self.user_id,
-            "username": self.username,
-            "provide_link": True,
-            "type": "manager",
-        }
+        if not self._season_data:
+            return False
+
+        if week and not year:
+            logger.warning(
+                f"Week {week} provided without year for "
+                f"manager {self.real_name}"
+            )
+            return False
+
+        if not year:
+            return True
+
+        if not self._season_data.get(year):
+            return False
+
+        if not week:
+            return True
+
+        return "matchup_data" in self._week_data.get(f"{year}_{week}", {})
 
     def set_season_data(
         self,
@@ -220,16 +176,6 @@ class Manager:
 
         self._apply_to_cache()
 
-    def set_playoff_placement(self, year: str, playoff_placement: int) -> None:
-        """Set manager playoff placement.
-
-        Args:
-            year: The year.
-            playoff_placement: The playoff placement.
-        """
-        self._season_data[year]["playoff_placement"] = playoff_placement
-        self._apply_to_cache()
-
     def set_playoff_appearance(self, year: str) -> None:
         """Set manager playoff appearance.
 
@@ -239,7 +185,7 @@ class Manager:
         self._season_data[year]["playoff_appearance"] = True
         self._apply_to_cache()
 
-    def set_week_data(
+    def set_matchup_data(
         self,
         year: str,
         week: str,
@@ -264,7 +210,8 @@ class Manager:
             rostered: The rostered players.
             matchup_type: The matchup type.
         """
-        self._week_data[f"{year}_{week}"] = {
+        self._week_data.setdefault(f"{year}_{week}", {})
+        self._week_data[f"{year}_{week}"]["matchup_data"] = {
             "opponent": str(opponent),
             "result": result,
             "points_for": points_for,
@@ -278,21 +225,59 @@ class Manager:
 
     def set_transaction(
         self,
+        year: str,
+        week: str,
         transaction_id: str,
         transaction_type: Literal["trade", "add_or_drop"],
     ) -> None:
         """Set manager transaction.
 
         Args:
+            year: The year of the transaction.
+            week: The week of the transaction.
             transaction_id: The transaction ID.
             transaction_type: The transaction type.
         """
-        if transaction_type == "trade":
-            self._transactions["trade"].append(transaction_id)
-        elif transaction_type == "add_or_drop":
-            self._transactions["add_or_drop"].append(transaction_id)
-
+        key = f"{year}_{week}"
+        self._week_data.setdefault(
+            key,
+            {"transactions": {"trades": [], "add_or_drop": []}},
+        )
+        if transaction_id not in (
+            self._week_data[key]["transactions"][transaction_type]
+        ):
+            self._week_data[key]["transactions"][transaction_type].append(
+                transaction_id
+            )
         self._apply_to_cache()
+
+    def set_playoff_placement(self, year: str, playoff_placement: int) -> None:
+        """Set manager playoff placement.
+
+        Args:
+            year: The year.
+            playoff_placement: The playoff placement.
+        """
+        self._season_data[year]["playoff_placement"] = playoff_placement
+        self._apply_to_cache()
+
+    def get_metadata(self) -> dict[str, Any]:
+        """Get manager metadata.
+
+        Returns:
+            Manager metadata
+        """
+        return {
+            "name": self.real_name,
+            "full_name": self.real_name,
+            "first_name": self.real_name,
+            "last_name": "",
+            "image_url": self.image_url,
+            "user_id": self.user_id,
+            "username": self.username,
+            "provide_link": True,
+            "type": "manager",
+        }
 
     def get_roster_id(self, year: str) -> int | None:
         """Get the roster ID for a manager.
@@ -331,7 +316,7 @@ class Manager:
         Returns:
             Dictionary with all scoring records
         """
-        matches = self._get_matching_data(year=year, opponent=opponent)
+        matches = self._get_matching_matchup_data(year=year, opponent=opponent)
 
         highest_weekly_score = (0.0, "", "")
         lowest_weekly_score = (float("inf"), "", "")
@@ -394,42 +379,6 @@ class Manager:
 
         return returning_dictionary
 
-    def check_participation(
-        self, year: str | None = None, week: str | None = None
-    ) -> bool:
-        """Check if a manager participates in a given year and week.
-
-        If year or week is not provided, defaults to all years or all weeks.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-
-        Returns:
-            True if the manager participated in the given parameters,
-            False otherwise.
-        """
-        if not self._season_data:
-            return False
-
-        if week and not year:
-            logger.warning(
-                f"Week {week} provided without year for "
-                f"manager {self.real_name}"
-            )
-            return False
-
-        if not year:
-            return True
-
-        if not self._season_data.get(year):
-            return False
-
-        if not week:
-            return True
-
-        return f"{year}_{week}" in self._week_data
-
     def get_players(
         self,
         year: str | None = None,
@@ -448,8 +397,6 @@ class Manager:
         Returns:
             List of players.
         """
-        from patriot_center_backend.models.player import Player
-
         if week and not year:
             logger.warning(
                 f"Week {week} provided without year for "
@@ -457,7 +404,7 @@ class Manager:
             )
             return []
 
-        matches = self._get_matching_data(
+        matches = self._get_matching_matchup_data(
             year=year, week=week, only_starters=only_starters
         )
         if not matches:
@@ -509,7 +456,7 @@ class Manager:
         Returns:
             The points scored by the manager.
         """
-        matches = self._get_matching_data(
+        matches = self._get_matching_matchup_data(
             year=year,
             week=week,
             only_starters=only_starters,
@@ -600,13 +547,12 @@ class Manager:
         """
         from patriot_center_backend.models.player import Player
 
-        data = self._week_data.get(f"{year}_{week}", {})
+        data = self._week_data.get(f"{year}_{week}", {}).get("matchup_data", {})
         if not data:
             return {}
 
         data = deepcopy(data)
         data["opponent"] = Manager(data["opponent"])
-
 
         data["starters"] = [Player(p) for p in data["starters"]]
         data["rostered"] = [Player(p) for p in data["rostered"]]
@@ -654,10 +600,8 @@ class Manager:
         Returns:
             A dictionary containing the matchup data.
         """
-        matchups = self._get_matching_data(
-            year=year,
-            result=result,
-            opponent=opponent
+        matchups = self._get_matching_matchup_data(
+            year=year, result=result, opponent=opponent
         )
         if not matchups:
             return {}
@@ -665,7 +609,135 @@ class Manager:
 
         return self.get_matchup_data(last_matchup["year"], last_matchup["week"])
 
-    def _get_matching_data(
+    def get_transactions(
+        self,
+        year: str | None = None,
+        week: str | None = None,
+        transaction_type: Literal["trade", "add_or_drop", None] = None,
+    ) -> list[str]:
+        """Get all data entries matching the given filters.
+
+        Args:
+            year: Filter by year.
+            week: Filter by week.
+            transaction_type: Filter by transaction type.
+
+        Returns:
+            List of matching data entries.
+        """
+        if not self._week_data:
+            return []
+
+        if year and week:
+            transactions: dict[str, list[str]] = self._week_data.get(
+                f"{year}_{week}", {}
+            ).get("transactions", {})
+
+            if not transaction_type:
+                return transactions.get("trades", []) + transactions.get(
+                    "add_or_drop", []
+                )
+            return transactions.get(transaction_type, [])
+
+        returning_transactions = []
+        for key, data in self._week_data.items():
+            data_year, data_week = key.split("_")
+            if year and data_year != year:
+                continue
+            if week and data_week != week:
+                continue
+            if "transactions" not in data:
+                continue
+            recursive_transactions = self.get_transactions(
+                year=data_year,
+                week=data_week,
+                transaction_type=transaction_type,
+            )
+            returning_transactions.extend(recursive_transactions)
+
+        return returning_transactions
+
+    def remove_transaction(
+        self,
+        year: str,
+        week: str,
+        transaction_id: str,
+        transaction_type: Literal["trade", "add_or_drop"],
+    ) -> None:
+        """Remove transaction from manager cache.
+
+        Args:
+            year: The year of the transaction.
+            week: The week of the transaction.
+            transaction_id: The transaction ID.
+            transaction_type: The transaction type.
+        """
+        transactions: dict[str, list[str]] = self._week_data.get(
+            f"{year}_{week}", {}
+        ).get("transactions", {})
+        if transaction_type not in transactions:
+            return
+        transactions[transaction_type].remove(transaction_id)
+
+        self._apply_to_cache()
+
+    def _load_from_cache(self) -> None:
+        """Loads manager data from cache."""
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
+        # Get manager data
+        manager_data = deepcopy(manager_cache.get(self.user_id, {}))
+
+        self._overall_data: dict[str, Any] = manager_data.get(
+            "overall_data", {}
+        )
+        self._season_data: dict[str, dict[str, Any]] = manager_data.get(
+            "season_data", {}
+        )
+        self._week_data: dict[str, dict[str, dict[str, Any]]] = (
+            manager_data.get("week_data", {})
+        )
+
+        self._summary: dict[str, Any] = manager_data.get("summary", {})
+
+        self._fetch_and_apply_user_metadata()
+
+        self._apply_to_cache()
+
+    def _apply_to_cache(self) -> None:
+        """Applies the manager data to the cache."""
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+
+        manager_cache[self.user_id] = {
+            "real_name": self.real_name,  # Not read but used for display
+            "overall_data": deepcopy(self._overall_data),
+            "season_data": deepcopy(self._season_data),
+            "week_data": deepcopy(self._week_data),
+            "summary": deepcopy(self._summary),
+        }
+
+    def _fetch_and_apply_user_metadata(self) -> None:
+        """Fetches and applies user metadata to the manager."""
+        from patriot_center_backend.utils.sleeper_helpers import (
+            fetch_user_metadata,
+        )
+
+        user_metadata = fetch_user_metadata(self.user_id, bypass_cache=True)
+
+        self.username = user_metadata["display_name"]
+        self.image_url = (
+            f"https://sleepercdn.com/avatars/{user_metadata['avatar']}"
+        )
+
+        # TODO: change to cached data and make dynamic with user entry
+        if self.username in USERNAME_TO_REAL_NAME:
+            self.real_name = USERNAME_TO_REAL_NAME[self.username]
+        else:
+            self.real_name = self.username
+
+        self._time_updated = time()
+
+    def _get_matching_matchup_data(
         self,
         year: str | None = None,
         week: str | None = None,
@@ -718,7 +790,9 @@ class Manager:
                 continue
             if week and data_week != week:
                 continue
-            recursive_matches = self._get_matching_data(
+            if "matchup_data" not in self._week_data[key]:
+                continue
+            recursive_matches = self._get_matching_matchup_data(
                 year=data_year,
                 week=data_week,
                 only_starters=only_starters,

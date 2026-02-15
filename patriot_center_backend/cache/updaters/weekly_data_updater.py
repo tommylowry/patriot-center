@@ -23,9 +23,6 @@ from patriot_center_backend.cache.updaters._progress_tracker import (
     get_league_status,
     set_last_updated,
 )
-from patriot_center_backend.cache.updaters.manager_data_updater import (
-    ManagerMetadataManager,
-)
 from patriot_center_backend.cache.updaters.replacement_score_updater import (
     ReplacementScoreCacheBuilder,
 )
@@ -56,8 +53,6 @@ def update_weekly_data_caches() -> None:
     - Only fetch missing weeks per season; break early if fully current.
     - Strip metadata before returning to callers.
     """
-    manager_updater = ManagerMetadataManager()
-
     for year in LEAGUE_IDS:
         ReplacementScoreCacheBuilder(year).update()
 
@@ -77,13 +72,13 @@ def update_weekly_data_caches() -> None:
 
             set_matchup_data(year, week, managers=managers)
 
-            manager_updater.cache_week_data(str(year), str(week))
-
             players = _apply_player_data_to_week(year, week)
 
             FFWARCalculator(year, week).calculate_and_set_ffwar_for_week(
                 players
             )
+
+
 
             # Assign playoff placements
             if week == max(weeks_to_update) and season_complete:

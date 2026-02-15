@@ -5,13 +5,10 @@ from copy import deepcopy
 from typing import Any, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters.processors.transactions.faab_processor import (  # noqa: E501
-    add_faab_details_to_cache,
-)
 from patriot_center_backend.cache.updaters.processors.transactions.transaction_id_processor import (  # noqa: E501
     add_to_transaction_ids,
 )
-from patriot_center_backend.models import Player
+from patriot_center_backend.models import Manager, Player
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +17,7 @@ def process_add_or_drop_transaction(
     year: str,
     week: str,
     transaction: dict[str, Any],
-    roster_ids: dict[int, str],
+    roster_ids_map: dict[int, Manager],
     weekly_transaction_ids: list[str],
     commish_action: bool,
     use_faab: bool,
@@ -40,7 +37,7 @@ def process_add_or_drop_transaction(
         year: year of the transaction
         week: week of the transaction
         transaction: Raw add/drop transaction from Sleeper API
-        roster_ids: Mapping of roster IDs to manager names
+        roster_ids_map: Mapping of roster IDs to manager names
         weekly_transaction_ids: List of transaction IDs for this week
         commish_action: Whether this is a commissioner action
         use_faab: if faab was used at the time of this transaction
@@ -57,12 +54,9 @@ def process_add_or_drop_transaction(
             player = Player(player_id)
 
             roster_id = adds[str(player)]
-
-            manager = roster_ids.get(roster_id, "unknown_manager")
-            if manager == "unknown_manager":
-                logger.warning(
-                    f"Could not find manager for roster ID: {roster_id}"
-                )
+            manager = roster_ids_map.get(roster_id)
+            if manager is None:
+                raise ValueError(f"Unknown manager for roster_id: {roster_id}")
 
             transaction_id = transaction.get(
                 "transaction_id", "unknown_transaction_id"
@@ -90,33 +84,14 @@ def process_add_or_drop_transaction(
                 waiver_bid=waiver_bid,
             )
 
-            # add FAAB details to the cache
-            if use_faab and transaction.get("settings"):
-                faab_amount = transaction.get("settings", {}).get(
-                    "waiver_bid", 0
-                )
-                transaction_type = transaction.get("type", "")
-                add_faab_details_to_cache(
-                    year,
-                    week,
-                    transaction_type,
-                    manager,
-                    str(player),
-                    faab_amount,
-                    transaction_id,
-                )
-
     if drops:
         for player_id in drops:
             player = Player(player_id)
 
             roster_id = drops[str(player)]
-
-            manager = roster_ids.get(roster_id, "unknown_manager")
-            if manager == "unknown_manager":
-                logger.warning(
-                    f"Could not find manager for roster ID: {roster_id}"
-                )
+            manager = roster_ids_map.get(roster_id)
+            if manager is None:
+                raise ValueError(f"Unknown manager for roster_id: {roster_id}")
 
             transaction_id = transaction.get("transaction_id", "")
 
@@ -139,7 +114,7 @@ def add_add_or_drop_details_to_cache(
     week: str,
     weekly_transaction_ids: list[str],
     free_agent_type: str,
-    manager: str,
+    manager: Manager,
     player: Player,
     transaction_id: str,
     commish_action: bool,
@@ -167,17 +142,8 @@ def add_add_or_drop_details_to_cache(
     if free_agent_type not in ["add", "drop"]:
         return
 
-    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
-
-    if transaction_id in (
-        manager_cache.get(manager, {})
-        .get("years", {})
-        .get(year, {})
-        .get("weeks", {})
-        .get(week, {})
-        .get("transactions", {})
-        .get(f"{free_agent_type}s", {})
-        .get("transaction_ids", [])
+    if transaction_id in manager.get_transactions(
+        year=year, week=week, transaction_type="add_or_drop"
     ):
         # Add already processed for this week
         return
@@ -198,29 +164,6 @@ def add_add_or_drop_details_to_cache(
         commish_action,
         use_faab,
     )
-    manager_level = manager_cache[manager]
-    top_lvl = manager_level["summary"]
-    top_level_summary = top_lvl["transactions"][f"{free_agent_type}s"]
-
-    yr_level = manager_level["years"][year]
-    yr_summary = yr_level["summary"]
-    yearly_summary = yr_summary["transactions"][f"{free_agent_type}s"]
-
-    wk_summary = yr_level["weeks"][week]
-    weekly_summary = wk_summary["transactions"][f"{free_agent_type}s"]
-
-    summaries = [top_level_summary, yearly_summary, weekly_summary]
-
-    # Add add details in all summaries
-    for summary in summaries:
-        if str(player) not in summary["players"]:
-            summary["players"][str(player)] = 0
-        summary["players"][str(player)] += 1
-        summary["total"] += 1
-
-    # Finally, add transaction ID to weekly summary to avoid double counting
-    weekly_summary["transaction_ids"].append(transaction_id)
-
 
 def revert_add_drop_transaction(
     transaction_id: str,
@@ -256,57 +199,25 @@ def revert_add_drop_transaction(
         return None  # Returns None to signal failure
 
     transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
-    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
 
     transaction = deepcopy(transaction_ids_cache[transaction_id])
-
-    year = transaction["year"]
-    week = transaction["week"]
-    manager = transaction["managers_involved"][0]
-    player_id = transaction[transaction_type]
-    player = Player(player_id)
 
     if len(transaction["managers_involved"]) > 1:
         raise Exception(f"Weird {transaction_type} with multiple managers")
 
-    mgr_lvl = manager_cache[manager]
-    yr_lvl = mgr_lvl["years"][year]
-    wk_lvl = yr_lvl["weeks"][week]
+    year = transaction["year"]
+    week = transaction["week"]
+    user_id = transaction["managers_involved"][0]
+    player_id = transaction[transaction_type]
 
-    mgr_trans = mgr_lvl["summary"]["transactions"]
-    yr_trans = yr_lvl["summary"]["transactions"]
-    wk_trans = wk_lvl["transactions"]
+    manager = Manager(user_id)
+    player = Player(player_id)
 
-    places_to_change = [
-        mgr_trans[f"{transaction_type}s"],
-        yr_trans[f"{transaction_type}s"],
-        wk_trans[f"{transaction_type}s"],
-    ]
+    manager.remove_transaction(year, week, transaction_id, "add_or_drop")
+    player.remove_transaction(transaction_id)
 
-    for d in places_to_change:
-        # remove the add/drop transaction from the cache
-        d["total"] -= 1
-        d["players"][str(player)] -= 1
-
-        if d["players"][str(player)] == 0:
-            del d["players"][str(player)]
-
-    # If this transaction had faab spent and the transaction to remove is add,
-    # remove the transaction id from the faab spent portion.
-    if "faab_spent" in transaction and transaction_type == "add":
-        if transaction_id in wk_trans["faab"]["transaction_ids"]:
-            wk_trans["faab"]["transaction_ids"].remove(transaction_id)
-
-        places_to_change = [
-            mgr_trans["faab"],
-            yr_trans["faab"],
-            wk_trans["faab"],
-        ]
-
-        for d in places_to_change:
-            d["players"][str(player)]["num_bids_won"] -= 1
-            if d["players"][str(player)]["num_bids_won"] == 0:
-                del d["players"][str(player)]
+    if len(transaction["managers_involved"]) > 1:
+        raise Exception(f"Weird {transaction_type} with multiple managers")
 
     # remove the transaction_type portion of this transaction and keep
     # it intact in case there was the other type involved
@@ -315,8 +226,6 @@ def revert_add_drop_transaction(
     transaction_ids_cache[transaction_id]["players_involved"].remove(
         str(player)
     )
-
-    player.remove_transaction(transaction_id)
 
     # this was the only data in the transaction so it can be fully removed
     if len(transaction_ids_cache[transaction_id]["types"]) == 0:

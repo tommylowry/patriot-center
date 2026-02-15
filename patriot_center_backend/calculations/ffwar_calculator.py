@@ -262,6 +262,3 @@ class FFWARCalculator:
             The adjusted ffwar if season is playoffs, otherwise the unadjusted
         """
         return ffwar / 3 if self.season_state == "playoffs" else ffwar
-
-
-FFWARCalculator(2023, 1)

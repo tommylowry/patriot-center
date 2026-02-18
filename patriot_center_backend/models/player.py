@@ -80,6 +80,39 @@ class Player:
         """
         return self.player_id
 
+    def __eq__(self, other: object) -> bool:
+        """Equality operator for Player class.
+
+        Args:
+            other: The object to compare to.
+
+        Returns:
+            True if the objects are equal, False otherwise.
+        """
+        if not isinstance(other, Player):
+            return NotImplemented
+
+        return self.player_id == other.player_id
+
+    def __ne__(self, other: object) -> bool:
+        """Inequality operator for Player class.
+
+        Args:
+            other: The object to compare to.
+
+        Returns:
+            True if the objects are not equal, False otherwise.
+        """
+        return not self == other
+
+    def __hash__(self) -> int:
+        """Hash function for Player class.
+
+        Returns:
+            The hash of the player.
+        """
+        return hash(self.player_id)
+
     @classmethod
     def get_all_starters(
         cls,
@@ -187,36 +220,6 @@ class Player:
 
         self._placements[f"{year}_{manager!s}"] = placement
 
-        self._apply_to_cache()
-
-    def set_transaction(self, transaction_id: str) -> None:
-        """Set player data for a given transaction.
-
-        Args:
-            year: The year.
-            week: The week.
-            transaction_id: The transaction ID.
-        """
-        if not self._is_real_player or transaction_id in self._transactions:
-            return
-
-        self._transactions.append(transaction_id)
-
-        self._apply_to_cache()
-
-    def remove_transaction(self, transaction_id: str) -> None:
-        """Remove player data for a given transaction.
-
-        Args:
-            year: The year.
-            week: The week.
-            transaction_id: The transaction ID.
-        """
-        if not self._is_real_player or transaction_id not in self._transactions:
-            return
-
-        # Remove from transactions
-        self._transactions.remove(transaction_id)
         self._apply_to_cache()
 
     def get_points(
@@ -585,9 +588,8 @@ class Player:
         self.number: int | None = metadata.get("number")
         self._placements: dict[str, int] = metadata.get("placements", {})
 
-        # Set data and transactions
+        # Set data
         self._data: dict[str, dict[str, Any]] = player_data.get("data", {})
-        self._transactions: list[str] = player_data.get("transactions", [])
 
         if metadata_from_player_ids_cache:
             self._apply_to_cache()
@@ -653,7 +655,6 @@ class Player:
                 "placements": self._placements,
             },
             "data": deepcopy(self._data),
-            "transactions": deepcopy(self._transactions),
         }
 
     def _get_matching_data(

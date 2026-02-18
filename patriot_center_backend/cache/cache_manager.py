@@ -46,6 +46,9 @@ _PLAYER_CACHE_FILE = os.path.join(
 _MANAGER_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "manager_cache.json"
 )
+_TRANSACTION_CACHE_FILE = os.path.join(
+    _CACHE_DIR, "cached_data", "transaction_cache.json"
+)
 
 
 class CacheManager:
@@ -83,6 +86,7 @@ class CacheManager:
         self._weekly_data_progress_tracker: dict | None = None
         self._player_cache: dict | None = None
         self._manager_cache: dict | None = None
+        self._transaction_cache: dict | None = None
 
     # ===== LOADER AND SAVER =====
     def _load_cache(self, file_path: str) -> dict[str, Any]:
@@ -494,6 +498,51 @@ class CacheManager:
         self._delete_cache(_PLAYER_CACHE_FILE)
         self._player_cache = None
 
+    # ===== TRANSACTION CACHE =====
+    def get_transaction_cache(
+        self, force_reload: bool = False, copy: bool = False
+    ) -> dict[str, dict[str, Any]]:
+        """Get transaction cache.
+
+        Args:
+            force_reload: If True, reload from disk
+            copy: If True, return a copy of the cache
+
+        Returns:
+            transaction cache dictionary
+        """
+        if self._transaction_cache is None or force_reload:
+            self._transaction_cache = self._load_cache(_TRANSACTION_CACHE_FILE)
+
+        if copy:
+            return deepcopy(self._transaction_cache)
+        return self._transaction_cache
+
+    def save_transaction_cache(
+        self, cache: dict[str, dict[str, Any]] | None = None
+    ) -> None:
+        """Save transaction cache to disk.
+
+        Args:
+            cache: Cache to save (uses in-memory cache if not provided)
+
+        Raises:
+            ValueError: If no transaction cache to save
+        """
+        data_to_save = cache if cache is not None else self._transaction_cache
+
+        if data_to_save is None:
+            raise ValueError("No transaction cache to save")
+
+        self._save_cache(_TRANSACTION_CACHE_FILE, data_to_save)
+        self._transaction_cache = data_to_save
+
+    def _delete_transaction_cache(self) -> None:
+        """Delete transaction cache file."""
+        self._delete_cache(_TRANSACTION_CACHE_FILE)
+        self._transaction_cache = None
+
+
     # ===== UTILITY METHODS =====
     def is_cache_stale(
         self, cache_name: str, max_age: timedelta = timedelta(weeks=1)
@@ -540,6 +589,7 @@ class CacheManager:
         self._weekly_data_progress_tracker = None
         self._player_cache = None
         self._manager_cache = None
+        self._transaction_cache = None
 
     def save_all_caches(self) -> None:
         """Save all loaded caches to disk."""
@@ -559,6 +609,8 @@ class CacheManager:
             self.save_player_cache()
         if self._manager_cache is not None:
             self.save_manager_cache()
+        if self._transaction_cache is not None:
+            self.save_transaction_cache()
 
     def restart_all_caches(
         self, restart: Literal["partial", "full"]
@@ -576,6 +628,7 @@ class CacheManager:
         self._delete_weekly_data_progress_tracker()
         self._delete_player_cache()
         self._delete_manager_cache()
+        self._delete_transaction_cache()
         if restart == "full":
             self._delete_player_ids_cache()
 

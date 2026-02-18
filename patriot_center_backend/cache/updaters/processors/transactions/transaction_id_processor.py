@@ -13,7 +13,6 @@ def add_to_transaction_ids(
     year: str,
     week: str,
     transaction_info: dict[str, Any],
-    weekly_transaction_ids: list[str],
     commish_action: bool,
     use_faab: bool,
 ) -> None:
@@ -161,6 +160,3 @@ def add_to_transaction_ids(
     # FAAB data being handled in trades and add/drop for transactions
     elif transaction_type != "faab":
         raise ValueError(f"Unknown transaction type: {transaction_type}")
-
-    if transaction_id not in weekly_transaction_ids:
-        weekly_transaction_ids.append(transaction_id)

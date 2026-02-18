@@ -64,6 +64,39 @@ class Manager:
         """
         return self.user_id
 
+    def __eq__(self, other: object) -> bool:
+        """Equality operator for Manager class.
+
+        Args:
+            other: The object to compare to.
+
+        Returns:
+            True if the objects are equal, False otherwise.
+        """
+        if not isinstance(other, Manager):
+            return NotImplemented
+
+        return self.user_id == other.user_id
+
+    def __ne__(self, other: object) -> bool:
+        """Inequality operator for Manager class.
+
+        Args:
+            other: The object to compare to.
+
+        Returns:
+            True if the objects are not equal, False otherwise.
+        """
+        return not self == other
+
+    def __hash__(self) -> int:
+        """Hash function for Manager class.
+
+        Returns:
+            The hash of the manager.
+        """
+        return hash(self.user_id)
+
     @classmethod
     def get_all_managers(
         cls,
@@ -100,6 +133,19 @@ class Manager:
 
         return managers
 
+    @classmethod
+    def get_name_to_user_id_map(cls) -> dict[str, str]:
+        """Get a mapping of real names to user IDs.
+
+        Returns:
+            A dictionary mapping real names to user IDs.
+        """
+        manager_cache = CACHE_MANAGER.get_manager_cache()
+        return {
+            data["real_name"]: user_id
+            for user_id, data in manager_cache.items()
+        }
+
     def participated(
         self, year: str | None = None, week: str | None = None
     ) -> bool:
@@ -134,7 +180,7 @@ class Manager:
         if not week:
             return True
 
-        return "matchup_data" in self._week_data.get(f"{year}_{week}", {})
+        return f"{year}_{week}" in self._matchup_data
 
     def set_season_data(
         self,
@@ -210,8 +256,8 @@ class Manager:
             rostered: The rostered players.
             matchup_type: The matchup type.
         """
-        self._week_data.setdefault(f"{year}_{week}", {})
-        self._week_data[f"{year}_{week}"]["matchup_data"] = {
+        self._matchup_data.setdefault(f"{year}_{week}", {})
+        self._matchup_data[f"{year}_{week}"] = {
             "opponent": str(opponent),
             "result": result,
             "points_for": points_for,
@@ -221,34 +267,6 @@ class Manager:
             "matchup_type": matchup_type,
         }
 
-        self._apply_to_cache()
-
-    def set_transaction(
-        self,
-        year: str,
-        week: str,
-        transaction_id: str,
-        transaction_type: Literal["trade", "add_or_drop"],
-    ) -> None:
-        """Set manager transaction.
-
-        Args:
-            year: The year of the transaction.
-            week: The week of the transaction.
-            transaction_id: The transaction ID.
-            transaction_type: The transaction type.
-        """
-        key = f"{year}_{week}"
-        self._week_data.setdefault(
-            key,
-            {"transactions": {"trades": [], "add_or_drop": []}},
-        )
-        if transaction_id not in (
-            self._week_data[key]["transactions"][transaction_type]
-        ):
-            self._week_data[key]["transactions"][transaction_type].append(
-                transaction_id
-            )
         self._apply_to_cache()
 
     def set_playoff_placement(self, year: str, playoff_placement: int) -> None:
@@ -547,7 +565,7 @@ class Manager:
         """
         from patriot_center_backend.models.player import Player
 
-        data = self._week_data.get(f"{year}_{week}", {}).get("matchup_data", {})
+        data = self._matchup_data.get(f"{year}_{week}", {})
         if not data:
             return {}
 
@@ -609,78 +627,6 @@ class Manager:
 
         return self.get_matchup_data(last_matchup["year"], last_matchup["week"])
 
-    def get_transactions(
-        self,
-        year: str | None = None,
-        week: str | None = None,
-        transaction_type: Literal["trade", "add_or_drop", None] = None,
-    ) -> list[str]:
-        """Get all data entries matching the given filters.
-
-        Args:
-            year: Filter by year.
-            week: Filter by week.
-            transaction_type: Filter by transaction type.
-
-        Returns:
-            List of matching data entries.
-        """
-        if not self._week_data:
-            return []
-
-        if year and week:
-            transactions: dict[str, list[str]] = self._week_data.get(
-                f"{year}_{week}", {}
-            ).get("transactions", {})
-
-            if not transaction_type:
-                return transactions.get("trades", []) + transactions.get(
-                    "add_or_drop", []
-                )
-            return transactions.get(transaction_type, [])
-
-        returning_transactions = []
-        for key, data in self._week_data.items():
-            data_year, data_week = key.split("_")
-            if year and data_year != year:
-                continue
-            if week and data_week != week:
-                continue
-            if "transactions" not in data:
-                continue
-            recursive_transactions = self.get_transactions(
-                year=data_year,
-                week=data_week,
-                transaction_type=transaction_type,
-            )
-            returning_transactions.extend(recursive_transactions)
-
-        return returning_transactions
-
-    def remove_transaction(
-        self,
-        year: str,
-        week: str,
-        transaction_id: str,
-        transaction_type: Literal["trade", "add_or_drop"],
-    ) -> None:
-        """Remove transaction from manager cache.
-
-        Args:
-            year: The year of the transaction.
-            week: The week of the transaction.
-            transaction_id: The transaction ID.
-            transaction_type: The transaction type.
-        """
-        transactions: dict[str, list[str]] = self._week_data.get(
-            f"{year}_{week}", {}
-        ).get("transactions", {})
-        if transaction_type not in transactions:
-            return
-        transactions[transaction_type].remove(transaction_id)
-
-        self._apply_to_cache()
-
     def _load_from_cache(self) -> None:
         """Loads manager data from cache."""
         manager_cache = CACHE_MANAGER.get_manager_cache()
@@ -694,8 +640,8 @@ class Manager:
         self._season_data: dict[str, dict[str, Any]] = manager_data.get(
             "season_data", {}
         )
-        self._week_data: dict[str, dict[str, dict[str, Any]]] = (
-            manager_data.get("week_data", {})
+        self._matchup_data: dict[str, dict[str, Any]] = (
+            manager_data.get("matchup_data", {})
         )
 
         self._summary: dict[str, Any] = manager_data.get("summary", {})
@@ -712,7 +658,7 @@ class Manager:
             "real_name": self.real_name,  # Not read but used for display
             "overall_data": deepcopy(self._overall_data),
             "season_data": deepcopy(self._season_data),
-            "week_data": deepcopy(self._week_data),
+            "matchup_data": deepcopy(self._matchup_data),
             "summary": deepcopy(self._summary),
         }
 
@@ -761,7 +707,7 @@ class Manager:
         Returns:
             List of matching data entries.
         """
-        if not self._week_data:
+        if not self._matchup_data:
             return []
 
         if year and week:
@@ -784,13 +730,11 @@ class Manager:
             return [data]
 
         matches = []
-        for key in self._week_data:
+        for key in self._matchup_data:
             data_year, data_week = key.split("_")
             if year and data_year != year:
                 continue
             if week and data_week != week:
-                continue
-            if "matchup_data" not in self._week_data[key]:
                 continue
             recursive_matches = self._get_matching_matchup_data(
                 year=data_year,

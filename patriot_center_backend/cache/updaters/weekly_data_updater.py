@@ -35,6 +35,9 @@ from patriot_center_backend.models import Player
 from patriot_center_backend.playoffs.playoff_tracker import (
     assign_placements_retroactively,
 )
+from patriot_center_backend.transactions.transaction_processor import (
+    process_transactions,
+)
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
     set_managers_season_data,
@@ -69,23 +72,20 @@ def update_weekly_data_caches() -> None:
         for week in weeks_to_update:
 
             managers = set_managers_season_data(year, week)
-
             set_matchup_data(year, week, managers=managers)
 
             players = _apply_player_data_to_week(year, week)
-
             FFWARCalculator(year, week).calculate_and_set_ffwar_for_week(
                 players
             )
 
-
+            process_transactions(year, week)
 
             # Assign playoff placements
             if week == max(weeks_to_update) and season_complete:
                 assign_placements_retroactively(year)
 
             log_cache_update(year, week, "Weekly Data")
-
             set_last_updated(year, week)
 
     CACHE_MANAGER.save_all_caches()

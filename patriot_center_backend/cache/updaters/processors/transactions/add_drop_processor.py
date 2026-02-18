@@ -160,10 +160,11 @@ def add_add_or_drop_details_to_cache(
         year,
         week,
         transaction_info,
-        weekly_transaction_ids,
         commish_action,
         use_faab,
     )
+    if transaction_id not in weekly_transaction_ids:
+        weekly_transaction_ids.append(transaction_id)
 
 def revert_add_drop_transaction(
     transaction_id: str,

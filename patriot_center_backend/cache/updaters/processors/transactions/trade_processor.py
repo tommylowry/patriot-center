@@ -244,10 +244,11 @@ def add_trade_details_to_cache(
         year,
         week,
         transaction_info,
-        weekly_transaction_ids,
         commish_action,
         use_faab,
     )
+    if transaction_id not in weekly_transaction_ids:
+        weekly_transaction_ids.append(transaction_id)
 
     top_level_summary = mgr_lvl["summary"]["transactions"]["trades"]
     yearly_summary = yr_lvl["summary"]["transactions"]["trades"]

@@ -62,6 +62,8 @@ USER_IDS = [
 
 # User ID for Tommy, used as a historical reference
 TOMMY_USER_ID = "399258572535365632"
+CODY_USER_ID = "482387309098954752"
+DAVEY_USER_ID = "607421766062637056"
 
 
 # Enum for player positions
@@ -74,6 +76,12 @@ class Position(StrEnum):
     TE = "TE"
     K = "K"
     DEF = "DEF"
+
+class TransactionType(StrEnum):
+    """Enum for transaction types."""
+    TRADE = "trade"
+    ADD = "add"
+    DROP = "drop"
 
 
 # Mapping of team IDs to their full names

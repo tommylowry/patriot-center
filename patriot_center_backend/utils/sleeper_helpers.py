@@ -1,14 +1,16 @@
 """This module provides utility for interacting with the Sleeper API."""
 
 import logging
+from collections.abc import Iterator
 from copy import deepcopy
 from math import ceil
 from typing import Any, Literal
 
 from patriot_center_backend.constants import (
+    CODY_USER_ID,
+    DAVEY_USER_ID,
     LEAGUE_IDS,
     TOMMY_USER_ID,
-    USERNAME_TO_REAL_NAME,
 )
 from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.sleeper_api import SLEEPER_CLIENT
@@ -90,7 +92,7 @@ def get_roster_id(
 def get_roster_ids(
     year: int, week: int, ignore_playoffs: bool = False
 ) -> dict[int, str]:
-    """Retrieves a mapping of roster IDs to real names for a given year.
+    """Retrieves a mapping of roster IDs to user_ids for a given year.
 
     Special Cases:
     - Davey: In 2024, if there is only one user missing,
@@ -105,14 +107,14 @@ def get_roster_ids(
             playoffs only if playoffs have started.
 
     Returns:
-        Mapping of roster IDs to real names.
+        Mapping of roster IDs to user_ids.
 
     Raises:
         ValueError: If the Sleeper API call fails to retrieve
             the users in list form.
         Exception: If not all roster IDs are assigned to a user.
     """
-    user_ids = {}
+    user_ids = set()
 
     sleeper_users_response = fetch_sleeper_data(
         f"league/{LEAGUE_IDS[year]}/users"
@@ -125,11 +127,11 @@ def get_roster_ids(
             f"list form for year {year}"
         )
 
-    # Iterate over the users data and store the user IDs with their real names
+    # Iterate over the users data and store the user IDs
     for user in sleeper_users_response:
-        user_ids[user["user_id"]] = USERNAME_TO_REAL_NAME[user["display_name"]]
+        user_ids.add(user["user_id"])
 
-    roster_ids = {}
+    roster_ids_to_user_ids = {}
 
     # Fetch the rosters data from the Sleeper API
     sleeper_rosters_response = fetch_sleeper_data(
@@ -156,19 +158,19 @@ def get_roster_ids(
         # In 2024 special case, if user_id is None,
         #   assign the roster_id to "Davey"
         if year == 2024 and user_id is None:
-            roster_ids[roster_id] = "Davey"
+            roster_ids_to_user_ids[roster_id] = DAVEY_USER_ID
             continue
 
         # In 2019 special case, Tommy started the year
         #   and Cody took over in week 4
-        if year == 2019 and week <= 3 and user_ids[user_id] == "Cody":
-            roster_ids[roster_id] = "Tommy"
+        if year == 2019 and week <= 3 and user_id == CODY_USER_ID:
+            roster_ids_to_user_ids[roster_id] = TOMMY_USER_ID
             continue
 
-        # Store the roster ID and the real name of the user
-        roster_ids[roster_id] = user_ids[user_id]
+        # Store the roster ID and the user_id of the user
+        roster_ids_to_user_ids[roster_id] = user_id
 
-    if len(roster_ids) > len(user_ids):
+    if len(roster_ids_to_user_ids) > len(user_ids):
         raise Exception("Not all roster IDs are assigned to a user")
 
     if (
@@ -178,11 +180,11 @@ def get_roster_ids(
         playoff_ids = get_playoff_roster_ids(year, week)
         returning_ids = {}
         for id in playoff_ids:
-            returning_ids[id] = roster_ids[id]
+            returning_ids[id] = roster_ids_to_user_ids[id]
 
         return returning_ids
 
-    return roster_ids
+    return roster_ids_to_user_ids
 
 
 def get_playoff_roster_ids(year: int, week: int) -> list[int]:
@@ -430,6 +432,32 @@ def fetch_all_player_ids() -> dict[str, Any]:
 
     return sleeper_response
 
+def fetch_transactions(year: int, week: int) -> Iterator[dict[str, Any]]:
+    """Retrieves the transactions for a given year and week.
+
+    Args:
+        year: The year for which to retrieve transactions.
+        week: The week for which to retrieve transactions.
+
+    Returns:
+        A list of transaction dictionaries.
+
+    Raises:
+        ValueError: If Sleeper API call returns invalid data.
+    """
+    league_id = LEAGUE_IDS.get(year)
+    if not league_id:
+        raise ValueError(f"No league ID found for year {year}.")
+    transactions_list = fetch_sleeper_data(
+        f"league/{league_id}/transactions/{week}"
+    )
+    if isinstance(transactions_list, dict):
+        raise ValueError(
+            "Sleeper API call failed to retreieve "
+            "transactions in the expected list format."
+        )
+    return reversed(transactions_list)
+
 
 def set_managers_season_data(year: int, week: int) -> list[Manager]:
     """Sets the season data for all managers for a given year and week.
@@ -513,9 +541,11 @@ def set_managers_season_data(year: int, week: int) -> list[Manager]:
 
     return returning_managers
 
-
 def get_roster_ids_map(
-    year: int, week: int, ignore_playoffs: bool = False
+    year: int,
+    week: int,
+    ignore_playoffs: bool = False,
+    managers: list[Manager] | None = None,
 ) -> dict[int, Manager]:
     """Get a mapping of roster IDs to managers for a given year and week.
 
@@ -525,23 +555,21 @@ def get_roster_ids_map(
         ignore_playoffs: Whether to return roster IDs for the playoffs only or
             for all weeks. Defaults to False, which returns roster IDs for the
             playoffs only if playoffs have started.
+        managers: A list of managers to filter the roster IDs to.
 
     Returns:
         A dictionary mapping roster IDs to managers.
     """
     roster_ids: dict[int, str] = get_roster_ids(year, week, ignore_playoffs)
-    roster_id_to_manager: dict[int, Manager] = {}
 
-    managers = Manager.get_all_managers(str(year), str(week))
+    returning_managers: dict[int, Manager] = {}
 
-    # Create a mapping of roster IDs to managers
-    for roster_id in list(roster_ids.keys()):
-        for manager in managers:
-            if manager.get_roster_id(str(year)) == roster_id:
-                roster_id_to_manager[roster_id] = manager
-                break
+    for roster_id, user_id in roster_ids.items():
+        manager = Manager(user_id)
+        if managers is None or manager in managers:
+            returning_managers[roster_id] = manager
 
-    return roster_id_to_manager
+    return returning_managers
 
 
 def set_matchup_data(year: int, week: int, managers: list[Manager]) -> None:
@@ -563,7 +591,10 @@ def set_matchup_data(year: int, week: int, managers: list[Manager]) -> None:
 
     # Create a mapping of matchup IDs to matchup data
     matchup_mapping: dict[int, dict[str, Any]] = {}
-    roster_id_to_manager: dict[int, Manager] = get_roster_ids_map(year, week)
+    roster_id_to_manager: dict[int, Manager] = get_roster_ids_map(
+        year, week, managers=managers
+    )
+
 
     # Loop through all matchups
     for manager_a_data in matchups:
@@ -678,12 +709,3 @@ def _set_individual_manager_week_data(
         manager_data["players_objects"],  # Rostered players
         matchup_type=season_state,
     )
-
-
-# for manager_username in USERNAME_TO_REAL_NAME:
-#     fetch_user_metadata(manager_username)
-
-# s = fetch_sleeper_data(f"league/{LEAGUE_IDS[2020]}/users")
-# print()
-# if __name__ == "__main__":
-#     get_roster_id("607421766062637056", 2025)

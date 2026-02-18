@@ -21,12 +21,6 @@ _PLAYER_IDS_CACHE_FILE = os.path.join(
 _VALID_OPTIONS_CACHE_FILE = os.path.join(
     _CACHE_DIR, "cached_data", "valid_options_cache.json"
 )
-_MANAGER_METADATA_CACHE_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "manager_metadata_cache.json"
-)
-_TRANSACTION_IDS_FILE = os.path.join(
-    _CACHE_DIR, "cached_data", "transaction_ids.json"
-)
 _WEEKLY_DATA_PROGRESS_TRACKER_FILE = os.path.join(
     _CACHE_DIR,
     "cached_data",
@@ -78,8 +72,6 @@ class CacheManager:
         only when accessed for the first time.
         """
         # In-memory cache storage (loaded lazily)
-        self._manager_metadata_cache: dict | None = None
-        self._transaction_ids_cache: dict | None = None
         self._player_ids_cache: dict | None = None
         self._replacement_score_cache: dict | None = None
         self._valid_options_cache: dict | None = None
@@ -128,54 +120,6 @@ class CacheManager:
         if os.path.exists(file_path):
             os.remove(file_path)
 
-    # ===== MANAGER METADATA CACHE =====
-    def get_manager_metadata_cache(
-        self, force_reload: bool = False, copy: bool = False
-    ) -> dict[str, dict[str, Any]]:
-        """Get manager metadata cache.
-
-        Args:
-            force_reload: If True, reload from disk
-            copy: If True, return a copy of the cache
-
-        Returns:
-            Manager metadata cache dictionary
-        """
-        if self._manager_metadata_cache is None or force_reload:
-            self._manager_metadata_cache = self._load_cache(
-                _MANAGER_METADATA_CACHE_FILE
-            )
-
-        if copy:
-            return deepcopy(self._manager_metadata_cache)
-        return self._manager_metadata_cache
-
-    def save_manager_metadata_cache(
-        self, cache: dict[str, dict[str, Any]] | None = None
-    ) -> None:
-        """Save manager metadata cache to disk.
-
-        Args:
-            cache: Cache to save (uses in-memory cache if not provided)
-
-        Raises:
-            ValueError: If no manager cache data to save
-        """
-        data_to_save = (
-            cache if cache is not None else self._manager_metadata_cache
-        )
-
-        if data_to_save is None:
-            raise ValueError("No manager cache data to save")
-
-        self._save_cache(_MANAGER_METADATA_CACHE_FILE, data_to_save)
-        self._manager_metadata_cache = data_to_save
-
-    def _delete_manager_metadata_cache(self) -> None:
-        """Delete manager metadata cache file."""
-        self._delete_cache(_MANAGER_METADATA_CACHE_FILE)
-        self._manager_metadata_cache = None
-
     # ===== MANAGER CACHE =====
     def get_manager_cache(
         self, force_reload: bool = False, copy: bool = False
@@ -219,54 +163,6 @@ class CacheManager:
         """Delete manager cache file."""
         self._delete_cache(_MANAGER_CACHE_FILE)
         self._manager_cache = None
-
-    # ===== TRANSACTION IDS CACHE =====
-    def get_transaction_ids_cache(
-        self, force_reload: bool = False, copy: bool = False
-    ) -> dict[str, dict[str, Any]]:
-        """Get transaction IDs cache.
-
-        Args:
-            force_reload: If True, reload from disk
-            copy: If True, return a copy of the cache
-
-        Returns:
-            Transaction IDs cache dictionary
-        """
-        if self._transaction_ids_cache is None or force_reload:
-            self._transaction_ids_cache = self._load_cache(
-                _TRANSACTION_IDS_FILE
-            )
-
-        if copy:
-            return deepcopy(self._transaction_ids_cache)
-        return self._transaction_ids_cache
-
-    def save_transaction_ids_cache(
-        self, cache: dict[str, dict[str, Any]] | None = None
-    ) -> None:
-        """Save transaction IDs cache to disk.
-
-        Args:
-            cache: Cache to save (uses in-memory cache if not provided)
-
-        Raises:
-            ValueError: No transaction IDs cache data to save
-        """
-        data_to_save = (
-            cache if cache is not None else self._transaction_ids_cache
-        )
-
-        if data_to_save is None:
-            raise ValueError("No transaction IDs cache data to save")
-
-        self._save_cache(_TRANSACTION_IDS_FILE, data_to_save)
-        self._transaction_ids_cache = data_to_save
-
-    def _delete_transaction_ids_cache(self) -> None:
-        """Delete transaction IDs cache file."""
-        self._delete_cache(_TRANSACTION_IDS_FILE)
-        self._transaction_ids_cache = None
 
     # ===== PLAYER IDS CACHE =====
     def get_player_ids_cache(
@@ -581,8 +477,6 @@ class CacheManager:
 
         Clearing the cache forces a reload from disk on next access.
         """
-        self._manager_metadata_cache = None
-        self._transaction_ids_cache = None
         self._player_ids_cache = None
         self._replacement_score_cache = None
         self._valid_options_cache = None
@@ -593,10 +487,6 @@ class CacheManager:
 
     def save_all_caches(self) -> None:
         """Save all loaded caches to disk."""
-        if self._manager_metadata_cache is not None:
-            self.save_manager_metadata_cache()
-        if self._transaction_ids_cache is not None:
-            self.save_transaction_ids_cache()
         if self._player_ids_cache is not None:
             self.save_player_ids_cache()
         if self._replacement_score_cache is not None:
@@ -621,8 +511,6 @@ class CacheManager:
             restart: If "partial", only restart weekly data caches. If "full",
                 restart all.
         """
-        self._delete_manager_metadata_cache()
-        self._delete_transaction_ids_cache()
         self._delete_replacement_score_cache()
         self._delete_valid_options_cache()
         self._delete_weekly_data_progress_tracker()

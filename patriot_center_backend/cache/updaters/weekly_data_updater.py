@@ -26,6 +26,9 @@ from patriot_center_backend.cache.updaters._progress_tracker import (
 from patriot_center_backend.cache.updaters.replacement_score_updater import (
     ReplacementScoreCacheBuilder,
 )
+from patriot_center_backend.cache.updaters.transaction_processor import (
+    update_transactions,
+)
 from patriot_center_backend.calculations.ffwar_calculator import FFWARCalculator
 from patriot_center_backend.calculations.player_score_calculator import (
     calculate_player_score,
@@ -34,9 +37,6 @@ from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.models import Player
 from patriot_center_backend.playoffs.playoff_tracker import (
     assign_placements_retroactively,
-)
-from patriot_center_backend.transactions.transaction_processor import (
-    process_transactions,
 )
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
@@ -70,7 +70,6 @@ def update_weekly_data_caches() -> None:
         )
 
         for week in weeks_to_update:
-
             managers = set_managers_season_data(year, week)
             set_matchup_data(year, week, managers=managers)
 
@@ -79,7 +78,7 @@ def update_weekly_data_caches() -> None:
                 players
             )
 
-            process_transactions(year, week)
+            update_transactions(year, week)
 
             # Assign playoff placements
             if week == max(weeks_to_update) and season_complete:

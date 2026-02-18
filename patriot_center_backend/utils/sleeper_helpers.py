@@ -281,22 +281,46 @@ def get_playoff_roster_ids(year: int, week: int) -> list[int]:
 
     return relevant_roster_ids
 
-
 def get_playoff_weeks(year: int) -> list[int]:
-    """Retrieves the week when playoffs start for a given year.
+    """Retrieves the weeks of the playoffs for a given year.
 
     Args:
-        year: The year for which to retrieve the playoff week start.
+        year: The year for which to retrieve the playoff weeks.
 
     Returns:
-        The playoff week start or None if no playoff week start is found.
+        The playoff weeks or None if no playoff weeks are found.
     """
     league_info = get_league_info(year)
-    start = league_info["settings"]["playoff_week_start"]
-    end = league_info["settings"]["last_scored_leg"]
+    settings = league_info["settings"]
+    playoff_type = settings["playoff_type"]
+    playoff_week_start = settings["playoff_week_start"]
+    num_playoff_teams = settings["playoff_teams"]
 
-    return list(range(start, end + 1))
+    rounds_needed = ceil(num_playoff_teams / 2)
 
+    match playoff_type:
+        case 0:  # One week per round
+            return list(
+                range(playoff_week_start, playoff_week_start + rounds_needed)
+            )
+        case 1:  # One week per round with 2 weeks championship
+            return list(
+                range(
+                    playoff_week_start, playoff_week_start + rounds_needed + 1
+                )
+            )
+        case 2:  # Two weeks per round
+            return list(
+                range(
+                    playoff_week_start, playoff_week_start + (rounds_needed * 2)
+                )
+            )
+        case _:
+            logger.warning(
+                f"Playoff type {playoff_type} not supported. "
+                f"Returning empty playoff roster IDs."
+            )
+            return []
 
 def get_season_state(
     year: str, week: str, playoff_week_start: int | None = None

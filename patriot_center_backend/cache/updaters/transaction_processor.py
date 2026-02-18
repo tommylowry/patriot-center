@@ -11,7 +11,7 @@ from patriot_center_backend.utils.sleeper_helpers import (
 logger = logging.getLogger(__name__)
 
 
-def process_transactions(year: int, week: int) -> None:
+def update_transactions(year: int, week: int) -> None:
     """Process all transactions for a given week.
 
     Args:
@@ -35,6 +35,7 @@ def process_transactions(year: int, week: int) -> None:
             weekly_transactions.append(transaction)
 
     _check_for_reverse_transactions(weekly_transactions)
+
 
 def _check_for_reverse_transactions(transactions: list[Transaction]) -> None:
     """Detect and revert transactions (joke trades or accidental transactions).
@@ -62,8 +63,7 @@ def _check_for_reverse_transactions(transactions: list[Transaction]) -> None:
                 or transaction_a.lost == transaction_b.gained
             )
             is_commish = (
-                transaction_a.commish_action
-                or transaction_b.commish_action
+                transaction_a.commish_action or transaction_b.commish_action
             )
             is_trade_pair = (
                 TransactionType.TRADE in transaction_a.transaction_types

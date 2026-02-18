@@ -2,18 +2,18 @@
 
 import logging
 
-from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import LEAGUE_IDS, USERNAME_TO_REAL_NAME
+from patriot_center_backend.constants import LEAGUE_IDS
 from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_sleeper_data,
     get_playoff_weeks,
+    get_roster_ids_map,
 )
 
 logger = logging.getLogger(__name__)
 
 
-def get_playoff_placements(year: int) -> dict[str, int]:
+def assign_placements_retroactively(year: int) -> None:
     """Retrieve final playoff placements (1st, 2nd, 3rd) for a completed year.
 
     Fetches the winners bracket from Sleeper API and determines:
@@ -31,114 +31,62 @@ def get_playoff_placements(year: int) -> dict[str, int]:
     sleeper_response_playoff_bracket = fetch_sleeper_data(
         f"league/{LEAGUE_IDS[year]}/winners_bracket"
     )
-    sleeper_response_rosters = fetch_sleeper_data(
-        f"league/{LEAGUE_IDS[year]}/rosters"
-    )
-    sleeper_response_users = fetch_sleeper_data(
-        f"league/{LEAGUE_IDS[year]}/users"
-    )
-
-    if not isinstance(sleeper_response_playoff_bracket, list):
-        logger.warning("Sleeper Playoff Bracket return not in list form")
-        return {}
-    if not isinstance(sleeper_response_rosters, list):
-        logger.warning("Sleeper Rosters return not in list form")
-        return {}
-    if not isinstance(sleeper_response_users, list):
-        logger.warning("Sleeper Users return not in list form")
-        return {}
+    if (
+        not isinstance(sleeper_response_playoff_bracket, list)
+        or not sleeper_response_playoff_bracket
+    ):
+        return
 
     championship = sleeper_response_playoff_bracket[-2]
     third_place = sleeper_response_playoff_bracket[-1]
-
-    placement = {}
-
-    for manager in sleeper_response_users:
-        for roster in sleeper_response_rosters:
-            if manager["user_id"] == roster["owner_id"]:
-                manager_name = USERNAME_TO_REAL_NAME[manager["display_name"]]
-                if roster["roster_id"] == championship["w"]:
-                    placement[manager_name] = 1
-                elif roster["roster_id"] == championship["l"]:
-                    placement[manager_name] = 2
-                elif roster["roster_id"] == third_place["w"]:
-                    placement[manager_name] = 3
-
-    return placement
-
-
-def assign_placements_retroactively(year: int) -> None:
-    """Retroactively assign team placement for a given year.
-
-    Args:
-        year: Season year (e.g., 2024)
-
-    Notes:
-        - Fetches placements from get_playoff_placements
-        - Updates manager metadata with new placements
-        - Iterates over starters cache and assigns placements for each manager
-        - Only logs the first occurrence of a year's placements
-    """
-    placements = get_playoff_placements(year)
-    if not placements:
+    if championship.get("w") is None:
         return
 
     weeks = get_playoff_weeks(year)
+    roster_ids_map: dict[int, Manager] = {}
+    for week in weeks:
+        roster_ids_map.update(get_roster_ids_map(year, week))
 
-    managers = Manager.get_all_managers(str(year))
-    for manager in managers:
-        if manager.real_name in placements:
-            logger.info(
-                f"Applying playoff placements for manager {manager.real_name} "
-                f"({manager!s}) placement: {placements[manager.real_name]}"
-            )
-            manager.set_playoff_placement(
-                str(year), placements[manager.real_name]
-            )
+    first_place_manager = roster_ids_map[championship["w"]]
+    second_place_manager = roster_ids_map[championship["l"]]
+    third_place_manager = roster_ids_map[third_place["w"]]
 
-            # Get all starters for the manager in the playoff weeks
-            players: list[Player] = []
-            for week in weeks:
-                players.extend(
-                    manager.get_players(
-                        str(year),
-                        str(week),
-                        only_starters=True,
-                        suppress_warnings=True,
-                    )
-                )
+    logger.info("Assigning playoff placements")
 
-            for player in players:
-                player.set_placement(
-                    str(year), manager, placements[manager.real_name]
-                )
+    cnt = 1
+    for manager in [
+        first_place_manager, second_place_manager, third_place_manager
+    ]:
+        logger.info(f"{cnt}. {manager.real_name} ({manager.user_id})")
+        manager.set_playoff_placement(str(year), cnt)
+        _assign_player_placements(year, weeks, manager, cnt)
+        cnt += 1
 
 
-    _manager_cache_set_playoff_placements(placements, year)
-
-
-def _manager_cache_set_playoff_placements(
-    placement_dict: dict[str, int], year: int
+def _assign_player_placements(
+    year: int, playoff_weeks: list[int], manager: Manager, placement: int
 ) -> None:
-    """Record final season placements for all managers.
-
-    Should be called after season completion to record final standings.
-    Only sets placement if not already set for the year (prevents
-    overwrites).
+    """Assign player placement for a given manager.
 
     Args:
-        placement_dict: Dict mapping manager names to placement
-            {"Tommy: 1, "Mike": 2, "Bob": 3}
-        year: Season year
+        year: The year.
+        playoff_weeks: The playoff weeks.
+        manager: The manager.
+        placement: The placement.
     """
-    manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
+    # Get all starters for the manager in the playoff weeks
+    players: list[Player] = []
+    for week in playoff_weeks:
+        players.extend(
+            manager.get_players(
+                str(year),
+                str(week),
+                only_starters=True,
+                suppress_warnings=True,
+            )
+        )
 
-    for manager in placement_dict:
-        if manager not in manager_cache:
-            continue
-
-        cache_placements = manager_cache[manager]["summary"]["overall_data"][
-            "placement"
-        ]
-        if str(year) not in cache_placements:
-            cache_placements[str(year)] = placement_dict[manager]
+    for player in players:
+        player.set_placement(
+            str(year), manager, placement
+        )

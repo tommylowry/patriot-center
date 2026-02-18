@@ -23,10 +23,6 @@ def assign_placements_retroactively(year: int) -> None:
 
     Args:
         year: Target year year (must be completed).
-
-    Returns:
-        Dict of keys (manager names) and values (placement) or empty dict if
-        year is not completed.
     """
     sleeper_response_playoff_bracket = fetch_sleeper_data(
         f"league/{LEAGUE_IDS[year]}/winners_bracket"
@@ -42,10 +38,10 @@ def assign_placements_retroactively(year: int) -> None:
     if championship.get("w") is None:
         return
 
-    weeks = get_playoff_weeks(year)
-    roster_ids_map: dict[int, Manager] = {}
-    for week in weeks:
-        roster_ids_map.update(get_roster_ids_map(year, week))
+    weeks: list[int] = get_playoff_weeks(year)
+    roster_ids_map: dict[int, Manager] = get_roster_ids_map(
+        year, weeks[-1]  # Last week of playoffs
+    )
 
     first_place_manager = roster_ids_map[championship["w"]]
     second_place_manager = roster_ids_map[championship["l"]]
@@ -53,14 +49,13 @@ def assign_placements_retroactively(year: int) -> None:
 
     logger.info("Assigning playoff placements")
 
-    cnt = 1
-    for manager in [
-        first_place_manager, second_place_manager, third_place_manager
-    ]:
+    for cnt, manager in enumerate(
+        [first_place_manager, second_place_manager, third_place_manager],
+        start=1,
+    ):
         logger.info(f"{cnt}. {manager.real_name} ({manager.user_id})")
         manager.set_playoff_placement(str(year), cnt)
         _assign_player_placements(year, weeks, manager, cnt)
-        cnt += 1
 
 
 def _assign_player_placements(

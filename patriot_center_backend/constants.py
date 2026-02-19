@@ -77,12 +77,6 @@ class Position(StrEnum):
     K = "K"
     DEF = "DEF"
 
-class TransactionType(StrEnum):
-    """Enum for transaction types."""
-    TRADE = "trade"
-    ADD = "add"
-    DROP = "drop"
-
 
 # Mapping of team IDs to their full names
 TEAM_DEFENSE_NAMES = {

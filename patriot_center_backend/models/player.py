@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from functools import cache
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
 from patriot_center_backend.cache import CACHE_MANAGER
@@ -19,8 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 class Player:
-    """Player class."""
+    """Player class.
 
+    Uses singleton pattern via __new__ - instances are stored in
+    _instances and never garbage collected. B019 warnings for
+    @cache on methods are safe to suppress in this context.
+    """
     _instances: ClassVar[dict[str, Player]] = {}
 
     def __new__(cls, player_id: str, apply: bool = True) -> Player:
@@ -114,28 +119,38 @@ class Player:
         return hash(self.player_id)
 
     @classmethod
-    def get_all_starters(
+    def load_all_players(cls) -> None:
+        """Load all players into the cache."""
+        cls.get_players()
+
+    @classmethod
+    def get_players(
         cls,
         year: str | None = None,
         week: str | None = None,
         manager: Manager | None = None,
+        only_started: bool = True,
     ) -> list[Player]:
-        """Get players who have started at least one game matching filters.
+        """Get players matching filters.
 
         Args:
             year: Filter by year
             week: Filter by week
             manager: Filter by manager
+            only_started: Whether to only return players who started
 
         Returns:
-            List of players who have started at least one game matching filters
+            List of players matching filters.
         """
         player_cache = CACHE_MANAGER.get_player_cache()
 
         players = []
         for player_id in player_cache:
             player = cls(player_id)
-            if player.has_started(year=year, week=week, manager=manager):
+            if only_started:
+                if player.has_started(year=year, week=week, manager=manager):
+                    players.append(player)
+            else:
                 players.append(player)
 
         return players
@@ -222,6 +237,7 @@ class Player:
 
         self._apply_to_cache()
 
+    @cache  # noqa: B019
     def get_points(
         self,
         year: str | None = None,
@@ -256,6 +272,7 @@ class Player:
             return 0.0
         return round(sum(d.get("points", 0.0) for d in matches), 2)
 
+    @cache  # noqa: B019
     def get_ffwar(
         self,
         year: str | None = None,
@@ -290,6 +307,7 @@ class Player:
             return 0.0
         return round(sum(d["ffwar"] for d in matches), 3)
 
+    @cache  # noqa: B019
     def get_managers(
         self,
         year: str | None = None,
@@ -458,6 +476,7 @@ class Player:
             > 0
         )
 
+    @cache  # noqa: B019
     def get_scoring_summary(
         self,
         year: str | None = None,

@@ -2,8 +2,8 @@
 
 import logging
 
-from patriot_center_backend.constants import TransactionType
 from patriot_center_backend.models import Transaction
+from patriot_center_backend.models.transaction import TransactionType
 from patriot_center_backend.utils.sleeper_helpers import (
     fetch_transactions,
 )

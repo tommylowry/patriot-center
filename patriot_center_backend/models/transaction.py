@@ -4,19 +4,29 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from enum import StrEnum
 from typing import Any, ClassVar
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.constants import TransactionType
 from patriot_center_backend.models.manager import Manager
 from patriot_center_backend.models.player import Player
 
 logger = logging.getLogger(__name__)
 
+class TransactionType(StrEnum):
+    """Enum for transaction types."""
+    TRADE = "trade"
+    ADD = "add"
+    DROP = "drop"
+
 
 class Transaction:
-    """Transaction class."""
+    """Transaction class.
 
+    Uses singleton pattern via __new__ - instances are stored in
+    _instances and never garbage collected. B019 warnings for
+    @cache on methods are safe to suppress in this context.
+    """
     _instances: ClassVar[dict[str, Transaction]] = {}
 
     def __new__(cls, transaction_id: str) -> Transaction:
@@ -65,6 +75,11 @@ class Transaction:
             The transaction ID
         """
         return self.transaction_id
+
+    @classmethod
+    def load_all_transactions(cls) -> None:
+        """Load all transactions into the cache."""
+        cls.get_transactions()
 
     @classmethod
     def get_transactions(
@@ -357,9 +372,9 @@ class Transaction:
                 )
                 continue
             round_num = draft_pick["round"]
-            origin_manager_roster_id = draft_pick["previous_owner_id"]
+            origin_manager_roster_id = draft_pick["roster_id"]
             gained_manager_roster_id = draft_pick["owner_id"]
-            lost_manager_roster_id = draft_pick["roster_id"]
+            lost_manager_roster_id = draft_pick["previous_owner_id"]
 
             origin_manager = self._roster_id_map[origin_manager_roster_id]
 

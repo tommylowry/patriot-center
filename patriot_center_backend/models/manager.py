@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from copy import deepcopy
+from functools import cache
 from time import time
 from typing import TYPE_CHECKING, Any, ClassVar, Literal
 
@@ -23,8 +24,12 @@ logger = logging.getLogger(__name__)
 
 
 class Manager:
-    """Manager class."""
+    """Manager class.
 
+    Uses singleton pattern via __new__ - instances are stored in
+    _instances and never garbage collected. B019 warnings for
+    @cache on methods are safe to suppress in this context.
+    """
     _instances: ClassVar[dict[str, Manager]] = {}
 
     def __new__(cls, user_id: str) -> Manager:
@@ -98,7 +103,12 @@ class Manager:
         return hash(self.user_id)
 
     @classmethod
-    def get_all_managers(
+    def load_all_managers(cls) -> None:
+        """Load all managers into the cache."""
+        cls.get_managers()
+
+    @classmethod
+    def get_managers(
         cls,
         year: str | None = None,
         week: str | None = None,
@@ -119,15 +129,11 @@ class Manager:
         """
         manager_cache = CACHE_MANAGER.get_manager_cache()
 
-        if active_only:
-            # TODO: change when seasons are implemented
-            year = str(max(LEAGUE_IDS.keys()))
-            week = None
-            # END TODO
-
         managers = []
         for user_id in manager_cache:
             manager = cls(user_id)
+            if active_only and not manager.is_active():
+                continue
             if manager.participated(year, week):
                 managers.append(manager)
 
@@ -314,6 +320,7 @@ class Manager:
             )
         return roster_id
 
+    @cache  # noqa: B019
     def get_score_awards(
         self, year: str | None = None, opponent: Manager | None = None
     ) -> dict[str, Any]:
@@ -452,6 +459,7 @@ class Manager:
 
         return players
 
+    @cache  # noqa: B019
     def get_matchup_data_summary(
         self,
         year: str | None = None,
@@ -495,15 +503,20 @@ class Manager:
             points_for += match["points_for"]
             points_against += match["points_against"]
 
-        if wins + losses + ties == 0:
+        num_games = wins + losses + ties
+        if num_games == 0:
             return {}
 
         return {
             "wins": wins,
             "losses": losses,
             "ties": ties,
-            "points_for": round(points_for, 2),
-            "points_against": round(points_against, 2),
+            "win_percentage": round((wins / num_games) * 100, 1),
+            "average_points_for": round(points_for / num_games, 2),
+            "average_points_against": round(points_against / num_games, 2),
+            "average_point_differential": round(
+                (points_for - points_against) / num_games, 2
+            ),
         }
 
     def get_positional_scores_for_starters(
@@ -552,6 +565,7 @@ class Manager:
         """
         return list(self._season_data.keys())
 
+    @cache  # noqa: B019
     def get_matchup_data(self, year: str, week: str) -> dict[str, Any]:
         """Get matchup data for a given year and week.
 
@@ -577,6 +591,7 @@ class Manager:
 
         return data
 
+    @cache  # noqa: B019
     def get_playoff_appearances_list(self) -> list[int]:
         """Get the years in which the manager appeared in the playoffs."""
         years = []
@@ -586,6 +601,7 @@ class Manager:
 
         return years
 
+    @cache  # noqa: B019
     def get_playoff_placements(self, year: str | None = None) -> dict[str, int]:
         """Get the manager's placement in the playoffs.
 
@@ -602,6 +618,7 @@ class Manager:
 
         return placements
 
+    @cache  # noqa: B019
     def get_last_matchup(
         self,
         year: str | None = None,
@@ -627,6 +644,14 @@ class Manager:
 
         return self.get_matchup_data(last_matchup["year"], last_matchup["week"])
 
+    def is_active(self) -> bool:
+        """Check if manager is active.
+
+        Returns:
+            True if manager is active, False otherwise.
+        """
+        return self.participated(year=str(max(LEAGUE_IDS.keys())))
+
     def _load_from_cache(self) -> None:
         """Loads manager data from cache."""
         manager_cache = CACHE_MANAGER.get_manager_cache()
@@ -640,8 +665,8 @@ class Manager:
         self._season_data: dict[str, dict[str, Any]] = manager_data.get(
             "season_data", {}
         )
-        self._matchup_data: dict[str, dict[str, Any]] = (
-            manager_data.get("matchup_data", {})
+        self._matchup_data: dict[str, dict[str, Any]] = manager_data.get(
+            "matchup_data", {}
         )
 
         self._summary: dict[str, Any] = manager_data.get("summary", {})

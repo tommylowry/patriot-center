@@ -29,55 +29,13 @@ def get_overall_matchup_details(
     Returns:
         Dictionary with matchup stats for overall, regular_season, and playoffs
     """
-    regular_season_data = manager.get_matchup_data_summary(
-        year=year, matchup_type="regular_season"
-    )
-    playoff_data = manager.get_matchup_data_summary(
-        year=year, matchup_type="playoffs"
-    )
-
-    if not playoff_data:
-        overall_data = deepcopy(regular_season_data)
-        matchup_data = {"overall": overall_data, "regular_season": overall_data}
-    else:
-        overall_data = {}
-        for key in regular_season_data:
-            overall_data[key] = regular_season_data[key] + playoff_data[key]
-        matchup_data = {
-            "overall": overall_data,
-            "regular_season": regular_season_data,
-            "playoffs": playoff_data,
-        }
-
-    keys_to_remove = []
-    for matchup_key, matchup_value in matchup_data.items():
-        num_games = (
-            matchup_value["wins"]
-            + matchup_value["losses"]
-            + matchup_value["ties"]
-        )
-        if num_games == 0:
-            keys_to_remove.append(matchup_key)
-            continue
-
-        matchup_value["win_percentage"] = round(
-            matchup_value["wins"] / num_games, 1
-        )
-        matchup_value["average_points_for"] = round(
-            matchup_value["points_for"] / num_games, 2
-        )
-        matchup_value["average_points_against"] = round(
-            matchup_value["points_against"] / num_games, 2
-        )
-        matchup_value["average_point_differential"] = round(
-            matchup_value.pop("points_for")
-            - matchup_value.pop("points_against"),
-            2,
-        )
-
-    for key in keys_to_remove:
-        matchup_data.pop(key)
-
+    matchup_data = {
+        "overall": manager.get_matchup_data_summary(year=year),
+        "regular_season": manager.get_matchup_data_summary(year=year),
+        "playoffs": manager.get_matchup_data_summary(year=year),
+    }
+    if not matchup_data["playoffs"]:
+        del matchup_data["playoffs"]
     return matchup_data
 
 

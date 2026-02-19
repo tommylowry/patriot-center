@@ -45,7 +45,7 @@ def get_managers_list(active_only: bool) -> dict[str, Any]:
             rankings: A dictionary containing the manager's rankings in
                 different categories.
     """
-    managers_to_traverse = Manager.get_all_managers(active_only=active_only)
+    managers_to_traverse = Manager.get_managers(active_only=active_only)
 
     managers_list = []
 
@@ -55,13 +55,6 @@ def get_managers_list(active_only: bool) -> dict[str, Any]:
         # END TODO
         manager_summary = get_manager_summary_from_cache(manager)
 
-        overall_matchup_data = manager_summary["matchup_data"]["overall"]
-        wins = overall_matchup_data["wins"]["total"]
-
-        losses = overall_matchup_data["losses"]["total"]
-
-        ties = overall_matchup_data["ties"]["total"]
-
         ranking_details = get_ranking_details_from_cache(
             manager, manager_summary_usage=True, active_only=active_only
         )
@@ -70,26 +63,21 @@ def get_managers_list(active_only: bool) -> dict[str, Any]:
         manager_item["years_active"] = manager_obj.get_years_active()
 
         matchup_data_summary = manager_obj.get_matchup_data_summary()
-        wins = matchup_data_summary["wins"]
-        losses = matchup_data_summary["losses"]
-        ties = matchup_data_summary["ties"]
-        if wins + losses + ties == 0:
+        if not matchup_data_summary:
             logger.warning(
-                f"Manager {manager_obj.real_name} has no matchup data."
+                f"Manager {manager_obj.real_name} ({manager_obj!s}) "
+                f"has no matchup data."
             )
             continue
-        win_percentage = round(
-            wins / (wins + losses + ties) * 100, 1
-        )
 
-        manager_item["wins"] = wins
-        manager_item["losses"] = losses
-        manager_item["ties"] = ties
-        manager_item["win_percentage"] = win_percentage
+        manager_item["wins"] = matchup_data_summary["wins"]
+        manager_item["losses"] = matchup_data_summary["losses"]
+        manager_item["ties"] = matchup_data_summary["ties"]
+        manager_item["win_percentage"] = matchup_data_summary["win_percentage"]
 
-        manager_item["total_trades"] = (
-            manager_summary["transactions"]["trades"]["total"]
-        )
+        manager_item["total_trades"] = manager_summary["transactions"][
+            "trades"
+        ]["total"]
 
         placements = {"first_place": 0, "second_place": 0, "third_place": 0}
 

@@ -20,6 +20,7 @@ import logging
 from flask import Flask
 from flask_cors import CORS
 
+from patriot_center_backend.models import load_all_models
 from patriot_center_backend.routes import register_blueprints
 
 logging.basicConfig(
@@ -27,6 +28,9 @@ logging.basicConfig(
     format="%(levelname)s - %(message)s",
 )
 logger = logging.getLogger(__name__)
+
+# Load all models into their singleton cache
+load_all_models()
 
 app = Flask(__name__)
 register_blueprints(app)

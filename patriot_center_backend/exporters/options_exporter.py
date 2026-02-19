@@ -11,11 +11,11 @@ def get_options_list() -> dict[str, dict[str, str | None]]:
     """
     data = {}
 
-    players = Player.get_all_starters()
+    players = Player.get_players()
     for player in players:
         data[str(player)] = player.get_metadata()
 
-    for manager in Manager.get_all_managers():
+    for manager in Manager.get_managers():
         data[str(manager)] = manager.get_metadata()
 
     return data

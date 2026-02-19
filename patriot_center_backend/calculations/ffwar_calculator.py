@@ -30,7 +30,7 @@ class FFWARCalculator:
 
         self.season_state = get_season_state(str(year), str(week))
 
-        self.managers = Manager.get_all_managers(str(year), str(week))
+        self.managers = Manager.get_managers(str(year), str(week))
 
         self.replacement_scores = dict.fromkeys(Position, 0.0)
         self.baseline_scores = {position: {} for position in Position}
@@ -212,7 +212,6 @@ class FFWARCalculator:
             pos_average = mean(scores)
 
             for manager in self.managers:
-
                 # Use baseline if it exists, otherwise use total.
                 if str(manager) in self.baseline_scores[pos]:
                     baseline = self.baseline_scores[pos][str(manager)]

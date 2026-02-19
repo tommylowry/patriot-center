@@ -48,7 +48,7 @@ def get_aggregated_players(
     """
     players_dict_to_return = {}
 
-    players = Player.get_all_starters(year, week, manager)
+    players = Player.get_players(year=year, week=week, manager=manager)
 
     for player in players:
         scoring_summary = player.get_scoring_summary(

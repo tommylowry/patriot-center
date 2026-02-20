@@ -45,19 +45,19 @@ def get_managers_list(active_only: bool) -> dict[str, Any]:
             rankings: A dictionary containing the manager's rankings in
                 different categories.
     """
-    managers_to_traverse = Manager.get_managers(active_only=active_only)
-
     managers_list = []
 
-    for manager_obj in managers_to_traverse:
+    all_ranking_details: dict[Manager, dict[str, Any]] = (
+        get_ranking_details_from_cache(active_only=active_only)
+    )
+
+    for manager_obj in all_ranking_details:
         # TODO: change to manager
         manager = manager_obj.real_name
         # END TODO
         manager_summary = get_manager_summary_from_cache(manager)
 
-        ranking_details = get_ranking_details_from_cache(
-            manager, manager_summary_usage=True, active_only=active_only
-        )
+        ranking_details = all_ranking_details[manager_obj]
 
         manager_item = manager_obj.get_metadata()
         manager_item["years_active"] = manager_obj.get_years_active()

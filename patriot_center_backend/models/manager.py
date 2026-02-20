@@ -460,6 +460,23 @@ class Manager:
         return players
 
     @cache  # noqa: B019
+    def get_opponents(self, year: str | None = None) -> set[Manager]:
+        """Get opponents for a manager.
+
+        Args:
+            year: Filter by year.
+
+        Returns:
+            Set of opponents.
+        """
+        matches = self._get_matching_matchup_data(year=year)
+
+        opponents = set()
+        for match in matches:
+            opponents.add(match["opponent"])
+        return opponents
+
+    @cache  # noqa: B019
     def get_matchup_data_summary(
         self,
         year: str | None = None,
@@ -708,7 +725,7 @@ class Manager:
 
         self._time_updated = time()
 
-    def _get_matching_matchup_data(
+    def _get_matching_matchup_data( # turn public
         self,
         year: str | None = None,
         week: str | None = None,
@@ -740,13 +757,13 @@ class Manager:
             if not data:
                 return []
             if player:
-                if str(player) not in data["rostered"]:
+                if player not in data["rostered"]:
                     return []
                 if only_starters and str(player) not in data["starters"]:
                     return []
             if matchup_type and data["matchup_type"] != matchup_type:
                 return []
-            if opponent and data["opponent"] != str(opponent):
+            if opponent and data["opponent"] != opponent:
                 return []
             if result and data["result"] != result:
                 return []

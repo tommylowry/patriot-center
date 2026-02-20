@@ -4,7 +4,7 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache.queries.head_to_head_queries import (
-    get_head_to_head_details_from_cache,
+    get_head_to_head_details_for_opponents,
 )
 from patriot_center_backend.cache.queries.matchup_queries import (
     get_overall_data_details,
@@ -47,6 +47,7 @@ def get_manager_summary(
     if not manager.participated(year):
         raise ValueError(f"Manager {manager} is not active in {year}.")
 
+    all_ranking_details = get_ranking_details_from_cache(year=year)
     return_dict = {
         "manager_name": manager.real_name,
         "image_url": manager.image_url,
@@ -54,8 +55,10 @@ def get_manager_summary(
         "matchup_data": get_overall_matchup_details(manager, year=year),
         "transactions": get_transaction_details_from_cache(manager, year=year),
         "overall_data": get_overall_data_details(manager),
-        "rankings": get_ranking_details_from_cache(manager, year=year),
-        "head_to_head": get_head_to_head_details_from_cache(manager, year=year),
+        "rankings": all_ranking_details[manager],
+        "head_to_head": get_head_to_head_details_for_opponents(
+            manager, year=year
+        ),
     }
 
     return deepcopy(return_dict)

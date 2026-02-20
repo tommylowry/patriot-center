@@ -6,87 +6,80 @@ from decimal import Decimal
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.cache.updaters._validators import (
-    validate_matchup_data,
-)
-from patriot_center_backend.models import Manager
+from patriot_center_backend.constants import TOMMY_USER_ID, CODY_USER_ID
+from patriot_center_backend.models import Manager, Transaction
+from patriot_center_backend.models.transaction import TransactionType
 from patriot_center_backend.utils.formatters import get_matchup_card
-from patriot_center_backend.utils.helpers import get_user_id
 
 logger = logging.getLogger(__name__)
 
 
-def get_head_to_head_details_from_cache(
-    manager: str,
-    year: str | None = None,
-    opponent: str | None = None,
-) -> list[dict[str, Any]] | dict[str, Any]:
+def get_head_to_head_details_for_opponent(
+    manager: Manager, opponent: Manager, year: str | None = None
+) -> dict[str, Any]:
     """Get head-to-head record(s) for a manager against opponent(s).
 
-    If opponent specified, returns single H2H record.
-    If no opponent, returns list of H2H records against all opponents.
+    Args:
+        manager: Manager name
+        opponent: Specific opponent
+        year: Season year (optional - defaults to all-time if None)
+
+    Returns:
+        Single opponent dict.
+    """
+    details: dict[str, Any] = manager.get_matchup_data_summary(
+        year=year, opponent=opponent
+    )
+    if details:
+        trades = Transaction.get_transactions(
+            year=year,
+            transaction_type=TransactionType.TRADE,
+            managers_involved=[manager, opponent],
+        )
+
+        details["num_trades_between"] = len(trades)
+        details["opponent"] = opponent.get_metadata()
+        return details
+    else:
+        return {}
+
+
+def get_head_to_head_details_for_opponents(
+    manager: Manager, year: str | None = None
+) -> list[dict[str, Any]]:
+    """Get head-to-head record(s) for a manager against opponent(s).
 
     Args:
         manager: Manager name
         year: Season year (optional - defaults to all-time if None)
-        opponent: Specific opponent
-            (optional - defaults to all opponents if None)
 
     Returns:
-        Single opponent dict if opponent specified,
-            otherwise list of all opponent dicts
+        All opponent dicts.
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
-    manager_data = deepcopy(main_manager_cache[manager])
-
-    head_to_head_data = []
-
-    matchup_data = deepcopy(manager_data["summary"]["matchup_data"]["overall"])
-    trade_data = deepcopy(manager_data["summary"]["transactions"]["trades"])
-    if year:
-        year_cache = manager_data["years"][year]
-        matchup_data = deepcopy(
-            year_cache["summary"]["matchup_data"]["overall"]
-        )
-        trade_data = deepcopy(year_cache["summary"]["transactions"]["trades"])
-
-    opponents = list(
-        deepcopy(matchup_data.get("points_for", {}).get("opponents", {})).keys()
-    )
-    if opponent:
-        opponents = [opponent]
-
+    opponents = manager.get_opponents(year=year)
+    matchup_data = []
     for opponent in opponents:
-        if opponent is None:
-            continue
+        matchup_data.append(
+            get_head_to_head_details_for_opponent(manager, opponent, year=year)
+        )
+    return matchup_data
 
-        user_id = get_user_id(opponent)
+def list_matchups_between_two_managers(
+    manager: Manager, opponent: Manager, year: str | None = None
+) -> list[dict[str, Any]]:
+    """Get all matchup data between two managers.
 
-        if user_id is None:
-            continue
+    Args:
+        manager: Manager name
+        opponent: Specific opponent
+        year: Season year (optional - defaults to all-time if None)
 
-        opponent_obj = Manager(user_id)
-
-        opponent_data = {
-            "opponent": opponent_obj.get_metadata(),
-            "wins": matchup_data["wins"]["opponents"].get(opponent, 0),
-            "losses": matchup_data["losses"]["opponents"].get(opponent, 0),
-            "ties": matchup_data["ties"]["opponents"].get(opponent, 0),
-            "points_for": (
-                matchup_data["points_for"]["opponents"].get(opponent, 0.0)
-            ),
-            "points_against": (
-                matchup_data["points_against"]["opponents"].get(opponent, 0.0)
-            ),
-            "num_trades_between": trade_data["trade_partners"].get(opponent, 0),
-        }
-        head_to_head_data.append(deepcopy(opponent_data))
-
-    if len(head_to_head_data) == 1:
-        return deepcopy(head_to_head_data[0])
-
-    return deepcopy(head_to_head_data)
-
+    Returns:
+        List of matchup data between the two managers.
+    """
+    matchups = manager.get_matchup_data(year=year, opponent=opponent)
+    for matchup in matchups:
+        
 
 def get_head_to_head_overall_from_cache(
     manager1_obj: Manager,
@@ -132,8 +125,8 @@ def get_head_to_head_overall_from_cache(
         if year:
             years = [year]
     else:
-        head_to_head_data = get_head_to_head_details_from_cache(
-            manager1, year=year, opponent=manager2
+        head_to_head_data = get_head_to_head_details_for_opponent(
+            manager1_obj, manager2_obj, year=year
         )
 
         if isinstance(head_to_head_data, list):
@@ -221,13 +214,6 @@ def get_head_to_head_overall_from_cache(
             if matchup_data == {}:
                 continue
 
-            validation = validate_matchup_data(matchup_data)
-            if "Warning" in validation:
-                logger.warning(f"{validation} {manager1}, year {y}, week {w}")
-                continue
-            if validation == "Empty":
-                continue
-
             # Not the matchup we're looking for
             if manager2 != matchup_data.get("opponent_manager", ""):
                 continue
@@ -273,7 +259,7 @@ def get_head_to_head_overall_from_cache(
 
     if list_all_matchups:
         matchup_history.reverse()
-        return deepcopy(matchup_history)
+        return matchup_history
 
     if len(manager_1_victory_margins) == 0:
         logger.warning(
@@ -300,7 +286,7 @@ def get_head_to_head_overall_from_cache(
         )
 
     m1 = manager1.lower().replace(" ", "_")
-    m2 = manager1.lower().replace(" ", "_")
+    m2 = manager2.lower().replace(" ", "_")
 
     # put all the data in
     head_to_head_overall[f"{m1}_points_for"] = manager_1_points_for
@@ -313,17 +299,13 @@ def get_head_to_head_overall_from_cache(
         manager_2_average_margin_of_victory
     )
 
-    head_to_head_overall[f"{m1}_last_win"] = deepcopy(manager_1_last_win)
-    head_to_head_overall[f"{m2}_last_win"] = deepcopy(manager_2_last_win)
+    head_to_head_overall[f"{m1}_last_win"] = manager_1_last_win
+    head_to_head_overall[f"{m2}_last_win"] = manager_2_last_win
 
-    head_to_head_overall[f"{m1}_biggest_blowout"] = deepcopy(
-        manager_1_biggest_blowout
-    )
-    head_to_head_overall[f"{m2}_biggest_blowout"] = deepcopy(
-        manager_2_biggest_blowout
-    )
+    head_to_head_overall[f"{m1}_biggest_blowout"] = manager_1_biggest_blowout
+    head_to_head_overall[f"{m2}_biggest_blowout"] = manager_2_biggest_blowout
 
-    return deepcopy(head_to_head_overall)
+    return head_to_head_overall
 
 
 def _evaluate_matchup(
@@ -348,10 +330,10 @@ def _evaluate_matchup(
     margins.append(victory_margin)
 
     if not last_win:
-        last_win = deepcopy(matchup_card)
+        last_win = matchup_card
 
         if not biggest_blowout:
-            biggest_blowout = deepcopy(matchup_card)
+            biggest_blowout = matchup_card
         return last_win, biggest_blowout
 
     y = int(matchup_card["year"])
@@ -359,10 +341,15 @@ def _evaluate_matchup(
 
     # Determine if this is the most recent win
     if (y, w) > (int(last_win["year"]), int(last_win["week"])):
-        last_win = deepcopy(matchup_card)
+        last_win = matchup_card
 
     # Determine if this is the biggest blowout
     if victory_margin == max(margins):
-        biggest_blowout = deepcopy(matchup_card)
+        biggest_blowout = matchup_card
 
     return last_win, biggest_blowout
+
+if __name__ == "__main__":
+    s = get_head_to_head_overall_from_cache(Manager(TOMMY_USER_ID), Manager(CODY_USER_ID), list_all_matchups=True)
+
+    print("")

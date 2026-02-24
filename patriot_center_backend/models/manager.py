@@ -341,7 +341,7 @@ class Manager:
         Returns:
             Dictionary with all scoring records
         """
-        matches = self._get_matching_matchup_data(year=year, opponent=opponent)
+        matches = self.get_matching_matchup_data(year=year, opponent=opponent)
 
         highest_weekly_score = (0.0, "", "")
         lowest_weekly_score = (float("inf"), "", "")
@@ -429,7 +429,7 @@ class Manager:
             )
             return []
 
-        matches = self._get_matching_matchup_data(
+        matches = self.get_matching_matchup_data(
             year=year, week=week, only_starters=only_starters
         )
         if not matches:
@@ -469,7 +469,7 @@ class Manager:
         Returns:
             Set of opponents.
         """
-        matches = self._get_matching_matchup_data(year=year)
+        matches = self.get_matching_matchup_data(year=year)
 
         opponents = set()
         for match in matches:
@@ -485,8 +485,8 @@ class Manager:
         player: Player | None = None,
         matchup_type: MatchupType | None = None,
         opponent: Manager | None = None,
-    ) -> dict[str, int | float]:
-        """Get the points scored by the manager.
+    ) -> dict[str, Any]:
+        """Get matchup data for a given year and week.
 
         Args:
             year: Filter by year.
@@ -497,9 +497,9 @@ class Manager:
             opponent: Filter by opponent.
 
         Returns:
-            The points scored by the manager.
+            Matchup data for a given year and week.
         """
-        matches = self._get_matching_matchup_data(
+        matches = self.get_matching_matchup_data(
             year=year,
             week=week,
             only_starters=only_starters,
@@ -652,7 +652,7 @@ class Manager:
         Returns:
             A dictionary containing the matchup data.
         """
-        matchups = self._get_matching_matchup_data(
+        matchups = self.get_matching_matchup_data(
             year=year, result=result, opponent=opponent
         )
         if not matchups:
@@ -725,7 +725,8 @@ class Manager:
 
         self._time_updated = time()
 
-    def _get_matching_matchup_data( # turn public
+    @cache  # noqa: B019
+    def get_matching_matchup_data(
         self,
         year: str | None = None,
         week: str | None = None,
@@ -778,7 +779,7 @@ class Manager:
                 continue
             if week and data_week != week:
                 continue
-            recursive_matches = self._get_matching_matchup_data(
+            recursive_matches = self.get_matching_matchup_data(
                 year=data_year,
                 week=data_week,
                 only_starters=only_starters,

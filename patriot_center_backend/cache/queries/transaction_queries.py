@@ -4,11 +4,8 @@ from copy import deepcopy
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
-from patriot_center_backend.models import Manager, Player
-from patriot_center_backend.utils.formatters import (
-    extract_dict_data,
-    get_trade_card,
-)
+from patriot_center_backend.models import Manager, Player, Transaction
+from patriot_center_backend.utils.formatters import extract_dict_data
 
 
 def get_transaction_details_from_cache(
@@ -184,7 +181,7 @@ def get_trade_history_between_two_managers(
     trades_between = []
 
     for t in transaction_ids:
-        trades_between.append(get_trade_card(t))
+        trades_between.append(Transaction(t).to_dict())
 
     trades_between.reverse()
     return trades_between

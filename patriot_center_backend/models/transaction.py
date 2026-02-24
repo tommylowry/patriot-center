@@ -66,6 +66,8 @@ class Transaction:
         self.managers_involved: set[Manager] = set()
         self.players_involved: set[Player] = set()
 
+        self.faab_spent: int | None = None
+
         self._load_from_cache()
 
     def __str__(self) -> str:
@@ -229,6 +231,28 @@ class Transaction:
 
         return True
 
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the transaction to a dictionary.
+
+        Returns:
+            The transaction as a dictionary.
+
+        """
+        return {
+            "year": self.year,
+            "week": self.week,
+            "commish_action": self.commish_action,
+            "transaction_types": [
+                str(t) for t in self.transaction_types
+            ],
+            "gained": {
+                str(m): [str(p) for p in ps] for m, ps in self.gained.items()
+            },
+            "lost": {
+                str(m): [str(p) for p in ps] for m, ps in self.lost.items()
+            }
+        }
+
     def delete(self) -> None:
         """Delete the transaction from the cache."""
         transaction_cache = CACHE_MANAGER.get_transaction_cache()
@@ -275,20 +299,7 @@ class Transaction:
         """Applies the transaction data to the cache."""
         transaction_cache = CACHE_MANAGER.get_transaction_cache()
 
-        transaction_cache[self.transaction_id] = {
-            "year": self.year,
-            "week": self.week,
-            "commish_action": self.commish_action,
-            "transaction_types": [
-                str(t) for t in self.transaction_types
-            ],
-            "gained": {
-                str(m): [str(p) for p in ps] for m, ps in self.gained.items()
-            },
-            "lost": {
-                str(m): [str(p) for p in ps] for m, ps in self.lost.items()
-            }
-        }
+        transaction_cache[self.transaction_id] = self.to_dict()
         self.set = True
 
     def _set_transaction_types(self) -> bool:
@@ -405,12 +416,8 @@ class Transaction:
         input_roster_ids = self._transaction.get("roster_id", [])
         if len(input_roster_ids) != 1:
             return
-        manager: Manager = self._roster_id_map[input_roster_ids[0]]
 
-        faab_str = f"${faab_details['waiver_bid']} FAAB"
-        player = Player(faab_str)
-
-        self.lost.setdefault(manager, set()).add(player)
+        self.faab_spent = faab_details["waiver_bid"]
 
     def _set_faab_trade(self) -> None:
         """Set the FAAB spent for a trade."""

@@ -627,10 +627,6 @@ class Player:
         self.full_name = self.player_id
         self.first_name = abridged_name.split(" ")[0]
         self.last_name = abridged_name.replace(f"{self.first_name} ", "")
-        self.image_url = (
-            "https://upload.wikimedia.org/wikipedia/en/thumb/8/80"
-            "/NFL_Draft_logo.svg/1200px-NFL_Draft_logo.svg.png"
-        )
 
     def _set_image_url(self) -> None:
         if self.player_id.isnumeric():

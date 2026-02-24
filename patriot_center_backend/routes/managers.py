@@ -10,10 +10,8 @@ from patriot_center_backend.exporters.award_exporter import (
 from patriot_center_backend.exporters.head_to_head_exporter import (
     get_head_to_head,
 )
-from patriot_center_backend.exporters.manager_list_exporter import (
-    get_managers_list,
-)
 from patriot_center_backend.exporters.summary_exporter import (
+    get_manager_summaries,
     get_manager_summary,
 )
 from patriot_center_backend.exporters.transaction_exporter import (
@@ -46,7 +44,7 @@ def get_managers_list_route(
         ), 400
 
     try:
-        data = get_managers_list(bool_active_only)
+        data = get_manager_summaries(bool_active_only)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:
@@ -145,12 +143,12 @@ def get_head_to_head_route(
     methods=["GET"],
 )
 def get_manager_transactions_route(
-    manager_name: str, year: str | None
+    user_id: str, year: str | None
 ) -> tuple[Response, int]:
     """Endpoint to get transaction history for a specific manager.
 
     Args:
-        manager_name: The name of the manager.
+        user_id: The name of the manager.
         year: Optional year to filter transactions. Defaults to all-time.
 
     Returns:
@@ -162,7 +160,7 @@ def get_manager_transactions_route(
         year = None
 
     try:
-        data = get_manager_transactions(manager_name, year)
+        data = get_manager_transactions(Manager(user_id), year)
     except ValueError as e:
         return jsonify({"error": str(e)}), 400
     except Exception as e:

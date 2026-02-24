@@ -4,7 +4,6 @@ import logging
 from copy import deepcopy
 from typing import Any
 
-from patriot_center_backend.cache import CACHE_MANAGER
 from patriot_center_backend.models import Manager, Player
 from patriot_center_backend.utils.helpers import get_user_id
 
@@ -135,93 +134,6 @@ def get_matchup_card(
     return matchup
 
 
-def get_trade_card(transaction_id: str) -> dict[str, Any]:
-    """Generate formatted trade card showing all players/assets exchanged.
-
-    Creates a structured trade summary with managers involved and
-    items sent/received by each party. Handles multi-party trades.
-
-    Args:
-        transaction_id: Transaction ID to look up
-
-    Returns:
-        Trade card dictionary with year, week, managers, and items exchanged
-    """
-    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
-
-    trans = transaction_ids_cache.get(transaction_id)
-    if not trans:
-        logger.warning(
-            f"Transaction {transaction_id} not found in trade cache."
-        )
-        return {}
-
-    year = trans.get("year")
-    week = trans.get("week")
-    if not year or not week:
-        logger.warning(
-            f"Missing year or week for transaction {transaction_id}."
-        )
-        return {}
-
-    managers_involved = trans.get("managers_involved")
-    if not managers_involved:
-        logger.warning(
-            f"Missing managers involved for transaction {transaction_id}."
-        )
-        return {}
-
-    trade_item = {"year": year, "week": week, "managers_involved": []}
-
-    # Create sent/received arrays for each manager involved
-    for m in managers_involved:
-        if not isinstance(m, str):
-            logger.warning(
-                f"Manager {m} in transaction {transaction_id} is not a string."
-            )
-
-        # TODO: remove this once managers are stored in cache
-        user_id = get_user_id(m)
-        if not user_id:
-            raise ValueError(f"Manager {m} not found in cache.")
-        manager_obj = Manager(user_id)
-        # END TODO
-
-        trade_item[f"{m.lower().replace(' ', '_')}_received"] = []
-        trade_item[f"{m.lower().replace(' ', '_')}_sent"] = []
-        trade_item["managers_involved"].append(
-            manager_obj.get_metadata()
-        )
-
-    # Populate sent/received arrays with players/assets
-    for player_id in trans["trade_details"]:
-        player = Player(player_id)
-
-        trade_details_player_details = trans.get("trade_details", {}).get(
-            str(player), {}
-        )
-        old_manager = trade_details_player_details.get("old_manager", "")
-        new_manager = trade_details_player_details.get("new_manager", "")
-
-        if not old_manager or not new_manager:
-            if player:
-                logger.warning(
-                    f"Missing trade details for player {player.full_name} "
-                    f"({player.player_id})."
-                )
-            continue
-
-        old_manager = old_manager.lower().replace(" ", "_")
-        new_manager = new_manager.lower().replace(" ", "_")
-
-        trade_item[f"{old_manager}_sent"].append(player.get_metadata())
-        trade_item[f"{new_manager}_received"].append(player.get_metadata())
-
-    trade_item["transaction_id"] = transaction_id
-
-    return deepcopy(trade_item)
-
-
 def extract_dict_data(
     data: dict[str, Any],
     item_type: type[Player] | type[Manager],
@@ -288,36 +200,3 @@ def extract_dict_data(
         items.append(deepcopy(long_dict))
 
     return deepcopy(items)
-
-
-def draft_pick_decipher(
-    draft_pick_dict: dict[str, Any], weekly_roster_ids: dict[int, str]
-) -> str:
-    """Decipher draft pick string to manager name.
-
-    Args:
-        draft_pick_dict: Sleeper traded draft pick data with keys:
-            season, round, roster_id, previous_owner_id, owner_id
-        weekly_roster_ids: Mapping of roster IDs to manager names
-
-    Returns:
-        Manager name or "Unknown Manager"
-
-    Example:
-        >>> draft_pick = {
-        ...     "season": "2019",
-        ...     "round": 5,
-        ...     "roster_id": 1,
-        ...     "previous_owner_id": 1,
-        ...     "owner_id": 2,
-        ... }
-    """
-    season = draft_pick_dict.get("season", "unknown_year")
-    round_num = draft_pick_dict.get("round", "unknown_round")
-
-    origin_team = draft_pick_dict.get("roster_id", "unknown_team")
-    origin_manager = weekly_roster_ids.get(origin_team, "unknown_manager")
-
-    draft_pick = f"{origin_manager}'s {season} Round {round_num} Draft Pick"
-
-    return draft_pick

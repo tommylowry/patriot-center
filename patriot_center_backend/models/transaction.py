@@ -170,6 +170,7 @@ class Transaction:
                 continue
             returning_transactions.append(transaction)
 
+        returning_transactions.reverse()
         return returning_transactions
 
     def apply_transaction(
@@ -250,7 +251,8 @@ class Transaction:
             },
             "lost": {
                 str(m): [str(p) for p in ps] for m, ps in self.lost.items()
-            }
+            },
+            "faab_spent": self.faab_spent,
         }
 
     def delete(self) -> None:
@@ -286,6 +288,8 @@ class Transaction:
             Manager(m): {Player(p) for p in ps}
             for m, ps in transaction_data["lost"].items()
         }
+
+        self.faab_spent = transaction_data["faab_spent"]
 
         self.managers_involved = (
             set(self.gained) | set(self.lost)
@@ -412,11 +416,6 @@ class Transaction:
         faab_details = self._transaction.get("settings")
         if not faab_details or "waiver_bid" not in faab_details:
             return
-
-        input_roster_ids = self._transaction.get("roster_id", [])
-        if len(input_roster_ids) != 1:
-            return
-
         self.faab_spent = faab_details["waiver_bid"]
 
     def _set_faab_trade(self) -> None:

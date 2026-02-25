@@ -2,8 +2,6 @@
 
 from typing import Any
 
-from patriot_center_backend.constants import TOMMY_USER_ID
-
 from patriot_center_backend.models import Manager, Transaction
 from patriot_center_backend.models.transaction import TransactionType
 
@@ -31,12 +29,15 @@ def get_manager_transactions(
     transactions: list[dict[str, Any]] = []
     for transaction in transaction_objs:
         if transaction.transaction_types == {TransactionType.TRADE}:
-            transactions.append(transaction.to_dict())
+            transaction_dict = transaction.to_dict()
+            transaction_dict["transaction_id"] = transaction.transaction_id
+            transactions.append(transaction_dict)
             continue
 
         transaction_item = {
             "year": transaction.year,
             "week": transaction.week,
+            "transaciton_id": transaction.transaction_id,
         }
         if transaction.transaction_types == {TransactionType.DROP}:
             transaction_item["type"] = "drop"
@@ -68,8 +69,3 @@ def get_manager_transactions(
 
     transaction_history["transactions"] = transactions
     return transaction_history
-
-
-if __name__ == "__main__":
-    d = get_manager_transactions(Manager(TOMMY_USER_ID))
-    print("")

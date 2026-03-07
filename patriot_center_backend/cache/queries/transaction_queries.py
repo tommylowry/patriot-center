@@ -1,14 +1,167 @@
 """Cache query helpers for reading transaction related manager metadata."""
 
 from copy import deepcopy
+from dataclasses import dataclass, field
 from typing import Any
 
 from patriot_center_backend.cache import CACHE_MANAGER
+from patriot_center_backend.constants import TOMMY_USER_ID
 from patriot_center_backend.models import Manager, Player, Transaction
+from patriot_center_backend.models.transaction import TransactionType
 from patriot_center_backend.utils.formatters import extract_dict_data
 
 
-def get_transaction_details_from_cache(
+@dataclass
+class Trades:
+    """Trades class."""
+    total: int = 0
+    top_trade_partners: dict[Manager, int] = field(default_factory=dict)
+    most_acquired_players: dict[Player, int] = field(default_factory=dict)
+    most_sent_players: dict[Player, int] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the trades to a dictionary.
+
+        Returns:
+            The trades as a dictionary.
+        """
+        return {
+            "total": self.total,
+            "top_trade_partners": extract_dict_data(
+                {
+                    str(m): self.top_trade_partners[m]
+                    for m in self.top_trade_partners
+                },
+                Manager,
+            ),
+            "most_acquired_players": extract_dict_data(
+                {
+                    str(p): self.most_acquired_players[p]
+                    for p in self.most_acquired_players
+                },
+                Player,
+                cutoff=0,
+            ),
+            "most_sent_players": extract_dict_data(
+                {
+                    str(p): self.most_sent_players[p]
+                    for p in self.most_sent_players
+                },
+                Player,
+                cutoff=0,
+            ),
+        }
+
+    def add_partners(self, partners: set[Manager]) -> None:
+        """Add trade partners to the trades.
+
+        Args:
+            partners: The partners to add.
+        """
+        for partner in partners:
+            if partner in self.top_trade_partners:
+                self.top_trade_partners[partner] += 1
+            else:
+                self.top_trade_partners[partner] = 1
+
+    def add_acquired_players(self, players: set[Player]) -> None:
+        """Add an acquired player to the trades.
+
+        Args:
+            players: The players to add.
+        """
+        for player in players:
+            if player in self.most_acquired_players:
+                self.most_acquired_players[player] += 1
+            else:
+                self.most_acquired_players[player] = 1
+
+    def add_sent_players(self, players: set[Player]) -> None:
+        """Add a sent player to the trades.
+
+        Args:
+            players: The player to add.
+        """
+        for player in players:
+            if player in self.most_sent_players:
+                self.most_sent_players[player] += 1
+            else:
+                self.most_sent_players[player] = 1
+
+@dataclass
+class Adds:
+    """Adds class."""
+    total: int = 0
+    top_players_added: dict[Player, int] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the adds to a dictionary.
+
+        Returns:
+            The adds as a dictionary.
+        """
+        return {
+            "total": self.total,
+            "top_players_added": self.top_players_added,
+        }
+
+    def add_players(self, players: set[Player]) -> None:
+        """Add a player to the adds.
+
+        Args:
+            players: The player to add.
+        """
+        for player in players:
+            if player in self.top_players_added:
+                self.top_players_added[player] += 1
+            else:
+                self.top_players_added[player] = 1
+
+@dataclass
+class Drops:
+    """Drops class."""
+    total: int = 0
+    top_players_dropped: list[dict[str, Any]] = field(default_factory=list)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the drops to a dictionary.
+
+        Returns:
+            The drops as a dictionary.
+        """
+        return {
+            "total": self.total,
+            "top_players_dropped": self.top_players_dropped,
+        }
+
+@dataclass
+class Faab:
+    """Faab class."""
+    total_spent: int = 0
+    biggest_acquisitions: list[dict[str, Any]] = field(default_factory=list)
+    faab_traded: dict[str, int] = field(default_factory=dict)
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert the faab to a dictionary.
+
+        Returns:
+            The faab as a dictionary.
+        """
+        return {
+            "total_spent": self.total_spent,
+            "biggest_acquisitions": self.biggest_acquisitions,
+            "faab_traded": self.faab_traded,
+        }
+
+@dataclass
+class ObjectCount:
+    """Object count class."""
+    object: Manager | Player
+    count: int = 0
+
+
+
+def get_transaction_details_from_cache(  # this is next
     manager_obj: Manager, year: str | None = None
 ) -> dict[str, dict[str, Any]]:
     """Get comprehensive transaction summary with formatted data and image URLs.
@@ -128,9 +281,44 @@ def get_transaction_details_from_cache(
     return deepcopy(transaction_summary)
 
 
+def new_get_transaction_details_from_cache(
+    manager: Manager, year: str | None = None
+) -> dict[str, dict[str, Any]]:
+    """Get comprehensive transaction summary.
+
+    Extracts and formats trades, adds, drops, and FAAB spending including:
+    - Trade partners and most acquired/sent players
+    - Top added/dropped players
+    - FAAB spending and trading
+
+    All player/manager names enriched with image URLs.
+
+    Args:
+        manager_obj: Manager object
+        year: Season year (optional - defaults to all-time stats)
+
+    Returns:
+        Dictionary with trades, adds, drops, and faab summaries
+    """
+    transactions = Transaction.get_transactions(
+        manager_involved=manager, year=year
+    )
+
+    trades = Trades()
+    adds = Adds()
+    drops = Drops()
+    faab = Faab()
+
+    for transaction in transactions:
+        if TransactionType.TRADE in transaction.transaction_types:
+            _scrape_trade_info(transaction, manager, trades)
+
+
+
+
 def get_trade_history_between_two_managers(
-    manager1_obj: Manager,
-    manager2_obj: Manager,
+    manager1: Manager,
+    manager2: Manager,
     year: str | None = None,
 ) -> list[dict[str, Any]]:
     """Get complete trade history between two managers.
@@ -138,111 +326,37 @@ def get_trade_history_between_two_managers(
     Finds all trades involving both managers and returns formatted trade cards.
 
     Args:
-        manager1_obj: First manager object
-        manager2_obj: Second manager object
+        manager1: First manager
+        manager2: Second manager
         year: Season year (optional - defaults to all-time if None)
 
     Returns:
         List of trade cards in reverse chronological order (newest first)
     """
-    # TODO: remove this once managers are stored in cache
-    manager1 = manager1_obj.real_name
-    manager2 = manager2_obj.real_name
-    # END TODO
-    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
-    manager_1_data = deepcopy(main_manager_cache.get(manager1, {}))
+    transactions = Transaction.get_transactions(
+        managers_involved=[manager1, manager2], year=year
+    )
 
-    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
+    return [t.to_dict() for t in transactions]
 
-    years = list(manager_1_data.get("years", {}).keys())
-    if year:
-        years = [year]
-
-    # Gather all transaction IDs for manager_1
-    transaction_ids = []
-    for y in years:
-        weeks = manager_1_data["years"][y]["weeks"]
-        for w in weeks:
-            weekly_trade_transaction_ids = (
-                weeks.get(w, {})
-                .get("transactions", {})
-                .get("trades", {})
-                .get("transaction_ids", [])
-            )
-            transaction_ids.extend(weekly_trade_transaction_ids)
-
-    # Filter to only those involving both managers
-    for tid in deepcopy(transaction_ids):
-        if manager2 not in (
-            transaction_ids_cache.get(tid, {}).get("managers_involved", [])
-        ):
-            transaction_ids.remove(tid)
-
-    trades_between = []
-
-    for t in transaction_ids:
-        trades_between.append(Transaction(t).to_dict())
-
-    trades_between.reverse()
-    return trades_between
-
-
-def get_manager_transaction_history_from_cache(
-    manager_name: str, year: str | None
-) -> dict[str, Any]:
-    """Get manager transaction history from cache.
+def _scrape_trade_info(trade: Transaction, manager: Manager, trades: Trades) -> None:
+    """Scrape trade info from transaction object.
 
     Args:
-        manager_name: The name of the manager.
-        year: Optional year to filter transactions. Defaults to all-time.
-
-    Returns:
-        Dictionary of transaction history.
-
-    Raises:
-        ValueError: If the manager or year is not found in the cache.
+        trade: Transaction object
+        manager: Manager object
+        year: Season year
+        trades: Trades object
     """
-    main_manager_cache = CACHE_MANAGER.get_manager_metadata_cache()
+    trades.total += 1
 
-    if manager_name not in main_manager_cache:
-        raise ValueError(f"Manager {manager_name} not found in cache.")
-
-    manager_data = deepcopy(main_manager_cache[manager_name])
-
-    if year and year not in main_manager_cache[manager_name]["years"]:
-        raise ValueError(
-            f"Year {year} not found for manager {manager_name} in cache."
+    if trade.gained.get(manager):
+        trades.most_acquired_players.append(
+            deepcopy(trade.gained.get(manager).pop())
+        )
+    if trade.lost.get(manager):
+        trades.most_sent_players.append(
+            deepcopy(trade.lost.get(manager).pop())
         )
 
-    years_to_get = list(manager_data.get("years", {}).keys())
-    if year:
-        years_to_get = [year]
-
-    return_data = {
-        manager_name: {"years": {}},
-    }
-
-    for y in years_to_get:
-        return_data[manager_name]["years"][y] = {"weeks": {}}
-        for w in list(manager_data["years"][y]["weeks"]):
-            return_data[manager_name]["years"][y]["weeks"][w] = {
-                "transactions": (
-                    manager_data["years"][y]["weeks"][w]["transactions"]
-                )
-            }
-
-    return deepcopy(return_data)
-
-
-def get_transaction_from_ids_cache(transaction_id: str) -> dict[str, Any]:
-    """Get transaction from transaction ID.
-
-    Args:
-        transaction_id: The ID of the transaction.
-
-    Returns:
-        Dictionary of transaction data.
-    """
-    transaction_ids_cache = CACHE_MANAGER.get_transaction_ids_cache()
-
-    return deepcopy(transaction_ids_cache.get(transaction_id, {}))
+get_transaction_details_from_cache(Manager(TOMMY_USER_ID))
